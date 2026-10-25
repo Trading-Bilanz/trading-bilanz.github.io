@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anleitung: Erste Schritte · Trading-Bilanz</title>
+<!--
+  Anleitung mit Bildern zur Trading-Bilanz. Kein JavaScript. Farben wie im Tool (trading-bilanz.html, :root), hell und dunkel nach Systemeinstellung.
+  Nur die Schritt-Listen (MetaTrader 5, Tag, „Erste Schritte“, „Jeden Monat“) stehen wortgleich im Tool, zwischen <!- -Q:quelle- -> und <!- -/Q- ->;
+  tools/test-anleitung.js prüft das. <!- -Z- -> … <!- -/Z- -> darin sind Zusätze der Anleitung. Alles andere steht in eigenen Worten. Bilder: tool-* macht
+  tools/anleitung-bilder.js, die anderen tools/anleitung-fremd.js aus Florians Aufnahmen. Platzhalter <div class="ph" data-bild="…"> ersetzt anleitung-fremd.js.
+-->
+<style>
+:root{
+  --bg:#f6f5f2; --card:#ffffff; --ink:#1a1a1a; --ink2:#373d43; --muted:#454b51;
+  --line:#e2e0da; --accent:#2a63a6; --accent-soft:#e6eef8; --sub-bg:#f0f3f7;
+  --ph-bg:#e9ebee; --ph-line:#c9cdd2; --shot-line:#e2e0da;
+  --radius:10px; --fs-s:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#15181b; --card:#1e2226; --ink:#f2f4f6; --ink2:#cfd5db; --muted:#bec5cc;
+    --line:#30363c; --accent:#6ea3e0; --accent-soft:#22324a; --sub-bg:#1a232d;
+    --ph-bg:#262b30; --ph-line:#3d444b; --shot-line:#4a525a;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:12px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:24px 16px 40px}
+header h1{font-size:28px;line-height:1.25;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--ink2);margin:0 0 12px}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.tool{display:inline-block;margin:4px 0 0;font-weight:600}
+nav.toc{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 18px;margin:18px 0 8px}
+nav.toc p{margin:0 0 4px;font-weight:600}
+nav.toc ol{margin:0;padding-left:22px}
+section{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:6px 20px 14px;margin:16px 0}
+h2{font-size:21px;line-height:1.3;margin:16px 0 8px}
+h3{font-size:17px;margin:16px 0 6px}
+ol.steps>li,ol.list>li{margin:0 0 10px}
+ol.steps,ol.list{padding-left:24px}
+.small{font-size:var(--fs-s);color:var(--ink2)}
+.msg.info{background:var(--accent-soft);border-radius:8px;padding:8px 12px}
+kbd{font:13px/1.2 ui-monospace,Consolas,monospace;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 5px;background:var(--sub-bg)}
+code{font:14px ui-monospace,Consolas,monospace}
+.gl{border-bottom:1px dashed currentColor}
+/* Bilder: in voller Breite der Spalte, ein Klick öffnet das Bild in voller Größe */
+figure{margin:12px 0 14px}
+figure a{display:block;width:fit-content;max-width:100%}
+figure img{display:block;max-width:100%;height:auto;border:1px solid var(--shot-line);border-radius:8px}
+figcaption{font-size:var(--fs-s);color:var(--ink2);margin-top:4px}
+/* Platzhalter, bis Florians Bild da ist */
+.ph{display:flex;align-items:center;justify-content:center;flex-direction:column;min-height:180px;background:var(--ph-bg);border:2px dashed var(--ph-line);border-radius:8px;color:var(--ink2);font-size:var(--fs-s);text-align:center;padding:12px}
+.ph b{color:var(--ink)}
+.more{color:var(--ink2)}
+footer{font-size:var(--fs-s);color:var(--ink2);border-top:1px solid var(--line);margin-top:28px;padding-top:14px}
+footer p{margin:0 0 6px}
+@media (max-width:560px){
+  header h1{font-size:24px}
+  section{padding:4px 14px 10px}
+  ol.steps,ol.list{padding-left:20px}
+}
+</style>
+<body>
+<div class="wrap">
+<header>
+  <h1>Anleitung: Erste Schritte</h1>
+  <p class="sub">So bringst du deine Konten in die Trading-Bilanz, Schritt für Schritt mit Bildern.</p>
+  <a class="tool" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">Zur Trading-Bilanz</a>
+  <nav class="toc" aria-label="Inhalt">
+    <p>Inhalt</p>
+    <ol>
+      <li><a href="#start">Bevor du anfängst</a></li>
+      <li><a href="#mt5-verbinden">MetaTrader 5 verbinden</a></li>
+      <li><a href="#report-speichern">Report speichern</a></li>
+      <li><a href="#reports-laden">Reports laden</a></li>
+      <li><a href="#trading-benefit">Trading Benefit wählen</a></li>
+      <li><a href="#kurse">Wechselkurse laden</a></li>
+      <li><a href="#tag-daten">Tag-Daten einfügen</a></li>
+      <li><a href="#weiter">Wie es weitergeht</a></li>
+    </ol>
+  </nav>
+</header>
+
+<main>
+<section id="start">
+  <h2>1. Bevor du anfängst</h2>
+  <p>Du brauchst einmal einen Computer mit MetaTrader 5, um deine Reports zu speichern. Danach kannst du die Trading-Bilanz auch am Handy nutzen.</p>
+  <p>Diese Anleitung zeigt dir den Einstieg:</p>
+  <!--Q:js:STEPS.slice(0,5)--><ol class="list">
+    <li>Verbinde MetaTrader 5 mit deinen Konten (einmalig, am Computer).</li>
+    <li>Speichere die Reports aus MetaTrader 5 und lade sie ins Tool.</li>
+    <li>Wähle den Trading Benefit (z. B. ×24).</li>
+    <li>Lade die Wechselkurse (für Euro und Steuer).</li>
+    <li>Wallet: Füge die Tag-Daten ein und trage ein, woher die Coins kamen (von Hand oder mit der Börsen-Datei). Empfohlen für „Dein echtes Geld“ und die Krypto-Steuer. Wallet-Dateien sind ein zusätzlicher Weg für Fortgeschrittene.</li>
+  </ol><!--/Q-->
+  <p>Beim ersten Öffnen begrüßt dich das Tool mit einem wichtigen Hinweis. Beantworte dort die Frage „In welchem Land zahlst du Steuern?“ und klicke auf „Gelesen und verstanden“.</p>
+  <p><b>Gut zu wissen:</b> Deine Daten liegen nur in dem Browser, in dem du das Tool nutzt. Die Online-Version und eine heruntergeladene Datei speichern getrennt. Mit einer Sicherung nimmst du deine Daten mit.</p>
+</section>
+
+<section id="mt5-verbinden">
+  <h2>2. MetaTrader 5 verbinden</h2>
+  <p>Das machst du nur einmal.</p>
+  <!--Q:js:MT5_CONNECT.win--><ol class="steps">
+    <li>Installiere MetaTrader 5 am Computer.</li>
+    <li>Hole Kontonummer und Investor-Passwort: Öffne im Tag-Portal <b>CopyX → Follower Hub → Strategies</b> und klicke dort beim Konto auf das Auge-Symbol unter „Credentials“.
+      <figure><a href="anleitung/tag-strategies-zugang.webp"><img src="anleitung/tag-strategies-zugang.webp" width="1600" height="776" alt="Tag-Portal, Seite Strategies: Tabelle mit 5 Konten, die Spalte Credentials mit den Auge-Symbolen ist eingerahmt" loading="lazy"></a>
+        <figcaption>Zum Vergrößern anklicken. Grau verdeckt: Kontonummern und Beträge.</figcaption></figure></li>
+    <li>Wähle in MetaTrader 5 <b>Datei → Handelskonto eröffnen</b> (engl. <i>File → Open an Account</i>) und suche „T.M. Financials Ltd“.
+      <figure><a href="anleitung/mt5-konto-suchen.webp"><img src="anleitung/mt5-konto-suchen.webp" width="815" height="663" alt="MetaTrader 5, Fenster Open an Account: Suche nach t.m. financials, der Broker T.M. Financials Ltd ist eingerahmt" loading="lazy"></a>
+        <figcaption>Klicke den Broker an und dann auf „Weiter“.</figcaption></figure></li>
+    <li>Wähle <b>mit dem aktuellen Handelskonto verbinden</b> (engl. <i>Connect with an existing trade account</i>) und gib Kontonummer (engl. <i>Login</i>) und Investor-Passwort (engl. <i>Password</i>) ein. Der Server steht schon da.
+      <p class="msg info">Mit dem Investor-Passwort kannst du nur schauen, nicht handeln.</p>
+      <figure><a href="anleitung/mt5-konto-verbinden.webp"><img src="anleitung/mt5-konto-verbinden.webp" width="815" height="663" alt="MetaTrader 5: Connect with an existing trade account ist gewählt, die Felder Login, Password und Server sind eingerahmt" loading="lazy"></a>
+        <figcaption>Die Kontonummer im Bild ist erfunden. Zum Schluss klickst du auf „Fertig stellen“.</figcaption></figure></li>
+    <li>Wiederhole das für jedes weitere Konto. Danach stehen alle Konten links im Navigator (<b>Ansicht → Navigator</b>, engl. <i>View → Navigator</i>, Strg+N). Ein Doppelklick wechselt das Konto.
+      <figure><a href="anleitung/mt5-navigator.webp"><img src="anleitung/mt5-navigator.webp" width="560" height="420" alt="MetaTrader 5, Navigator links: unter Accounts und TMFinancials-Server stehen 5 Konten, eingerahmt" loading="lazy"></a>
+        <figcaption>Grau verdeckt: Kontonummern und Namen.</figcaption></figure></li>
+  </ol><!--/Q-->
+  <p class="small">Am Mac sind die Menüs gleich, nur ohne Tastenkürzel.</p>
+</section>
+
+<section id="report-speichern">
+  <h2>3. Report speichern</h2>
+  <!--Q:js:MT5_SAVE.win--><ol class="steps">
+    <li>Öffne MetaTrader 5 am Computer und wähle das Konto (Doppelklick im Navigator).</li>
+    <li>Wähle <b>Ansicht → Terminal</b> (engl. <i>View → Toolbox</i>) oder drücke Strg+T.</li>
+    <li>Klicke im Fenster Terminal (engl. <i>Toolbox</i>) auf den Reiter <b>Kontohistorie</b> (engl. <i>History</i>).</li>
+    <li>Klicke mit der rechten Maustaste in die Liste und wähle <b>Ganze Historie</b> (engl. <i>All History</i>). Später reicht ein kürzerer Zeitraum, solange keine Lücke entsteht. Das Tool merkt eine Lücke.</li>
+    <li>Klicke noch einmal mit der rechten Maustaste in die Liste, wähle <b>Bericht</b> (engl. <i>Report</i>) → <b>HTML (Internet Explorer)</b> und speichere die Datei.
+      <figure><a href="anleitung/mt5-report-menue.webp"><img src="anleitung/mt5-report-menue.webp" width="1600" height="837" alt="MetaTrader 5, Reiter History: Menü der rechten Maustaste, eingerahmt sind All History, Report und HTML (Internet Explorer)" loading="lazy"></a>
+        <figcaption>Grau verdeckt: Kontonummern und Namen.</figcaption></figure></li>
+    <li>Wiederhole das für jedes Konto. Die Dateien heißen meist <i>ReportHistory-Kontonummer.html</i>. Den Ordner wählst du beim Speichern selbst.</li>
+  </ol><!--/Q-->
+  <p class="small">Am Mac klickst du mit zwei Fingern (oder mit ctrl-Klick) statt mit der rechten Maustaste.</p>
+</section>
+
+<section id="reports-laden">
+  <h2>4. Reports laden</h2>
+  <p>Öffne die <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">Trading-Bilanz</a>. Der Reiter „Reports“ ist schon gewählt. Ziehe die gespeicherten Dateien in das Feld „Report-Dateien hierher ziehen“ oder klicke darauf und wähle sie aus. Du kannst alle Dateien auf einmal wählen.</p>
+  <figure><a href="anleitung/tool-reports-laden.webp"><img src="anleitung/tool-reports-laden.webp" width="1148" height="341" alt="Karte MT5-Reports laden mit den Knöpfen Erstes Mal: MT5 verbinden und So speicherst du den Report, darunter das eingerahmte Feld Report-Dateien hierher ziehen" loading="lazy"></a></figure>
+  <p class="small">Gemeint ist die HTML-Datei aus MetaTrader 5 (sie endet auf <code>.html</code>), nicht ein Report als PDF oder Excel.</p>
+</section>
+
+<section id="trading-benefit">
+  <h2>5. Trading Benefit wählen</h2>
+  <p>Nach dem Laden stehen deine Konten in der Karte „Deine Konten“. Klicke bei jedem Konto in der Spalte „Trading Benefit“ auf das Auswahlfeld und wähle ×1, ×12 oder ×24. Solange er fehlt, steht dort „fehlt“. In der Spalte „Name“ kannst du jedem Konto einen Namen geben.</p>
+  <figure><a href="anleitung/tool-trading-benefit.webp"><img src="anleitung/tool-trading-benefit.webp" width="1148" height="285" alt="Karte Deine Konten mit drei Beispielkonten, die Spalte Trading Benefit ist eingerahmt, beim dritten Konto steht fehlt" loading="lazy"></a>
+    <figcaption>Beispielkonten mit erfundenen Daten. Beim dritten Konto fehlt der Trading Benefit noch.</figcaption></figure>
+  <p>Der Trading Benefit heißt bei Tag auch „Amplifier“. Tag vervielfacht damit dein eingezahltes Geld im MT5: Bei ×24 stehen 100 USD als 2.400 USD da. Gewinne, Performance Fee und Gewinnauszahlungen vervielfacht Tag nicht.</p>
+  <p><b>So findest du ihn:</b> Öffne im Tag-Portal <b>CopyX → Follower Hub → Strategies</b> und teile „Balance“ durch „Invested“. Die Spalte „Multiplier“ ist etwas anderes.</p>
+  <figure><a href="anleitung/tag-strategies-benefit.webp"><img src="anleitung/tag-strategies-benefit.webp" width="1600" height="776" alt="Tag-Portal, Seite Strategies: Tabelle mit 5 Konten, die Spalten Invested und Balance sind eingerahmt" loading="lazy"></a>
+    <figcaption>Grau verdeckt: Kontonummern und Beträge.</figcaption></figure>
+  <p>Hast du keinen Trading Benefit, wähle ×1. Für die Steuer spielt er keine Rolle, nur für Investition und Rendite.</p>
+</section>
+
+<section id="kurse">
+  <h2>6. Wechselkurse laden</h2>
+  <p>Für Beträge in Euro und für die Steuer braucht das Tool den Wechselkurs jedes Tages, an dem du eine Buchung hast. Es nimmt den Referenzkurs der Europäischen Zentralbank (EZB). In USD funktioniert die Auswertung auch ohne.</p>
+  <p>Die meisten Tage sind schon im Tool eingebaut. Fehlen die neuesten, öffne den Reiter „Kurse“ und klicke auf „Kurse laden“.</p>
+  <p>Mit dem Häkchen „Fehlende Kurse automatisch laden“ holt das Tool fehlende Kurse von selbst, sobald du es öffnest, neue Reports lädst oder Tag-Daten einfügst. Ohne Häkchen fragt es nur, wenn du auf „Kurse laden“ klickst. Soll das Tool gar nicht ins Internet gehen, lade die Datei selbst von der <a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/eurofxref-graph-usd.en.html" target="_blank" rel="noopener">Seite der EZB&nbsp;↗</a> herunter und ziehe sie im Reiter „Kurse“ unter „Ohne Internet“ hinein. Bei jedem Abruf, auch beim Herunterladen der Datei, sieht die EZB deine IP-Adresse.</p>
+</section>
+
+<section id="tag-daten">
+  <h2>7. Tag-Daten einfügen</h2>
+  <p>Im Reiter „Wallet“ hältst du fest, wie dein Geld zu Tag und zurück geflossen ist. Daraus rechnet das Tool „Dein echtes Geld“ und, wenn du mit USDC oder USDT ein- oder ausgezahlt hast, die Krypto-Steuer.</p>
+  <p>Öffne den Reiter „Wallet“. Beim ersten Mal kommt das Fenster „Was du hier machst“. Klicke dort auf „Mit den Tag-Daten anfangen“. Dann öffnet sich das Fenster „Daten“ mit dem Feld „Hier einfügen“. Später findest du es im Reiter „Wallet“ oben unter „＋ Daten“.</p>
+  <figure><a href="anleitung/tool-tag-einfuegen.webp"><img src="anleitung/tool-tag-einfuegen.webp" width="640" height="614" alt="Fenster Daten mit der Kachel Tag-Daten, dem Knopf So kopierst du die Daten aus Tag und dem eingerahmten Feld Hier einfügen" loading="lazy"></a></figure>
+  <p>Öffne das Tag-Portal in einem zweiten Browser-Tab und gehe so vor:</p>
+  <!--Q:js:tagGuide('win')--><ol class="steps">
+    <li>Klicke im Tag-Portal links auf <b>Tag Wallet</b>.</li>
+    <li><b>Einzahlungen:</b> Öffne „Transaction History“ und wähle bei „From“ ein Datum vor deiner ersten Einzahlung.</li>
+    <li>Klicke auf „More Filters“, wähle bei „Method“ „<span class="gl">PSP</span>“ und klicke auf „Submit“. Wähle bei „Show“ die größte Zahl.
+      <figure><a href="anleitung/tag-einzahlungen.webp"><img src="anleitung/tag-einzahlungen.webp" width="1600" height="776" alt="Tag-Portal, Transaction History: eingerahmt sind From, Submit, More Filters, Method mit PSP und Show" loading="lazy"></a>
+        <figcaption>Grau verdeckt: Guthaben, Summen, Nummern, Datum und Beträge.</figcaption></figure></li>
+    <li>Kopiere die ganze Seite und füge sie ins Feld „Hier einfügen“ ein. Klicke dann auf „Übernehmen“.
+      <p class="small">Oben auf der Seite stehen deine Summen bei Tag (Deposits, Withdrawals), unten die Anzahl der Einträge. Damit prüft das Tool, ob alles angekommen ist.</p><div class="small">Klicke auf die Seite und drücke <kbd>Strg</kbd>+<kbd>A</kbd>, dann <kbd>Strg</kbd>+<kbd>C</kbd>. Klicke ins Feld „Hier einfügen“ und drücke <kbd>Strg</kbd>+<kbd>V</kbd>.</div>
+      <!--Z--><p>Das Tool zeigt dann eine Vorschau:</p><!--/Z-->
+      <figure><a href="anleitung/tool-tag-vorschau.webp"><img src="anleitung/tool-tag-vorschau.webp" width="640" height="1018" alt="Fenster Daten mit der Vorschau nach dem Einfügen: drei Einzahlungen, Vergleich mit den Summen von Tag, darunter Woher und wohin, unten der eingerahmte Knopf Speichern" loading="lazy"></a>
+        <figcaption>Beispiel mit erfundenen Daten. Im Beispiel fehlen die Auszahlungen noch, darum steht dort „Füge noch die Seite ‚Withdrawals‘ ein.“</figcaption></figure>
+      <!--Z--><p>Bei „Woher und wohin?“ kannst du auch später antworten. Klicke auf „Speichern“.</p><!--/Z--></li>
+    <li><b>Auszahlungen:</b> Öffne „Withdrawals“ und klicke auf „Display Processed Withdrawals“ (danach steht dort „Hide Processed Withdrawals“). Wähle bei „Show“ die größte Zahl, kopiere die ganze Seite und füge sie ins Feld „Hier einfügen“ ein. Klicke dann auf „Übernehmen“.
+      <figure><a href="anleitung/tag-auszahlungen.webp"><img src="anleitung/tag-auszahlungen.webp" width="1600" height="776" alt="Tag-Portal, Withdrawals: eingerahmt sind Withdrawals, Hide Processed Withdrawals und Show" loading="lazy"></a>
+        <figcaption>Grau verdeckt: Guthaben, Summen, Nummern, Datum und Beträge.</figcaption></figure></li>
+    <li>Du kannst jederzeit wieder alles einfügen. Was schon da ist, erkennt das Tool.</li>
+  </ol><!--/Q-->
+  <p class="small">Am Mac nimmst du <kbd>⌘ Cmd</kbd> statt <kbd>Strg</kbd>. <b>PSP</b> ist ein Filter bei Tag: Er zeigt nur Einzahlungen von außen, nicht die Überträge zwischen der Tag Wallet und deinen Trading-Konten.</p>
+  <p class="small"><b>Gut zu wissen:</b> Zahlst du bei Tag USDC ein, tauscht Tag sie sofort in USD. Steuerlich ist das ein Verkauf. Bei einer Auszahlung in USDC ist es umgekehrt ein Kauf. Das Tool rechnet mit USDC und USDT.</p>
+</section>
+
+<section id="weiter">
+  <h2>8. Wie es weitergeht</h2>
+  <p>Danach findest du deine Zahlen in den Reitern „Auswertung“ und „Steuer“.</p>
+  <p><b>Jeden Monat (empfohlen)</b></p>
+  <!--Q:js:stepsHTML(false).match(/<div class="chkm">[\s\S]*?(<ol[\s\S]*?<\/ol>)/)[1]--><ol class="steps">
+    <li>Speichere in MetaTrader 5 für jedes Konto den Report neu.</li>
+    <li>Ziehe alle Reports in den Reiter „Reports“. Was schon da ist, erkennt das Tool.</li>
+    <li>Speichere eine Sicherung.</li>
+  </ol><!--/Q-->
+  <p class="more">Später kommen in diese Anleitung: Wallet-Dateien, Börse, Steuer und Sicherung.</p>
+</section>
+</main>
+
+<footer>
+  <p>Trading-Bilanz · Anleitung, Stand 24.10.2026 · Keine Steuer- oder Finanzberatung.</p>
+  <p><b>Nur das Original:</b> Nutze die Trading-Bilanz nur von <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, zum Beispiel mit einer anderen Spendenadresse.</p>
+  <p><b>Datenschutz:</b> Diese Seite speichert nichts und lädt nur ihre eigenen Bilder. Beim Aufruf speichert GitHub deine IP-Adresse aus Sicherheitsgründen (<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub&nbsp;↗</a>).</p>
+  <p><a href="https://weltenwandel.at/impressum.html" target="_blank" rel="noopener">Impressum&nbsp;↗</a> · <a href="mailto:florian@weltenwandel.at">florian@weltenwandel.at</a> · <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">Zur Trading-Bilanz</a></p>
+</footer>
+</div>
+</body>
+</html>
