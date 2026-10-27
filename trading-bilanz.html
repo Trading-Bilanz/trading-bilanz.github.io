@@ -7938,20 +7938,30 @@ function endEdit(){EDIT=null;CX_META=null;EDIT_TAG=null;CX_PROV=null;$('cx-sug')
 // Ab 0.45 (1.11): Ein- oder Auszahlung zu Tag von Hand als Tag-Zeile (id h1, h2 …, hand). Menge = Betrag laut Tag (usd), Gebühr = Unterschied
 // zur Wallet: Einzahlung qty = Menge + Gebühr (aus der Wallet weg), Auszahlung qty = Menge − Gebühr (in der Wallet angekommen). tz 'at' = Uhrzeit
 // schon österreichisch. Rechnet wie eine Zeile aus den Tag-Daten.
-function saveTagHand(k,d,w,c,q){const fs0=$('cx-fee').value.trim(),fee=fs0?parseDe(fs0):0,tm=cxTimeIn(),note=$('cx-note').value.trim();
+async function saveTagHand(k,d,w,c,q){const fs0=$('cx-fee').value.trim(),fee=fs0?parseDe(fs0):0,tm=cxTimeIn(),note=$('cx-note').value.trim();
   // Ab 0.51 (2): Felder zusätzlich markiert
   const nd=(...L)=>needMark($('cx-form'),L.map(x=>[x,'']));
   const miss=[],ms=[];if(!d){miss.push('Datum');ms.push('#cx-date')}if(!(q>0)){miss.push('Menge');ms.push('#cx-qty')}if(miss.length){msg('cxmsg','bad','Es fehlt: '+miss.join(', ')+'. Trage es ein.');return nd(...ms)}
   if(!(fee>=0)){msg('cxmsg','bad','Gebühr: Das ist keine gültige Zahl. Schreibe z. B. 0,50 oder lass das Feld leer.');return nd('#cx-fee')}
   const ein=k==='tagein',qty=+(ein?q+fee:q-fee).toFixed(8);if(!(qty>0)){msg('cxmsg','bad','Die Gebühr ist nicht kleiner als die Menge. Prüfe die beiden Zahlen.');return nd('#cx-fee','#cx-qty')}
   if(!S.wallets.includes(w)){msg('cxmsg','bad','Wähle eine Wallet oder lege mit „+ Neue Wallet …“ eine an.');return nd('#cx-wallet')}
+  // Ab 0.57 Nachtrag: aus einer offenen Bewegung der Wallet-Datei (Punkt in „Noch offen“) wie bei jedem anderen Eintrag: die eigene Adresse geht ins
+  // Adressbuch (Rückfrage wie in addCx, eine vorläufige Wallet geht in der gewählten auf), die neue Tag-Zeile ist gleich mit der Bewegung verknüpft.
+  // Bisher entstand eine lose Tag-Zeile, die Bewegung blieb offen und die Datei ohne Wallet.
+  const wk=!EDIT_TAG&&CX_META&&CX_META.wk&&S.wtx[CX_META.wk]&&S.wtx[CX_META.wk].st==='open'?CX_META.wk:'',AS=wk?cxAddrPlan(k,w,''):[];
+  {const Q=AS.filter(x=>x.ask).map(x=>addrMvTxt(S,x.a,x.w));if(Q.length&&!(await askBox({title:'Adresse zuordnen',text:Q.join('\n\n'),ok:'Zuordnen'})))return}
+  for(const x of AS)addrAssign(S,x.a,x.w,addrOwnFor(x.a,x.w),()=>true);
   let id=EDIT_TAG;if(!id||!S.tag[id]){let n=1;while(S.tag['h'+n])n++;id='h'+n}
   const o=S.tag[id]||{},t=Object.assign(o,{id,hand:1,src:'hand',kind:ein?'ein':'aus',date:d,usd:q,qty,coin:c,wallet:w,status:'ok',own:o.own!=null?o.own:true,fiat:false,man:{q:1,c:1,w:1},chk:1});
   if(tm){t.time=tm;t.tz='at'}else{delete t.time;delete t.tz}if(note)t.note=note;else delete t.note;
-  S.tag[id]=t;const was=!!EDIT_TAG;wSync();save();
+  S.tag[id]=t;const was=!!EDIT_TAG;if(wk){wTagLink(wk,t,true);CX_META=null}wSync();save();
+  const pvTxt=AS.map(x=>` Die Adresse ${wShort(x.a)} gehört jetzt zu „${x.w}“.`).join('')+provMsg();
   if(CX_NEXT||CX_SESS.length){const tx=(ein?'Einzahlung zu Tag':'Auszahlung von Tag')+' '+fD(d)+', '+fmtNum(q)+' '+c;cxSessAdd('t:'+id,tx);cxNextReset();msg('cxmsg','ok',(was?'Gespeichert: ':'Eingetragen: ')+tx+'. Nächster Eintrag:');render();return true}
+  const tx=(was?'Gespeichert: ':'Eingetragen: ')+(ein?'Einzahlung zu Tag':'Auszahlung von Tag')+', '+fmtNum(q)+' '+c+(fee>0?' (Gebühr '+fmtNum(fee)+')':'')+'.'+pvTxt;
+  // Ab 0.57 Nachtrag: im Punkt von „Noch offen“ zurück zum Durchgang wie in addCx (bisher schloss das Speichern das ganze Fenster)
+  if(CX_EMB){cxEmbBack();endEdit();TD_KIND='';TD_DIRTY='';render();toast(tx,3500);return true}
   endEdit();closeModal();
-  render();toast((was?'Gespeichert: ':'Eingetragen: ')+(ein?'Einzahlung zu Tag':'Auszahlung von Tag')+', '+fmtNum(q)+' '+c+(fee>0?' (Gebühr '+fmtNum(fee)+')':'')+'.',3500);return true}
+  render();toast(tx,3500);return true}
 // Ab 0.56 (1): eigene Adresse oder Adresse der Börse beim Zuordnen aus einem Eintrag oder einer Tag-Zeile: nach der Art der Wallet (cpmOwn), eine
 // Adresse mit eingelesener Wallet-Datei bleibt eigene
 function addrOwnFor(a,w){const x=S.addr[a];return cpmOwn(a,w)||!!(x&&x.own&&(x.impN?Object.keys(x.impN).length>0:!!x.imp))}
@@ -7974,7 +7984,7 @@ async function addCx(){
   // Ab 0.51 (2): „+ Neue Wallet …“ ohne OK: das Namensfeld daneben (bisher wurde „+“ als Wallet gespeichert)
   {const wn=[['cx-wallet',w],['cx-to',to]].filter(([id,v])=>v==='+'&&(id==='cx-wallet'||F.to||F.to2)).map(([id])=>$(id).nextElementSibling).filter(x=>x&&x.classList.contains('wnew')).map(x=>x.querySelector('input'));
     if(wn.length){msg('cxmsg','','');return needMark($('cx-form'),wn.map((x,i)=>[x,i?'':'Gib der neuen Wallet einen Namen.']))}}
-  if(F.tag)return saveTagHand(k,d,w,c,q)===true;
+  if(F.tag)return (await saveTagHand(k,d,w,c,q))===true;
   // Ab 0.55 (1): Geschenk über den Baustein (giftCheck, gleich wie an der Tag-Zeile)
   const G=giftOf($('cx-gift')),GC=F.gift?giftCheck(G,d,false):null,gv=F.gift?giftRead(G):null;
   const unkp=!!F.gift&&gv.unkp,unkd=!!F.gift&&gv.unkd,gd=F.gift&&!unkd?gv.gd:'';
