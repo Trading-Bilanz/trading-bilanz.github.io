@@ -143,6 +143,9 @@ tr.sum td b,tr.gesamt td b,.tdbk tr.tdcur td b,.tdrund li.tdcur>.tdar b{font-wei
 .msg.info details{margin:8px 0 0}
 .msg.info summary{font-size:var(--fs-s)}
 .msg.info ol.chro{margin:6px 0;padding-left:20px}.msg.info ol.chro li{margin:2px 0}
+/* Ab 0.59 (2): Hinweis nach einem Sprung (chGo) leuchtet einmal auf, als Ring, weil er selbst eine Fläche hat */
+@keyframes hlring{0%,35%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 3px transparent}}
+#chainmsg .msg.hl{animation:hlring 2.2s ease-out}
 /* Spaltenzahl der Kacheln (5, 4 oder 2) und ggf. kleinere Schrift der Werte setzt layoutTiles() nach gemessenen Breiten.
    .tile>.v: nur der Kachelwert selbst, nicht verschachtelte .v (z. B. aus sw()) */
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px}
@@ -2546,22 +2549,33 @@ const INV_WHY={nofac:'Der Trading Benefit fehlt. Wähle ihn im Reiter „Reports
 function invKey(accs){const L=[...new Set(accs)].filter(a=>S.accounts[a]&&INV[a]&&INV[a]!=='ok').sort();if(!L.length)return '';
   const k='inv-'+L.join('-'),nf=L.some(a=>INV[a]==='nofac');
   GL[k]={t:L.every(a=>INV[a]==='nofac')?'Trading Benefit fehlt':'Investition unbekannt',
-    h:['Ohne deine Investition kann das Tool hier keine Rendite berechnen.',...L.map(a=>`<b>Konto ${a}:</b> ${INV_WHY[INV[a]]||''}`),nf?TB_GO:''].filter(Boolean).join('\n')};
+    // Ab 0.59 (2): Lücke, Anfang fehlt und Invested passt nicht mit einem Knopf je Konto zum Hinweis im Reiter Reports (chGo)
+    h:['Ohne deine Investition kann das Tool hier keine Rendite berechnen.',...L.flatMap(a=>{const g=CH_GO[INV[a]];return [`<b>Konto ${a}:</b> ${INV_WHY[INV[a]]||''}`,g?`<button type="button" class="btn" data-chgo="${g[0]}|${a}">${g[1]}</button>`:'']}),nf?TB_GO:''].filter(Boolean).join('\n')};
   return k}
 const TB_GO='<button type="button" class="btn" data-tbgo>Zu „Deine Konten“</button>';
+const CH_GO={gap:['gap','Zur Lücke'],nostart:['start','Zum Hinweis'],bad:['bad','Zum Hinweis']};
 // „–“ als Begriff, wenn die Investition fehlt (sonst ein normaler Strich)
 function invDash(accs){const k=invKey(accs);return k?gl(k,'–'):'–'}
 // Text, wenn die Investition der Konten accs unbekannt ist: fehlender Trading Benefit zuerst, sonst „Investition unbekannt“, beides als Begriff
 function invMissTxt(accs){const k=invKey(accs);return k?gl(k,accs.some(a=>INV[a]==='nofac')?'Trading Benefit fehlt':'Investition unbekannt'):''}
 // Investition in USD, ohne Wert der Begriff (invDash)
 const invU=(v,accs)=>v==null?invDash(accs):usd(v);
-// Ab 0.58 (4): Sprung zur ersten Zeile ohne Trading Benefit in „Deine Konten“ (Reiter Reports): Karte aufklappen, unter die stehenden Köpfe
-// scrollen, Fokus in die Auswahl, die Zeile leuchtet einmal auf (wie jumpTo)
-function tbGo(){glClose();closeFpanel();const c=$('acc-card');S.ui.tab='reports';unfold(c);save();render();
-  const L=[...$('acc-table').querySelectorAll('select[data-fac]')],s=L.find(x=>!x.value)||L[0];if(!s)return;
-  const row=s.closest('tr'),top=document.querySelector('nav').getBoundingClientRect().height+c.querySelector('.sthd').getBoundingClientRect().height;
-  window.scrollBy(0,row.getBoundingClientRect().top-top-8);s.focus({preventScroll:true});row.classList.remove('hl');void row.offsetWidth;row.classList.add('hl')}
-document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-tbgo]')){e.preventDefault();tbGo()}});
+// Ab 0.59 (2): gemeinsamer Sprung in den Reiter Reports: Karte c aufklappen, neu zeichnen, das Element aus find() unter Reiter und stehenden
+// Kartentitel scrollen und einmal aufleuchten lassen (wie jumpTo). Rückgabe: das Element oder null.
+function goUnder(c,find){glClose();closeFpanel();S.ui.tab='reports';unfold(c);save();render();const el=find();if(!el)return null;
+  const top=document.querySelector('nav').getBoundingClientRect().height+c.querySelector('.sthd').getBoundingClientRect().height;
+  window.scrollBy(0,el.getBoundingClientRect().top-top-8);el.classList.remove('hl');void el.offsetWidth;el.classList.add('hl');return el}
+// Ab 0.58 (4): Sprung zur ersten Zeile ohne Trading Benefit in „Deine Konten“, Fokus in ihre Auswahl
+function tbGo(){const row=goUnder($('acc-card'),()=>{const L=[...$('acc-table').querySelectorAll('select[data-fac]')],s=L.find(x=>!x.value)||L[0];return s?s.closest('tr'):null});
+  if(row){const L=[...row.querySelectorAll('select[data-fac]')];if(L[0])L[0].focus({preventScroll:true})}}
+// Ab 0.59 (2): Sprung zum Hinweis eines Kontos unter „MT5-Reports laden“. k = 'gap' (Lücke, zeigt ausgeblendete wieder, wie der Link „Lücke“),
+// 'start' (Anfang fehlt, nimmt „Absichtlich so“ zurück, wie der Link „Anfang fehlt“), 'bad' (wie 'start', Notlösung offen, Fokus ins Feld „Invested“).
+// Die Links in „Deine Konten“ (data-chl, data-chs) nutzen denselben Weg.
+function chGo(k,a){const A=S.accounts[a];if(!A)return;if(k==='gap')A.gapOk=[];else{A.partialOk=false;CH_OPEN.add(a)}
+  const m=goUnder(document.querySelector('[data-fold="rp-load"]'),()=>document.querySelector(`#chainmsg [data-${k==='gap'?'chgap':'cha'}="${a}"]`));
+  if(m&&k==='bad'){const i=m.querySelector(`[data-chi="${a}"]`);if(i)i.focus({preventScroll:true})}}
+document.addEventListener('click',e=>{if(!e.target.closest)return;if(e.target.closest('[data-tbgo]')){e.preventDefault();tbGo();return}
+  const g=e.target.closest('[data-chgo]');if(g){e.preventDefault();const [k,a]=g.dataset.chgo.split('|');chGo(k,a)}});
 // Grund in den längeren Texten (Grafik, Rechner): Lücke oder fehlender Anfang
 function invWhy(accs,start){return accs.some(a=>INV[a]==='gap')?'in einem Report Buchungen fehlen':start}
 // Setzt an jedem Trade: exU/exE = Betrag nach Abzug der anteiligen Performance Fee (USD/EUR), pfE = anteilige PF in EUR,
@@ -8600,8 +8614,9 @@ function renderAccounts(rows){
   $('acc-table').querySelectorAll('[data-name]').forEach(i=>i.onchange=()=>{S.accounts[i.dataset.name].name=i.value.trim();save();renderKeepFocus()});
   $('acc-table').querySelectorAll('[data-fac]').forEach(i=>i.onchange=()=>{if(i.value==='x'){facOpen(i);return}facShut(i);S.accounts[i.dataset.fac].factor=i.value?+i.value:null;save();renderKeepFocus()});
   $('acc-table').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>accX(b.dataset.del));
-  $('acc-table').querySelectorAll('[data-chs]').forEach(b=>b.onclick=()=>{const a=b.dataset.chs;S.accounts[a].partialOk=false;CH_OPEN.add(a);save();render();const m=document.querySelector(`#chainmsg [data-cha="${a}"]`);if(m)scrollUnder(m)});
-  $('acc-table').querySelectorAll('[data-chl]').forEach(b=>b.onclick=()=>{const a=b.dataset.chl;S.accounts[a].gapOk=[];save();render();const m=document.querySelector(`#chainmsg [data-chgap="${a}"]`);if(m)scrollUnder(m)});
+  // Ab 0.59 (2): über chGo (derselbe Weg wie die Knöpfe im Begriff zum „–“)
+  $('acc-table').querySelectorAll('[data-chs]').forEach(b=>b.onclick=()=>{const a=b.dataset.chs;chGo(INV[a]==='bad'?'bad':'start',a)});
+  $('acc-table').querySelectorAll('[data-chl]').forEach(b=>b.onclick=()=>chGo('gap',b.dataset.chl));
   hcFix($('acc-card'));
   // Ab 0.58 (5): offenes Menü „für alle ▾“ bleibt am neu gezeichneten Knopf (ohne zweites Konto gibt es ihn nicht mehr)
   if(FP_OPEN==='tb'){if(facAllBtn()){$('fb-tb').setAttribute('aria-expanded','true');fpFit()}else closeFpanel()}
@@ -8687,7 +8702,7 @@ function renderChain(){
       h+=`<div class="msg info" data-chgap="${a}"><b>Konto ${a}: Fehlt etwas dazwischen?</b> ${txt} Vermutlich fehlt dort ein Report. Lade einen Report, der diesen Zeitraum enthält, am einfachsten mit „Ganze Historie“. Bis dahin zeigt das Tool für dieses Konto keine Investition und keine Rendite, weil sonst eine fehlende Einzahlung die Rendite zu hoch machen würde. Tage ohne Buchung sind keine Lücke, nur fehlende Buchungen.
         <div class="row">${hb}<button type="button" class="btn" data-chg="${a}|${gs.map(g=>esc(g.id)).join(',')}">Ausblenden</button></div>
         <details data-chr="${a}"${CHR_OPEN.has(a)?' open':''}><summary>Du bist sicher, dass nichts fehlt?</summary>
-          <ol class="chro"><li>Speichere den Report in MetaTrader 5 neu („Ganze Historie“) und lade ihn im Reiter „Reports“.</li><li>Hilft das nicht: Klicke auf „Buchungen neu einlesen“ und lade den Report danach noch einmal. Name, Trading Benefit und Invested bleiben.</li></ol>
+          <ol class="chro"><li>Speichere den Report in MetaTrader 5 neu („Ganze Historie“) und ziehe ihn ins Tool, oder wähle ihn oben bei „MT5-Reports laden“ aus.</li><li>Hilft das nicht: Klicke auf „Buchungen neu einlesen“ und lade den Report danach noch einmal. Name, Trading Benefit und Invested bleiben.</li></ol>
           <div class="row"><button type="button" class="btn" data-chre="${a}">Buchungen neu einlesen</button></div></details></div>`}
   }
   // Kontrollrechnung Performance Fee (pfCheck): ein Hinweis für alle Konten, „Ausblenden“ merkt sich die gezeigten Fälle in S.pfOk
@@ -8717,6 +8732,7 @@ $('chainmsg').addEventListener('click',e=>{const t=e.target;
   const re=t.closest('[data-chre]');if(re){accReload(re.dataset.chre);return}
   const ap=t.closest('[data-chap]');if(ap)applyInvNow(ap.dataset.chap)});
 $('chainmsg').addEventListener('keydown',e=>{const i=e.target.closest('[data-chi]');if(i&&e.key==='Enter'){e.preventDefault();applyInvNow(i.dataset.chi)}});
+$('chainmsg').addEventListener('animationend',e=>{const m=e.target.closest&&e.target.closest('.msg.hl');if(m)m.classList.remove('hl')});
 $('chainmsg').addEventListener('toggle',e=>{const d=e.target.closest&&e.target.closest('[data-chd]');if(d){if(d.open)CH_OPEN.add(d.dataset.chd);else CH_OPEN.delete(d.dataset.chd)}
   const r=e.target.closest&&e.target.closest('[data-chr]');if(r){if(r.open)CHR_OPEN.add(r.dataset.chr);else CHR_OPEN.delete(r.dataset.chr)}},true);
 function renderMap(){
@@ -10511,7 +10527,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   try{const j=JSON.parse(await readText(f));if(!j.deals||!j.accounts)throw new Error(`„${f.name}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`);S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';save();msg('datamsg','ok',`Sicherung geladen: ${Object.keys(S.accounts).length} Konten, ${Object.keys(S.deals).length} Buchungen.`);render()}catch(err){msg('datamsg','bad','Datei konnte nicht geladen werden: '+esc(err.message))}e.target.value=''};
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();msg('datamsg','ok','Alles gelöscht.');render()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.58',VDATE='27.10.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.59',VDATE='27.10.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
