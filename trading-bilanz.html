@@ -4448,8 +4448,11 @@ function vgJump(ref){const t=ref[0],x=ref.slice(2),v=vgBuild(S).find(v=>t==='m'?
   VG_OPEN.add(v.id);if(vgSeen(v))save();closeFpanel();const c=$('vg-card');if(c.classList.contains('closed'))unfold(c);render();
   const row=c.querySelector(`[data-vg="${CSS.escape(v.id)}"]`);if(!row)return;
   const el=(t==='m'&&row.querySelector(`[data-wk="${CSS.escape(x)}"]`))||row.querySelector('.vgb')||row;
-  const top=document.querySelector('nav').getBoundingClientRect().height+c.querySelector('.sthd').getBoundingClientRect().height;
-  window.scrollBy(0,el.getBoundingClientRect().top-top-4);
+  // Ab 0.57: der Vorgang steht mittig im freien Bereich unter Leiste und stehendem Titel (vorher ganz oben, dort wirkte er verdeckt).
+  // Ist er höher als der freie Bereich, steht sein Anfang oben. Zweiter Durchgang im nächsten Bild, falls Leiste oder Titel (z. B. „← Zurück“) sich noch ändern.
+  const mid=()=>{const top=document.querySelector('nav').getBoundingClientRect().height+c.querySelector('.sthd').getBoundingClientRect().height,
+    r=el.getBoundingClientRect(),free=innerHeight-top;window.scrollBy(0,r.height>free-16?r.top-top-8:r.top+r.height/2-(top+free/2))};
+  mid();requestAnimationFrame(mid);
   el.classList.remove('hl');void el.offsetWidth;el.classList.add('hl')}
 const wJump=k=>vgJump('m:'+k);
 const tagJump=id=>vgJump('t:'+id);
