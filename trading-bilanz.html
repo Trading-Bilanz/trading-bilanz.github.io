@@ -128,6 +128,9 @@ td.l,th.l{text-align:left}
 tr.sum td{font-weight:700;border-top:2px solid var(--ink2)}
 tr.sum2 td{font-size:var(--fs-xs);color:var(--ink2)}
 tr.gesamt td{background:var(--accent-soft);font-weight:600}
+/* Ab 0.58 (3): <b> nie fetter als 700 (der Browser macht sonst aus 600 oder 700 noch 900). In schon fetten Zeilen so fett wie die Zeile. */
+b,strong{font-weight:700}
+tr.sum td b,tr.gesamt td b,.tdbk tr.tdcur td b,.tdrund li.tdcur>.tdar b{font-weight:inherit}
 .scroll{overflow-x:auto}
 .neg{color:var(--neg)} .pos{color:var(--pos)}
 .msg{padding:10px 14px;border-radius:8px;margin:8px 0;font-size:14px}
@@ -139,6 +142,10 @@ tr.gesamt td{background:var(--accent-soft);font-weight:600}
 .msg.info .row{margin-top:8px}
 .msg.info details{margin:8px 0 0}
 .msg.info summary{font-size:var(--fs-s)}
+.msg.info ol.chro{margin:6px 0;padding-left:20px}.msg.info ol.chro li{margin:2px 0}
+/* Ab 0.59 (2): Hinweis nach einem Sprung (chGo) leuchtet einmal auf, als Ring, weil er selbst eine Fläche hat */
+@keyframes hlring{0%,35%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 3px transparent}}
+#chainmsg .msg.hl{animation:hlring 2.2s ease-out}
 /* Spaltenzahl der Kacheln (5, 4 oder 2) und ggf. kleinere Schrift der Werte setzt layoutTiles() nach gemessenen Breiten.
    .tile>.v: nur der Kachelwert selbst, nicht verschachtelte .v (z. B. aus sw()) */
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px}
@@ -667,6 +674,10 @@ button.cpb:hover{border-color:var(--accent);color:var(--accent)}
 #ask-box .mft{position:static;margin-top:14px}
 /* Ab 0.50 Nachtrag 4: drei Knöpfe passen am Handy nicht in eine Zeile: „Sicherung speichern“ oben in voller Breite, darunter die beiden anderen */
 @media (max-width:500px){#ask-btns.ask3>[data-ask="x"]{flex:1 1 100%}#ask-btns.ask3>[data-ask="1"],#ask-btns.ask3>[data-ask="0"]{flex:1 1 0}}
+/* Ab 0.58 (6): vier Knöpfe (Sicherung speichern · Buchungen neu einlesen · Konto entfernen · Abbrechen): am PC breiteres Fenster in einer Zeile,
+   am Handy die ersten beiden je in voller Breite, darunter die beiden anderen nebeneinander */
+#ask-box.ask4 .box{max-width:720px}
+@media (max-width:760px){#ask-btns.ask4>[data-ask="x"],#ask-btns.ask4>[data-ask="2"]{flex:1 1 100%}#ask-btns.ask4>[data-ask="1"],#ask-btns.ask4>[data-ask="0"]{flex:1 1 0}}
 #ask-body ul.asl{list-style:none;padding:0;margin:8px 0;max-height:50vh;overflow:auto}
 #ask-body ul.asl li{padding:4px 0;border-bottom:1px solid var(--line)}
 /* Ab 0.41: Gegenseite als Knopf (in „Alle Vorgänge“ und „Noch offen“), ab 0.54 öffnet er das kurze Feld */
@@ -901,6 +912,11 @@ button.chki:hover,button.chki:focus-visible{background:var(--bg)}
 #acc-table input[data-name]{width:100%}
 #acc-table td .sm.neg{color:var(--neg)}
 #acc-table button.zlink{font-size:var(--fs-xxs)}
+/* Ab 0.58 (5): Feld „andere Zahl …“ neben der Auswahl (wie .wnew), Menü „für alle ▾“; (4) Zeile ohne Trading Benefit leuchtet nach dem Sprung auf */
+.facx{display:inline-flex;gap:4px;margin:2px 0 2px 6px;vertical-align:middle}.facx input{width:9ch;text-align:right}
+#acc-table td .needt{white-space:normal;max-width:24ch}
+#fp-tb .fopt input[type=text]{margin-left:4px}.ftbm:empty{display:none}
+#acc-table tr.hl td{animation:hl 2.2s ease-out}
 /* Reiter Kurse (0.35): Stand als kleiner Kasten, darunter zwei Abschnitte mit Überschrift, getrennt durch eine feine Linie, dann „Notweg“.
    Abstände: groß vor jeder Überschrift (22 px), klein zwischen Überschrift und Inhalt, damit jeder Teil zu seiner Überschrift gehört. */
 #rt-stand .rst{width:fit-content;max-width:100%;margin:0;box-sizing:border-box}
@@ -1150,6 +1166,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <div class="card fold stk" data-fold="acc-card" id="acc-card">
     <div class="sthd"><h2>Deine Konten <button type="button" class="ib" data-gl="k-konten" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Deine Konten">i</button></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
     <div class="tscroll"><table id="acc-table"></table></div>
+    <!-- Ab 0.58 (5): Menü „für alle ▾“ im Spaltenkopf „Trading Benefit“ (Knopf in der Tabelle und in ihrer Kopie, siehe facAllBtn) -->
+    <span class="fdd noprint" id="fdd-tb"><span class="fpan" id="fp-tb" role="dialog" aria-label="Trading Benefit für alle Konten"></span></span>
   </div>
   <div id="next-reports" class="noprint"></div>
 </section>
@@ -1245,6 +1263,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <div id="stats-empty"></div>
     <!-- Hinweis, solange die Auswertung wegen fehlender Kurse in USD rechnet (CUR_MISS) -->
     <div id="cur-note" class="noprint"></div>
+    <!-- Ab 0.58 (4): Hinweis bei fehlendem Trading Benefit eines gewählten Kontos -->
+    <div id="tb-note" class="noprint"></div>
     <!-- ⓘ am Kartentitel (button.ib) und Begriffe (span.gl) öffnen Popups, Texte im Wörterbuch GL im Skript -->
     <div class="card fold ov stk" data-fold="st-ov" id="st-ov">
       <div class="sthd"><h2 class="hx">Überblick <button type="button" class="ib" data-gl="k-ov" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Überblick">i</button><span class="fdd wdd udd noprint" id="fdd-u1"><button type="button" class="btn h2btn" id="fb-u1" aria-expanded="false" aria-controls="fp-u1">Rendite ▾</button><div class="fpan" id="fp-u1" role="dialog" aria-label="Rendite oder Betrag"></div></span></h2></div>
@@ -2157,7 +2177,8 @@ function parseReport(text){
     else if(k==='firma'||k==='company')company=v;
     else if(k==='datum'||k==='date')repDate=v;
   });
-  const deals=[];
+  // Ab 0.58 (7): Kommission, Gebühr und Swap auch einzeln zusammengezählt, für den Abgleich mit der Summenzeile
+  const deals=[],sm={comm:0,fee:0,swap:0};
   doc.querySelectorAll('tr').forEach(tr=>{
     const tds=Array.from(tr.children).filter(c=>c.tagName==='TD'); const n=tds.length; if(n<13)return;
     const c=tds.map(td=>td.textContent.replace(/ /g,' ').trim());
@@ -2166,16 +2187,29 @@ function parseReport(text){
     const trade=(type==='buy'||type==='sell');
     if(trade && !/^(in|out|in\/out|out\/in|inout)$/.test(dir))return; // Zeilen aus der Positions-Tabelle
     if(!trade && (!type || !/^\d+$/.test(c[1])))return;
+    sm.comm+=num(c[n-6]);sm.fee+=num(c[n-5]);sm.swap+=num(c[n-4]);
     deals.push({id:c[1],t:c[0],sym:c[2],type,dir,cost:num(c[n-6])+num(c[n-5])+num(c[n-4]),prof:num(c[n-3]),bal:num(c[n-2]),cmt:trade?'':(c[n-1]||type)});
   });
-  // Summenzeile der Trades-Tabelle und Nettogewinn laut MT5
-  let tot=null,repNet=null;
+  // Summenzeile der Buchungen (Kommission, Gebühr, Swap, Gewinn, Kontostand) und aus „Results“ der Nettogewinn und die Zahl der Trades.
+  // Ab 0.58 (7): Beschriftung und Wert stehen nebeneinander, oft mehrere Paare in einer Zeile. Englisch und deutsch.
+  let tot=null,repNet=null,repTr=null;
   doc.querySelectorAll('tr').forEach(tr=>{const tds=Array.from(tr.children).filter(c=>c.tagName==='TD');
     if(tds.length>=6&&tds.length<=8&&tds[0].textContent.trim()===''&&(+tds[0].getAttribute('colspan')||0)>=6){const v=tds.slice(1).map(td=>td.textContent.replace(/ /g,' ').trim());if(v.slice(0,5).every(x=>/^-?[\d ]+\.\d\d$/.test(x)))tot={comm:num(v[0]),fee:num(v[1]),swap:num(v[2]),prof:num(v[3]),bal:num(v[4])}}
-    const c0=(tds[0]&&tds[0].textContent||'').trim();if(/^(Nettogewinn gesamt|Total Net Profit):?$/i.test(c0)&&tds[1])repNet=num(tds[1].textContent)});
+    for(let i=0;i+1<tds.length;i++){const k=tds[i].textContent.replace(/ /g,' ').trim().replace(/:$/,'');
+      if(/^(Nettogewinn gesamt|Total Net Profit)$/i.test(k))repNet=num(tds[i+1].textContent);
+      else if(/^(Total Trades|Trades gesamt|Trades insgesamt|Gesamtzahl der Trades)$/i.test(k))repTr=num(tds[i+1].textContent)}});
+  // Ab 0.58 (7): Abgleich je Zeile {l Name, g gelesen, r laut Report, ok, n = Anzahl statt USD}. Kontostand: der letzte Kontostand der Buchungen
+  // (nach Deal-Nummer wie chainCheck) gegen den der Summenzeile. Den Kontostand oben in „Balance“ vergleicht das Tool nicht: Er ist ein Stand
+  // beim Speichern und zeigt bei einem Trade, der gerade schließt, teils den Stand davor (an echten Reports gesehen). Der Nettogewinn rechnet MT5
+  // aus ungerundeten Beträgen, deshalb darf er je Trade-Buchung um einen halben Cent abweichen.
   let check=null;
-  if(tot){const sp=deals.reduce((a,x)=>a+x.prof,0);const trades=deals.filter(x=>x.type==='buy'||x.type==='sell');const sc=trades.reduce((a,x)=>a+x.cost,0);const net=trades.reduce((a,x)=>a+x.prof,0)+sc;
-    check={ok:Math.abs(sp-tot.prof)<0.015&&Math.abs(sc-(tot.comm+tot.fee+tot.swap))<0.015,sumProf:sp,repProf:tot.prof,net,repNet}}
+  if(tot){const trades=deals.filter(x=>x.type==='buy'||x.type==='sell');
+    const last=deals.slice().sort((p,q)=>(+p.id-+q.id)||(p.t<q.t?-1:p.t>q.t?1:0)).pop();
+    const L=[['Kommission',sm.comm,tot.comm],['Gebühr',sm.fee,tot.fee],['Swap',sm.swap,tot.swap],['Gewinn',deals.reduce((a,x)=>a+x.prof,0),tot.prof],['Kontostand',last?last.bal:0,tot.bal]].map(([l,g,r])=>({l,g,r,tol:0.015}));
+    if(repNet!=null)L.push({l:'Nettogewinn gesamt',g:trades.reduce((a,x)=>a+x.prof+x.cost,0),r:repNet,tol:0.015+0.005*trades.length});
+    if(repTr!=null)L.push({l:'Trades gesamt',g:trades.filter(x=>/out/.test(x.dir)).length,r:repTr,tol:0.5,n:1});
+    const rows=L.map(x=>{const o={l:x.l,g:+x.g.toFixed(2),r:x.r,ok:Math.abs(x.g-x.r)<x.tol};if(x.n)o.n=1;return o});
+    check={ok:rows.every(x=>x.ok),rows}}
   return {acc,cur,holder,company,repDate,deals,check};
 }
 // Ab 0.51 (6): Rückgabe {n (gelesene Reports), added, dup, upd} für den Toast beim Ziehen
@@ -2506,8 +2540,42 @@ function chainCheck(){
   }
   return out;
 }
-// Text, wenn die Investition der Konten accs unbekannt ist: fehlender Trading Benefit zuerst, sonst fehlender Anfang
-function invMissTxt(accs){return accs.some(a=>INV[a]==='nofac')?'Trading Benefit fehlt':'Investition unbekannt (siehe Reports)'}
+// Ab 0.58 (2, 4): Begriff zur unbekannten Investition der Konten accs (nur Konten mit INV ≠ 'ok' zählen). Ein Eintrag in GL je Kontengruppe,
+// bei jedem Aufruf neu geschrieben, damit Grund und Konto stimmen. Bei fehlendem Trading Benefit mit dem Knopf „Zu „Deine Konten““ (tbGo).
+const INV_WHY={nofac:'Der Trading Benefit fehlt. Wähle ihn im Reiter „Reports“ in „Deine Konten“.',
+  gap:'Zwischen zwei Buchungen fehlt etwas (Lücke). Lade einen Report, der diesen Zeitraum enthält, am einfachsten mit „Ganze Historie“.',
+  nostart:'Der Anfang fehlt: Der Report beginnt nicht mit deiner ersten Einzahlung. Lade einen Report mit „Ganze Historie“ oder trage im Reiter „Reports“ dein Invested ein.',
+  bad:'Dein eingetragenes Invested passt nicht zum Trading Benefit. Prüfe beides im Reiter „Reports“.'};
+function invKey(accs){const L=[...new Set(accs)].filter(a=>S.accounts[a]&&INV[a]&&INV[a]!=='ok').sort();if(!L.length)return '';
+  const k='inv-'+L.join('-'),nf=L.some(a=>INV[a]==='nofac');
+  GL[k]={t:L.every(a=>INV[a]==='nofac')?'Trading Benefit fehlt':'Investition unbekannt',
+    // Ab 0.59 (2): Lücke, Anfang fehlt und Invested passt nicht mit einem Knopf je Konto zum Hinweis im Reiter Reports (chGo)
+    h:['Ohne deine Investition kann das Tool hier keine Rendite berechnen.',...L.flatMap(a=>{const g=CH_GO[INV[a]];return [`<b>Konto ${a}:</b> ${INV_WHY[INV[a]]||''}`,g?`<button type="button" class="btn" data-chgo="${g[0]}|${a}">${g[1]}</button>`:'']}),nf?TB_GO:''].filter(Boolean).join('\n')};
+  return k}
+const TB_GO='<button type="button" class="btn" data-tbgo>Zu „Deine Konten“</button>';
+const CH_GO={gap:['gap','Zur Lücke'],nostart:['start','Zum Hinweis'],bad:['bad','Zum Hinweis']};
+// „–“ als Begriff, wenn die Investition fehlt (sonst ein normaler Strich)
+function invDash(accs){const k=invKey(accs);return k?gl(k,'–'):'–'}
+// Text, wenn die Investition der Konten accs unbekannt ist: fehlender Trading Benefit zuerst, sonst „Investition unbekannt“, beides als Begriff
+function invMissTxt(accs){const k=invKey(accs);return k?gl(k,accs.some(a=>INV[a]==='nofac')?'Trading Benefit fehlt':'Investition unbekannt'):''}
+// Investition in USD, ohne Wert der Begriff (invDash)
+const invU=(v,accs)=>v==null?invDash(accs):usd(v);
+// Ab 0.59 (2): gemeinsamer Sprung in den Reiter Reports: Karte c aufklappen, neu zeichnen, das Element aus find() unter Reiter und stehenden
+// Kartentitel scrollen und einmal aufleuchten lassen (wie jumpTo). Rückgabe: das Element oder null.
+function goUnder(c,find){glClose();closeFpanel();S.ui.tab='reports';unfold(c);save();render();const el=find();if(!el)return null;
+  const top=document.querySelector('nav').getBoundingClientRect().height+c.querySelector('.sthd').getBoundingClientRect().height;
+  window.scrollBy(0,el.getBoundingClientRect().top-top-8);el.classList.remove('hl');void el.offsetWidth;el.classList.add('hl');return el}
+// Ab 0.58 (4): Sprung zur ersten Zeile ohne Trading Benefit in „Deine Konten“, Fokus in ihre Auswahl
+function tbGo(){const row=goUnder($('acc-card'),()=>{const L=[...$('acc-table').querySelectorAll('select[data-fac]')],s=L.find(x=>!x.value)||L[0];return s?s.closest('tr'):null});
+  if(row){const L=[...row.querySelectorAll('select[data-fac]')];if(L[0])L[0].focus({preventScroll:true})}}
+// Ab 0.59 (2): Sprung zum Hinweis eines Kontos unter „MT5-Reports laden“. k = 'gap' (Lücke, zeigt ausgeblendete wieder, wie der Link „Lücke“),
+// 'start' (Anfang fehlt, nimmt „Absichtlich so“ zurück, wie der Link „Anfang fehlt“), 'bad' (wie 'start', Notlösung offen, Fokus ins Feld „Invested“).
+// Die Links in „Deine Konten“ (data-chl, data-chs) nutzen denselben Weg.
+function chGo(k,a){const A=S.accounts[a];if(!A)return;if(k==='gap')A.gapOk=[];else{A.partialOk=false;CH_OPEN.add(a)}
+  const m=goUnder(document.querySelector('[data-fold="rp-load"]'),()=>document.querySelector(`#chainmsg [data-${k==='gap'?'chgap':'cha'}="${a}"]`));
+  if(m&&k==='bad'){const i=m.querySelector(`[data-chi="${a}"]`);if(i)i.focus({preventScroll:true})}}
+document.addEventListener('click',e=>{if(!e.target.closest)return;if(e.target.closest('[data-tbgo]')){e.preventDefault();tbGo();return}
+  const g=e.target.closest('[data-chgo]');if(g){e.preventDefault();const [k,a]=g.dataset.chgo.split('|');chGo(k,a)}});
 // Grund in den längeren Texten (Grafik, Rechner): Lücke oder fehlender Anfang
 function invWhy(accs,start){return accs.some(a=>INV[a]==='gap')?'in einem Report Buchungen fehlen':start}
 // Setzt an jedem Trade: exU/exE = Betrag nach Abzug der anteiligen Performance Fee (USD/EUR), pfE = anteilige PF in EUR,
@@ -2680,8 +2748,10 @@ function maxDD(rows,scope,ex){
   for(const s of steps.values()){cum+=s.v;if(cum>peak)peak=cum;if(peak-cum>dd){dd=peak-cum;d=s.d}}
   return {v:-dd,d,n:steps.size,miss};
 }
-function ddHtml(o,empty,plain){
-  if(o.miss||o.n===0)return empty;
+// Ab 0.58 (2): fehlt die Investition, steht statt „–“ der Begriff dazu (invDash, Konten ma, sonst die gewählten MISS_SEL). Ein anderer Ersatztext bleibt.
+function ddHtml(o,empty,plain,ma){
+  if(o.miss)return empty==='–'?invDash(ma||MISS_SEL):empty;
+  if(o.n===0)return empty;
   const t=fR.format(o.v);
   return o.v<0&&!plain?`<span class="neg">${t}</span>`:t;
 }
@@ -2691,14 +2761,20 @@ function sw(v,n,g){return `<span class="sw"><span class="v">${v}</span><span cla
 // Zweite Zeile im Kopf wechselnder Spalten
 // Kleiner Text unten im Spaltenkopf, dazu die unsichtbare Kopie .smw, die seine Breite in der Spalte hält (siehe CSS .tscroll th>.sm)
 const smx=h=>`<span class="sm">${h}</span><span class="smw" aria-hidden="true">${h}</span>`;
-const SMH=smx('<span class="sw"><span class="v">vor PF</span><span class="n">nach PF</span></span>');
+// Ab 0.58 (1): Die Zusätze sind ein Begriff (pfst) und zeigen auf den PF-Schalter. Die unsichtbare Breitenkopie .smw bleibt reiner Text.
+const pfSw=(a,b,g)=>`<span class="sw"><span class="v">${g?gl('pfst',a):a}</span><span class="n">${g?gl('pfst',b):b}</span></span>`;
+const smPf=(a,b)=>`<span class="sm">${pfSw(a,b,1)}</span><span class="smw" aria-hidden="true">${pfSw(a,b)}</span>`;
+const SMH=smPf('vor PF','nach PF');
 // Zweite Zeile im Kopf von Performance Fee und Netto-Gewinn: PF laut MT5 (gebucht) oder PF verteilt (auf die Trades)
-const SMF=smx('<span class="sw"><span class="v">laut MT5</span><span class="n">verteilt</span></span>');
+const SMF=smPf('laut MT5','verteilt');
 // Leerer kleiner Text: Jeder Spaltenkopf hat einen, damit alle gleich aufgebaut sind
 const SM0='<span class="sm">&nbsp;</span>';
 // Rendite bzw. Max. Drawdown in beiden Stellungen
-const rtSw=(rows,sc,empty)=>sw(retHtml(retSum(rows,sc,false),empty),retHtml(retSum(rows,sc,true),empty));
-const ddSw=(rows,sc,empty)=>sw(ddHtml(maxDD(rows,sc,false),empty),ddHtml(maxDD(rows,sc,true),empty));
+// ma = Konten für den Begriff bei fehlender Investition (bei Scope 'own' das Konto), sonst die gewählten
+const rtSw=(rows,sc,empty,ma)=>sw(retHtml(retSum(rows,sc,false),empty,false,ma),retHtml(retSum(rows,sc,true),empty,false,ma));
+const ddSw=(rows,sc,empty,ma)=>sw(ddHtml(maxDD(rows,sc,false),empty,false,ma),ddHtml(maxDD(rows,sc,true),empty,false,ma));
+// Ab 0.58 (2): gewählte Konten der Auswertung (renderStats), für den Begriff zur fehlenden Investition
+let MISS_SEL=[];
 // Gewinn der Trades (in der Währung des Schalters) vor oder nach PF, wie res in agg()
 function sumTrades(rows,ex){
   let v=0;
@@ -5291,10 +5367,11 @@ let ASK=null;
 function askBox(o){if(typeof o==='string')o={text:o};return new Promise(res=>{const b=$('ask-box');if(ASK)ASK.done(false);
   $('ask-t').textContent=o.title||'Rückfrage';$('ask-body').innerHTML=o.html||`<p>${esc(o.text||'').replace(/\n\n/g,'</p><p>')}</p>`;
   // Ab 0.50 Nachtrag 4: o.more {t, fn(Knopf)}: dritter Knopf vorne (blau), der die Rückfrage offen lässt (z. B. „Sicherung speichern“)
-  $('ask-btns').innerHTML=`${o.more?`<button type="button" class="btn primary" data-ask="x">${esc(o.more.t)}</button>`:''}<button type="button" class="btn ${o.danger?'danger':'primary'}" data-ask="1">${esc(o.ok||'Ja')}</button><button type="button" class="btn" data-ask="0">${esc(o.no||'Abbrechen')}</button>`;$('ask-btns').classList.toggle('ask3',!!o.more);
+  // Ab 0.58 (6): o.alt = Text eines weiteren Wegs (grauer Knopf vor dem Hauptknopf), Ergebnis dann 'alt'
+  $('ask-btns').innerHTML=`${o.more?`<button type="button" class="btn primary" data-ask="x">${esc(o.more.t)}</button>`:''}${o.alt?`<button type="button" class="btn" data-ask="2">${esc(o.alt)}</button>`:''}<button type="button" class="btn ${o.danger?'danger':'primary'}" data-ask="1">${esc(o.ok||'Ja')}</button><button type="button" class="btn" data-ask="0">${esc(o.no||'Abbrechen')}</button>`;$('ask-btns').classList.toggle('ask3',!!o.more);$('ask-btns').classList.toggle('ask4',!!(o.more&&o.alt));$('ask-box').classList.toggle('ask4',!!(o.more&&o.alt));
   const prev=document.activeElement;ASK={esc:o.stay?null:false,more:o.more,done:v=>{b.classList.remove('on');ASK=null;if(prev&&prev.focus&&document.contains(prev))prev.focus({preventScroll:true});res(v)}};
   b.classList.add('on');b.querySelector(o.more?'[data-ask="x"]':'[data-ask="1"]').focus()})}
-$('ask-box').addEventListener('click',e=>{if(!ASK)return;const a=e.target.closest('[data-ask]');if(a){if(a.dataset.ask==='x'){if(ASK.more)ASK.more.fn(a);return}ASK.done(a.dataset.ask==='1')}else if(e.target===$('ask-box'))ASK.done(ASK.esc)});
+$('ask-box').addEventListener('click',e=>{if(!ASK)return;const a=e.target.closest('[data-ask]');if(a){if(a.dataset.ask==='x'){if(ASK.more)ASK.more.fn(a);return}ASK.done(a.dataset.ask==='2'?'alt':a.dataset.ask==='1')}else if(e.target===$('ask-box'))ASK.done(ASK.esc)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ASK){e.preventDefault();e.stopPropagation();ASK.done(ASK.esc)}},true);
 /* ---------------- Ab 0.51 (2, Regel 14): Pflichtfelder im Reiter Wallet ----------------
    Der Hauptknopf ist nie gesperrt, weil etwas fehlt. Ein Klick prüft und ruft needMark(root, list) mit den fehlenden Feldern auf:
@@ -8028,7 +8105,7 @@ function exportXlsx(year){
   const wk=[[X.B('KW'),X.B('von'),X.B('bis'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B('Steuerpflichtig'),X.B('Gewinnauszahlungen')]];
   for(const w of [...new Set(R.map(r=>r.wk))].sort()){const rr=R.filter(r=>r.wk===w);const z=agg(rr);wk.push([isoWeek(w),X.D(w),X.D(addDays(w,6)),positions(rr).length,X.E(z.res),X.E(z.fee),X.E(z.tax),X.E(z.pw)])}
   const ko=[[X.B('Konto'),X.B('Name'),X.B('Inhaberin laut Report'),X.B('Broker'),X.B('Währung'),X.B('Trading Benefit'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B('Steuerpflichtig'),X.B('Gewinnauszahlungen'),X.B('Bester Trade'),X.B('Schlechtester Trade')]];
-  for(const a of accs){const ra=R.filter(r=>r.a===a);const z=agg(ra);const ts=tradeStats(ra.filter(r=>r.cat==='close'),'eur');const A=S.accounts[a];ko.push([a,A.name||'',A.holder||'',A.company||'',A.cur,A.factor?'×'+A.factor:'',ts.n,X.E(z.res),X.E(z.fee),X.E(z.tax),X.E(z.pw),ts.best?X.E(ts.best.eur):'',ts.worst?X.E(ts.worst.eur):''])}
+  for(const a of accs){const ra=R.filter(r=>r.a===a);const z=agg(ra);const ts=tradeStats(ra.filter(r=>r.cat==='close'),'eur');const A=S.accounts[a];ko.push([a,A.name||'',A.holder||'',A.company||'',A.cur,A.factor?facT(A.factor):'',ts.n,X.E(z.res),X.E(z.fee),X.E(z.tax),X.E(z.pw),ts.best?X.E(ts.best.eur):'',ts.worst?X.E(ts.worst.eur):''])}
   const P=positions(R).sort((a,b)=>a.t<b.t?-1:1);
   const tr=[[X.B('Schließzeit (Server)'),X.B('Datum'),X.B('Symbol'),X.B('Konten'),X.B('Ergebnis gesamt EUR'),...accs.map(a=>X.B('Konto '+a))]];
   for(const p of P)tr.push([p.t,X.D(p.d),p.sym,p.accs,X.E(p.eur),...accs.map(a=>p.by[a]!=null?X.E(p.by[a]):'')]);
@@ -8483,12 +8560,34 @@ function accDelTxt(a){const A=S.accounts[a]||{},rs=(window.__rows||[]).filter(r=
   return `Konto ${a}${A.name?` „${A.name}“`:''} entfernen?\n\n`+[n?`Dabei ${n===1?`fällt 1 Buchung vom ${fD(rs[0].d)}`:`fallen ${fI.format(n)} Buchungen vom ${fD(rs[0].d)} bis ${fD(rs[n-1].d)}`} weg.`:'',
     own.length?`Auch ${and(own)}, ${own.length===1?'den':'die'} du eingetragen hast, ${own.length===1?'fällt':'fallen'} weg.`:'','Auswertung und Steuer rechnen danach ohne dieses Konto.',
     `Lädst du den Report wieder, kommen die Buchungen zurück${own.length?`, ${own.length===1?own[0]:and(own.map(x=>x.slice(4)))} nicht`:''}.`].filter(Boolean).join(' ')}
+// Ab 0.58 (6): × am Konto fragt nach dem Weg: „Buchungen neu einlesen“ (Konto bleibt), „Konto entfernen“ (Text aus accDelTxt) oder „Abbrechen“
+const and2=L=>L.length>1?L.slice(0,-1).join(', ')+' und '+L[L.length-1]:L[0]||'';
+const accNo=a=>{const A=S.accounts[a]||{};return `Konto ${a}${A.name?` „${A.name}“`:''}`};
+const accDealN=a=>Object.values(S.deals).filter(x=>x.a===a).length;
+async function accX(a){const n=accDealN(a);
+  const t=n?`${accNo(a)}: Was möchtest du tun?\n\n„Buchungen neu einlesen“ löscht nur die Buchungen. Das Konto bleibt mit Name, Trading Benefit und Invested stehen, danach lädst du den Report noch einmal. „Konto entfernen“ löscht das ganze Konto.\n\n`+accDelTxt(a).split('\n\n').slice(1).join('\n\n').replace(/^Dabei /,'Beim Entfernen '):accDelTxt(a);
+  const v=await askBox({title:n?'Konto entfernen oder neu einlesen':'Konto entfernen',text:t,ok:'Konto entfernen',danger:true,more:ASK_BK,alt:n?'Buchungen neu einlesen':''});
+  if(v==='alt')return accReload(a);
+  if(!v)return;delete S.accounts[a];for(const k of Object.keys(S.deals))if(S.deals[k].a===a)delete S.deals[k];S.ui.flt.off=S.ui.flt.off.filter(x=>x!==a);save();render()}
+// Ab 0.58 (6): „Buchungen neu einlesen“: löscht nur die Buchungen des Kontos. Name, Trading Benefit, Invested (invNow) und „Absichtlich so“ bleiben,
+// Abgleich, Report-Datum und ausgeblendete Lücken (gapOk) fallen weg. Danach die Bitte, den Report zu laden, und Toast mit „Rückgängig“.
+async function accReload(a){const n=accDealN(a);if(!S.accounts[a]||!n)return;
+  if(!(await askBox({title:'Buchungen neu einlesen',text:`${n===1?'Die Buchung':`Alle ${fI.format(n)} Buchungen`} von ${accNo(a)} löschen?\n\nName, Trading Benefit und Invested bleiben. Danach lädst du den Report von Konto ${a} noch einmal.`,ok:n===1?'Buchung löschen':'Buchungen löschen',danger:true,more:ASK_BK})))return;
+  const A=S.accounts[a];if(!A)return;const snap=JSON.stringify(S);
+  for(const k of Object.keys(S.deals))if(S.deals[k].a===a)delete S.deals[k];
+  delete A.check;delete A.gapOk;A.repDate='';save();render();
+  unfold(document.querySelector('[data-fold="rp-load"]'));msg('loadmsg','info',`Lade jetzt den Report von Konto ${a}.`);
+  {const m=$('loadmsg'),r=m.getBoundingClientRect(),top=document.querySelector('nav').getBoundingClientRect().bottom;if(r.top<top||r.bottom>innerHeight)scrollUnder(m)}
+  toastUndo(n===1?`1 Buchung von Konto ${a} gelöscht.`:`${fI.format(n)} Buchungen von Konto ${a} gelöscht.`,snap,()=>msg('loadmsg','',''))}
+// Ab 0.58 (5): Trading Benefit als Text mit Komma („×12,5“), überall wo er steht (auch Excel)
+const facT=f=>'×'+String(+f).replace('.',',');
+const FAC_STD=[1,12,24];
 // Karte „Deine Konten“ (aufgebaut wie die Auswertung, stehender Kopf über hcFix). Alles ohne Umbruch, den freien Platz bekommt „Name“.
 function renderAccounts(rows){
   const accs=Object.keys(S.accounts).sort();
   if(!accs.length){$('acc-card').style.display='none';return}
   $('acc-card').style.display='';
-  let h=`<tr><th>Konto${SM0}</th><th class="nm">Name${smx('frei wählbar')}</th><th>${gl('invk','Investition')}${SM0}</th><th>${gl('tb','Trading Benefit')}${SM0}</th><th>Zeitraum${SM0}</th><th>Buchungen${SM0}</th><th>${gl('repvom','Report vom')}${SM0}</th><th>${gl('abgl','Abgleich')}${smx('mit Report')}</th><th>${SM0}</th></tr>`;
+  let h=`<tr><th>Konto${SM0}</th><th class="nm">Name${smx('frei wählbar')}</th><th>${gl('invk','Investition')}${SM0}</th><th>${gl('tb','Trading Benefit')}${accs.length>1?smx('<button type="button" class="zlink facall" aria-expanded="false" aria-controls="fp-tb">für alle ▾</button>'):SM0}</th><th>Zeitraum${SM0}</th><th>Buchungen${SM0}</th><th>${gl('repvom','Report vom')}${SM0}</th><th>${gl('abgl','Abgleich')}${smx('mit Report')}</th><th>${SM0}</th></tr>`;
   for(const a of accs){
     const A=S.accounts[a];const rs=rows.filter(r=>r.a===a);
     const f=A.factor,st=INV[a],cap=CAP(a,'9999');
@@ -8502,21 +8601,25 @@ function renderAccounts(rows){
     else if(st==='nostart'||st==='bad')inv+=`<span class="sm"><button type="button" class="zlink" data-chs="${a}">${st==='bad'?'Invested passt nicht':'Anfang fehlt'}</button></span>`;
     const rd=repDay(a),tm=String(A.repDate||'').slice(11,16);
     const rep=rd?dS(rd)+(/^\d\d:\d\d$/.test(tm)?`<span class="sm">${tm}</span>`:''):esc(A.repDate||'');
-    const chk=A.check?(A.check.ok?'<span class="chk-ok">✓ stimmt</span>':`<span class="chk-bad">⚠ Abweichung</span><span class="sm">gelesen ${fN.format(A.check.sumProf)} USD<br>im Report ${fN.format(A.check.repProf)} USD</span>`):'–';
+    // Ab 0.58 (7): je Zeile, die nicht passt, Name, gelesen und laut Report (Stände vor 0.58: nur die Summe der Spalte Gewinn)
+    const chk=A.check?(A.check.ok?'<span class="chk-ok">✓ stimmt</span>':`<span class="chk-bad">⚠ Abweichung</span>`+(A.check.rows||[{l:'Gewinn',g:A.check.sumProf,r:A.check.repProf}]).filter(x=>!x.ok).map(x=>{const v=y=>x.n?fI.format(y):fN.format(y)+' USD';return `<span class="sm">${x.l}<br>gelesen ${v(x.g)}<br>im Report ${v(x.r)}</span>`}).join('')):'–';
     h+=`<tr><td>${a}${hold}${cur}</td>
     <td><input type="text" data-name="${a}" value="${esc(A.name)}" placeholder="z. B. Hauptkonto" aria-label="Name für Konto ${a}" style="min-width:${Math.min(24,Math.max(10,(A.name||'').length+2))}ch"></td>
     <td>${inv}</td>
-    <td><select data-fac="${a}" aria-label="Trading Benefit von Konto ${a}"><option value="">–</option>${[1,12,24].map(v=>`<option value="${v}" ${f==v?'selected':''}>×${v}</option>`).join('')}</select>${f?'':' <span class="small" style="color:var(--neg)">fehlt</span>'}</td>
+    <td><select data-fac="${a}" aria-label="Trading Benefit von Konto ${a}"><option value="">–</option>${[...new Set([...FAC_STD,...(f>0?[f]:[])])].sort((x,y)=>x-y).map(v=>`<option value="${v}" ${f==v?'selected':''}>${facT(v)}</option>`).join('')}<option value="x">andere Zahl …</option></select>${f?'':' <span class="small" style="color:var(--neg)">fehlt</span>'}</td>
     <td>${rs.length?dS(rs[0].d)+DS+dS(rs[rs.length-1].d):''}</td><td>${fI.format(rs.length)}</td><td>${rep}</td><td>${chk}</td>
     <td><button class="btn danger" data-del="${a}" title="Konto entfernen" aria-label="Konto ${a} entfernen">×</button></td></tr>`;
   }
   $('acc-table').innerHTML=h;
   $('acc-table').querySelectorAll('[data-name]').forEach(i=>i.onchange=()=>{S.accounts[i.dataset.name].name=i.value.trim();save();renderKeepFocus()});
-  $('acc-table').querySelectorAll('[data-fac]').forEach(i=>i.onchange=()=>{S.accounts[i.dataset.fac].factor=i.value?+i.value:null;save();renderKeepFocus()});
-  $('acc-table').querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{const a=b.dataset.del;if(!(await askBox({title:'Konto entfernen',text:accDelTxt(a),ok:'Entfernen',danger:true,more:ASK_BK})))return;delete S.accounts[a];for(const k of Object.keys(S.deals))if(S.deals[k].a===a)delete S.deals[k];S.ui.flt.off=S.ui.flt.off.filter(x=>x!==a);save();render()});
-  $('acc-table').querySelectorAll('[data-chs]').forEach(b=>b.onclick=()=>{const a=b.dataset.chs;S.accounts[a].partialOk=false;CH_OPEN.add(a);save();render();const m=document.querySelector(`#chainmsg [data-cha="${a}"]`);if(m)scrollUnder(m)});
-  $('acc-table').querySelectorAll('[data-chl]').forEach(b=>b.onclick=()=>{const a=b.dataset.chl;S.accounts[a].gapOk=[];save();render();const m=document.querySelector(`#chainmsg [data-chgap="${a}"]`);if(m)scrollUnder(m)});
+  $('acc-table').querySelectorAll('[data-fac]').forEach(i=>i.onchange=()=>{if(i.value==='x'){facOpen(i);return}facShut(i);S.accounts[i.dataset.fac].factor=i.value?+i.value:null;save();renderKeepFocus()});
+  $('acc-table').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>accX(b.dataset.del));
+  // Ab 0.59 (2): über chGo (derselbe Weg wie die Knöpfe im Begriff zum „–“)
+  $('acc-table').querySelectorAll('[data-chs]').forEach(b=>b.onclick=()=>{const a=b.dataset.chs;chGo(INV[a]==='bad'?'bad':'start',a)});
+  $('acc-table').querySelectorAll('[data-chl]').forEach(b=>b.onclick=()=>chGo('gap',b.dataset.chl));
   hcFix($('acc-card'));
+  // Ab 0.58 (5): offenes Menü „für alle ▾“ bleibt am neu gezeichneten Knopf (ohne zweites Konto gibt es ihn nicht mehr)
+  if(FP_OPEN==='tb'){if(facAllBtn()){$('fb-tb').setAttribute('aria-expanded','true');fpFit()}else closeFpanel()}
 }
 // „Deine Konten“: Passt die Tabelle nicht in die Karte, wird der Name aus dem Report (unter der Kontonummer) zweizeilig, geteilt am
 // Leerzeichen nahe der Mitte. Reicht auch das nicht (Handy), scrollt die Tabelle seitlich, die erste Spalte bleibt stehen.
@@ -8528,6 +8631,39 @@ function fitKonten(){
   for(const e of hs){const s=e.dataset.h,m=s.length/2;let b=-1;for(let i=0;i<s.length;i++)if(s[i]===' '&&(b<0||Math.abs(i-m)<Math.abs(b-m)))b=i;
     if(b>0)e.innerHTML=esc(s.slice(0,b))+'<br>'+esc(s.slice(b+1))}
 }
+/* ---------------- Ab 0.58 (5): Trading Benefit frei eingeben und „für alle“ ----------------
+   „andere Zahl …“ in der Auswahl: daneben ein Zahlenfeld mit OK (wie „+ Neue Wallet …“). Erlaubt ist eine Zahl über 0, auch mit Komma.
+   Enter = OK, Esc = zurück zur vorigen Wahl, leer oder ungültig = Pflichtfeld (needMark). */
+function facOpen(sel){const a=sel.dataset.fac,f=(S.accounts[a]||{}).factor;let w=sel.nextElementSibling;
+  if(!w||!w.classList.contains('facx')){sel.insertAdjacentHTML('afterend',`<span class="facx"><input type="text" inputmode="decimal" data-facv="${a}" value="${f>0&&!FAC_STD.includes(f)?String(f).replace('.',','):''}" placeholder="z. B. 12,5" aria-label="Trading Benefit von Konto ${a}"><button type="button" class="btn primary" data-facok="${a}">OK</button></span>`);w=sel.nextElementSibling}
+  w.querySelector('input').focus();hcFix($('acc-card'))}
+function facShut(sel){const w=sel.nextElementSibling;if(w&&w.classList.contains('facx')){needReset(w.parentNode);w.remove();hcFix($('acc-card'))}}
+function facOk(a){const i=document.querySelector(`#acc-table [data-facv="${a}"]`);if(!i)return;const v=parseDe(i.value);
+  if(!(v>0))return needMark(i.closest('td'),[[i,i.value.trim()?'Das ist keine gültige Zahl. Schreibe eine Zahl über 0, z. B. 12,5.':'Gib den Trading Benefit ein, z. B. 12,5.']]);
+  S.accounts[a].factor=+v.toFixed(6);save();render();const s=document.querySelector(`#acc-table select[data-fac="${a}"]`);if(s)s.focus()}
+$('acc-table').addEventListener('click',e=>{const b=e.target.closest('[data-facok]');if(b)facOk(b.dataset.facok)});
+$('acc-table').addEventListener('keydown',e=>{const i=e.target.closest('[data-facv]');if(!i)return;
+  if(e.key==='Enter'){e.preventDefault();facOk(i.dataset.facv)}
+  else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();const s=i.closest('td').querySelector('select[data-fac]'),f=(S.accounts[i.dataset.facv]||{}).factor;s.value=f>0?String(f):'';facShut(s);s.focus()}});
+$('acc-table').addEventListener('animationend',e=>{const tr=e.target.closest('tr.hl');if(tr)tr.classList.remove('hl')});
+// „für alle ▾“ im Spaltenkopf (auch in der stehenden Kopie): Menü fp-tb wie die Menüs im Kartentitel (openFpanel, popPlace, × oben rechts).
+// Der Knopf, der gerade zu sehen ist, bekommt die id fb-tb. Werte ×1, ×12, ×24 oder eine eigene Zahl, für Konten ohne Wert (Vorgabe) oder alle.
+function facAllBtn(){const L=[...$('acc-card').querySelectorAll('.sm>.facall')].filter(b=>b.getClientRects().length);for(const b of $('acc-card').querySelectorAll('.facall'))if(b.id==='fb-tb')b.removeAttribute('id');const b=L[0];if(b)b.id='fb-tb';return b}
+$('acc-card').addEventListener('click',e=>{const b=e.target.closest('.facall');if(!b)return;e.stopPropagation();e.preventDefault();
+  if(FP_OPEN==='tb'){closeFpanel();return}for(const x of $('acc-card').querySelectorAll('.facall'))x.removeAttribute('id');b.id='fb-tb';openFpanel('tb')});
+$('fdd-tb').addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('[data-tbok]'))facAll()});
+$('fdd-tb').addEventListener('input',e=>{if(e.target.matches('[data-tbv]')){const r=$('fp-tb').querySelector('input[name=ftb][value="x"]');if(r)r.checked=true}});
+$('fdd-tb').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('[data-tbv]')){e.preventDefault();facAll()}});
+async function facAll(){const p=$('fp-tb'),r=p.querySelector('input[name=ftb]:checked'),m=p.querySelector('.ftbm');m.textContent='';
+  if(!r)return needMark(p,[[p.querySelector('.ftbg'),'Wähle den Trading Benefit.']]);
+  let v=+r.value;if(r.value==='x'){const i=p.querySelector('[data-tbv]');v=parseDe(i.value);if(!(v>0))return needMark(p,[[i,i.value.trim()?'Das ist keine gültige Zahl. Schreibe eine Zahl über 0, z. B. 12,5.':'Gib den Trading Benefit ein, z. B. 12,5.']])}
+  v=+v.toFixed(6);const all=p.querySelector('input[name=ftbw]:checked').value==='all',accs=Object.keys(S.accounts).sort();
+  const L=accs.filter(a=>all||!(S.accounts[a].factor>0)).filter(a=>S.accounts[a].factor!==v);
+  if(!L.length){m.textContent=all?`Alle Konten haben schon ${facT(v)}.`:'Alle Konten haben schon einen Wert. Wähle „alle Konten“, um sie zu ändern.';return}
+  const ov=L.filter(a=>S.accounts[a].factor>0);
+  if(ov.length){closeFpanel();if(!(await askBox({title:'Trading Benefit ändern',text:`${ov.length===1?'Bei':'Bei den Konten'} ${and2(ov.map(a=>`${ov.length===1?'Konto ':''}${a} (${facT(S.accounts[a].factor)})`))} steht schon ein anderer Wert. Auch dort ${facT(v)} eintragen?`,ok:'Ändern'})))return}
+  const snap=JSON.stringify(S);for(const a of L)S.accounts[a].factor=v;closeFpanel();save();render();
+  toastUndo(`Trading Benefit ${facT(v)} bei ${L.length===1?'Konto '+L[0]:fI.format(L.length)+' Konten'} eingetragen.`,snap)}
 // Element unter Reitern und Filterzeile ins Bild scrollen
 function scrollUnder(el){window.scrollBy(0,el.getBoundingClientRect().top-document.querySelector('nav').getBoundingClientRect().height-8)}
 // Karte aufklappen (falls zugeklappt) und merken
@@ -8538,6 +8674,7 @@ function unfold(c){if(c&&c.classList.contains('closed')){c.classList.remove('clo
    außer mit der Notlösung (invNow). Lücken: ein Hinweis pro Konto mit allen Stellen. „Ausblenden“ merkt sich die gezeigten Lücken in gapOk
    (Deal-Nummer nach der Lücke), die Investition bleibt unbekannt (INV 'gap'), der Link „Lücke“ in „Deine Konten“ leert gapOk wieder. */
 const CH_OPEN=new Set(); // offene „Notlösung“ je Konto, bleibt beim Neuzeichnen offen
+const CHR_OPEN=new Set(); // Ab 0.58 (6): offenes „Du bist sicher, dass nichts fehlt?“ je Konto
 let CH_NOTE=''; // Bestätigung nach „Übernehmen“, einmal gezeigt
 // Summe (Einzahlungen − Kapitalabzüge) eines Kontos in Kontowährung, wie sie MT5 bucht (vervielfacht)
 function capSum(a){let s=0;for(const x of Object.values(S.deals))if(x.a===a){const c=catOf(x);if(c==='einzahlung'||c==='kapitalabzug')s+=x.prof}return s}
@@ -8549,7 +8686,7 @@ function renderChain(){
     if(c.start&&(INV[a]==='bad'||(!A.partialOk&&!(A.invNow!=null&&INV[a]==='ok')))){
       // Bei einer Lücke hilft die Notlösung nicht, dann ohne sie
       const nl=!c.gaps.length;
-      const bad=INV[a]==='bad'?`<p class="small" style="color:var(--neg);margin:4px 0">Dein eingetragenes Invested (${usd(A.invNow)}) passt nicht zum Trading Benefit ×${A.factor}. Prüfe beides und trage den Wert neu ein.</p>`:'';
+      const bad=INV[a]==='bad'?`<p class="small" style="color:var(--neg);margin:4px 0">Dein eingetragenes Invested (${usd(A.invNow)}) passt nicht zum Trading Benefit ${facT(A.factor)}. Prüfe beides und trage den Wert neu ein.</p>`:'';
       h+=`<div class="msg info" data-cha="${a}"><b>Konto ${a}: Fehlt der Anfang?</b> Der Report beginnt am ${fD(c.start.d)} mit einem Kontostand von ${fN.format(c.start.bal)} USD. Ohne die Einzahlungen davor kennt das Tool deine Investition nicht. Investition und Rendite stimmen dann nicht oder können nicht berechnet werden. Die Steuerzahlen stimmen für jedes Jahr, das der Report ganz enthält.
         <div class="row">${hb}<button type="button" class="btn" data-chok="${a}">Absichtlich so</button></div>
         ${nl?`<details data-chd="${a}"${CH_OPEN.has(a)||bad?' open':''}><summary>Notlösung</summary>
@@ -8563,7 +8700,10 @@ function renderChain(){
     if(gs.length){const wo=g=>g.d1===g.d2?`am ${fD(g.d1)}`:`zwischen ${fD(g.d1)} und ${fD(g.d2)}`,w1=wo(gs[0]);
       const txt=gs.length===1?`${w1[0].toUpperCase()+w1.slice(1)} passt der Kontostand nicht zusammen.`:`An ${gs.length} Stellen passt der Kontostand nicht zusammen: ${gs.map(wo).join('; ')}.`;
       h+=`<div class="msg info" data-chgap="${a}"><b>Konto ${a}: Fehlt etwas dazwischen?</b> ${txt} Vermutlich fehlt dort ein Report. Lade einen Report, der diesen Zeitraum enthält, am einfachsten mit „Ganze Historie“. Bis dahin zeigt das Tool für dieses Konto keine Investition und keine Rendite, weil sonst eine fehlende Einzahlung die Rendite zu hoch machen würde. Tage ohne Buchung sind keine Lücke, nur fehlende Buchungen.
-        <div class="row">${hb}<button type="button" class="btn" data-chg="${a}|${gs.map(g=>esc(g.id)).join(',')}">Ausblenden</button></div></div>`}
+        <div class="row">${hb}<button type="button" class="btn" data-chg="${a}|${gs.map(g=>esc(g.id)).join(',')}">Ausblenden</button></div>
+        <details data-chr="${a}"${CHR_OPEN.has(a)?' open':''}><summary>Du bist sicher, dass nichts fehlt?</summary>
+          <ol class="chro"><li>Speichere den Report in MetaTrader 5 neu („Ganze Historie“) und ziehe ihn ins Tool, oder wähle ihn oben bei „MT5-Reports laden“ aus.</li><li>Hilft das nicht: Klicke auf „Buchungen neu einlesen“ und lade den Report danach noch einmal. Name, Trading Benefit und Invested bleiben.</li></ol>
+          <div class="row"><button type="button" class="btn" data-chre="${a}">Buchungen neu einlesen</button></div></details></div>`}
   }
   // Kontrollrechnung Performance Fee (pfCheck): ein Hinweis für alle Konten, „Ausblenden“ merkt sich die gezeigten Fälle in S.pfOk
   const pi=PFCHK.iss.filter(x=>!S.pfOk.includes(x.key));
@@ -8579,7 +8719,7 @@ function applyInvNow(a){
   if(!(v>=0))return say('Das ist keine gültige Zahl. Schreibe dein Invested in USD, z. B. 1250,00.');
   if(!(A.factor>0))return say('Wähle zuerst unten in „Deine Konten“ den Trading Benefit dieses Kontos.');
   const s=capSum(a)/A.factor,start=v-s;
-  if(start<-0.005)return say(`Das passt nicht zusammen: Mit Trading Benefit ×${A.factor} ergeben die Einzahlungen in diesem Report schon ${usd(s)}, mehr als dein Invested. Prüfe den Wert und den Trading Benefit. Nichts übernommen.`);
+  if(start<-0.005)return say(`Das passt nicht zusammen: Mit Trading Benefit ${facT(A.factor)} ergeben die Einzahlungen in diesem Report schon ${usd(s)}, mehr als dein Invested. Prüfe den Wert und den Trading Benefit. Nichts übernommen.`);
   A.invNow=v;CH_OPEN.delete(a);save();
   CH_NOTE=`Konto ${a}: Investition aus deinem Invested zurückgerechnet. Am Anfang des Reports waren ${usd(Math.max(0,start))} investiert.`;
   render();
@@ -8589,9 +8729,12 @@ $('chainmsg').addEventListener('click',e=>{const t=e.target;
   const ok=t.closest('[data-chok]');if(ok){S.accounts[ok.dataset.chok].partialOk=true;save();render();return}
   const pf=t.closest('[data-pfh]');if(pf){S.pfOk.push(...pf.dataset.pfh.split(','));save();render();return}
   const g=t.closest('[data-chg]');if(g){const [a,ids]=g.dataset.chg.split('|');const A=S.accounts[a];(A.gapOk||(A.gapOk=[])).push(...ids.split(','));save();render();return}
+  const re=t.closest('[data-chre]');if(re){accReload(re.dataset.chre);return}
   const ap=t.closest('[data-chap]');if(ap)applyInvNow(ap.dataset.chap)});
 $('chainmsg').addEventListener('keydown',e=>{const i=e.target.closest('[data-chi]');if(i&&e.key==='Enter'){e.preventDefault();applyInvNow(i.dataset.chi)}});
-$('chainmsg').addEventListener('toggle',e=>{const d=e.target.closest&&e.target.closest('[data-chd]');if(d){if(d.open)CH_OPEN.add(d.dataset.chd);else CH_OPEN.delete(d.dataset.chd)}},true);
+$('chainmsg').addEventListener('animationend',e=>{const m=e.target.closest&&e.target.closest('.msg.hl');if(m)m.classList.remove('hl')});
+$('chainmsg').addEventListener('toggle',e=>{const d=e.target.closest&&e.target.closest('[data-chd]');if(d){if(d.open)CH_OPEN.add(d.dataset.chd);else CH_OPEN.delete(d.dataset.chd)}
+  const r=e.target.closest&&e.target.closest('[data-chr]');if(r){if(r.open)CHR_OPEN.add(r.dataset.chr);else CHR_OPEN.delete(r.dataset.chr)}},true);
 function renderMap(){
   const u=unknownKinds();const ks=Object.keys(u);
   if(!ks.length){$('map-card').style.display='none';return}
@@ -8652,8 +8795,9 @@ function yearOptions(sel,ys,withAll,cur){
   return sel.value;
 }
 // Rendite-Wert als Text; empty = Ersatztext, wenn es nichts zu zeigen gibt. plain = ohne rote Farbe (Kacheln).
-function retHtml(o,empty,plain){
-  if(o.miss||o.n===0)return empty;
+function retHtml(o,empty,plain,ma){
+  if(o.miss)return empty==='–'?invDash(ma||MISS_SEL):empty;
+  if(o.n===0)return empty;
   const t=fR.format(o.v);
   return o.v<0&&!plain?`<span class="neg">${t}</span>`:t;
 }
@@ -8816,7 +8960,7 @@ function fbChoose(fb,fin,multi){
 function renderFbar(show){
   $('fbar').classList.toggle('on',show);
   // Außerhalb der Auswertung: deren Menüs schließen, die Menüs im Reiter Wallet bleiben offen
-  if(!show){if(FP_OPEN&&!WALLET_DD.includes(FP_OPEN))closeFpanel();return}
+  if(!show){if(FP_OPEN&&!WALLET_DD.includes(FP_OPEN)&&FP_OPEN!=='tb')closeFpanel();return}
   const multi=Object.keys(S.accounts).length>1;$('fdd-acc').style.display=multi?'':'none';
   if(!multi&&FP_OPEN==='acc')closeFpanel();
   $('fb-range').title='Zeitraum wählen'+(nocwOn()?' (ohne laufende Woche)':'');
@@ -8842,9 +8986,15 @@ function buildFpanel(which){
       <div id="fzw"><div class="fh">Zählweise</div>
       <div id="fcw" hidden><label class="fopt"><input type="checkbox" id="f-nocw"><span><span id="f-nocw-t">Laufende Woche weglassen</span> <button type="button" class="flink" id="f-why" aria-expanded="false" aria-controls="fcw-txt">Wozu?</button></span></label><p id="fcw-txt" hidden>${CW_WHY}</p></div>
       <div id="fzd"><label class="fopt"><input type="checkbox" id="f-zd"><span>Tage ohne Trade mitzählen <button type="button" class="flink" id="f-zwhy" aria-expanded="false" aria-controls="fzd-txt">Wozu?</button></span></label><p id="fzd-txt" hidden>${ZD_WHY}</p></div></div></div>${FDONE}`;
+  }else if(which==='tb'){
+    // Ab 0.58 (5): Trading Benefit für mehrere Konten auf einmal (facAll)
+    $('fp-tb').innerHTML=`<div class="fgrp ftbg">${FAC_STD.map(v=>`<label class="fopt"><input type="radio" name="ftb" value="${v}"><span>${facT(v)}</span></label>`).join('')}<label class="fopt"><input type="radio" name="ftb" value="x"><span>andere Zahl</span><input type="text" inputmode="decimal" data-tbv placeholder="z. B. 12,5" aria-label="Trading Benefit, andere Zahl" style="width:9ch"></label></div>
+      <div class="fgrp"><div class="fh">Für welche Konten?</div>${[['empty','nur Konten ohne Wert'],['all','alle Konten']].map(([v,l],i)=>`<label class="fopt"><input type="radio" name="ftbw" value="${v}"${i?'':' checked'}><span>${l}</span></label>`).join('')}</div>
+      <p class="fhint ftbm" role="status"></p><div class="row" style="justify-content:flex-end"><button type="button" class="btn primary" data-tbok>Übernehmen</button></div>`;
   }else if(which==='pf'){
-    const o=[['inkl','PF laut MT5','Die PF steht dort, wo Tag sie abbucht (samstags). Trades zeigen ihr Ergebnis vor PF.'],['ex','PF verteilt','Jeder Trade trägt seinen Anteil der PF. Zeigt, was dir von jedem Trade bleibt.']];
-    $('fp-pf').innerHTML=`<p class="fhint">PF = Performance Fee: 30 % vom Wochengewinn, abgebucht jeden Samstag.</p><div class="fgrp">${o.map(([v,l,d])=>`<label class="fopt two"><input type="radio" name="fpf" value="${v}"><span><b>${l}</b><span class="od">${d}</span></span></label>`).join('')}
+    // Ab 0.58 (1): je Wahl der kleine Zusatz, der dann in den Tabellen steht
+    const o=[['inkl','PF laut MT5','Die PF steht dort, wo Tag sie abbucht (samstags). Trades zeigen ihr Ergebnis vor PF.','In den Tabellen steht dann klein „vor PF“ bzw. „laut MT5“.'],['ex','PF verteilt','Jeder Trade trägt seinen Anteil der PF. Zeigt, was dir von jedem Trade bleibt.','In den Tabellen steht dann klein „nach PF“ bzw. „verteilt“.']];
+    $('fp-pf').innerHTML=`<p class="fhint">PF = Performance Fee: 30 % vom Wochengewinn, abgebucht jeden Samstag.</p><div class="fgrp">${o.map(([v,l,d,t])=>`<label class="fopt two"><input type="radio" name="fpf" value="${v}"><span><b>${l}</b><span class="od">${d}</span><span class="od">${t}</span></span></label>`).join('')}
       <button type="button" class="flink" id="f-pfwhy" aria-expanded="false" aria-controls="fpf-txt">Was heißt das?</button><div id="fpf-txt" hidden>${PF_WHY}</div></div>${FDONE}`;
   }else if(which==='cur'){
     // Fehlen Kurse (CUR_MISS), ist Euro nicht wählbar; darunter der Grund und „Kurse laden“ (Meldung in #fcur-rlm, bleibt bis zum Schließen)
@@ -8982,8 +9132,9 @@ function openWeeks(d){
 }
 function closeFpanel(){
   if(!FP_OPEN)return;const w=FP_OPEN;FP_OPEN=null;
-  $('fp-'+w).classList.remove('on');$('fb-'+w).setAttribute('aria-expanded','false');
-  const c=$('fb-'+w).closest('.card');if(c)c.classList.remove('fpo');
+  // Ab 0.58 (5): Der Knopf von „für alle ▾“ kann beim Neuzeichnen von „Deine Konten“ weg sein
+  $('fp-'+w).classList.remove('on');const b=$('fb-'+w);if(b)b.setAttribute('aria-expanded','false');
+  const c=$('fp-'+w).closest('.card')||(b&&b.closest('.card'));if(c)c.classList.remove('fpo');
   return w;
 }
 /* ---------------- Begriffe und ⓘ (Popups) ----------------
@@ -9126,16 +9277,18 @@ ${ECB_CITE}`},
 <b>Datei:</b> aus der Datei der EZB, die du eingelesen hast.
 <b>Von Hand:</b> von dir eingetragen.
 <b>Rangfolge:</b> Geladene Kurse und Kurse aus der Datei gehen vor eingebauten. Eigene Kurse gelten nur für Tage ohne EZB-Kurs. Kommt für so einen Tag später ein EZB-Kurs, ersetzt er deinen.`},
-  tb:{t:'Trading Benefit',h:'Bei Tag auch „Amplifier“ genannt. Tag vervielfacht dein eingezahltes Geld im MT5: Bei ×24 stehen 100 USD als 2.400 USD da. Gewinne, Performance Fee und Gewinnauszahlungen sind nicht vervielfacht.\n<b>So findest du ihn:</b> Im Tag-Portal CopyX → Follower Hub → Strategies, dort „Balance“ geteilt durch „Invested“. Nicht verwechseln mit der Spalte „Multiplier“, die ist etwas anderes.\n×1 heißt: kein Trading Benefit. Die Steuerzahlen hängen nicht davon ab, nur Investition und Rendite.'},
+  tb:{t:'Trading Benefit',h:'Bei Tag auch „Amplifier“ genannt. Tag vervielfacht dein eingezahltes Geld im MT5: Bei ×24 stehen 100 USD als 2.400 USD da. Gewinne, Performance Fee und Gewinnauszahlungen sind nicht vervielfacht.\n<b>So findest du ihn:</b> Im Tag-Portal CopyX → Follower Hub → Strategies, dort „Balance“ geteilt durch „Invested“. Nicht verwechseln mit der Spalte „Multiplier“, die ist etwas anderes.\n×1 heißt: kein Trading Benefit. Die Steuerzahlen hängen nicht davon ab, nur Investition und Rendite.\n<b>Anderer Wert:</b> Wähle „andere Zahl …“ und gib ihn ein, z. B. 12,5. Mit „für alle ▾“ im Spaltenkopf trägst du einen Wert für mehrere Konten ein.'},
   invk:{t:'Investition',h:'Das Geld, das du selbst in dieses Konto eingesetzt hast, in USD: Einzahlungen geteilt durch den Trading Benefit. Es sollte genau mit „Invested“ im Tag-Portal übereinstimmen (CopyX → Follower Hub → Strategies). Weicht es ab, stimmt wahrscheinlich der Trading Benefit nicht.'},
   repvom:{t:'Report vom',h:'Das Datum, an dem du den Report in MT5 gespeichert hast. Das Tool kennt die Buchungen nach diesem Datum noch nicht. Für aktuelle Zahlen speichere den Report neu und lade ihn hier.'},
-  abgl:{t:'Abgleich',h:'Das Tool zählt alle Buchungen zusammen, die es aus dem Report gelesen hat, und vergleicht die Summe mit der Summenzeile im Report.\n<b>✓ stimmt:</b> Alles wurde vollständig gelesen.\n<b>⚠ Abweichung:</b> Das Tool hat den Report vielleicht nicht ganz richtig gelesen. Speichere ihn frisch aus MT5 und lade ihn hier noch einmal. Bleibt die Warnung, stimmen die Zahlen dieses Kontos vielleicht nicht. Schreibe mir dann bitte an florian@weltenwandel.at.'},
+  abgl:{t:'Abgleich',h:'Das Tool zählt alle Buchungen zusammen, die es aus dem Report gelesen hat, und vergleicht sie mit den Summen am Ende des Reports: Kommission, Gebühr, Swap und Gewinn aus der Summenzeile der Buchungen, deinen letzten Kontostand mit dem Kontostand dort, dazu „Nettogewinn gesamt“ (bis auf Rundung) und die Zahl der Trades. Geprüft wird der zuletzt geladene Report.\n<b>✓ stimmt:</b> Alles wurde vollständig gelesen.\n<b>⚠ Abweichung:</b> Darunter steht die Zeile, die nicht passt, mit dem gelesenen Wert und dem Wert im Report. Das Tool hat den Report vielleicht nicht ganz richtig gelesen. Speichere ihn frisch aus MT5 und lade ihn hier noch einmal. Bleibt die Warnung, stimmen die Zahlen dieses Kontos vielleicht nicht. Schreibe mir dann bitte an florian@weltenwandel.at.'},
   'k-calc':{t:'Was wäre wenn',h:'Rechnet hoch, was aus einer Investition werden könnte, wenn es so weiterläuft wie in deinen bisherigen Wochen.'},
   netto:{t:'Netto-Gewinn',h:'Das Ergebnis nach Abzug der Performance Fee, also das, was dir bleibt.'},
   vorpf:{t:'Ergebnis vor PF',h:'Gewinne minus Verluste deiner Trades laut MT5, nach Kommission und Swap, vor Abzug der Performance Fee.'},
   pf:{t:'Performance Fee',h:'30 % vom Wochengewinn, Tag bucht sie jeden Samstag ab.\n<b>Monatswechsel:</b> Bei „PF laut MT5“ zählt die PF im Monat der Abbuchung, bei „PF verteilt“ im Monat, in dem du den Gewinn gemacht hast.'},
   pfplus:{t:'Positive Performance Fee',h:'In einer Gewinnwoche senkt ein Verlust die Performance Fee, er kostet dich deshalb nur 70 %. In einer Verlustwoche gibt es keine PF, dann kostet er 100 %. Annahme: Tag nimmt Verluste nicht in die nächste Woche mit.'},
-  rendite:{t:'Rendite',h:'Jeder Trade wird mit deiner Investition zu Beginn des Trades verglichen, die Renditen aller Trades werden zusammengezählt. Gemeint ist dein eingesetztes Geld, nicht der vervielfachte Kontostand im MT5. Bei Trading Benefit (×12, ×24) ist die Rendite deshalb viel höher als im MT5 oder bei Myfxbook.'},
+  rendite:{t:'Rendite',h:'Jeder Trade wird mit deiner Investition zu Beginn des Trades verglichen, die Renditen aller Trades werden zusammengezählt. Gemeint ist dein eingesetztes Geld, nicht der vervielfachte Kontostand im MT5. Bei Trading Benefit (×12, ×24) ist die Rendite deshalb viel höher als im MT5 oder bei Myfxbook.\nOhne Trading Benefit kennt das Tool deine Investition nicht. Die Rendite steht dann als „–“.'},
+  // Ab 0.58 (1): kleine Zusätze „vor PF“ / „nach PF“ und „laut MT5“ / „verteilt“ in den Spaltenköpfen (SMH, SMF) und in „Hochs und Tiefs“
+  pfst:{t:'PF-Schalter',h:'Zeigt die Stellung oben bei „PF“. „vor PF“ und „laut MT5“ gehören zu „PF laut MT5“, „nach PF“ und „verteilt“ zu „PF verteilt“. Umschalten oben in der Leiste.'},
   inv:{t:'Investition',h:'Das Geld, das du selbst eingesetzt hast, immer in USD. Es enthält auch Gewinne, die du wieder eingezahlt hast.'},
   anfang:{t:'am Anfang',h:'Die Investition beim ersten Trade der Periode. Bei einzelnen Trade-Zeilen: die Investition zum Zeitpunkt des Trades.'},
   ende:{t:'am Ende',h:'Die Investition am Ende des gewählten Zeitraums.'},
@@ -9176,7 +9329,8 @@ GL.vgwas={t:'Was',h:'Die Farbe zeigt die Familie, das Zeichen die genaue Art.\n'
 GL.vgdatum={t:'Datum',h:'Uhrzeiten in österreichischer Zeit.'};
 GL.tmgesch={t:'geschätzt',h:'Ohne Uhrzeit eingetragen. Das Tool hat die Stelle im Tag bestimmt.'};
 // Begriff ausgeben: k = Schlüssel in GL, html = sichtbarer Text
-const gl=(k,html)=>`<span class="gl" data-gl="${k}" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">${html}</span>`;
+// Ab 0.58 (1): als Funktion (gehoben), weil SMH und SMF ihn schon beim Laden brauchen
+function gl(k,html){return `<span class="gl" data-gl="${k}" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">${html}</span>`}
 // Offenes Popup: el = Auslöser (Begriff oder ⓘ), pin = per Klick gehalten, up = steht über dem Auslöser. GT = Zeitgeber fürs Darüberfahren.
 let GP=null,GT=0;
 function glOpen(el,pin){
@@ -9311,13 +9465,15 @@ function curWeek(RA,sel){
 }
 function renderStats(rows){
   const ok=guard('stats-guard');$('stats-body').style.display=ok?'':'none';if(!ok){CW=null;CW_IN=false;renderFbar(false);return}
-  const all=Object.keys(S.accounts).sort();const sel=fltAccs();const selSet=new Set(sel);const allSel=sel.length===all.length;
+  const all=Object.keys(S.accounts).sort();const sel=fltAccs();const selSet=new Set(sel);const allSel=sel.length===all.length;MISS_SEL=sel;
   // PF-Schalter: ex = PF verteilt (PF anteilig bei den Trades, in der laufenden Woche ausgerechnet), sonst PF laut MT5
   const ex=S.ui.flt.pf==='ex',mode=ex?'nach PF':'vor PF',key=ex?'exE':'eur';
   // Währungsschalter: Ab hier tragen eur, exE und pfE den Betrag in der gewählten Währung (curRows)
   {const r0=fltRange(years(rows)),m=r0.bad?{n:0}:missingRates({accs:selSet,from:r0.from,to:r0.to});CUR_MISS=m.n?m:null}
   CUR_EFF=S.ui.flt.cur==='usd'||CUR_MISS?'usd':'eur';
   $('cur-note').innerHTML=CUR_MISS&&S.ui.flt.cur!=='usd'?`<div class="msg info">Beträge in USD, weil für Euro Kurse fehlen. <button type="button" class="btn" data-rl="cur-rlm" style="padding:3px 10px;margin-left:4px">Kurse laden</button></div><div id="cur-rlm"></div>`:'';
+  // Ab 0.58 (4): Hinweis, solange bei einem gewählten Konto der Trading Benefit fehlt, mit dem Sprung zu „Deine Konten“
+  {const L=sel.filter(a=>INV[a]==='nofac');$('tb-note').innerHTML=L.length?`<div class="msg info">Bei ${L.length===1?'Konto':'den Konten'} ${and2(L)} fehlt der Trading Benefit. Ohne ihn keine Rendite. <button type="button" class="btn" data-tbgo style="padding:3px 10px;margin-left:4px">Zu „Deine Konten“</button></div>`:''}
   rows=curRows(rows,CUR_EFF);
   const rg=fltRange(years(rows));
   const inRg=r=>(!rg.from||r.d>=rg.from)&&(!rg.to||r.d<=rg.to);
@@ -9378,7 +9534,7 @@ function renderStats(rows){
   const pick=(A,Rr)=>{const [c,o]=pct?[Rr,A]:[A,Rr];return [c.v,c.s,o.f]};
   // Bester/Schlechtester Trade: Zeile 3 Datum (Link) und Symbol, Zeile 4 Zahl der Konten (wenn mehr als 1) und PF-Stellung
   const trSub=p=>{const n=Object.keys(p.by).length;return jlink('t',p.t+'|'+p.sym,dS(p.d))+', '+esc(p.sym)+'<br>'+(n>1?`${n} Konten · `:'')+mode};
-  const mTx=invMissTxt(sel),noR={v:'–',s:mTx,f:'–'},none={v:'–',s:'',f:'–'};
+  const mTx=invMissTxt(sel),noR={v:invDash(sel),s:mTx,f:'–'},none={v:'–',s:'',f:'–'};
   const trTile=(pa,pp)=>pick(pa?{v:monT(pa[key]),s:trSub(pa),f:fCur(pa[key])}:none,AK.miss?noR:pp?{v:fR.format(pr(pp)),s:trSub(pp),f:fR.format(pr(pp))}:none);
   // Beste und Schlechteste Woche: nur gezählte ganze Wochen, nach derselben Regel wie „Ø pro Woche“ (mit Häkchen auch Wochen ohne Trade, Wert 0).
   // Betrag nach Schalter (PF verteilt = Netto-Gewinn mit zugeordneter bzw. ausgerechneter PF, PF laut MT5 = Ergebnis vor PF), Rendite nach PF-Schalter.
@@ -9416,7 +9572,7 @@ function renderStats(rows){
   const trd=(o,k)=>o?mon(o[k]):'–';
   const rv=v=>v==null?'–':retHtml({v,n:1,miss:false},'–');
   // Ø Rendite pro ganzer Woche (Spalte in „Pro Konto“): eigenes Fenster ab dem ersten Trade des Kontos
-  const wkAvg=z=>z.miss||!z.week.k?'–':sw(rv(z.week.rI),rv(z.week.rX));
+  const wkAvg=(z,ma)=>z.miss?invDash(ma||sel):!z.week.k?'–':sw(rv(z.week.rI),rv(z.week.rX));
   renderAvg(AK,ex,zero,rv);
   renderHL(glKz(R,'sel',win,AK.week.ps),AK,{wkSub});
   // Pro Konto: Kontozeilen mit der Investition des eigenen Kontos, Gesamtzeile mit der Investition der gewählten Konten
@@ -9425,7 +9581,7 @@ function renderStats(rows){
   // Rendite: Kontozeilen auf die Investition des Kontos (Scope own), Gesamtzeile auf die der gewählten Konten (sel, wie die Kacheln).
   // Bester/Schlechtester = Position mit der höchsten/niedrigsten Rendite, Ø = Summe der Renditen ÷ Zahl der Positionen (wie „Durchschnitt“).
   // Je Spalte ein Paar [vor PF, nach PF]; utd setzt gewählte Einheit sichtbar, die andere als Breitenhalter
-  const trR=(Pp,rows,sc,miss)=>{const n=Pp.length,f=v=>miss||v==null?'–':rv(v);
+  const trR=(Pp,rows,sc,miss,ma)=>{const n=Pp.length,f=v=>miss?invDash(ma):v==null?'–':rv(v);
     const x=(ex,dir)=>{let b=null;for(const p of Pp){if(p.rMiss)continue;const v=ex?p.rX:p.rI;if(b==null||(dir>0?v>b:v<b))b=v}return b};
     return [[f(x(false,1)),f(x(true,1))],[f(x(false,-1)),f(x(true,-1))],[f(n?retSum(rows,sc,false).v/n:null),f(n?retSum(rows,sc,true).v/n:null)]]};
   const utd=(A,Rr)=>A.map((a,i)=>{const [c,o]=pct?[Rr[i],a]:[a,Rr[i]];return `<td>${sw(c[0],c[1],o)}</td>`}).join('');
@@ -9435,20 +9591,20 @@ function renderStats(rows){
     const ra=R.filter(r=>r.a===a);const z=pfz(ra);const cl=ra.filter(r=>r.cat==='close');
     const tI=tradeStats(cl,'eur'),tN=tradeStats(cl,'exE');
     const cap=CAP(a,endT); if(cap==null)capOk=false;else capSum+=cap;
-    h+=`<tr><td class="acc">${accCell(a)}</td><td>${fI.format(tI.n)}</td>${netTd(z)}<td>${mon(z.res)}</td>${feeTd(z)}${utd([[trd(tI.best,'eur'),trd(tN.best,'exE')],[trd(tI.worst,'eur'),trd(tN.worst,'exE')],[tI.n?mon(tI.avg):'–',tI.n?mon(tN.avg):'–']],trR(positions(ra,'own'),ra,'own',retSum(ra,'own',false).miss))}<td>${cap==null?(INV[a]==='nofac'?'Faktor fehlt':'unbekannt'):usd(cap)}</td><td>${rtSw(ra,'own','–')}</td><td>${(()=>{const f=RA.find(r=>r.a===a&&isTrade(r));return f&&ra.some(isTrade)?wkAvg(avgKz(ra,cntWin(f.d,rg.from,rg.to,dataEnd),'own',zero,['week'])):'–'})()}</td><td>${tI.n?fP.format(tI.win/tI.n):'–'}</td><td>${ddSw(ra,'own','–')}</td></tr>`;
+    h+=`<tr><td class="acc">${accCell(a)}</td><td>${fI.format(tI.n)}</td>${netTd(z)}<td>${mon(z.res)}</td>${feeTd(z)}${utd([[trd(tI.best,'eur'),trd(tN.best,'exE')],[trd(tI.worst,'eur'),trd(tN.worst,'exE')],[tI.n?mon(tI.avg):'–',tI.n?mon(tN.avg):'–']],trR(positions(ra,'own'),ra,'own',retSum(ra,'own',false).miss,[a]))}<td>${cap==null?gl(invKey([a]),INV[a]==='nofac'?'Trading Benefit fehlt':'unbekannt'):usd(cap)}</td><td>${rtSw(ra,'own','–',[a])}</td><td>${(()=>{const f=RA.find(r=>r.a===a&&isTrade(r));return f&&ra.some(isTrade)?wkAvg(avgKz(ra,cntWin(f.d,rg.from,rg.to,dataEnd),'own',zero,['week']),[a]):'–'})()}</td><td>${tI.n?fP.format(tI.win/tI.n):'–'}</td><td>${ddSw(ra,'own','–',[a])}</td></tr>`;
   }
-  h+=`<tr class="gesamt"><td class="acc">Gesamt (${allSel?'alle Konten':'Auswahl'})</td><td>${fI.format(PS.n)}</td>${netTd(T)}<td>${mon(T.res)}</td>${feeTd(T)}${utd([[trd(PS.best,'eur'),trd(PN.best,'exE')],[trd(PS.worst,'eur'),trd(PN.worst,'exE')],[PS.n?mon(PS.avg):'–',PS.n?mon(PN.avg):'–']],trR(P,R,'sel',AK.miss))}<td>${capOk?usd(capSum):'–'}</td><td>${rtSw(R,'sel','–')}</td><td>${wkAvg(AK)}</td><td>${PS.n?fP.format(PS.win/PS.n):'–'}</td><td>${ddSw(R,'sel','–')}</td></tr>`;
+  h+=`<tr class="gesamt"><td class="acc">Gesamt (${allSel?'alle Konten':'Auswahl'})</td><td>${fI.format(PS.n)}</td>${netTd(T)}<td>${mon(T.res)}</td>${feeTd(T)}${utd([[trd(PS.best,'eur'),trd(PN.best,'exE')],[trd(PS.worst,'eur'),trd(PN.worst,'exE')],[PS.n?mon(PS.avg):'–',PS.n?mon(PN.avg):'–']],trR(P,R,'sel',AK.miss,sel))}<td>${capOk?usd(capSum):invDash(sel)}</td><td>${rtSw(R,'sel','–')}</td><td>${wkAvg(AK)}</td><td>${PS.n?fP.format(PS.win/PS.n):'–'}</td><td>${ddSw(R,'sel','–')}</td></tr>`;
   $('t-acc').innerHTML=`<tr><th>Konto${SM0}</th><th>Trades${SM0}</th><th>${gl('netto','Netto-Gewinn')}${SMF}</th><th>${gl('vorpf','Ergebnis vor PF')}${SM0}</th><th>${gl('pf','Performance Fee')}${SMF}</th><th>Bester Trade${SMH}</th><th>Schlechtester Trade${SMH}</th><th>Ø pro Trade${SMH}</th><th>${gl('inv','Investition')}${smx(gl('ende','am Ende'))}</th><th>${gl('rendite','Rendite')}${SMH}</th><th class="w2">${gl('avg','Ø Rendite pro Woche')}${SMH}</th><th>${gl('hit','Trefferquote')}${SM0}</th><th>${gl('dd','Max. Drawdown')}${SMH}</th></tr>`+h;
   renderGraf(R,sel,{wdCnt,win,zero,AK,from:rg.from});
   // Rechner „Was wäre wenn“: Wochenrenditen nach PF der gezählten ganzen Wochen, heutige Investition der gewählten Konten
   {let inv=0;for(const a of sel){const c=CAP(a,'9999');if(c==null){inv=null;break}inv+=c}
-   CALC_D={k:AK.week.k,rets:AK.week.ps.map(p=>p.rX),miss:AK.miss||inv==null,mt:invMissTxt(sel),why:invWhy(sel,'der Anfang eines Reports fehlt'),inv};renderCalc()}
+   CALC_D={k:AK.week.k,rets:AK.week.ps.map(p=>p.rX),miss:AK.miss||inv==null,accs:sel,why:invWhy(sel,'der Anfang eines Reports fehlt'),inv};renderCalc()}
   // Monate. Kumuliert ab Anfang des Zeitraums: PF laut MT5 Summe der Gewinne vor PF, PF verteilt Summe der Netto-Gewinne
   const yms=[...new Set(R.map(r=>r.ym))].sort();
   let mh='',cV=0,cN=0;
   // Investition am Anfang des Monats (invStart): beim ersten Trade, ohne Trade am sichtbaren Monatsbeginn
   const mStart=m=>rg.from&&rg.from>m+'-01'&&rg.from.slice(0,7)===m?rg.from:m+'-01';
-  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=pfz(rr);cV+=z.res;cN+=z.nN;mh+=`<tr><td>${mLabel(m)}</td><td>${positions(rr).length}</td>${netTd(z)}<td>${mon(z.res)}</td>${feeTd(z)}<td>${usd(invStart(rr,sel,mStart(m)))}</td><td>${rtSw(rr,'sel','–')}</td><td>${ddSw(rr,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`}
+  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=pfz(rr);cV+=z.res;cN+=z.nN;mh+=`<tr><td>${mLabel(m)}</td><td>${positions(rr).length}</td>${netTd(z)}<td>${mon(z.res)}</td>${feeTd(z)}<td>${invU(invStart(rr,sel,mStart(m)),sel)}</td><td>${rtSw(rr,'sel','–')}</td><td>${ddSw(rr,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`}
   mh+=`<tr class="sum"><td>Summe</td><td>${PS.n}</td>${netTd(T)}<td>${mon(T.res)}</td>${feeTd(T)}<td></td><td>${rtSw(R,'sel','–')}</td><td>${ddSw(R,'sel','–')}</td><td></td></tr>`;
   $('t-month').innerHTML=`<tr><th>Monat${SM0}</th><th>Trades${SM0}</th>${TH_MW()}</tr>`+mh;
   weekTree(R,{multi:sel.length>1,sel,wkSpan,cw:CW,cwr:CWR,cwSpan:CWR.length?[rg.from&&rg.from>CW?rg.from:CW,toOrig&&toOrig<addDays(CW,6)?toOrig:addDays(CW,6)]:null});
@@ -9466,7 +9622,8 @@ function renderAvg(AK,ex,zero,rv){
   // Basis wie im Excel (avgBasis), „ganze Wochen“ und „ganze Monate“ als Begriff
   const basis=z=>avgBasis(z,zero).replace(/ganze Wochen?|ganzer Monat|ganze Monate/,m=>gl('ganz',m));
   const row=(l,z)=>{const e=!z.k,nr=e||AK.miss;
-    return `<tr><td>${l}</td><td>${e||z.tr==null?'–':fmtDec(z.tr,1)}</td><td>${nr?'–':`<b>${sw(rv(z.rI),rv(z.rX))}</b>`}</td><td>${nr?'–':sw(rv(z.qI),rv(z.qX))}</td><td>${e?'–':sw(mon(z.aI),mon(z.aX))}</td><td>${e?'–':sw(mon(z.mI),mon(z.mX))}</td><td class="bs">${basis(z)}</td></tr>`};
+    const nd=e?'–':invDash(MISS_SEL);
+    return `<tr><td>${l}</td><td>${e||z.tr==null?'–':fmtDec(z.tr,1)}</td><td>${nr?nd:`<b>${sw(rv(z.rI),rv(z.rX))}</b>`}</td><td>${nr?nd:sw(rv(z.qI),rv(z.qX))}</td><td>${e?'–':sw(mon(z.aI),mon(z.aX))}</td><td>${e?'–':sw(mon(z.mI),mon(z.mX))}</td><td class="bs">${basis(z)}</td></tr>`};
   $('t-avg').innerHTML=`<tr><th>${SM0}</th><th>Trades${SM0}</th><th>${gl('avg','Ø Rendite')}${SMH}</th><th>${gl('median','Median Rendite')}${SMH}</th><th>${gl('betrag','Ø Betrag')}${SMH}</th><th>${gl('median','Median Betrag')}${SMH}</th><th>Basis${SM0}</th></tr>`+
     row('pro '+gl('tag','Handelstag'),AK.day)+row('pro Woche',AK.week)+row('pro Monat',AK.month)+row('pro Trade',AK.trade);
   $('avg-zd').textContent=zero?'Tage ohne Trade zählen mit':'Tage ohne Trade zählen nicht mit';
@@ -9483,7 +9640,8 @@ const hlArr=d=>HL_ARROWS?`<span class="har ${d>0?'up':'dn'}" aria-hidden="true">
 function renderHL(G,AK,h){
   const {wkSub}=h,miss=G.miss,pct=S.ui.unit!=='amt',cu=pct?'r':'a',ou=pct?'a':'r';
   const sm=x=>`<span class="sm">${x}</span>`;
-  const Fu=u=>u==='r'?(v=>v==null||miss?'–':retHtml({v,n:1,miss:false},'–',true)):(v=>v==null?'–':mon(v,false));
+  // Ab 0.58 (2): ohne Investition der Begriff statt „–“ (invDash)
+  const md=invDash(MISS_SEL),Fu=u=>u==='r'?(v=>miss?md:v==null?'–':retHtml({v,n:1,miss:false},'–',true)):(v=>v==null?'–':mon(v,false));
   const lT=p=>sm(jlink('t',p.t+'|'+p.sym,dS(p.d))),lD=x=>sm(jlink('d',x.d,dS(x.d)));
   const lW=x=>sm(x.n?jlink('w',x.w,wkSub(x.w)):wkSub(x.w));
   const ext=(o,l,F)=>o?F(o.v)+l(o.o):'–';
@@ -9492,7 +9650,7 @@ function renderHL(G,AK,h){
   const cellU=f=>`<td>${sw(f(G.V,cu),f(G.N,cu),[noA(f(G.V,ou)),noA(f(G.N,ou))])}</td>`;
   const cell=f=>`<td>${sw(f(G.V),f(G.N))}</td>`;
   // Kleiner Text unter der Beschriftung: PF-Stellung
-  const pfS=sm(sw('vor PF','nach PF'));
+  const pfS=sm(pfSw('vor PF','nach PF',1));
   // Anteil an allen Trades in Klammern, in einer Zeile
   const share=n=>G.n?`${n} (${fmtDec(n/G.n*100,0)} %)`:'0';
   // „am Stück“: Zahl, darunter der Link „ab …“ zum ersten Trade bzw. Tag der Folge
@@ -9515,8 +9673,8 @@ function renderHL(G,AK,h){
   // „Verhältnis“: Summen, Größter Trade in Handelstagen (dieselben Trades wie „Größter“ oben, geteilt durch Ø pro Handelstag derselben
   // Einheit und PF-Stellung), Profit-Faktor als „13,1 zu 1“ (Rendite: aus den Renditen, Betrag: aus den Beträgen)
   const day=(s,u)=>{if(!AK.day.k)return null;const V=s===G.V;return u==='r'?(V?AK.day.rI:AK.day.rX):(V?AK.day.aI:AK.day.aX)};
-  const htg=(o,d,u,sg)=>u==='r'&&miss?'–':!o?'keiner':d==null||!(d>0)?'–':fmtDec(sg*o.v/d,1)+lT(o.o);
-  const pfv=(s,u)=>u==='r'?s.pf:s.pfA,pfL=(s,u)=>u==='r'&&miss?'–':pfv(s,u)==null?'kein Verlust':fmtDec(pfv(s,u),1),pfR=(s,u)=>u==='r'&&miss?'–':pfv(s,u)==null?'':'1';
+  const htg=(o,d,u,sg)=>u==='r'&&miss?md:!o?'keiner':d==null||!(d>0)?'–':fmtDec(sg*o.v/d,1)+lT(o.o);
+  const pfv=(s,u)=>u==='r'?s.pf:s.pfA,pfL=(s,u)=>u==='r'&&miss?md:pfv(s,u)==null?'kein Verlust':fmtDec(pfv(s,u),1),pfR=(s,u)=>u==='r'&&miss?md:pfv(s,u)==null?'':'1';
   $('t-hl3').innerHTML=`<tr><th></th><th><span class="nw">${hlArr(1)}${gl('gv','Gewinne')}</span></th><th><span class="nw">${hlArr(-1)}${gl('gv','Verluste')}</span></th></tr>`+
     `<tr><td>${gl('summe','Summe')}${pfS}</td>${cellU((s,u)=>Fu(u)(s.sumW[u]))}${cellU((s,u)=>Fu(u)(s.sumL[u]))}</tr>`+
     `<tr><td>${gl('htage','Größter Trade')}${sm('in Handels&shy;tagen')}</td>${cellU((s,u)=>htg(s.bigW[u],day(s,u),u,1))}${cellU((s,u)=>htg(s.bigL[u],day(s,u),u,-1))}</tr>`+
@@ -9589,7 +9747,8 @@ function renderCalc(){
   setv('c-inv',c.inv!==''?c.inv:(D.inv!=null?numIn(D.inv):''));setv('c-dur',c.dur);$('c-unit').value=c.unit;setv('c-own',c.own);
   $('c-reset').hidden=c.inv==='';$('c-reinv').checked=c.reinv;
   const none=h=>{out.innerHTML=h;info.hidden=true};
-  if(D.miss)return none(D.mt==='Trading Benefit fehlt'?'<p class="small">Trading Benefit fehlt. Wähle ihn im Reiter „Reports“.</p>':`<p class="small">Investition unbekannt, weil ${D.why}. Siehe Reiter „Reports“.</p>`);
+  // Ab 0.58 (4): „Trading Benefit fehlt“ und „Investition unbekannt“ als Begriff (invMissTxt), mit Grund und Konto
+  if(D.miss)return none(D.accs.some(a=>INV[a]==='nofac')?`<p class="small">${invMissTxt(D.accs)}. Wähle ihn im Reiter „Reports“.</p>`:`<p class="small">${invMissTxt(D.accs)}, weil ${D.why}. Siehe Reiter „Reports“.</p>`);
   if(!D.k)return none('<p class="small">Für den Rechner braucht es mindestens eine ganze Woche.</p>');
   const I=c.inv!==''?parseDe(c.inv):D.inv,dur=parseDe(c.dur),n=c.unit==='m'?dur*52/12:dur;
   const own=c.own.trim()?parseDe(c.own)/100:null;
@@ -9664,18 +9823,18 @@ function weekTree(R0,cx){
       if(!tr.length){gF.push(fee(fCur(zd.fV)));gN.push(netD(zd.nV,zd.res))}
       const ps=positions(rd).sort((a,b)=>a.t<b.t?-1:1);
       const wdI=(new Date(d+'T12:00:00Z').getUTCDay()+6)%7;
-      dh+=`<tr class="dy" data-w="${w}" data-d="${d}">${c1(`${ps.length?'<span class="tw">▸</span> ':'<span class="tw"></span> '}${WD[wdI]} ${dm(d)}`)}<td>${ps.length||''}</td><td>${sw(tr.length||fr?netD(zd.nV,zd.res):'',tr.length?netD(zd.nN,zd.res):'')}</td><td>${tr.length?mon(zd.res):''}</td><td>${sw(fr?fee(fCur(zd.fV)):'',tr.length?pfP(zd.fN):'')}</td><td>${usd(invStart(rd,cx.sel,d))}</td><td>${rtSw(rd,'sel','')}</td><td>${ddSw(rd,'sel','')}</td><td></td></tr>`;
+      dh+=`<tr class="dy" data-w="${w}" data-d="${d}">${c1(`${ps.length?'<span class="tw">▸</span> ':'<span class="tw"></span> '}${WD[wdI]} ${dm(d)}`)}<td>${ps.length||''}</td><td>${sw(tr.length||fr?netD(zd.nV,zd.res):'',tr.length?netD(zd.nN,zd.res):'')}</td><td>${tr.length?mon(zd.res):''}</td><td>${sw(fr?fee(fCur(zd.fV)):'',tr.length?pfP(zd.fN):'')}</td><td>${invU(invStart(rd,cx.sel,d),cx.sel)}</td><td>${rtSw(rd,'sel','')}</td><td>${ddSw(rd,'sel','')}</td><td></td></tr>`;
       for(const p of ps){
         const pk=esc(p.t+'|'+p.sym);
-        dh+=`<tr class="tr${multi?' x':''}" data-d="${d}" data-p="${pk}">${c1(`${multi?'<span class="tw">▸</span> ':''}${p.t.slice(11,16)} · ${esc(p.sym)}`)}<td></td><td>${sw(mon(p.eur),mon(p.exE))}</td><td>${mon(p.eur)}</td><td>${sw('',pfP(p.exE-p.eur))}</td><td>${usd(p.cap)}</td><td>${p.rMiss?'':sw(rH(p.rI),rH(p.rX))}</td><td></td><td></td></tr>`;
+        dh+=`<tr class="tr${multi?' x':''}" data-d="${d}" data-p="${pk}">${c1(`${multi?'<span class="tw">▸</span> ':''}${p.t.slice(11,16)} · ${esc(p.sym)}`)}<td></td><td>${sw(mon(p.eur),mon(p.exE))}</td><td>${mon(p.eur)}</td><td>${sw('',pfP(p.exE-p.eur))}</td><td>${invU(p.cap,cx.sel)}</td><td>${p.rMiss?'':sw(rH(p.rI),rH(p.rX))}</td><td></td><td></td></tr>`;
         if(multi)for(const a of Object.keys(p.acc).sort()){const q=p.acc[a];
-          dh+=`<tr class="ac" data-d="${d}" data-p="${pk}">${c1(esc(accName(a)))}<td></td><td>${sw(mon(q.eur),mon(q.exE))}</td><td>${mon(q.eur)}</td><td>${sw('',pfP(q.exE-q.eur))}</td><td>${usd(q.cO)}</td><td>${q.cO>0?sw(rH(q.amt/q.cO),rH(q.exU/q.cO)):''}</td><td></td><td></td></tr>`}
+          dh+=`<tr class="ac" data-d="${d}" data-p="${pk}">${c1(esc(accName(a)))}<td></td><td>${sw(mon(q.eur),mon(q.exE))}</td><td>${mon(q.eur)}</td><td>${sw('',pfP(q.exE-q.eur))}</td><td>${invU(q.cO,[a])}</td><td>${q.cO>0?sw(rH(q.amt/q.cO),rH(q.exU/q.cO)):''}</td><td></td><td></td></tr>`}
       }
     }
     // Wochenzeile: aufgeklappt nur „KW 35“, das volle Label bleibt unsichtbar stehen und hält die Breite der ersten Spalte
     // Angeschnittene Woche (der Zeitraum beginnt oder endet in ihr): Beschriftung als Begriff
     const RW=s!==w||e!==addDays(w,6)?t=>gl('rand',t):t=>t;
-    h+=`<tr class="wk" data-w="${w}"><td><span class="wo"><span class="tw">▸</span> ${RW(`<b>${kw}</b>`)}</span><span class="wl"><span class="tw">▸</span> ${RW(`<b>${kw}</b> · ${dm(s)}${DS}${dm(e)}${yy}`)}</span>${nk?`<span class="sm">${gl('nichtkz','nicht in den Kennzahlen')}</span>`:''}</td><td>${np}</td><td><b>${sw(mon(z.nV),mon(z.nN),gN)}</b></td><td>${mon(z.res)}</td><td>${sw(w===cx.cw?gl('offen','offen'):mon(z.fV),mon(z.fN),gF)}</td><td>${usd(invStart(rw,cx.sel,s))}</td><td>${rtSw(rw,'sel','–')}</td><td>${ddSw(rw,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`+dh;
+    h+=`<tr class="wk" data-w="${w}"><td><span class="wo"><span class="tw">▸</span> ${RW(`<b>${kw}</b>`)}</span><span class="wl"><span class="tw">▸</span> ${RW(`<b>${kw}</b> · ${dm(s)}${DS}${dm(e)}${yy}`)}</span>${nk?`<span class="sm">${gl('nichtkz','nicht in den Kennzahlen')}</span>`:''}</td><td>${np}</td><td><b>${sw(mon(z.nV),mon(z.nN),gN)}</b></td><td>${mon(z.res)}</td><td>${sw(w===cx.cw?gl('offen','offen'):mon(z.fV),mon(z.fN),gF)}</td><td>${invU(invStart(rw,cx.sel,s),cx.sel)}</td><td>${rtSw(rw,'sel','–')}</td><td>${ddSw(rw,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`+dh;
   }
   h+=`<tr class="sum"><td>Summe</td><td>${positions(R0).length}</td><td>${sw(mon(T.nV),mon(T.nN))}</td><td>${mon(T.res)}</td><td>${sw(mon(T.fV),mon(T.fN))}</td><td></td><td>${rtSw(R0,'sel','–')}</td><td>${ddSw(R0,'sel','–')}</td><td></td></tr>`;
   if(cwr.length){const T2=pfz(R);h+=`<tr class="sum2"><td>Summe mit laufender Woche</td><td>${positions(R).length}</td><td>${sw(mon(T2.nV),mon(T2.nN))}</td><td>${mon(T2.res)}</td><td>${sw(mon(T2.fV),mon(T2.fN))}</td><td></td><td>${rtSw(R,'sel','–')}</td><td>${ddSw(R,'sel','–')}</td><td></td></tr>`}
@@ -9925,7 +10084,8 @@ function renderGraf(rows,sel,gx){
   const tsub=g.what==='inv'?'am Anfang':g.what==='hit'?'':mode;
   const tline=leg=>esc(title)+(tsub||leg?` <span class="small" style="font-weight:400">${tsub?'· '+tsub+leg:leg.trim()}</span>`:'');
   $('graf-title').innerHTML=tline('');
-  if((g.what==='inv'||(pct&&g.what!=='hit'))&&sel.some(a=>INV[a]!=='ok')){const nf=sel.some(a=>INV[a]==='nofac'),mo=sel.length>1;box.innerHTML=`<p class="small">${nf?`${mo?'Für mindestens ein gewähltes Konto fehlt':'Für dieses Konto fehlt'} der Trading Benefit`:`${mo?'Bei mindestens einem gewählten Konto ist':'Bei diesem Konto ist'} die Investition unbekannt, weil ${invWhy(sel,'der Anfang des Reports fehlt')}`}, Rendite kann nicht berechnet werden. ${nf?'Wähle ihn im':'Siehe'} Reiter „Reports“.</p>`;return}
+  // Ab 0.58 (4): „Trading Benefit fehlt“ bzw. „Investition unbekannt“ als Begriff mit Grund und Konto (invMissTxt)
+  if((g.what==='inv'||(pct&&g.what!=='hit'))&&sel.some(a=>INV[a]!=='ok')){const nf=sel.some(a=>INV[a]==='nofac');box.innerHTML=`<p class="small">${invMissTxt(sel)}${nf?'. Wähle ihn im Reiter „Reports“. Ohne ihn kann das Tool keine Rendite berechnen.':`, weil ${invWhy(sel,'der Anfang des Reports fehlt')}. Die Rendite kann nicht berechnet werden. Siehe Reiter „Reports“.`}</p>`;return}
   const yf=pct?(v=>fR.format(v)):(v=>fI.format(Math.round(v))+CUR()),tf=pct?(v=>fR.format(v)):(v=>fCur(v));
   if(g.what==='period'||g.what==='cum'||g.what==='avg'){
     pts=g.what==='avg'?avgPoints(rows,g.res,g.unit,ex):periodPoints(rows,g.res,g.unit,ex,gx.zero?winKeys(gx.win,g.res):null);if(g.what==='cum')pts=cumulatePoints(pts);
@@ -10286,7 +10446,7 @@ $('fbar').addEventListener('click',e=>{const t=e.target,f=S.ui.flt;
 document.addEventListener('click',e=>{if(FP_OPEN&&!$('fdd-'+FP_OPEN).contains(e.target))closeFpanel()});
 // Ab 0.46: × im Menü (Capture, damit der Knopf das Menü nicht wieder öffnet)
 document.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('.fpx'))return;e.stopPropagation();e.preventDefault();const w=closeFpanel();if(w&&$('fb-'+w))$('fb-'+w).focus()},true);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&FP_OPEN){e.preventDefault();const w=closeFpanel();$('fb-'+w).focus()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&FP_OPEN){e.preventDefault();const w=closeFpanel();if($('fb-'+w))$('fb-'+w).focus()}});
 $('btn-printsum').onclick=()=>printSummary();
 $('disc-more').onclick=e=>{e.preventDefault();const f=$('disc-full');const o=f.style.display==='none';f.style.display=o?'':'none';e.target.textContent=o?'Weniger':'Mehr lesen'};
 $('country').onchange=e=>{S.ui.country=e.target.value;save();render()};
@@ -10367,7 +10527,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   try{const j=JSON.parse(await readText(f));if(!j.deals||!j.accounts)throw new Error(`„${f.name}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`);S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';save();msg('datamsg','ok',`Sicherung geladen: ${Object.keys(S.accounts).length} Konten, ${Object.keys(S.deals).length} Buchungen.`);render()}catch(err){msg('datamsg','bad','Datei konnte nicht geladen werden: '+esc(err.message))}e.target.value=''};
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();msg('datamsg','ok','Alles gelöscht.');render()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.57',VDATE='26.10.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.59',VDATE='27.10.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -10460,7 +10620,7 @@ const ORIG_HTML='Das Original der Trading-Bilanz läuft nur unter genau dieser A
 const GTK='Deine Daten liegen nur in diesem Browser. Die Online-Version und eine heruntergeladene Datei haben getrennte Speicher. Nimm deine Daten mit einer Sicherung mit.';
 document.querySelectorAll('[data-orig]').forEach(e=>{e.innerHTML=ORIG_HTML});
 document.querySelectorAll('[data-gtk]').forEach(e=>{e.textContent=GTK});
-const STEPS=['Verbinde MetaTrader 5 mit deinen Konten (einmalig, am Computer).','Speichere die Reports aus MetaTrader 5 und lade sie ins Tool.','Wähle den Trading Benefit (z. B. ×24).','Lade die Wechselkurse (für Euro und Steuer).','Wallet: Füge die Tag-Daten ein und trage ein, woher die Coins kamen (von Hand oder mit der Börsen-Datei). Empfohlen für „Dein echtes Geld“ und die Krypto-Steuer. Wallet-Dateien sind ein zusätzlicher Weg für Fortgeschrittene.','Genieße die Auswertung.','Sieh dir die Steuer an.','Speichere eine Sicherung.'];
+const STEPS=['Verbinde MetaTrader 5 mit deinen Konten (einmalig, am Computer).','Speichere die Reports aus MetaTrader 5 und lade sie ins Tool.','Wähle den Trading Benefit (z. B. ×24).','Lade die Wechselkurse (für Euro und Steuer).','Wallet: Füge die Tag-Daten ein und trage ein, woher die Coins kamen (von Hand oder mit der Börsen-Datei). Empfohlen für „Dein echtes Geld“ in der Auswertung und die Krypto-Steuer. Wallet-Dateien sind ein zusätzlicher Weg für Fortgeschrittene.','Genieße die Auswertung.','Sieh dir die Steuer an.','Speichere eine Sicherung.'];
 // Ziel je Schritt: Reiter und Element (aufklappen und hinscrollen), bei 1 und 2 das Anleitungs-Fenster ('guide')
 const STEP_GO=[null,['guide','connect'],['guide','save'],['reports','acc-card'],['rates'],['wallet','dt'],['stats'],['tax'],['data']];
 // Status je Schritt: 'ok' erledigt, 'todo' offen, '' neutral (5 ohne Tag-Daten, 6 und 7 immer). Schritt 1 kann das Tool nicht prüfen, er gilt wie 2.
