@@ -27,6 +27,8 @@
   /* Knöpfe (Blau, in hell und dunkel gleich) und Rahmen der Reiter (Gold) */
   --btn:#2f6db5; --btn-dk:#245891;
   --tab-line:#C49A55;
+  /* Ab 0.57: Sand für „In der Liste zeigen“ (springt in „Alle Vorgänge“), keine Bedeutung wie OK, Warnung oder Art */
+  --go-line:#a8946f; --go-bg:#f7f2e9; --go-dk:#8a7653;
   --radius:10px;
   /* Kleine Schrift (0.33 je 1 px größer): --fs-s war 13px, --fs-xs 12px, --fs-xxs 11px */
   --fs-s:14px; --fs-xs:13px; --fs-xxs:12px;
@@ -45,6 +47,7 @@
     --on-mid:#15181b;
     --btn:#2f6db5; --btn-dk:#245891;
     --tab-line:#D4B27A;
+    --go-line:#9c8a6a; --go-bg:#2a251e; --go-dk:#b8a582;
     color-scheme:dark;
   }
 }
@@ -106,6 +109,11 @@ section.on{display:block}
 .drop b{display:block;font-size:16px;margin-bottom:4px}
 button.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:8px;font:inherit;cursor:pointer}
 button.btn:hover{border-color:var(--accent)}
+/* Ab 0.57: „In der Liste zeigen“ überall gleich: Sand und Pfeil vor dem Text; .sm mitten im Satz */
+button.btn.golist{border-color:var(--go-line);background:var(--go-bg);color:var(--ink)}
+button.btn.golist:hover,button.btn.golist:focus-visible{border-color:var(--go-dk)}
+button.btn.golist::before{content:"→ "}
+button.btn.golist.sm{padding:1px 8px;margin-left:4px}
 button.primary{background:var(--btn);border-color:var(--btn);color:#fff}
 /* Spezifischer als die Regeln der Reiter und von .btn:hover, damit z. B. „Fertig“ in den Filtermenüs beim Darüberfahren lesbar bleibt */
 button.btn.primary:hover,button.btn.primary:focus-visible{background:var(--btn-dk);border-color:var(--btn-dk);color:#fff}
@@ -4543,8 +4551,11 @@ function vgJump(ref){const t=ref[0],x=ref.slice(2),v=vgBuild(S).find(v=>t==='m'?
   VG_OPEN.add(v.id);if(vgSeen(v))save();closeFpanel();const c=$('vg-card');if(c.classList.contains('closed'))unfold(c);render();
   const row=c.querySelector(`[data-vg="${CSS.escape(v.id)}"]`);if(!row)return;
   const el=(t==='m'&&row.querySelector(`[data-wk="${CSS.escape(x)}"]`))||row.querySelector('.vgb')||row;
-  const top=document.querySelector('nav').getBoundingClientRect().height+c.querySelector('.sthd').getBoundingClientRect().height;
-  window.scrollBy(0,el.getBoundingClientRect().top-top-4);
+  // Ab 0.57: der Vorgang steht mittig im freien Bereich unter Leiste und stehendem Titel (vorher ganz oben, dort wirkte er verdeckt).
+  // Ist er höher als der freie Bereich, steht sein Anfang oben. Zweiter Durchgang im nächsten Bild, falls Leiste oder Titel (z. B. „← Zurück“) sich noch ändern.
+  const mid=()=>{const top=document.querySelector('nav').getBoundingClientRect().height+c.querySelector('.sthd').getBoundingClientRect().height,
+    r=el.getBoundingClientRect(),free=innerHeight-top;window.scrollBy(0,r.height>free-16?r.top-top-8:r.top+r.height/2-(top+free/2))};
+  mid();requestAnimationFrame(mid);
   el.classList.remove('hl');void el.offsetWidth;el.classList.add('hl')}
 const wJump=k=>vgJump('m:'+k);
 const tagJump=id=>vgJump('t:'+id);
@@ -5229,7 +5240,7 @@ $('wl-modal').addEventListener('click',e=>{
 function addrShow(a){VG_Q=a;apClose();closeModal();const c=$('vg-card');if(c.classList.contains('closed'))unfold(c);render();jumpCard('vg-card')}
 // Ab 0.52 (3): kleines Feld hinter ✎ (in #adpop): „In der Liste zeigen“ (nur mit Bewegungen) und „Entfernen“ (nur, was im Adressbuch steht)
 function apEditH(a){const n=wNMoves(a),A=esc(a);
-  return `<p><b>${esc(wShort(a))}</b></p><div class="row">${n?`<button type="button" class="btn" data-adshow="${A}">In der Liste zeigen</button>`:''}${S.addr[a]?`<button type="button" class="btn danger" data-ad="${A}">Entfernen</button>`:''}</div>`+
+  return `<p><b>${esc(wShort(a))}</b></p><div class="row">${n?`<button type="button" class="btn golist" data-adshow="${A}">In der Liste zeigen</button>`:''}${S.addr[a]?`<button type="button" class="btn danger" data-ad="${A}">Entfernen</button>`:''}</div>`+
     (n?'':'<p class="small">Keine Bewegungen in „Alle Vorgänge“.</p>')+(S.addr[a]?'':'<p class="small">Die Adresse steht nicht im Adressbuch, es gibt nichts zu entfernen.</p>')}
 // Adresse aus dem Adressbuch entfernen (Knopf mit data-ad: × bei einer Wallet, ab 0.52 auch „Entfernen“ im Feld hinter ✎)
 // Ab 0.54 (2): eine Rückfrage für alle fremden Adressen, automatisch erkannt oder von Hand: addrDel löst, was das Tool über die Adresse verknüpft hat,
@@ -5519,7 +5530,7 @@ function apInfoH(a,k){const x=S.addr[a]||null,A=esc(a),m=k?S.wtx[k]:null,lock=!!
   else{who=apWhoH(a,k,lock);
     // Ab 0.54 (6): Übertrag von oder zu einer Wallet ohne bekannte Adresse: Vorschlag über dem Menü, das Menü bleibt auf „– noch unbekannt –“
     const lk=!lock&&!x?agLinkedOf(a):null;if(lk&&lk.sug)who=`<p class="apsg">Vorschlag: <b>${esc(lk.sug)}</b> <button type="button" class="btn primary sm" data-apsug="${esc('w:'+lk.sug)}">Übernehmen</button></p>`+who;
-    if(lock)who+=`<p class="small">Zum Ändern zuerst die Verknüpfung mit Tag lösen: in der Bewegung „Verknüpfung lösen“. <button type="button" class="zlink" data-apmv="${esc(k)}">In der Liste zeigen</button></p>`;
+    if(lock)who+=`<p class="small">Zum Ändern zuerst die Verknüpfung mit Tag lösen: in der Bewegung „Verknüpfung lösen“. <button type="button" class="btn sm golist" data-apmv="${esc(k)}">In der Liste zeigen</button></p>`;
     if(x&&x.own&&!x.tag&&S.wallets.includes(x.wallet))who+=`<p class="small"><button type="button" class="zlink" data-apwr="${S.wallets.indexOf(x.wallet)}">Wallet umbenennen …</button></p>`}
   return top+apAddrH(a)+who+`<div class="apcs"></div><p><button type="button" class="btn sm" data-cp="${A}">Adresse kopieren</button></p><p class="small">Nur zum Zuordnen. Wenn du Geld sendest, kopiere die Adresse immer aus der Quelle.</p>`}
 // Name speichern (Dienst: svcRename, Fremd: Name), aus dem kurzen Feld. Ab 0.54 [E1] mit „Rückgängig“
@@ -7001,7 +7012,7 @@ document.addEventListener('change',e=>{const t=e.target;if(t&&t.matches&&t.match
 // Ab 0.56 (1): Ist die Zeile mit einer Bewegung verknüpft, kommt ihre Wallet aus dem Adressbuch: nur Wallets, „+ Neue Wallet …“ und „Bank“, darunter
 // der Satz zum Lösen der Verknüpfung mit „In der Liste zeigen“ (öffnet die Bewegung aufgeklappt; in „Noch offen“ über data-tdshow)
 function tagWFields(t,p,kind,cur,attr){const ein=kind==='ein',lk=!!tagWAddr(t);
-  const lkH=lk?`<p class="small twlk">Stimmt die Verknüpfung nicht? In der Bewegung „Verknüpfung lösen“, dann sind alle Wahlen wieder da. <button type="button" class="zlink" ${p==='tq'?`data-tdshow="m:${esc(t.wk)}"`:`data-tgmv="${esc(t.wk)}"`}>In der Liste zeigen</button></p>`:'';
+  const lkH=lk?`<p class="small twlk">Stimmt die Verknüpfung nicht? In der Bewegung „Verknüpfung lösen“, dann sind alle Wahlen wieder da. <button type="button" class="btn sm golist" ${p==='tq'?`data-tdshow="m:${esc(t.wk)}"`:`data-tgmv="${esc(t.wk)}"`}>In der Liste zeigen</button></p>`:'';
   return `<div class="tagwf" data-twk="${ein?'ein':'aus'}"><label class="twl"><span>${ein?'Woher kamen die Coins?':'Wohin gingen die Coins?'}</span><br>${tagWSel(kind,`id="${p}-w" data-tw="w"${attr?' '+attr:''}`,cur,lk)}</label>${lkH}`+
     `<label class="twe" hidden>Euro laut Kontoauszug<br><input type="text" class="n" id="${p}-eur" data-tw="eur" placeholder="freiwillig"></label><div class="twg" hidden>${giftH(p,kind)}</div></div>`}
 function tagWUI(R){const v=R.querySelector('[data-tw="w"]').value,g=v==='~g';R.querySelector('.twe').hidden=v!=='~b';R.querySelector('.twg').hidden=!g;if(g)pnFill()}
@@ -7370,7 +7381,7 @@ function tdCard(x){const P=x.mv&&S.wtx[x.mv]?tdMvParts(x,x.sug2):null;
   const pv=tdProvH(x),i0=head0.indexOf('<p class="tdcs">'),i1=i0<0?head0.indexOf('</div>')+6:head0.indexOf('</p>',i0)+4,head=pv?head0.slice(0,i1)+pv+head0.slice(i1):head0;
   const why=P&&x.why?`<p class="small tdwhy">${x.why}</p>`:'';
   const sug=(x.sug2||(P?P.sug:x.sugH)||'');
-  const show=x.ref?`<div class="row tdshowr"><button type="button" class="btn tdshow" data-tdshow="${esc(x.ref)}">In der Liste zeigen</button></div>`:'';
+  const show=x.ref?`<div class="row tdshowr"><button type="button" class="btn golist tdshow" data-tdshow="${esc(x.ref)}">In der Liste zeigen</button></div>`:'';
   const slot=P?P.slot:x.form&&!TD_KIND?'<div class="tdslot" id="td-slot"></div>':'';
   const alt=P?P.alt+(x.alt||''):(x.alt||'');
   // Ab 0.53 (B1): auch gelbe Vorschläge, die für die Steuer zählen (tax, z. B. Tag-Zeile mit Vorschlag)
