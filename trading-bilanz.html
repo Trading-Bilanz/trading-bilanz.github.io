@@ -79,6 +79,11 @@ section{scroll-margin-top:var(--navh,70px)}
 .dot{width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;font-size:12px;font-weight:700;background:var(--line);color:var(--ink2)}
 .dot.ok{background:var(--pos);color:var(--on-mid)}
 .dot.todo{background:var(--accent);color:var(--on-mid)}
+/* Ab 0.61: Dateien warten in „＋ Daten“ (Reiter Wallet, Kacheln) */
+.dot.wait{background:var(--sig-y);color:var(--sig-y-ink)}
+.dtwh{overflow-wrap:anywhere}
+/* Ab 0.61: Dateiname in einer Meldung, zu lang für die Zeile: gekürzt mit „…“ */
+.fnq{white-space:nowrap}.fnm{display:inline-block;max-width:calc(100% - 1.2em);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
 .trow{display:contents}
 @media (max-width:700px){
   nav .in{flex-direction:column;overflow-x:visible;gap:3px;padding:6px 8px}
@@ -1770,7 +1775,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <!-- Ab 0.53: wie man die Datei bei Bitvavo bekommt, steht in der Anleitung (Abschnitt „Börsen-Datei laden“) -->
     <p class="small"><a href="https://trading-bilanz.github.io/anleitung.html#boerse-datei" target="_blank" rel="noopener">So bekommst du die Datei bei Bitvavo: Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
     <div class="drop" id="bxdrop" role="button" tabindex="0"><b>Börsen-Datei (.csv) hierher ziehen</b><span class="small">oder klicken, um sie auszuwählen</span></div>
-    <input type="file" id="bxfile" accept=".csv,text/csv" hidden>
+    <input type="file" id="bxfile" accept=".csv,text/csv" multiple hidden>
     <p class="small dhint">Du kannst Dateien auch an jeder anderen Stelle ins Tool ziehen.</p>
     <div id="bxmsg"></div>
     <div id="bxprev"></div>
@@ -2222,12 +2227,14 @@ function parseReport(text){
 }
 // Ab 0.51 (6): Rückgabe {n (gelesene Reports), added, dup, upd} für den Toast beim Ziehen
 async function loadFiles(files){
-  const out=[];let added=0,dup=0,upd=0,nOk=0;
+  const out=[],nw=[];let added=0,dup=0,upd=0,nOk=0;
   for(const f of files){
     try{
       const txt=await readText(f);
       const r=parseReport(txt);
       if(!r.acc||!r.deals.length){out.push(`<b>${esc(f.name)}</b>: kein MT5-Kontoreport erkannt. Lade die Datei aus MT5 (Verlauf → rechte Maustaste → Bericht → HTML). Das Tool kann eine PDF- oder Excel-Datei nicht lesen.`);continue;}
+      // Ab 0.61: neu angelegte Konten merken (nw, ohne Trading Benefit: dropFiles springt dorthin)
+      if(!S.accounts[r.acc]&&!nw.includes(r.acc))nw.push(r.acc);
       const A=S.accounts[r.acc]||(S.accounts[r.acc]={name:'',factor:null,cur:r.cur,holder:r.holder,company:r.company,repDate:''});
       // Buchungen, die schon da sind, aber in Kontostand, Betrag oder Gebühren abweichen, nimmt das Tool aus diesem Report, wenn er nicht älter ist
       // als der neueste schon geladene Report des Kontos (ohne Datum: immer). Grund: Ein früh gespeicherter Report kann einen Kontostand enthalten,
@@ -2248,7 +2255,7 @@ async function loadFiles(files){
   msg('loadmsg',added||dup?'ok':'warn',out.join('<br>'));
   render();
   if(added) autoRates();
-  return {n:nOk,added,dup,upd};
+  return {n:nOk,added,dup,upd,nw:nw.filter(a=>S.accounts[a]&&!(S.accounts[a].factor>0))};
 }
 // Ab 0.51 (6): Text aus Bytes (UTF-16 der MT5-Reports erkennen), auch für das Erkennen gezogener Dateien (fileKind)
 function bufText(buf){let enc='utf-8';if(buf[0]===0xFF&&buf[1]===0xFE)enc='utf-16le';else if(buf[0]===0xFE&&buf[1]===0xFF)enc='utf-16be';else if(buf.length>3&&buf[1]===0&&buf[3]===0)enc='utf-16le';return new TextDecoder(enc).decode(buf)}
@@ -4570,11 +4577,13 @@ async function wfLoad(files){
   for(const f of files){
     if(!/\.csv$/i.test(f.name)&&!/csv|text/i.test(f.type||'')){errs.push(`<b>${esc(f.name)}</b>: Das ist keine CSV-Datei. ${W_BAD}`);continue}
     // Ab 0.44: Datei einer Börse (Bitvavo) geht in den Bereich „Börsen“. Datei ohne bekanntes USDC/USDT: Vorauswahl „Nicht verwenden“ (skip).
-    try{const t=await readText(f);if(bxFmt(t)){bxLoadText(f.name,t);continue}
+    try{const t=await readText(f);if(bxFmt(t)){bxQueue([{name:f.name,text:t}]);continue}
       const P=parseWallet(t,f.name);if(P.err){errs.push(`<b>${esc(f.name)}</b>: ${P.err}`);continue}
       // Ab 0.56 (2): cur = Wallet der Adresse laut Adressbuch beim Einlesen (auch eine vorläufige); die Vorschau bietet die Wahl, vorbelegt mit ihr
       const A=S.addr[P.addr],cur=A&&!A.tag&&!A.pay&&S.wallets.includes(A.wallet)?A.wallet:'';fs.push({name:f.name,text:t,P,addr:P.addr,wallet:cur,cur,newName:'',net:'',skip:P.rows.length?0:1})}
     catch(e){errs.push(`<b>${esc(f.name)}</b>: Die Datei ließ sich nicht lesen.`)}}
+  // Ab 0.61: Wartet noch eine Vorschau (nichts davon übernommen), kommen ihre Dateien dazu (ohne die gleichnamigen neuen), statt verloren zu gehen
+  if(fs.length&&WFP&&!WFP.stored&&!WFP.re&&!(WFP.done||[]).length){const nm=new Set(fs.map(f=>f.name));fs.push(...WFP.files.filter(f=>!nm.has(f.name)))}
   // Ab 0.43: die Datei mit den meisten Bewegungen zuerst; mehrere Dateien: erst je Datei die Wallet (ask), dann die Wahl (mode)
   fs.sort((a,b)=>(b.P.rows.length+b.P.unk.length)-(a.P.rows.length+a.P.unk.length));
   WFP=fs.length?{files:fs,tok:{},ask:fs.length>1?0:null,mode:fs.length>1?null:'all',done:[]}:null;
@@ -4779,7 +4788,8 @@ function wfSave(){
   // Ab 0.44: beim ersten Kartenguthaben (WUSD) die Erklärung
   if(!S.ui.wusdSeen&&st.neu.some(k=>S.wtx[k]&&wCardTok(S.wtx[k]))){S.ui.wusdSeen=1;save();parts.push(`Dein Kartenguthaben steht als WUSD da und zählt wie USDC. ${gl('kartenguthaben','Warum?')}`)}
   parts.push(st.allOpen?`Noch offen: ${fI.format(st.allOpen)}. <button type="button" class="zlink" data-wfgo>Noch offen</button>`:'Nichts ist offen.');
-  msg('wfmsg','ok',parts.join(' '));render();
+  // Ab 0.61: wartet noch eine Börsen-Datei, sagt es die Meldung (mit Knopf)
+  msg('wfmsg','ok',parts.join(' ')+dtWaitH('wf'));dtRe();
 }
 $('wfprev').addEventListener('change',e=>{const i=e.target.dataset.wfw;
   // Ab 0.44: Ein Name, der bei einer früheren Datei neu eingetippt wurde, steht direkt als Wallet (wImport legt sie an)
@@ -4794,7 +4804,9 @@ $('wfprev').addEventListener('input',e=>{const j=e.target.dataset.wfn;if(j==null
   // Ab 0.50 Nachtrag 2 (4.1): spätere Dateien, die den alten Namen gewählt haben, bekommen den neuen
   {const f=WFP.files[+j],o=f.newName.trim(),nn=e.target.value.trim();if(o&&o!==nn)for(const g of WFP.files.slice(+j+1))if(g.wallet===o)g.wallet=nn}WFP.files[+j].newName=e.target.value;const pos=e.target.selectionStart;
   renderWfPrev();const n=$('wfprev').querySelector(`[data-wfn="${j}"]`);if(n){n.focus();n.setSelectionRange(pos,pos)}});
-$('wfprev').addEventListener('click',e=>{if(e.target.closest('#btn-wfcancel')){WFP=null;needReset($('wfprev'));renderWfPrev();msg('wfmsg','','');return}
+// Ab 0.61: nach „Abbrechen“ und „Fertig“ der Hinweis auf eine wartende Börsen-Datei (sonst leer wie bisher)
+const wfEnd=()=>{const h=dtWaitH('wf').trim();msg('wfmsg',h?'info':'',h)};
+$('wfprev').addEventListener('click',e=>{if(e.target.closest('#btn-wfcancel')){WFP=null;needReset($('wfprev'));renderWfPrev();wfEnd();dtRe();return}
   if(e.target.closest('#btn-wfsave')){wfSave();return}
   // Ab 0.43: mehrere Dateien der Reihe nach
   if(WFP&&e.target.closest('[data-wfask]')){const f=WFP.files[WFP.ask];{const L=wfNeed([WFP.ask]);if(L.length)return needMark($('wfprev'),L)}for(const g of WFP.files)if(g!==f&&g.addr===f.addr&&!wfWallet(g)){g.wallet=f.wallet;g.newName=f.newName;if(f.later)g.later=1}WFP.ask++;renderWfPrev();const b=$('wfprev').querySelector('[data-wfask],[data-wfmode]');if(b)b.focus();return}
@@ -4808,7 +4820,7 @@ $('wfprev').addEventListener('click',e=>{if(e.target.closest('#btn-wfcancel')){W
   const md=e.target.closest('[data-wfmode]');if(md&&WFP){WFP.mode=md.dataset.wfmode;renderWfPrev();const b=$('wfprev').querySelector('#btn-wfsave');if(b)b.focus();return}
   if(WFP&&e.target.closest('[data-wfnext]')){WFP.last=null;renderWfPrev();return}
   if(WFP&&e.target.closest('[data-wfrest]')){WFP.files=WFP.files.filter(f=>!WFP.done.includes(wfWallet(f)));WFP.mode='all';WFP.last=null;WZ_FOCUS=null;render();return}
-  if(e.target.closest('[data-wfdone]')){WFP=null;WZ_FOCUS=null;msg('wfmsg','','');render();return}
+  if(e.target.closest('[data-wfdone]')){WFP=null;WZ_FOCUS=null;wfEnd();dtRe();return}
   // Ab 0.43: erkannte Brücke, Paar oder Kette rückgängig machen bzw. doch übernehmen
   const no=e.target.closest('[data-wfno]');if(no&&WFP){const v=no.dataset.wfno,[t,ko,x]=v.split('|'),L=WFP.no=WFP.no||[],i=L.findIndex(y=>y.v===v);
     if(i>=0)L.splice(i,1);else{const er=(WFP.ER||[]).find(y=>y.v===v);L.push(Object.assign({v,t:er?er.t:'',ko},t==='b'?{ki:x}:t==='t'?{ki:x,tx:1}:{cid:+x}))}
@@ -4884,14 +4896,27 @@ $('df-list').addEventListener('click',e=>{const b=e.target.closest('[data-dfb]')
 /* ---------------- Ab 0.44: Börsen-Datei (Bitvavo) einlesen: Vorschau (BXP) und Übernehmen ----------------
    BXP = {P (parseBitvavo), name, w (Wallet der Börse oder '+'), nn (Name einer neuen Wallet), ch {Nummer: 'replace'|'keep'|'both'}, aw {Zieladresse: Wallet}} */
 let BXP=null;
+// Ab 0.61: weitere Börsen-Dateien {name, text}, die nach der offenen Vorschau drankommen (nach „Übernehmen“ oder „Abbrechen“ die nächste)
+let BX_Q=[];
 $('bx-fmts').textContent=`Bisher kann das Tool Dateien von ${bxNames()} lesen (Transaktionen als CSV).`;
-function bxLoadText(name,t){msg('bxmsg','','');BXP=null;needReset($('bxprev'));const F=bxFmt(t)||BX_FMT[0],P=F.parse(t);
-  if(P.err){msg('bxmsg','bad',`<b>${esc(name)}</b>: ${P.err}`)}
-  // Ab 0.51 (1, ersetzt 0.46 3.3): gibt es keine Wallet mit dem erkannten Namen, ist „+ Neue Wallet …“ mit ihm vorbelegt (z. B. „Bitvavo“)
-  else{const w=F.w(S);BXP={P,name,w:S.wallets.includes(w)?w:'+',nn:S.wallets.includes(w)?'':w,ch:{},aw:{}}}
+// Ab 0.61: pre = Meldung davor, wenn die Datei aus der Warteschlange kommt (Ergebnis von „Übernehmen“, nach „Abbrechen“ ''). Eine Datei mit Fehler
+// nennt die Meldung, dann kommt gleich die nächste aus BX_Q. Warten danach noch Dateien, sagt die Meldung, wie viele.
+function bxLoadText(name,t,pre){const M=pre?[pre]:[];let bad=0;BXP=null;needReset($('bxprev'));
+  for(let x={name,text:t};x;x=!BXP&&BX_Q.length?BX_Q.shift():null){const F=bxFmt(x.text)||BX_FMT[0],P=F.parse(x.text);
+    if(P.err){M.push(`<b>${esc(x.name)}</b>: ${P.err}`);bad=1;continue}
+    // Ab 0.51 (1, ersetzt 0.46 3.3): gibt es keine Wallet mit dem erkannten Namen, ist „+ Neue Wallet …“ mit ihm vorbelegt (z. B. „Bitvavo“)
+    const w=F.w(S);BXP={P,name:x.name,w:S.wallets.includes(w)?w:'+',nn:S.wallets.includes(w)?'':w,ch:{},aw:{}}}
+  const q=BX_Q.length,rest=q===1?`die Börsen-Datei „${esc(BX_Q[0].name)}“`:`${fI.format(q)} Börsen-Dateien`;
+  if(BXP&&pre!=null)M.push(`Nächste Börsen-Datei: „${esc(BXP.name)}“.${q?` Danach ${q===1?'kommt':'kommen'} noch ${rest}.`:''}`);
+  else if(BXP&&q)M.push(`Danach ${q===1?'kommt':'kommen'} noch ${rest}.`);
+  if(!BXP){const h=dtWaitH('bx');if(h)M.push(h.trim())}
+  msg('bxmsg',bad?(pre?'warn':'bad'):pre?'ok':'info',M.join('<br>'));
   if(!DT.open)dtOpen('bx');else{DT.pane='bx';render();dtRender()}renderBxPrev();
   const b=$('bxprev').querySelector('.tprev');if(b){b.classList.remove('hl');void b.offsetWidth;b.classList.add('hl')}}
-async function bxLoad(f){let t;try{t=await readText(f)}catch(e){msg('bxmsg','bad','Die Datei ließ sich nicht lesen.');return}bxLoadText(f.name,t)}
+// Ab 0.61: Börsen-Dateien in die Warteschlange. Ist keine Vorschau offen, kommt die erste gleich, sonst bleibt die offene Vorschau stehen.
+function bxQueue(L){if(!L.length)return;BX_Q.push(...L);if(!BXP){const x=BX_Q.shift();bxLoadText(x.name,x.text);return}
+  const q=BX_Q.length;msg('bxmsg','info',`Zuerst diese Vorschau. Danach ${q===1?`kommt die Börsen-Datei „${esc(BX_Q[0].name)}“`:`kommen ${fI.format(q)} Börsen-Dateien`}.`);dtPane('bx')}
+async function bxLoad(files){const L=[];for(const f of files){try{L.push({name:f.name,text:await readText(f)})}catch(e){msg('bxmsg','bad',`<b>${esc(f.name)}</b>: Die Datei ließ sich nicht lesen.`)}}bxQueue(L)}
 const bxW=()=>BXP?(BXP.w==='+'?BXP.nn.trim():BXP.w):'';
 // Ab 0.46 (3.3): Vorschau als kleine Tabellen (Käufe und Verkäufe: Datum · Art · Menge · Euro; darunter Überträge und Einzahlungen), Fragen abgesetzt.
 // Je unbekannter Empfangsadresse eine Frage (freiwillig, jederzeit änderbar, auch zurück auf „weiß ich nicht“). Ohne Wahl wird die Auszahlung ein
@@ -4944,23 +4969,27 @@ function bxSave(){const D=BXP,w=bxW();if(!D)return;if(!w)return needMark($('bxpr
     [cnt('rest'),`Rest bei ${w}, den die Käufe und Auszahlungen nicht erklären`,`Reste bei ${w}, die die Käufe und Auszahlungen nicht erklären`],[cnt('gap'),'fehlender Einkauf','fehlende Einkäufe']],nk0=nk.reduce((a,x)=>a+x[0],0),nw=nu.length-nk0;
   const neu=nu.length?` Dadurch ${nu.length===1?'steht 1 neuer Punkt':`stehen ${fI.format(nu.length)} neue Punkte`} in „Noch offen“: ${und([...nk.filter(x=>x[0]).map(x=>(x[0]===1&&/^(Rest|fehlender)/.test(x[1])?'ein ':fI.format(x[0])+' ')+(x[0]===1?x[1]:x[2])),...(nw?[pl(nw,'weiterer Punkt','weitere Punkte')]:[])])}.`:'';
   const tsT=ts?` Zu ${pl(ts,'Tag-Zeile','Tag-Zeilen')} gibt es jetzt einen Vorschlag.`:'';
-  msg('bxmsg','ok',[st.neu?pl(st.neu,'neuer Eintrag','neue Einträge'):'',st.ersetzt?pl(st.ersetzt,'Eintrag ersetzt','Einträge ersetzt'):'',st.behalten?pl(st.behalten,'Eintrag behalten','Einträge behalten'):'',
+  const T=[st.neu?pl(st.neu,'neuer Eintrag','neue Einträge'):'',st.ersetzt?pl(st.ersetzt,'Eintrag ersetzt','Einträge ersetzt'):'',st.behalten?pl(st.behalten,'Eintrag behalten','Einträge behalten'):'',
     st.xfer?pl(st.xfer,'Übertrag neu','Überträge neu'):'',st.xferUpd?pl(st.xferUpd,'Übertrag ergänzt','Überträge ergänzt'):'',st.dep?pl(st.dep,'Einzahlung zugeordnet','Einzahlungen zugeordnet'):'',
-    st.rest?pl(st.rest,'Rest-Gebühr ersetzt','Rest-Gebühren ersetzt'):'',st.openOut?pl(st.openOut,'Auszahlung mit offenem Ziel','Auszahlungen mit offenem Ziel'):'',st.openIn?pl(st.openIn,'Einzahlung mit offener Herkunft','Einzahlungen mit offener Herkunft'):''].filter(Boolean).join(' · ')+'.'+(n?` ${pl(n,'Bewegung','Bewegungen')} zugeordnet.`:'')+esc(neu)+esc(tsT))}
+    st.rest?pl(st.rest,'Rest-Gebühr ersetzt','Rest-Gebühren ersetzt'):'',st.openOut?pl(st.openOut,'Auszahlung mit offenem Ziel','Auszahlungen mit offenem Ziel'):'',st.openIn?pl(st.openIn,'Einzahlung mit offener Herkunft','Einzahlungen mit offener Herkunft'):''].filter(Boolean).join(' · ')+'.'+(n?` ${pl(n,'Bewegung','Bewegungen')} zugeordnet.`:'')+esc(neu)+esc(tsT);
+  // Ab 0.61: nächste Börsen-Datei aus der Warteschlange (die Meldung bleibt davor stehen), sonst Hinweis auf wartende Wallet-Dateien
+  if(BX_Q.length){const x=BX_Q.shift();bxLoadText(x.name,x.text,T)}else{msg('bxmsg','ok',T+dtWaitH('bx'));dtRe()}}
 $('bxprev').addEventListener('change',e=>{if(!BXP)return;const t=e.target;
   if(t.matches('[data-bxw]')){BXP.w=t.value;renderBxPrev();const n=$('bxprev').querySelector('[data-bxn]');(n||$('bxprev').querySelector('[data-bxw]')).focus();return}
   if(t.matches('[data-bxc]')){BXP.ch[+t.dataset.bxc]=t.value;return}
   // „+ Neue Wallet …“: das Namensfeld daneben (select[data-wnew]) legt die Wallet an und meldet sich danach mit dem Namen
   if(t.matches('[data-bxa]')){if(t.value==='+')return;if(t.value)BXP.aw[t.dataset.bxa]=t.value;else delete BXP.aw[t.dataset.bxa];renderBxPrev();const s=$('bxprev').querySelector(`[data-bxa="${CSS.escape(t.dataset.bxa)}"]`);if(s)s.focus()}});
 $('bxprev').addEventListener('input',e=>{if(!BXP||!e.target.matches('[data-bxn]'))return;BXP.nn=e.target.value;const pos=e.target.selectionStart;renderBxPrev();const n=$('bxprev').querySelector('[data-bxn]');if(n){n.focus();n.setSelectionRange(pos,pos)}});
-$('bxprev').addEventListener('click',e=>{if(e.target.closest('#btn-bxcancel')){BXP=null;needReset($('bxprev'));renderBxPrev();msg('bxmsg','','');return}if(e.target.closest('#btn-bxsave'))bxSave()});
+// Ab 0.61: „Abbrechen“ zeigt die nächste Börsen-Datei aus der Warteschlange bzw. den Hinweis auf wartende Wallet-Dateien
+$('bxprev').addEventListener('click',e=>{if(e.target.closest('#btn-bxcancel')){BXP=null;if(BX_Q.length){const x=BX_Q.shift();bxLoadText(x.name,x.text,'');return}
+  needReset($('bxprev'));renderBxPrev();const h=dtWaitH('bx').trim();msg('bxmsg',h?'info':'',h);dtRe();return}if(e.target.closest('#btn-bxsave'))bxSave()});
 $('bxdrop').onclick=()=>$('bxfile').click();
 $('bxdrop').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('bxfile').click()}});
 // Ab 0.51 (6): Dateien einer anderen Art gehen an ihren Ort (zoneFiles)
-$('bxfile').addEventListener('change',e=>{zoneFiles(e.target.files,'bx',L=>bxLoad(L[0]));e.target.value=''});
+$('bxfile').addEventListener('change',e=>{zoneFiles(e.target.files,'bx',bxLoad);e.target.value=''});
 ['dragenter','dragover'].forEach(ev=>$('bxdrop').addEventListener(ev,e=>{e.preventDefault();$('bxdrop').classList.add('over')}));
 ['dragleave','drop'].forEach(ev=>$('bxdrop').addEventListener(ev,e=>{e.preventDefault();$('bxdrop').classList.remove('over')}));
-$('bxdrop').addEventListener('drop',e=>zoneFiles(e.dataTransfer.files,'bx',L=>bxLoad(L[0])));
+$('bxdrop').addEventListener('drop',e=>zoneFiles(e.dataTransfer.files,'bx',bxLoad));
 // Coin als Text (ohne HTML): bestätigter Token „USDC (WUSD)“
 const wCoinT=m=>m.tok?`${m.coin} (${m.tok.sym})`:m.coin+(m.bridged?` (${m.bridged})`:W_CONTRACTS[m.contract]&&W_CONTRACTS[m.contract].sym?` (${W_CONTRACTS[m.contract].sym})`:'');
 // Text zum Tausch im selben Konto: „Tausch WUSD → USDC im selben Konto“ (raus → rein)
@@ -8611,7 +8640,8 @@ function renderTabs(st){
     let dot='';
     if(k==='reports')dot=`<span class="dot ${st.reports?'ok':'todo'}">${st.reports?'✓':'1'}</span>`;
     else if(k==='rates')dot=`<span class="dot ${st.rates?'ok':(Object.keys(S.accounts).length?'todo':'')}">${st.rates?'✓':'2'}</span>`;
-    else if(k==='wallet'){const has=Object.keys(S.tag).length;const ok=has&&!cryptoCalc().short.some(s=>!cxKept(s))&&!wOpenN();dot=`<span class="dot ${ok?'ok':(has?'todo':'')}">${ok?'✓':'3'}</span>`}
+    // Ab 0.61: „!“, solange Börsen- oder Wallet-Dateien in „＋ Daten“ warten
+    else if(k==='wallet'){const has=Object.keys(S.tag).length;const ok=has&&!cryptoCalc().short.some(s=>!cxKept(s))&&!wOpenN();dot=dtWaitN()?'<span class="dot wait" role="img" aria-label="Dateien warten">!</span>':`<span class="dot ${ok?'ok':(has?'todo':'')}">${ok?'✓':'3'}</span>`}
     const lab=k==='tax'?taxLabel():l;
     return `<button data-t="${k}" class="${S.ui.tab===k?'on':''}">${dot}<span class="lbl">${lab}</span></button>`});
   $('tabs').innerHTML=`<div class="trow">${btns.slice(0,4).join('')}</div><div class="trow">${btns.slice(4).join('')}</div>`;
@@ -8952,7 +8982,7 @@ const inRange=(d,rg)=>(!rg.from||d>=rg.from)&&(!rg.to||d<=rg.to);
 // Leiste unter den Reitern, nur im Reiter Wallet. Ab 0.44: Zeitraum · Wallets · ＋ Daten · Noch offen (Zahl, rot bei steuerlich wichtig) · Land.
 // Stufen (fitWbar, #wbar[data-st]): 1 Zeitraum lang, 2 Zeitraum kurz, 3 „Offen“ statt „Noch offen“, 4 nur Symbole. Die erste, die in eine Zeile passt.
 function wbHtml(st){const T=LAST_TODO||{n:0,nW:0},rg=wRange(),n=T.n||0,badge=`<span class="wbn${T.lv==='r'?' imp':T.lv==='y'?' chk':T.lv==='g'?' inf':''}">${n?fI.format(n):''}</span>`,sym=t=>`<span class="wbi" aria-hidden="true">${t}</span>`;
-  return {wr:fbBtn(2,'range',st>=2?fltRangeShort(rg):rg.label),wl:st>=4?sym('▤'):'Wallets',dt:st>=4?sym('＋'):'＋ Daten',
+  return {wr:fbBtn(2,'range',st>=2?fltRangeShort(rg):rg.label),wl:st>=4?sym('▤'):'Wallets',dt:(st>=4?sym('＋'):'＋ Daten ')+(dtWaitN()?'<span class="wbn chk">!</span>':''),
     td:(st>=4?(n?'':sym('✓')):st>=3?'Offen ':'Noch offen ')+badge,ld:`<span class="ft">${cxLand()}</span><span class="fc">▾</span>`}}
 let WB_ST=1;
 function fitWbar(){const fin=$('wbar').querySelector('.fin'),cs=getComputedStyle(fin),avail=fin.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),gap=parseFloat(cs.columnGap)||0;
@@ -8961,7 +8991,7 @@ function fitWbar(){const fin=$('wbar').querySelector('.fin'),cs=getComputedStyle
   // gemessen ohne Umbruch und ohne Schrumpfen (Klasse meas), damit jede Stufe ihre volle Breite zeigt
   $('wbar').classList.add('meas');let st=1;for(;st<=4;st++){set(st);const w=ids.reduce((s,id)=>s+$(id).getBoundingClientRect().width,0)+gap*(ids.length-1);if(w<=avail+0.5)break}
   $('wbar').classList.remove('meas');WB_ST=Math.min(st,4);if(st>4)set(4);$('wbar').dataset.st=WB_ST;
-  const T=LAST_TODO||{n:0,nW:0};$('wb-wl').setAttribute('aria-label','Wallets');$('wb-dt').setAttribute('aria-label','Daten hinzufügen');
+  const T=LAST_TODO||{n:0,nW:0};$('wb-wl').setAttribute('aria-label','Wallets');{const n=dtWaitN();$('wb-dt').setAttribute('aria-label',`Daten hinzufügen${n?`, ${fI.format(n)} ${n===1?'Datei wartet':'Dateien warten'}`:''}`)}
   $('wb-td').setAttribute('aria-label',`Noch offen: ${T.n?fI.format(T.n)+(T.nW?`, davon ${fI.format(T.nW)} fehlt für die Steuer`:''):'nichts offen'}`)}
 function renderWbar(show){
   $('wbar').classList.toggle('on',show);
@@ -10790,6 +10820,27 @@ const wzHold=()=>DT.open&&DT.guide;
 const dtHandN=()=>S.cx.filter(c=>c.src!=='datei'&&!c.bv&&!c.feeOf&&!c.brk).length+Object.values(S.tag).filter(t=>t.hand).length;
 function wzOk(n){if(n===5)return dtHandN()>0;const st=S.ui.wz.st[n];if(st==='ok')return true;
   return n===1?Object.keys(S.tag).length>0:n===2?S.cx.some(c=>c.kind!=='uebertrag'&&!c.wk):n===3?Object.keys(S.wtx).length>0:false}
+/* Ab 0.61: Dateien, die in „＋ Daten“ auf eine Aktion warten (Vorschau noch nicht übernommen). 'bx' Börse: offene Vorschau BXP und Warteschlange
+   BX_Q, 'wf' Wallet: WF_PEND (vor „Verstanden“) bzw. die Dateien der Vorschau WFP ohne die schon übernommenen Wallets. Reihenfolge wie DT_STEPS:
+   Börse vor Wallet. Kacheln, Reiter „Wallet“ und Knopf „＋ Daten“ zeigen dann „!“, nach dem Übernehmen nennt die Meldung den nächsten Bereich. */
+const wfWaitL=()=>WF_PEND?WF_PEND:WFP&&!WFP.stored?WFP.files.filter(f=>!(WFP.done||[]).includes(wfWallet(f))):[];
+function dtWait(p){return p==='bx'?(BXP?1:0)+BX_Q.length:p==='wf'?wfWaitL().length:0}
+const dtWaitN=()=>dtWait('bx')+dtWait('wf');
+const dtWaitNext=ex=>DT_STEPS.find(p=>p!==ex&&dtWait(p))||'';
+// Text je Bereich: „Börsen-Datei „x.csv““, „2 Wallet-Dateien“ (h = als HTML, nach „Die“). Ein langer Name endet mit „…“: im HTML so weit, wie er
+// in die Zeile passt (.fnm), im Toast nach 32 Zeichen.
+function dtWaitT(p,h){const n=dtWait(p),a=p==='bx'?'Börsen-Datei':'Wallet-Datei';if(n!==1)return `${fI.format(n)} ${a}en`;
+  const nm=(p==='bx'?(BXP?BXP.name:(BX_Q[0]||{}).name):(wfWaitL()[0]||{}).name)||'';
+  return h?`${a} <span class="fnq">„<span class="fnm" title="${esc(nm)}">${esc(nm)}</span>“</span>`:`${a} „${nm.length>32?nm.slice(0,31)+'…':nm}“`}
+// Alle wartenden Bereiche als Text für den Toast („Börsen-Datei „x.csv“ und 2 Wallet-Dateien“)
+const dtWaitAll=()=>DT_STEPS.filter(p=>dtWait(p)).map(p=>dtWaitT(p)).join(' und ');
+// Satz mit Knopf für die Meldung nach Übernehmen oder Abbrechen in Bereich ex, leer, wenn sonst nichts wartet
+function dtWaitH(ex){const p=dtWaitNext(ex);if(!p)return '';const n=dtWait(p);
+  return ` <span class="dtwh" data-dtwh="${p}">Die ${dtWaitT(p,1)} ${n===1?'wartet':'warten'} noch${p==='bx'?' auf „Übernehmen“':WF_PEND?' auf „Verstanden“':''}. <button type="button" class="zlink" data-dtwait="${p}">${p==='bx'?'Weiter zu den Börsen':'Weiter zu den Wallet-Dateien'}</button></span>`}
+// Hinweise, die nicht mehr stimmen (der Bereich wartet nicht mehr), aus den Meldungen nehmen; bleibt die Meldung leer, fällt sie weg
+function dtWaitClean(){for(const e of document.querySelectorAll('.dtwh'))if(!dtWait(e.dataset.dtwh)){const m=e.closest('.msg');e.remove();if(m&&!m.textContent.trim())m.remove()}}
+// Neu zeichnen nach einer Änderung an BXP, BX_Q, WFP oder WF_PEND (Kacheln, Reiter, Knopf)
+const dtRe=()=>{render();if(DT.open)dtRender()};
 // Kurzer Stand je Kachel („11 Zeilen“, „9 Einträge“)
 function dtStat(n){const pl=(x,a,b)=>`${fI.format(x)} ${x===1?a:b}`;
   if(n===1){const x=Object.keys(S.tag).length;return x?pl(x,'Zeile','Zeilen'):''}
@@ -10797,7 +10848,7 @@ function dtStat(n){const pl=(x,a,b)=>`${fI.format(x)} ${x===1?a:b}`;
   if(n===3){const x=wFileList(S).length;return x?pl(x,'Datei','Dateien'):''}
   if(n===5){const x=dtHandN();return x?pl(x,'Eintrag','Einträge'):''}
   return ''}
-function dtRender(){const n=DT.step,g=DT.guide,N=DT_STEPS.length,P=DT_STEPS[n-1];
+function dtRender(){const n=DT.step,g=DT.guide,N=DT_STEPS.length,P=DT_STEPS[n-1];dtWaitClean();
   $('dt-t').textContent=g?`Schritt ${n} von ${N}`:'＋ Daten';
   $('dt-guide').innerHTML=g?`<div class="dtbar" role="progressbar" aria-valuemin="1" aria-valuemax="${N}" aria-valuenow="${n}" aria-label="Schritt ${n} von ${N}"><span style="width:${n/N*100}%"></span></div><p class="dtgt"><b>${DT_T[P]}.</b> ${DT_G[P]}</p>`:'';
   // Ab 0.45 (2.2): beim ersten Start ohne Daten zwei gleichwertige Wege
@@ -10805,8 +10856,10 @@ function dtRender(){const n=DT.step,g=DT.guide,N=DT_STEPS.length,P=DT_STEPS[n-1]
     $('dt-tiles').innerHTML='';$('dt-tiles').hidden=true;$('dt-files').parentNode.hidden=true;for(const id of ['tw-paste','bx-load','wf-load','df-pane','dh-pane'])$(id).hidden=true;dtFoot();return}
   $('dt-tiles').hidden=false;$('dt-files').parentNode.hidden=false;
   // Gleicher Aufbau je Kachel: oben Titel (Platz für zwei Zeilen, mit „empfohlen“ bzw. „für Fortgeschrittene“), unten Zeichen und Stand auf einer Linie
-  $('dt-tiles').innerHTML=DT_K.map(x=>{const ok=wzOk(x.n),st=dtStat(x.n),on=g?x.p===P:x.p===DT.pane,si=DT_STEPS.indexOf(x.p);
-    return `<button type="button" class="dtt dtk${on?' on':''}" data-dtp="${x.p}" aria-pressed="${on}"><span class="dtth"><span class="dttt">${x.t}</span>${x.sub?`<span class="small dtsub">${x.sub}</span>`:''}</span><span class="dtfo"><span class="dot ${ok?'ok':''}" ${ok?'role="img" aria-label="erledigt"':'aria-hidden="true"'}>${ok?'✓':si<0?'✎':si+1}</span><span class="small dtts">${st||'noch keine'}</span></span></button>`}).join('');
+  // Ab 0.61: Warten Dateien des Bereichs (dtWait), steht „!“ statt Häkchen oder Nummer und „1 Datei wartet“ statt des Stands
+  $('dt-tiles').innerHTML=DT_K.map(x=>{const ok=wzOk(x.n),st=dtStat(x.n),on=g?x.p===P:x.p===DT.pane,si=DT_STEPS.indexOf(x.p),wt=dtWait(x.p);
+    const dot=wt?'<span class="dot wait" role="img" aria-label="wartet">!</span>':`<span class="dot ${ok?'ok':''}" ${ok?'role="img" aria-label="erledigt"':'aria-hidden="true"'}>${ok?'✓':si<0?'✎':si+1}</span>`;
+    return `<button type="button" class="dtt dtk${on?' on':''}" data-dtp="${x.p}" aria-pressed="${on}"><span class="dtth"><span class="dttt">${x.t}</span>${x.sub?`<span class="small dtsub">${x.sub}</span>`:''}</span><span class="dtfo">${dot}<span class="small dtts">${wt?`${fI.format(wt)} ${wt===1?'Datei wartet':'Dateien warten'}`:st||'noch keine'}</span></span></button>`}).join('');
   for(const [p,id] of [['tag','tw-paste'],['bx','bx-load'],['wf','wf-load'],['files','df-pane'],['hand','dh-pane']])$(id).hidden=DT.pane!==p;
   $('dt-files').setAttribute('aria-expanded',String(DT.pane==='files'));
   if(DT.pane==='files')renderFiles();if(DT.pane==='bx')renderBxPrev();if(DT.pane==='wf')wfAdv();
@@ -10825,7 +10878,9 @@ function dtFoot(){const f=$('dt-foot');if(!DT.open){f.innerHTML='';DT_PX=[];retu
   const has=DT_PX.some(b=>b.classList.contains('primary')),pr=has?'':' primary';
   // Ein klarer Hauptknopf: Hat der Bereich eigene Knöpfe, stehen nur sie und „Schließen“ da; sonst „Weiter“ (blau) bzw. „Schließen“.
   // Ab 0.50 (1.1): „Schließen“ statt „Fertig“, grau; am letzten geführten Schritt hakt „Schließen“ den Schritt ab (dtNext)
-  f.innerHTML=px+(DT_PX.length?'<button type="button" class="btn" data-dtclose>Schließen</button>':DT.guide?(DT.step<DT_STEPS.length?'<button type="button" class="btn primary" data-dtnext>Weiter</button><button type="button" class="btn" data-dtclose>Schließen</button>':'<button type="button" class="btn" data-dtnext>Schließen</button>'):'<button type="button" class="btn" data-dtclose>Schließen</button>')}
+  // Ab 0.61: ohne eigene Knöpfe und außerhalb des geführten Wegs „Weiter zu …“ (blau), wenn in einem anderen Bereich Dateien warten
+  const nx=!DT_PX.length&&!DT.guide&&!DT.ways?dtWaitNext(DT.pane):'',nxb=nx?`<button type="button" class="btn primary" data-dtwait="${nx}">${nx==='bx'?'Weiter zu den Börsen':'Weiter zu den Wallet-Dateien'}</button>`:'';
+  f.innerHTML=px+nxb+(DT_PX.length||nx?'<button type="button" class="btn" data-dtclose>Schließen</button>':DT.guide?(DT.step<DT_STEPS.length?'<button type="button" class="btn primary" data-dtnext>Weiter</button><button type="button" class="btn" data-dtclose>Schließen</button>':'<button type="button" class="btn" data-dtnext>Schließen</button>'):'<button type="button" class="btn" data-dtclose>Schließen</button>')}
 $('tagpaste').addEventListener('input',()=>{if(DT.open)dtFoot()});
 new MutationObserver(()=>{if(DT.open)dtFoot()}).observe($('dt-panes'),{childList:true,subtree:true,attributes:true,attributeFilter:['disabled','hidden']});
 // Öffnen: pane = Bereich ('tag', 'bx', 'wf', 'files' oder ''), guide = geführt (beim ersten offenen Schritt)
@@ -10839,7 +10894,14 @@ function dtGo(n){DT.step=Math.max(1,Math.min(DT_STEPS.length,n));DT.pane=DT_STEP
 // Weiter im geführten Weg (der Schritt gilt dann als erledigt). Ab 0.46 schließt „Fertig“ nach dem letzten Schritt nur (die Zahl bei „Noch offen“ erscheint dann).
 function dtNext(){const n=DT.step;S.ui.wz.st[n]='ok';save();if(n>=DT_STEPS.length){closeModal();return}dtGo(n+1)}
 // Schließen (×, Esc, „Fertig“, Klick daneben): Hinweise frei
-function dtClose(){DT.open=false;DT.guide=false;DT.ways=false;DT_PX=[];WF_PEND=null;S.ui.wz.seen=1;save();render()}
+// Ab 0.61: Wartende Dateien bleiben (auch WF_PEND), ein Toast nennt sie. Danach der Sprung zum Trading Benefit neuer Konten (TB_PEND), aber nicht,
+// wenn gleich ein anderes Fenster aufgeht oder „＋ Daten“ wieder offen ist (z. B. „Wem gehört diese Adresse?“)
+function dtClose(){DT.open=false;DT.guide=false;DT.ways=false;DT_PX=[];S.ui.wz.seen=1;save();render();
+  setTimeout(()=>{if(DT.open)return;const tb=MODAL?[]:TB_PEND.filter(a=>S.accounts[a]&&!(S.accounts[a].factor>0));if(!MODAL)TB_PEND=[];if(tb.length)tbGo();
+    const w=dtWaitAll(),t=[tb.length?tbTxt(tb):'',w?`Noch nicht übernommen: ${w}. Du findest sie in „＋ Daten“.`:''].filter(Boolean).join(' ');
+    if(w)toastAct(t,'＋ Daten öffnen',()=>dtOpen(dtWaitNext()));else if(t)toast(t)},0)}
+// Ab 0.61: Text zum Sprung zum Trading Benefit neuer Konten
+const tbTxt=L=>L.length===1?`Konto ${L[0]} ist neu. Wähle seinen Trading Benefit.`:`Die Konten ${L.slice(0,-1).join(', ')} und ${L[L.length-1]} sind neu. Wähle ihren Trading Benefit.`;
 // Ab 0.44: „Noch offen“ als Fenster (Knopf in der Leiste oben)
 // Ab 0.46 (4.5): beginnt bei Punkt 1 (dem wichtigsten). at = Punkt oder Bewegung ('m:Schlüssel'), bei der es weitergeht (Rückweg aus der Liste, ✎).
 function todoOpen(at){if(S.ui.tab!=='wallet'){S.ui.tab='wallet';save();render()}TD_BACK=false;tdBack();TD_MK='';TD_KIND='';if(at)TD_CUR=at;else{TD_POS=0;TD_CUR=''}openModal('td-modal');render()}
@@ -10883,8 +10945,10 @@ $('btn-wfok').addEventListener('click',()=>{S.ui.wfOk=1;save();wfAdv();dtFoot();
 /* ---------------- Ab 0.51 (6): Dateien überall ins Tool ziehen ----------------
    Überall auf der Seite (jeder Reiter, auch ohne „＋ Daten“) nimmt das Tool gezogene Dateien an und erkennt sie am Inhalt, nicht an der Endung
    (fileKind). dropFiles bringt jede an ihren Ort: Report wie loadFiles (Reiter Reports), EZB-Datei wie importRates (Reiter Kurse), Börsen- und
-   Wallet-Dateien in „＋ Daten“ mit Vorschau, Sicherung nur mit Hinweis, Unbekanntes mit Toast. In der Auswertung und bei offenem „＋ Daten“
-   laden Reports und EZB-Dateien ohne Sprung, nur mit Toast. Ein Fenster mit ungespeicherten Eingaben oder eine Rückfrage hält das Ziehen auf,
+   Wallet-Dateien in „＋ Daten“ mit Vorschau, Sicherung nur mit Hinweis, Unbekanntes mit Toast.
+   Ab 0.61: Reports und EZB-Dateien brauchen nichts mehr von dir und laden ohne Sprung, nur mit Toast. Ausnahme: ein neues Konto ohne Trading
+   Benefit, dann aus jedem Reiter dorthin (tbGo). Börsen- und Wallet-Dateien warten auf dich: zuerst die Börse (eine Datei nach der anderen, BX_Q),
+   dann die Wallet-Dateien, unabhängig von der Reihenfolge der gezogenen Dateien. Warten sie, geht „＋ Daten“ vor dem Trading Benefit (TB_PEND). Ein Fenster mit ungespeicherten Eingaben oder eine Rückfrage hält das Ziehen auf,
    andere Fenster schließen sich, „＋ Daten“ bleibt immer offen. Die Ablagefelder lesen Dateien ihrer Art (und unbekannte, mit ihrer Meldung) wie
    bisher und schicken andere weiter (zoneFiles). */
 // Art am Inhalt: 'bk' Sicherung, 'rep' MT5-Report, 'bx' Börse (BX_FMT), 'wf' Wallet-Datei, 'rate' EZB-Kurse (XML, CSV, ZIP), '' unbekannt
@@ -10898,12 +10962,16 @@ function fileKindT(text){const t=String(text||'').replace(/^﻿/,'');
 async function fileKind(f){let b;try{b=new Uint8Array(await f.arrayBuffer())}catch(e){return ''}
   if(b[0]===0x50&&b[1]===0x4B){try{return fileKindT(await unzipCsv(b))==='rate'?'rate':''}catch(e){return ''}}
   return fileKindT(bufText(b))}
-let WF_PEND=null;
+// Ab 0.61: TB_PEND = neue Konten ohne Trading Benefit, zu denen das Tool springt, sobald „＋ Daten“ zu ist (wartende Dateien gehen vor)
+let WF_PEND=null,TB_PEND=[];
 // Titel eines Fensters ohne (i) und ×, für „Schließe zuerst das Fenster „…“.“
 const mTitle=M=>{const h=M&&M.querySelector('h2');if(!h)return '';const c=h.cloneNode(true);c.querySelectorAll('button').forEach(b=>b.remove());return c.textContent.trim()};
 const mBusy=M=>!!M&&(modalDirty(M)||(M.id==='td-modal'&&tdDirty()));
 // Bereich in „＋ Daten“ zeigen (öffnet das Fenster, wenn es zu ist)
 const dtPane=p=>{if(!DT.open)dtOpen(p);else{DT.pane=p;render();dtRender()}};
+// Ab 0.61: Knopf „Weiter zu den Börsen“ bzw. „Weiter zu den Wallet-Dateien“ in der Meldung nach Übernehmen oder Abbrechen (dtWaitH)
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-dtwait]');if(!b)return;const p=b.dataset.dtwait;dtPane(p);
+  const v=$(p==='bx'?'bxprev':'wfprev').querySelector('.tprev')||$(p==='bx'?'bx-load':'wf-load');if(v)v.scrollIntoView({behavior:'smooth',block:'nearest'})});
 async function dropFiles(files){files=[...(files||[])];if(!files.length)return;
   // Begrüßung offen: nichts verarbeiten (der Browser öffnet die Datei trotzdem nicht)
   if($('intro-modal').classList.contains('on'))return;
@@ -10913,25 +10981,26 @@ async function dropFiles(files){files=[...(files||[])];if(!files.length)return;
   glClose();closeFpanel();apClose();
   // Fenster ohne Eingaben schließen; liegt „＋ Daten“ darunter, kommt es wieder nach vorne und bleibt offen
   while(MODAL&&MODAL.id!=='dt-modal'){const M=MODAL;closeModal();if(MODAL===M)break}
-  const dt=!!(MODAL&&MODAL.id==='dt-modal'),stay=dt||S.ui.tab==='stats',first=K[0],say=[],pl=(n,a,b)=>`${fI.format(n)} ${n===1?a:b}`;
+  const say=[],pl=(n,a,b)=>`${fI.format(n)} ${n===1?a:b}`;let tb=[];
   const G={rep:[],rate:[],bx:[],wf:[],bk:[],'':[]};files.forEach((f,i)=>G[K[i]].push(f));
-  if(G.rep.length){const r=await loadFiles(G.rep);say.push(`${pl(r.n,'Report','Reports')} geladen, ${pl(r.added,'neue Buchung','neue Buchungen')}.`)}
+  if(G.rep.length){const r=await loadFiles(G.rep);tb=r.nw;say.push(`${pl(r.n,'Report','Reports')} geladen, ${pl(r.added,'neue Buchung','neue Buchungen')}.`)}
   for(const f of G.rate){const r=await importRates(f)||{};say.push(r.err?`„${f.name}“: ${r.err}`:`EZB-Datei geladen, ${r.nw?pl(r.nw,'neuer Kurs','neue Kurse'):'keine neuen Kurse'}.`)}
-  if(G.bx.length){const f=G.bx[0];let t='';try{t=await readText(f)}catch(e){}bxLoadText(f.name,t);say.push(`Börsen-Datei „${f.name}“: Vorschau in „＋ Daten“.`);
-    for(const g of G.bx.slice(1))say.push(`Das Tool liest eine Börsen-Datei nach der anderen. Ziehe „${g.name}“ danach noch einmal hinein.`)}
+  if(G.bx.length){const L=[];for(const f of G.bx){let t='';try{t=await readText(f)}catch(e){}L.push({name:f.name,text:t})}bxQueue(L);
+    say.push(G.bx.length===1?`Börsen-Datei „${G.bx[0].name}“: Vorschau in „＋ Daten“.`:`${pl(G.bx.length,'Börsen-Datei','Börsen-Dateien')}: Vorschau in „＋ Daten“, eine nach der anderen.`)}
   if(G.wf.length){dtPane('wf');say.push(`${pl(G.wf.length,'Wallet-Datei','Wallet-Dateien')}: Vorschau in „＋ Daten“.`);
-    // Vor dem ersten Einlesen gilt weiter „Für Fortgeschrittene“ mit „Verstanden“: Bis dahin warten die Dateien
-    if(!S.ui.wfOk){WF_PEND=G.wf;msg('wfmsg','info',`${pl(G.wf.length,'Wallet-Datei wartet','Wallet-Dateien warten')}. Das Tool liest sie ein, sobald du „Verstanden“ klickst.`)}
+    // Vor dem ersten Einlesen gilt weiter „Für Fortgeschrittene“ mit „Verstanden“: Bis dahin warten die Dateien (ab 0.61 auch früher gezogene)
+    if(!S.ui.wfOk){WF_PEND=(WF_PEND||[]).concat(G.wf);msg('wfmsg','info',`${pl(WF_PEND.length,'Wallet-Datei wartet','Wallet-Dateien warten')}. Das Tool liest sie ein, sobald du „Verstanden“ klickst.`)}
     else await wfLoad(G.wf)}
   if(G.bk.length)say.push('Eine Sicherung lädst du im Reiter „Sicherung“ mit „Sicherung laden“.');
   for(const f of G[''])say.push(`Das Tool kennt diese Datei nicht: ${f.name}.`);
-  // Sprung zum Ort der ersten Datei (Reports und EZB-Dateien nicht aus der Auswertung und nicht aus „＋ Daten“)
-  if(first==='bx'||first==='wf')dtPane(first);
-  else if(first==='rep'&&!stay)goTo('reports','loadmsg');
-  else if(first==='rate'&&!stay)goTo('rates','rt-file');
-  // Ein Toast fasst zusammen. Nur eine Art mit Sprung: Die Meldung steht dort, kein Toast.
+  // Ab 0.61: Sprung nur, wo du etwas tun musst: zuerst wartende Börsen-, dann Wallet-Dateien, sonst der Trading Benefit neuer Konten
+  const wait=dtWaitNext();
+  if(wait){dtPane(wait);if(dtWait('bx')&&dtWait('wf'))say.push('Zuerst die Börse, danach die Wallet-Dateien.');
+    if(tb.length){TB_PEND=[...new Set([...TB_PEND,...tb])];say.push(`${tbTxt(tb)} Das Tool bringt dich hin, sobald du „＋ Daten“ schließt.`)}}
+  else if(tb.length){if(MODAL)closeModal();tbGo();say.push(tbTxt(tb))}
+  // Ein Toast fasst zusammen. Nur Börsen- oder nur Wallet-Dateien: Die Meldung steht in ihrem Bereich, kein Toast.
   const kinds=Object.keys(G).filter(k=>G[k].length);
-  if(stay||kinds.length>1||first==='bk'||first==='')toast(say.join(' '),6000)}
+  if(say.length&&!(kinds.length===1&&(kinds[0]==='bx'||kinds[0]==='wf')))toast(say.join(' '),6000)}
 // Ablagefelder: Dateien ihrer Art und unbekannte liest das Feld wie bisher (fn), andere gehen über dropFiles an ihren Ort
 async function zoneFiles(files,own,fn){files=[...(files||[])];if(!files.length)return;const K=await Promise.all(files.map(fileKind));
   const mine=files.filter((f,i)=>K[i]===own||K[i]===''),other=files.filter((f,i)=>K[i]!==own&&K[i]!=='');
