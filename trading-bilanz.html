@@ -1542,9 +1542,11 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <div class="msg info onl" id="intro-dl"><p>Du kannst die Trading-Bilanz auch herunterladen und ganz ohne Internet nutzen. Später findest du den Knopf dazu im Reiter „Sicherung“. Wichtig dabei: Die Online-Version und die heruntergeladene Datei speichern getrennt. Willst du deine Daten mitnehmen, geht das ganz einfach mit einer Sicherung, im selben Reiter.</p>
     <div class="row"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>
   <p class="small" data-orig></p>
-  <!-- Ab 0.65: keine Schritte mehr, nur der Verweis auf „Erste Schritte“ -->
-  <p>Zum Einstieg klicke oben auf „Erste Schritte“. Dort findest du einen Überblick und eine genaue Anleitung.</p>
+  <!-- Ab 0.65: keine Schritte mehr, nur der Verweis auf „Erste Schritte“. Ab 0.69 (Florians Wunsch): ein Satz führt zur Länderfrage, die Frage
+       steht vor dem Verweis, „Erste Schritte“ fett -->
+  <p>Österreich und Deutschland besteuern Trading und Krypto nach unterschiedlichen Regeln. Damit das Tool nach den richtigen rechnet, sag ihm, wo du Steuern zahlst. Willst du nur deine Ergebnisse sehen, wähle „Ohne Steuer“.</p>
   <p><label for="intro-country"><b>In welchem Land zahlst du Steuern?</b></label> <select id="intro-country"><option value="" disabled selected>bitte wählen</option><option value="AT">Österreich</option><option value="DE">Deutschland</option><option value="none">Ohne Steuer</option></select> <span class="small">Das kannst du jederzeit oben im Reiter „Steuer“ ändern.</span></p>
+  <p>Zum Einstieg klicke oben auf <b>„Erste Schritte“</b>. Dort findest du einen Überblick und eine genaue Anleitung.</p>
   <div class="row" style="justify-content:flex-end"><button class="btn primary" id="btn-ack">Gelesen und verstanden</button></div>
 </div></div>
 <div class="modal" id="don-modal"><div class="box">
@@ -10687,7 +10689,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.68',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.69',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
