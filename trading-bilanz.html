@@ -3502,6 +3502,30 @@ function wTopMerge(S){let n=0;const W=S.wtx,CA=wCardSet(S),plain=c=>!!c&&c.src==
 // Ab 0.47 (Nachtrag 2, 3): Die Wallet „Weiß ich nicht“ hat das Tool nie angeboten, sie wurde von Hand angelegt. Tag-Zeilen mit ihr ohne Verknüpfung
 // gelten als „weiß ich noch nicht“ (wq 'q'); verknüpfte übernehmen die Wallet ihrer Bewegung (wFix). Danach fällt die Wallet weg, wenn kein
 // Eintrag, keine Adresse, keine Tag-Zeile und keine Börsen-Zeile sie mehr nutzt. Rückgabe: Zahl der Änderungen.
+// Ab 0.59 (Nachtrag): eine Darstellung für alle Aufladungen über die eigene Ladeadresse einer Karte (Florians Wunsch: einheitlich). Die Aufladung
+// W → K bekommt das Kartenguthaben als Seite, die ankam (xinLink, „Menge angekommen“), die Weiterleitung von der Ladeadresse an die Brücke ist
+// die Kette dazu (chain, bei mehreren Aufladungen chs). wLdLink läuft in wSync vor Umtausch und Brücke, damit eine neue Aufladung nicht mehr als
+// Brücke (brg + Brückengebühr) oder Umtausch (swap) zwischen Weiterleitung und Kartenguthaben entsteht. Rückgabe: Zahl der Verknüpfungen.
+function wLdLink(S,inO){let n=0;
+  for(const [k,c] of wXinAuto(S,wXinOpen(),true)){const m=S.wtx[k];if(!m||!inO(k,c.wk)||aNo(S,m.from)||xinFree(S,c)||!wLdOk(S,c,m))continue;xinLink(S,k,c);n++}
+  return n}
+// Ab 0.59 (Nachtrag): Aufladungen, die schon als Brücke oder Umtausch verknüpft sind, auf dieselbe Darstellung umstellen. Bedingungen: Die Weiterleitung o
+// kommt von einer eigenen Adresse A von K, die kein Kartenkonto ist; das Kartenguthaben i kommt auf einem Kartenkonto von K an (anderer Hash, also keine
+// Rückbuchung); genau ein Übertrag W → K aus der Datei ohne Wert, Notiz oder Schätzung, dessen Ausgang an A ging (gleicher Coin, Menge ± 0,01, bis 3 Std.
+// vor o), i 0 bis 10 Min. danach mit 95 bis 100 % der Menge; die Brückengebühr (brk) unverändert aus der Datei; Eingangsseite nicht abgelehnt (x:id).
+// Die Gebühr steht danach wie bei jedem Übertrag als Unterschied „Menge angekommen“ bei der sendenden Wallet. Rückgabe: Zahl der Umstellungen.
+const BRK_NOTE='Brückengebühr (Unterschied laut Wallet-Datei)';
+function wLdMerge(S){let n=0;const W=S.wtx,CA=wCardSet(S),plain=c=>!!c&&c.src==='datei'&&!(c.eur>0)&&!(c.usd>0)&&!c.note&&!c.est;
+  for(const [ko,o] of Object.entries(W)){if(o.st!=='int'||!(o.brg||o.swap))continue;const ki=o.brg||o.swap,i=W[ki];if(!i||i.st!=='int'||i.hash===o.hash)continue;
+    const A=o.from,K=rAW(S,A);if(!K||!rOwn(S,A)||CA.has(A)||rOwn(S,o.to)||!wCardTok(i)||!CA.has(i.to)||rAW(S,i.to)!==K)continue;
+    const fe=o.brg?S.cx.filter(f=>f.brk&&f.brk.includes(ko)):[];if(fe.some(f=>f.src!=='datei'||f.note!==BRK_NOTE||f.eur>0||f.est))continue;
+    const L=S.cx.filter(c=>{if(c.kind!=='uebertrag'||c.to!==K||c.wallet===K||!plain(c)||!c.wk||c.wkIn||c.qtyIn>0||S.cx.some(x=>x.feeOf===c.id)||(i.noAsk||[]).includes('x:'+c.id))return false;
+      const m=W[c.wk];if(!m||m.to!==A||m.coin!==o.coin||Math.abs(m.qty-o.qty)>0.01+1e-9||o.ts-m.ts<0||o.ts-m.ts>10800)return false;const dt=i.ts-m.ts,r=i.qty/m.qty;
+      return dt>=0&&dt<=600&&r>=0.95-1e-9&&r<=1+1e-9});
+    if(L.length!==1)continue;const c=L[0];
+    delete o.brg;delete o.swap;delete i.brg;delete i.swap;S.cx=S.cx.filter(f=>!fe.includes(f));
+    i.st='open';i.ref='';xinLink(S,ki,c);o.st='int';o.ref='';o.chain=c.id;delete o.chs;delete o.pend;n++}
+  return n}
 const W_WIN='Weiß ich nicht';
 function wqWin(S){let n=0;
   for(const t of Object.values(S.tag)){if(t.wallet!==W_WIN||t.wk||t.hand||t.fiat||t.wq)continue;t.wallet='';t.wq='q';delete t.wok;n++}
@@ -4398,6 +4422,8 @@ function wSync(opt){
   // Ab 0.47 (1.1): danach Überträge aus der Börse mit den gemerkten Mengen ergänzen (bxRepair), am Anfang und am Ende
   const K=Object.keys(S.wtx);if(!K.length){const b=bxLink(S);bxRepair(S);return b}
   wFix();let n=bxLink(S);bxRepair(S);
+  // Ab 0.59 (Nachtrag): Aufladung über die Ladeadresse zuerst (vor Umtausch und Brücke), damit jede Aufladung gleich aussieht
+  n+=wLdLink(S,(...ks)=>!(opt&&opt.only)||ks.some(k=>opt.only.has(k)));
   // Ab 0.42: zuerst Tausch im selben Konto (z. B. WUSD → USDC bei einer Krypto-Karte), beide Seiten intern
   for(const [a,b] of wSwaps(S)){const o=S.wtx[a],i=S.wtx[b];o.st=i.st='int';o.ref=i.ref='';o.swap=b;i.swap=a;n++}
   const open=K.filter(k=>{const m=S.wtx[k];return m.st==='open'&&!m.sus&&!m.pend});
@@ -4429,6 +4455,8 @@ function wSync(opt){
   if(opt&&opt.imp)for(const x of wChainSplit(wChainCands(S)).auto)if(inO(x.ko)&&!aNo(S,S.wtx[x.ko].to)&&wChainApply(S,x))n++;
   // Ab 0.47 (Nachtrag 2, 1): Aufladung mit Coin-Wechsel über die Ladeadresse mit Datei hat Vorrang vor der Brücke in derselben Wallet
   n+=wTopMerge(S);
+  // Ab 0.59 (Nachtrag): bestehende Aufladungen als Brücke oder Umtausch auf dieselbe Darstellung umstellen
+  n+=wLdMerge(S);
   bxRepair(S);
   return n}
 // Offene Eingänge, die für die Eingangsseite eines Übertrags in Frage kommen: nicht verdächtig, keine Rückfrage offen, Gegenseite ohne Wallet,
@@ -4702,7 +4730,7 @@ function wfPrevH(){
     const mvT=m=>`${fmtNum(m.qty)} ${esc(wCoinT(m))} (${wNet(m.net)})`,rb=(v,t)=>`<button type="button" class="zlink" data-wfno="${esc(v)}">${t}</button>`;
     const ER=[...st.br.map(x=>({v:`b|${x.ko}|${x.ki}`,t:`${gl('bruecke','Brücke')} in ${esc(rAW(S,x.o.from))}: ${mvT(x.o)} → ${mvT(x.i)}, ${dS(x.o.date)} ${x.o.time.slice(0,5)}${x.fee?`, Gebühr ${fmtNum(x.fee.qty)} ${x.fee.coin}`:', keine Gebühr'}`})),
       ...st.xp.map(x=>({v:`b|${x.ko}|${x.ki}`,t:`Übertrag ${esc(x.c.wallet)} → ${esc(x.c.to)}: ${mvT(x.o)} → ${mvT(x.i)}, ${dS(x.c.date)} ${(x.c.time||'').slice(0,5)}${x.c.qtyIn>0?`, Gebühr ${fmtNum(+(x.c.qty-x.c.qtyIn).toFixed(8))} ${x.c.coin}`:''}`})),
-      ...st.ch.map(x=>({v:`c|${x.ko}|${x.c?x.c.id:''}`,t:`${mvT(x.o)} von ${esc(rAW(S,x.o.from))} an eine ${gl('bruecke','Brücke')}, gehört zum Übertrag ${x.c?`${esc(x.c.wallet)} → ${esc(x.c.to)} vom ${dS(x.c.date)}`:''}`})),
+      ...st.ch.map(x=>({v:`c|${x.ko}|${x.c?x.c.id:''}`,t:`${mvT(x.o)} von ${esc(rAW(S,x.o.from))} an eine ${gl('bruecke','Brücke')}, ${x.c&&x.c.how==='aufladung'?`gehört zur ${gl('aufladung','Aufladung')}`:'gehört zum Übertrag'} ${x.c?`${esc(x.c.wallet)} → ${esc(x.c.to)} vom ${dS(x.c.date)}`:''}${x.o.chs&&x.o.chs.length>1?` und ${fI.format(x.o.chs.length-1)} weiteren`:''}`})),
       // Ab 0.44: Tausch (gleicher Hash: t), Tausch über Brücke und Aufladung mit Coin-Wechsel (b)
       ...st.tx.map(x=>({v:`${x.same?'t':'b'}|${x.ko}|${x.ki}`,t:`${x.c.how==='aufladung'?`${gl('aufladung','Aufladung')} ${esc(x.c.wallet)} → ${esc(x.c.to)}`:x.c.how==='bruecke'?`${gl('tausch','Tausch')} über ${gl('bruecke','Brücke')} in ${esc(x.c.wallet)}`:`${gl('tausch','Tausch')} in ${esc(x.c.wallet)}`}: ${mvT(x.o)} → ${mvT(x.i)}, ${dS(x.c.date)} ${(x.c.time||'').slice(0,5)}`}))];
     const NO=D.no||[];
