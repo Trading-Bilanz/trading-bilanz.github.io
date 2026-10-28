@@ -1,6 +1,6 @@
 # Projektwissen Trading-Bilanz
 
-Dieser Ordner hält das Projektwissen zur Trading-Bilanz. Florian löscht ihn, bevor er die Seite öffentlich teilt.
+Das Projektwissen zur Trading-Bilanz liegt in `Projektwissen/`. Florian löscht den Ordner und diese `CLAUDE.md`, bevor er die Seite öffentlich teilt.
 
 - Vor jeder Runde `Projektwissen/GESTALTUNG.md` und `Projektwissen/STAND.md` lesen und sich an `GESTALTUNG.md` halten.
 - Am Ende jeder Runde `STAND.md` nachführen (Version, Reiter, feste Begriffe, offene Punkte). Neue Regeln von Florian kommen in `GESTALTUNG.md`, mit „ab 0.xx“.
