@@ -1540,12 +1540,12 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <p>Lass deine Steuerzahlen von einer Steuerberaterin oder dem Finanzamt prüfen, bevor du sie verwendest. Dieses Tool ist keine Steuerberatung.</p></div>
   <p><b>Datenschutz:</b> Deine Daten bleiben in diesem Browser. Ins Internet geht das Tool nur für die Wechselkurse, wenn du sie lädst oder das automatische Laden eingeschaltet hast.</p>
   <!-- Nur online: früh herunterladen, weil Online-Version und Datei getrennt speichern -->
-  <div class="msg info onl" id="intro-dl"><p>Du kannst die Trading-Bilanz auch herunterladen und ganz ohne Internet nutzen. Am besten jetzt, bevor du Daten eingibst, denn die Online-Version und die heruntergeladene Datei speichern getrennt.</p>
+  <div class="msg info onl" id="intro-dl"><p>Du kannst die Trading-Bilanz auch herunterladen und ganz ohne Internet nutzen. Wichtig dabei: Die Online-Version und die heruntergeladene Datei speichern getrennt. Willst du deine Daten mitnehmen, geht das ganz einfach mit einer Sicherung (Reiter „Sicherung“).</p>
     <div class="row"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>
   <p class="small" data-orig></p>
-  <!-- Derselbe Inhalt wie im Fenster „Erste Schritte“ (stepsHTML), hier ohne Sprünge -->
-  <div id="intro-steps"></div>
-  <p><label for="intro-country"><b>In welchem Land zahlst du Steuern?</b></label> <select id="intro-country"><option value="AT">Österreich</option><option value="DE">Deutschland</option><option value="none">Ohne Steuer</option></select> <span class="small">Das kannst du jederzeit oben im Reiter „Steuer“ ändern.</span></p>
+  <!-- Ab 0.65: keine Schritte mehr, nur der Verweis auf „Erste Schritte“ -->
+  <p>Zum Einstieg klicke oben auf „Erste Schritte“. Dort findest du einen Überblick und eine genaue Anleitung.</p>
+  <p><label for="intro-country"><b>In welchem Land zahlst du Steuern?</b></label> <select id="intro-country"><option value="" disabled selected>bitte wählen</option><option value="AT">Österreich</option><option value="DE">Deutschland</option><option value="none">Ohne Steuer</option></select> <span class="small">Das kannst du jederzeit oben im Reiter „Steuer“ ändern.</span></p>
   <div class="row" style="justify-content:flex-end"><button class="btn primary" id="btn-ack">Gelesen und verstanden</button></div>
 </div></div>
 <div class="modal" id="don-modal"><div class="box">
@@ -10611,7 +10611,9 @@ $('de-cx-incl').onchange=e=>{S.ui.cxIncl=e.target.checked;save();render()};
 $('de-other').addEventListener('change',e=>{if(!askDots([[e.target,'Andere private Veräußerungsgewinne']],$('de-fg'),()=>e.target.dispatchEvent(new Event('change'))))return;S.ui.deOther=e.target.value.trim();save();render()});
 $('de-pb').oninput=e=>{S.ui.dePb=e.target.value;save();render()};
 $('de-kist').onchange=e=>{S.ui.deKist=+e.target.value;save();render()};
-$('btn-ack').onclick=()=>{S.ui.ack=true;S.ui.country=$('intro-country').value;save();modalOn($('intro-modal'),false);render()};
+// Ab 0.65: Das Land ist Pflicht (Regel 14), damit niemand die Frage ganz unten übersieht
+// needMark scrollt nur, wenn das Feld außerhalb der Seite liegt; hier liegt es oft unten im Fenster verdeckt, darum selbst in die Mitte holen
+$('btn-ack').onclick=()=>{const c=$('intro-country');if(!c.value){needMark($('intro-modal'),[[c,'Wähle das Land, in dem du Steuern zahlst.']]);c.scrollIntoView({block:'center'});return}S.ui.ack=true;S.ui.country=c.value;save();modalOn($('intro-modal'),false);render()};
 $('btn-don-no').onclick=()=>{donPause(91);modalOn($('don-modal'),false)};
 $('btn-don-done').onclick=()=>{donPause(365);modalOn($('don-modal'),false)};
 $('btn-don-go').onclick=()=>{modalOn($('don-modal'),false);S.ui.tab='support';save();render();window.scrollTo(0,0)};
@@ -10682,7 +10684,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   try{const j=JSON.parse(await readText(f));if(!j.deals||!j.accounts)throw new Error(`„${f.name}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`);S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';save();msg('datamsg','ok',`Sicherung geladen: ${Object.keys(S.accounts).length} Konten, ${Object.keys(S.deals).length} Buchungen.`);render()}catch(err){msg('datamsg','bad','Datei konnte nicht geladen werden: '+esc(err.message))}e.target.value=''};
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();msg('datamsg','ok','Alles gelöscht.');render()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.64',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.65',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -10786,18 +10788,18 @@ function stepState(){
   return [ok(has),ok(has),ok(has&&accs.every(a=>S.accounts[a].factor)),ok(has&&missingRates().n===0),'',Object.keys(S.tag).length?'ok':'','',
     ok(has&&!!u.lastBackup&&(!u.lastLoad||u.lastBackup>=u.lastLoad))];
 }
-// Inhalt von „Erste Schritte“ und der Begrüßung. jump = Schritte sind Knöpfe, die in den passenden Reiter springen (nicht in der Begrüßung).
-function stepsHTML(jump){
+// Inhalt von „Erste Schritte“. Die Schritte sind Knöpfe, die in den passenden Reiter springen. Ab 0.65 verweist die Begrüßung nur noch hierher.
+function stepsHTML(){
   const st=stepState();
   const li=(t,i)=>{const s=st[i],d=`<span class="dot ${s}"${s==='ok'?' role="img" aria-label="erledigt"':' aria-hidden="true"'}>${s==='ok'?'✓':i+1}</span>`;
-    return `<li>${jump?`<button type="button" class="chki" data-step="${i+1}">`:'<div class="chki">'}${d}<span>${t}</span>${jump?'</button>':'</div>'}</li>`};
+    return `<li><button type="button" class="chki" data-step="${i+1}">${d}<span>${t}</span></button></li>`};
   // Ab 0.64: „Anleitung mit Bildern“ als Erstes
   return `<p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
   <p>Du brauchst einmalig einen Computer mit MetaTrader 5, um deine Reports zu speichern. Danach kannst du das Tool auch am Handy nutzen.</p>
   <ol class="chk">${STEPS.map(li).join('')}</ol>
   <div class="chkm"><p><b>Jeden Monat (empfohlen)</b></p><ol class="steps"><li>Speichere in MetaTrader 5 für jedes Konto den Report neu.</li><li>Ziehe alle Reports in den Reiter „Reports“. Was schon da ist, erkennt das Tool.</li><li>Füge die neuen Tag-Daten ein und sieh in „Noch offen“ nach.</li><li>Speichere eine Sicherung.</li></ol>
-  <p><b>Gut zu wissen:</b> ${GTK}${jump?'<span class="onl"> Du kannst das Tool auch herunterladen und ohne Internet nutzen.</span>':''}</p>
-  ${jump?'<div class="row onl"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div>':''}</div>`;
+  <p><b>Gut zu wissen:</b> ${GTK}<span class="onl"> Du kannst das Tool auch herunterladen und ohne Internet nutzen.</span></p>
+  <div class="row onl"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>`;
 }
 // In einen Reiter springen, Ziel (Karte oder Anleitung) aufklappen und unter die Reiter scrollen
 function goTo(tab,id){
@@ -10826,7 +10828,7 @@ let MODAL=null,MODAL_FROM=null;
 // Ab 0.44 gilt das für „＋ Daten“ und „Noch offen“ (MODAL_BASE).
 // Ab 0.50 Nachtrag 6 Zusatz: auch „Wallets“ (für „Kontostand“ → „Kontostände prüfen“)
 let MODAL_UNDER=null;const MODAL_BASE=['dt-modal','td-modal','wl-modal'];
-function openModal(id){if(id==='steps-modal')$('steps-body').innerHTML=stepsHTML(true);
+function openModal(id){if(id==='steps-modal')$('steps-body').innerHTML=stepsHTML();
   if(MODAL&&MODAL_BASE.includes(MODAL.id)&&id!==MODAL.id&&!MODAL_UNDER){MODAL_UNDER={m:MODAL,from:MODAL_FROM};MODAL.classList.add('under');MODAL=null}
   // Ab 0.51 (2): beim Öffnen kein roter Rand (Marken fehlender Pflichtfelder fallen weg)
   closeModal();MODAL_FROM=document.activeElement;MODAL=$(id);delete MODAL.dataset.dirty;needReset(MODAL);modalOn(MODAL,true);MODAL.querySelector('.mx').focus({preventScroll:true})}
@@ -11181,7 +11183,7 @@ if(DL_URL)$('dl-link').innerHTML=` · <a href="${DL_URL}" target="_blank" rel="n
  // Ab 0.50 (2.2 b): gespeicherte Antworten, die auf nicht mehr Vorhandenes zeigen oder nichts bewirken, fallen weg
  if(naClean(S))ch++;
  if(ch)save()}
-if(!S.ui.ack){$('intro-steps').innerHTML=stepsHTML(false);$('intro-country').value=S.ui.country||'AT';modalOn($('intro-modal'),true)}
+if(!S.ui.ack){$('intro-country').value='';modalOn($('intro-modal'),true)}
 render();
 // Mit Häkchen „Fehlende Kurse automatisch laden“: beim Öffnen fehlende oder vorläufige Kurse holen (sonst nie ohne Klick)
 autoRates();

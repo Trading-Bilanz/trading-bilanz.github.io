@@ -2,7 +2,7 @@
 
 Diese Regeln gelten für jede Runde. Claude liest die Datei vor jeder Runde und ergänzt sie, wenn Florian eine neue Regel festlegt.
 
-Stand: 0.64 (28.10.2026)
+Stand: 0.65 (28.10.2026)
 
 ## 0. Aufbau wie in der Auswertung, überall
 **Reiter Auswertung als Referenz:** Der Reiter „Auswertung“ ist fertig und gilt als Vorlage für alle anderen Reiter. Würde ein Auftrag dort etwas ändern, frag vorher nach, außer Florian nennt den Reiter ausdrücklich.
@@ -39,6 +39,8 @@ Stand: 0.64 (28.10.2026)
     - Sobald im Feld etwas eingegeben oder gewählt wird, verschwinden Rand und Satz dieses Felds. Beim Öffnen eines Fensters gibt es keinen roten Rand.
     - Technik: eine Hilfsfunktion für alle Stellen (`needMark(root, [[Feld, Satz], …])`, `needClear`, `needReset`, `needRe` nach dem Neuzeichnen). Rand mindestens 3 : 1 gegen den Hintergrund, Satz mindestens 4,5 : 1, hell und dunkel (Kontrasttest).
     - Nicht betroffen: das gesperrte letzte Häkchen in Filtermenüs, „Übernehmen (n)“ ohne Häkchen, Blättern in „Noch offen“ (das sind keine Felder).
+    - **Land in der Begrüßung (ab 0.65, Florians Regel):** Auch die Frage „In welchem Land zahlst du Steuern?“ ist ein Pflichtfeld nach dieser Regel, damit sie niemand übersieht. Das Menü steht beim Öffnen auf „bitte wählen“ (nicht wählbar), „Gelesen und verstanden“ bleibt blau und markiert ohne Wahl das Menü mit „Wähle das Land, in dem du Steuern zahlst.“ und holt es in die Mitte des Fensters.
+    - **Begrüßung ohne Schritte (ab 0.65, Florians Regel):** Die Begrüßung zeigt keine Schritt-Liste, kein „Jeden Monat“, kein „Gut zu wissen“ und keinen Link zur Anleitung, nur „Zum Einstieg klicke oben auf „Erste Schritte“. Dort findest du einen Überblick und eine genaue Anleitung.“ Das blaue Kästchen (nur online) sagt: „Du kannst die Trading-Bilanz auch herunterladen und ganz ohne Internet nutzen. Wichtig dabei: Die Online-Version und die heruntergeladene Datei speichern getrennt. Willst du deine Daten mitnehmen, geht das ganz einfach mit einer Sicherung (Reiter „Sicherung“).“
 
 **Testumfang (ab 0.56, Regeln in CLAUDE.md):** Pro Phase node-Tests und Byte-Vergleich in einem Lauf (Ausgabe nur Fehler und eine Summenzeile). Browser einmal am Ende der Runde, nur für das Geänderte, höchstens 5 Bilder. Der Volltest über alle Tafeln, Reiter und Browsertests läuft erst als Schlusskontrolle vor 1.0.
 
