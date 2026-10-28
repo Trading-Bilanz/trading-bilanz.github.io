@@ -1200,7 +1200,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
          schaltet das Häkchen nicht um, er klappt nur die Erklärung unter der Zeile auf -->
     <div class="row rrow"><button class="btn primary" id="btn-rates">Kurse laden</button><span id="ratestatus" class="small"></span>
       <label class="fopt rauto"><input type="checkbox" id="r-auto"><span>Fehlende Kurse automatisch laden <button type="button" class="zlink small" id="r-awhy" aria-expanded="false" aria-controls="r-atxt">Wozu?</button></span></label></div>
-    <p class="small" id="r-atxt" hidden style="margin:6px 0 0">Bequemer: Das Tool holt fehlende Kurse dann von selbst, sobald du es öffnest, neue Reports lädst oder Tag-Daten einfügst. Du musst nicht daran denken. Ohne Häkchen geht es nur ins Internet, wenn du auf „Kurse laden“ klickst. Bei jedem Abruf sieht die EZB deine IP-Adresse. Antwortet sie nicht, fragt das Tool beim Dienst Frankfurter, und der sieht sie.</p>
+    <p class="small" id="r-atxt" hidden style="margin:6px 0 0">Mit dem Häkchen holt das Tool fehlende Kurse von selbst, sobald du es öffnest, neue Reports lädst oder Tag-Daten einfügst. Du musst nicht daran denken. Das Häkchen ist von Anfang an gesetzt. Nimmst du es weg, geht das Tool nur ins Internet, wenn du auf „Kurse laden“ klickst. Bei jedem Abruf sieht die EZB deine IP-Adresse. Antwortet sie nicht, fragt das Tool beim Dienst Frankfurter, und der sieht sie.</p>
     <div id="ratemsg"></div>
     </div>
     <!-- Ohne Internet: Beschrieben ist nur die XML-Datei (usd.xml) von der Seite der EZB, Knopf „Download XML (SDMX)“. Still eingelesen werden
@@ -1538,7 +1538,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <p>Dieses Tool berechnet deine Trading-Ergebnisse aus deinen MT5-Reports: Gewinne, Verluste, Gebühren und die Umrechnung in Euro. Diese Rechnung ist nachvollziehbar und lässt sich mit deinem Report vergleichen.</p>
 <p>Die steuerlichen Angaben (Kennzahlen, Steuersätze, Einordnung, Hinweise) habe ich mit Hilfe von KI recherchiert. Ich bin kein Steuerberater und kenne mich mit Steuern nicht aus. Ich übernehme keine Verantwortung und keine Gewähr dafür, dass diese Angaben richtig, vollständig oder aktuell sind.</p>
 <p>Lass deine Steuerzahlen von einer Steuerberaterin oder dem Finanzamt prüfen, bevor du sie verwendest. Dieses Tool ist keine Steuerberatung.</p></div>
-  <p><b>Datenschutz:</b> Deine Daten bleiben in diesem Browser. Ins Internet geht das Tool nur für die Wechselkurse, wenn du sie lädst oder das automatische Laden eingeschaltet hast.</p>
+  <p><b>Datenschutz:</b> Deine Daten bleiben in diesem Browser. Ins Internet geht das Tool nur für die Wechselkurse. Fehlende Kurse lädt es von selbst. Das kannst du im Reiter „Kurse“ ausschalten.</p>
   <!-- Nur online: früh herunterladen, weil Online-Version und Datei getrennt speichern -->
   <div class="msg info onl" id="intro-dl"><p>Du kannst die Trading-Bilanz auch herunterladen und ganz ohne Internet nutzen. Wichtig dabei: Die Online-Version und die heruntergeladene Datei speichern getrennt. Willst du deine Daten mitnehmen, geht das ganz einfach mit einer Sicherung (Reiter „Sicherung“).</p>
     <div class="row"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>
@@ -1566,7 +1566,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <p>Übers Internet geht nur:</p>
   <ul>
     <li>Der Aufruf der Online-Version und „Für offline herunterladen“. Dabei speichert GitHub deine IP-Adresse aus Sicherheitsgründen (<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub&nbsp;↗</a>).</li>
-    <li>Das Laden der Wechselkurse, wenn du auf „Kurse laden“ klickst oder das automatische Laden eingeschaltet hast. Dabei sieht die EZB deine IP-Adresse. Antwortet sie nicht, fragt das Tool beim Dienst Frankfurter, und der sieht sie. Liest du stattdessen die Datei der EZB ein, geht das Tool nicht ins Internet.</li>
+    <li>Das Laden der Wechselkurse: von selbst, sobald Kurse fehlen, und wenn du auf „Kurse laden“ klickst. Das Laden von selbst schaltest du im Reiter „Kurse“ aus (Häkchen „Fehlende Kurse automatisch laden“). Dabei sieht die EZB deine IP-Adresse. Antwortet sie nicht, fragt das Tool beim Dienst Frankfurter, und der sieht sie. Liest du stattdessen die Datei der EZB ein, geht das Tool nicht ins Internet.</li>
     <li>Links, die du anklickst (Anleitung, Tentary, PayPal), öffnen andere Seiten mit ihren eigenen Regeln.</li>
   </ul>
   <p>Technisch abgesichert: Eine Regel am Anfang der Datei erlaubt dem Tool nur die Verbindung zu den Wechselkurs-Diensten und zur eigenen Adresse (für „Für offline herunterladen“). Dein Browser verhindert jede andere Verbindung. Lade das Tool nur von trading-bilanz.github.io, damit diese Regel nicht verändert ist.</p>
@@ -1764,7 +1764,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <!-- Anleitung als Fenster (gt-modal, guideOpen('tag')). Ohne Tag-Daten groß und blau, danach klein (renderGuideBtns) -->
     <div class="row gbtns" id="tag-guide-btns"><button type="button" class="btn primary" data-guide="tag">So kopierst du die Daten aus Tag</button></div>
     <p class="small" id="tagpaste-l" style="margin:10px 0 2px"><b>Hier einfügen:</b></p>
-    <textarea id="tagpaste" rows="4" placeholder="Hier den kopierten Text aus der Tag Wallet einfügen"></textarea>
+    <textarea id="tagpaste" rows="8" placeholder="Hier den kopierten Text aus der Tag Wallet einfügen"></textarea>
     <!-- Coin gilt für alle Zeilen dieses Einfügens, merkt sich den letzten Wert (S.defCoin) -->
     <div class="row tagrow" data-act><label for="tagcoin">Coin</label><select id="tagcoin"><option>USDC</option><option>USDT</option></select><button class="btn primary" id="btn-tagpaste">Übernehmen</button></div>
     <p class="small" style="margin:4px 0 0">Hast du USDC und USDT gemischt? Kein Problem, du kannst den Coin danach bei jeder Zeile ändern.</p>
@@ -1809,9 +1809,9 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   </div>
   <div class="row mft" id="dt-foot"></div>
 </div></div>
-<!-- Fenster „Wallets“ (ab 0.38, vorher „Wallets verwalten“ in der Karte „Woher kamen deine Coins?“) -->
+<!-- Fenster „Adressen“ (ab 0.38 als „Wallets“, vorher „Wallets verwalten“ in der Karte „Woher kamen deine Coins?“; ab 0.66 „Adressen“) -->
 <div class="modal noprint" id="wl-modal"><div class="box hx wlbox" data-wbox="w" role="dialog" aria-modal="true" aria-labelledby="wl-t"><button type="button" class="mx" aria-label="Schließen">×</button>
-  <h2 id="wl-t" class="hx sah">Wallets <button type="button" class="ib" data-gl="k-wl" aria-expanded="false" aria-controls="glpop" aria-label="Erklärung zu Wallets und Adressbuch">i</button></h2>
+  <h2 id="wl-t" class="hx sah">Adressen <button type="button" class="ib" data-gl="k-wl" aria-expanded="false" aria-controls="glpop" aria-label="Erklärung: Adressen">i</button></h2>
   <!-- Ab 0.46 (6.1): zwei Teile, „Deine Wallets“ (eine Zeile je Wallet: Name, Art, Adressen aufklappbar, Bestand, ✎) und „Andere Adressen“.
        Suchfeld für Name oder Teil der Adresse.
        Ab 0.52 (1): Aufbau wie in der Auswertung. Beide Teile immer sichtbar mit Überschrift und (i). Jede Tabelle steht in einer Karte mit stehendem
@@ -1947,7 +1947,7 @@ const RB={stand:'2026-10-12',bis:'2026-10-12',m:`
 const RBM=(()=>{const m={};for(const l of RB.m.trim().split('\n')){const [ym,...a]=l.trim().split(' ');for(const x of a){const i=x.indexOf(':');m[ym+'-'+x.slice(0,i)]=+x.slice(i+1)}}return m})();
 const DEFAULT_MAP={'deposit':'einzahlung','profit withdrawal':'gewinnauszahlung','pf deduction':'fee','capital withdrawal':'kapitalabzug'};
 const CATS={einzahlung:'Einzahlung von Kapital',kapitalabzug:'Kapitalabzug (Auszahlung von Kapital)',gewinnauszahlung:'Gewinnauszahlung (Profit Withdrawal)',fee:'Performance Fee / Gebühr (mindert den Gewinn)',ignorieren:'Ignorieren (zählt nirgends)'};
-function blank(){return {v:1,accounts:{},deals:{},map:{},rates:{},tag:{},cx:[],wallets:['Meine Wallet'],defCoin:'USDC',rsrc:{},rown:{},tagDrop:[],tagSame:{},tagSkip:[],tagBatch:0,cxKeep:[],wbal:{},pfOk:[],wtx:{},addr:{},cxNo:0,tok:{},wign:{},cardFee:{},bxOpen:{},tagMeth:{},rcov:{load:'',file:''},ui:{tab:'reports',wFlt:{range:'all',from:'',to:''},rAuto:false,rtUsed:true,yTax:null,other:'',opt:false,flt:{range:'all',from:'',to:'',off:[],pf:'ex',cur:'eur',nocw:false,zeroDays:true},graf:{what:'period',res:'week',kind:'bar',unit:'amt',wd:'sum',avg:false},calc:{inv:'',dur:'12',unit:'m',own:'',tax:'',reinv:false,taxOn:false},unit:'pct'}}}
+function blank(){return {v:1,accounts:{},deals:{},map:{},rates:{},tag:{},cx:[],wallets:['Meine Wallet'],defCoin:'USDC',rsrc:{},rown:{},tagDrop:[],tagSame:{},tagSkip:[],tagBatch:0,cxKeep:[],wbal:{},pfOk:[],wtx:{},addr:{},cxNo:0,tok:{},wign:{},cardFee:{},bxOpen:{},tagMeth:{},rcov:{load:'',file:''},ui:{tab:'reports',wFlt:{range:'all',from:'',to:''},rAuto:true,rtUsed:true,yTax:null,other:'',opt:false,flt:{range:'all',from:'',to:'',off:[],pf:'ex',cur:'eur',nocw:false,zeroDays:true},graf:{what:'period',res:'week',kind:'bar',unit:'amt',wd:'sum',avg:false},calc:{inv:'',dur:'12',unit:'m',own:'',tax:'',reinv:false,taxOn:false},unit:'pct'}}}
 let S=blank();
 try{const raw=localStorage.getItem(KEY); if(raw){S=Object.assign(blank(),JSON.parse(raw));}}catch(e){}
 function fixState(){const b=blank();for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','tagSame','tagSkip','tagBatch','cxKeep','wbal','pfOk','wtx','addr','cxNo','tok','wign','cardFee','bxOpen','tagMeth'])if(S[k]==null||typeof S[k]!==typeof b[k])S[k]=b[k];
@@ -2026,10 +2026,10 @@ function fixState(){const b=blank();for(const k of ['tag','cx','wallets','defCoi
   // ab Version 0.41: Tag des Einlesens je Adresse und Netzwerk (impN)
   wImpN(S);
   S.ui.deOther=S.ui.deOther==null?'':String(S.ui.deOther);if(!['DE','none'].includes(S.ui.country))S.ui.country='AT';
-  // Ab 0.47 (1.8): „Kurse automatisch laden“ ist wieder aus. Wer mit 0.46 einmal eingeschaltet wurde (rAutoV 46) und den Schalter seither nicht
-  // angefasst hat, wird einmal ausgeschaltet. 0.46 merkte nicht, ob der Schalter danach von Hand angelassen wurde; ab 0.47 merkt es rAutoMan.
-  if(old.rAutoV===46&&!old.rAutoMan)S.ui.rAuto=false;S.ui.rAutoV=47;
-  S.ui.rAuto=S.ui.rAuto===true;S.ui.rtUsed=S.ui.rtUsed!==false;S.rcov=Object.assign({load:'',file:''},S.rcov);
+  // Ab 0.66 (Florians Wunsch): „Fehlende Kurse automatisch laden“ ist wieder an, sonst zeigt das Tool nach den ersten Reports keine Euro.
+  // (0.46 an, 0.47 bis 0.65 aus.) Wer den Schalter nie von Hand angefasst hat (rAutoMan), bekommt ihn einmal eingeschaltet. Eine Wahl von Hand bleibt.
+  if((old.rAutoV||0)<66&&!old.rAutoMan)S.ui.rAuto=true;S.ui.rAutoV=66;
+  S.ui.rAuto=S.ui.rAuto!==false;S.ui.rtUsed=S.ui.rtUsed!==false;S.rcov=Object.assign({load:'',file:''},S.rcov);
   for(const [d,q] of Object.entries(S.rsrc))if(q==='von Hand eingefügt'){if(S.rates[d]!=null)S.rown[d]=S.rates[d];delete S.rates[d];delete S.rsrc[d]}
   for(const d of Object.keys(S.rown))if(S.rates[d]!=null||RBM[d]!=null)delete S.rown[d];
   for(const A of Object.values(S.accounts))delete A.pfOk; // 0.32 vor dem Nachtrag: Ausblenden je Konto, jetzt gemeinsam in S.pfOk
@@ -2348,7 +2348,7 @@ async function getT(u,nm){const c=new AbortController(),t=setTimeout(()=>c.abort
 const PUB_TXT='Der Kurs von heute ist vielleicht noch nicht veröffentlicht (meist ab etwa 16 Uhr, manchmal später).';
 const ownRep=k=>k?`, davon ${k} ${k===1?'eigener Kurs':'eigene Kurse'} ersetzt`:'';
 let RATE_BUSY=false;
-// Kurse aus dem Internet laden (nur nach einem Klick oder mit dem Häkchen „automatisch laden“). Fragt nur ab, was fehlt: ab dem frühesten
+// Kurse aus dem Internet laden (nach einem Klick oder mit dem Häkchen „automatisch laden“, ab 0.66 von Anfang an gesetzt). Fragt nur ab, was fehlt: ab dem frühesten
 // fehlenden oder vorläufigen Tag, sonst ab „abgedeckt bis“, jeweils 10 Tage früher, bis heute. extra = zusätzlicher Tag (≈ im Reiter Wallet).
 // Reihenfolge (0.35): zuerst die EZB-Daten-API, nur bei Fehler, Zeitüberschreitung oder leerer Antwort Frankfurter (api.frankfurter.dev).
 // api.frankfurter.app ist gestrichen: Die Adresse leitet nur auf api.frankfurter.dev weiter und ohne Browser-Freigabe (CORS), im Browser ging sie nie.
@@ -6273,8 +6273,9 @@ function renderWallet(){
   const L=cxLand(),DEw=L==='DE',rg=wRange(),today=todayLocal();
   $('tagcoin').value=S.defCoin==='USDT'?'USDT':'USDC';
   const has=Object.keys(S.tag).length>0;
-  // Ohne Tag-Daten: Feld 4 Zeilen hoch, Anleitungs-Knopf groß; danach 2 Zeilen und klein. Ab 0.50 (1.1): der Knopf ist immer blau
-  $('tagpaste').rows=has?2:4;
+  // Ohne Tag-Daten: Feld 8 Zeilen hoch, Anleitungs-Knopf groß; danach 4 Zeilen und klein. Ab 0.50 (1.1): der Knopf ist immer blau.
+  // Ab 0.66 (Florians Wunsch): doppelt so hoch wie bis 0.65 (4 bzw. 2 Zeilen)
+  $('tagpaste').rows=has?4:8;
   $('tag-guide-btns').classList.toggle('lite',has);$('tag-guide-btns').querySelector('.btn').classList.add('primary');
   // Ab 0.48 (3.9): der Knopf „● N neu ▾“ ist weg; neu steht als Punkt vor dem Datum, der Filter im Menü „Status“
   // Formular (im Fenster cx-modal): Wallet-Listen auffrischen, gewählte Werte behalten, ab 0.43 mit „+ Neue Wallet …“
@@ -7337,7 +7338,7 @@ function todoItems(C){
        I.push({id:'w:'+src+':'+k,lv:'y',kind:'bal',t:0,eur:0,ref:'',big:`Bestand bei ${esc(w)} passt nicht: laut deinen Einträgen ${fmtNum(q)} ${c}, laut ${src==='App'?'deiner App':'Datei'} ${fmtNum(v)}.`,
          why:(o&&o.n?`Nach ${balN(o.n)} bleiben ${fN.format(Math.abs(r))} ${c} Unterschied. `:'')+dir,body:`<div class="row"><button type="button" class="btn primary" data-tdbal="${esc(k)}">Zum Bestand</button></div>`,
          li:{d:'',w,what:'Bestand passt nicht',q:fmtNum(Math.abs(r))+' '+c}})}}}
-  // Ab 0.48 (1.3): Kurse nach dem letzten geladenen fehlen (grau, kein Alarm; das automatische Laden ist aus). „Verstanden“ merkt den Stand (S.rateOk).
+  // Ab 0.48 (1.3): Kurse nach dem letzten geladenen fehlen (grau, kein Alarm; das automatische Laden ist aus oder hat nicht geklappt). „Verstanden“ merkt den Stand (S.rateOk).
   {const RG=TD_RG=rateGap(C);VG_RATE=RG.ids;
    if(RG.n&&S.rateOk!==RG.key)I.push({id:'k:rates',lv:'g',kind:'rates',t:0,eur:0,ref:'',big:`Kurse ab ${fD(RG.from)} noch nicht geladen.`,
      why:`Ohne Kurs fehlt bei ${RG.n===1?'1 Vorgang':fI.format(RG.n)+' Vorgängen'} der Euro-Wert.`,
@@ -9032,7 +9033,7 @@ const inRange=(d,rg)=>(!rg.from||d>=rg.from)&&(!rg.to||d<=rg.to);
 // Leiste unter den Reitern, nur im Reiter Wallet. Ab 0.44: Zeitraum · Wallets · ＋ Daten · Noch offen (Zahl, rot bei steuerlich wichtig) · Land.
 // Stufen (fitWbar, #wbar[data-st]): 1 Zeitraum lang, 2 Zeitraum kurz, 3 „Offen“ statt „Noch offen“, 4 nur Symbole. Die erste, die in eine Zeile passt.
 function wbHtml(st){const T=LAST_TODO||{n:0,nW:0},rg=wRange(),n=T.n||0,badge=`<span class="wbn${T.lv==='r'?' imp':T.lv==='y'?' chk':T.lv==='g'?' inf':''}">${n?fI.format(n):''}</span>`,sym=t=>`<span class="wbi" aria-hidden="true">${t}</span>`;
-  return {wr:fbBtn(2,'range',st>=2?fltRangeShort(rg):rg.label),wl:st>=4?sym('▤'):'Wallets',dt:(st>=4?sym('＋'):'＋ Daten ')+(dtWaitN()?'<span class="wbn chk">!</span>':''),
+  return {wr:fbBtn(2,'range',st>=2?fltRangeShort(rg):rg.label),wl:st>=4?sym('▤'):'Adressen',dt:(st>=4?sym('＋'):'＋ Daten ')+(dtWaitN()?'<span class="wbn chk">!</span>':''),
     td:(st>=4?(n?'':sym('✓')):st>=3?'Offen ':'Noch offen ')+badge,ld:`<span class="ft">${cxLand()}</span><span class="fc">▾</span>`}}
 let WB_ST=1;
 function fitWbar(){const fin=$('wbar').querySelector('.fin'),cs=getComputedStyle(fin),avail=fin.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),gap=parseFloat(cs.columnGap)||0;
@@ -9041,7 +9042,7 @@ function fitWbar(){const fin=$('wbar').querySelector('.fin'),cs=getComputedStyle
   // gemessen ohne Umbruch und ohne Schrumpfen (Klasse meas), damit jede Stufe ihre volle Breite zeigt
   $('wbar').classList.add('meas');let st=1;for(;st<=4;st++){set(st);const w=ids.reduce((s,id)=>s+$(id).getBoundingClientRect().width,0)+gap*(ids.length-1);if(w<=avail+0.5)break}
   $('wbar').classList.remove('meas');WB_ST=Math.min(st,4);if(st>4)set(4);$('wbar').dataset.st=WB_ST;
-  const T=LAST_TODO||{n:0,nW:0};$('wb-wl').setAttribute('aria-label','Wallets');{const n=dtWaitN();$('wb-dt').setAttribute('aria-label',`Daten hinzufügen${n?`, ${fI.format(n)} ${n===1?'Datei wartet':'Dateien warten'}`:''}`)}
+  const T=LAST_TODO||{n:0,nW:0};$('wb-wl').setAttribute('aria-label','Adressen');{const n=dtWaitN();$('wb-dt').setAttribute('aria-label',`Daten hinzufügen${n?`, ${fI.format(n)} ${n===1?'Datei wartet':'Dateien warten'}`:''}`)}
   $('wb-td').setAttribute('aria-label',`Noch offen: ${T.n?fI.format(T.n)+(T.nW?`, davon ${fI.format(T.nW)} fehlt für die Steuer`:''):'nichts offen'}`)}
 function renderWbar(show){
   $('wbar').classList.toggle('on',show);
@@ -9310,7 +9311,7 @@ const GL={
   'k-real':{t:'Dein echtes Geld',h:'Was du bei Tag eingezahlt und ausgezahlt hast und was dein Geld seit Start gebracht hat.'},
   'k-konten':{t:'Deine Konten',h:'Alle Konten aus deinen Reports. Wähle bei jedem den Trading Benefit und, wenn du möchtest, einen Namen.'},
   'k-kurse':{t:'Wechselkurse',h:`Ohne Kurse funktioniert die Auswertung in USD vollständig. Für Euro und für die Steuer braucht das Tool den Kurs jedes Tages, an dem du eine Buchung hast. Es rechnet jede Buchung mit dem Referenzkurs der Europäischen Zentralbank (EZB) vom Tag der Buchung um. An Wochenenden und Feiertagen gilt der letzte Kurs davor.
-<b>Woher die Kurse kommen:</b> Eingebaut sind die EZB-Kurse ab 2023 bis zum Stand dieser Version (${fD(RB.stand)}). Neuere holt „Kurse laden“ aus dem Internet: direkt von der EZB, und wenn sie nicht antwortet, vom Dienst Frankfurter, der die EZB-Kurse unverändert weitergibt. Wenn du nicht willst, dass das Tool ins Internet geht, liest du die Datei der EZB ein. Fehlt ein Kurs trotzdem, trägst du ihn von Hand ein.
+<b>Woher die Kurse kommen:</b> Eingebaut sind die EZB-Kurse ab 2023 bis zum Stand dieser Version (${fD(RB.stand)}). Neuere holt das Tool von selbst aus dem Internet, sobald sie fehlen (Häkchen „Fehlende Kurse automatisch laden“), oder mit „Kurse laden“: direkt von der EZB, und wenn sie nicht antwortet, vom Dienst Frankfurter, der die EZB-Kurse unverändert weitergibt. Wenn du nicht willst, dass das Tool ins Internet geht, nimmst du dort das Häkchen weg und liest die Datei der EZB ein. Fehlt ein Kurs trotzdem, trägst du ihn von Hand ein.
 <b>Wann fehlt ein Kurs?</b> Die EZB veröffentlicht an jedem Werktag einen Kurs, außer am 1. Januar, Karfreitag, Ostermontag, 1. Mai, 25. und 26. Dezember. An diesen Tagen und am Wochenende gilt der letzte Kurs davor. Hat ein anderer Werktag keinen Kurs, meldet das Tool ihn als fehlend. Die EZB veröffentlicht den Kurs eines Tages erst am Nachmittag, meist gegen 16 Uhr. Bei manchen Diensten kommt er etwas später an. Ist eine Buchung jünger als 24 Stunden, nutzt das Tool vorläufig den letzten Kurs und rechnet neu, sobald der richtige da ist.
 <b>Quellenangabe:</b> ${ECB_CITE}`},
   'k-kurstab':{t:'Alle Kurse',h:`Alle Kurse, die das Tool kennt, neueste zuerst. Mit „nur verwendete Kurse zeigen“ siehst du nur die, mit denen Buchungen umgerechnet wurden. Eigene Kurse kannst du mit ✎ ändern und mit × löschen.
@@ -9319,7 +9320,7 @@ ${ECB_CITE}`},
   'k-tag':{t:'Deine Ein- und Auszahlungen',h:'Alle Ein- und Auszahlungen, die du aus Tag eingefügt hast. Prüfe vor allem den Coin, Tag zeigt ihn nicht an.\n<b>Uhrzeit:</b> Tag zeigt die Zeit von Zypern, im Sommer und im Winter eine Stunde später als in Österreich. Das Tool rechnet sie in österreichische Zeit um, so wie die Wallet-Datei. Zeigst du mit der Maus auf die Uhrzeit, siehst du, was Tag zeigt.'},
   // Ab 0.40: neue Karten im Reiter Wallet
   'k-todo':{t:'Noch offen',h:'Hier steht alles, was das Tool nicht selbst entscheiden kann, ein Punkt nach dem anderen, der älteste zuerst.\n<b>Rot, fehlt für die Steuer:</b> Ohne diese Angaben stimmt die Steuer nicht, z. B. eine Ein- oder Auszahlung bei Tag ohne Wallet, eine Bewegung an eine unbekannte Adresse oder ein fehlender Einkauf.\n<b>Gelb, bitte prüfen:</b> Vorschläge des Tools, auch zu Tag-Zeilen (zählt ein Vorschlag für die Steuer, steht „betrifft ca.“ dabei), „Doppelt?“, „Vertippt?“, „Reihenfolge“ und Bestände, die nicht passen.\n<b>Grau, gut zu wissen:</b> Folgen eines Fehlers, Betrugsversuche, Lockadressen.\n<a href="https://trading-bilanz.github.io/anleitung.html#noch-offen" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a>'},
-  'k-wload':{t:'Daten einlesen',h:'<b>Tag einfügen:</b> Ein- und Auszahlungen aus der Tag Wallet.\n<b>Wallet-Datei:</b> die Liste deiner Token-Bewegungen aus dem Block-Explorer, für genaue Mengen und Uhrzeiten.\n<b>+ Eintrag von Hand:</b> alles andere, z. B. ein Kauf an einer Börse.\n<b>Wallets und Adressen:</b> deine Wallets und das Adressbuch.\nWas schon da ist, steht oben. Neues kannst du jederzeit dazu einlesen.\n<b>Assistent:</b> Oben im Reiter führt die Schritte-Leiste durch die vier Schritte. Ein Klick auf einen Schritt öffnet ihn.'},
+  'k-wload':{t:'Daten einlesen',h:'<b>Tag einfügen:</b> Ein- und Auszahlungen aus der Tag Wallet.\n<b>Wallet-Datei:</b> die Liste deiner Token-Bewegungen aus dem Block-Explorer, für genaue Mengen und Uhrzeiten.\n<b>+ Eintrag von Hand:</b> alles andere, z. B. ein Kauf an einer Börse.\n<b>Adressen:</b> deine Wallets und das Adressbuch.\nWas schon da ist, steht oben. Neues kannst du jederzeit dazu einlesen.\n<b>Assistent:</b> Oben im Reiter führt die Schritte-Leiste durch die vier Schritte. Ein Klick auf einen Schritt öffnet ihn.'},
   intern:{t:'intern',h:'Beide Seiten der Bewegung gehören zur selben Wallet, z. B. zwei Adressen derselben Wallet-App. Die Coins bleiben in deiner Wallet. Die Bewegung zählt deshalb nicht und ist kein offener Punkt.'},
   bruecke:{t:'Brücke / Dienst',h:'Ein Dienst, der Coins von einem Netzwerk ins andere bringt (z. B. von Ethereum nach Base). Deine Coins gehen an die Brücke. Auf dem anderen Netzwerk kommen sie von einer anderen Adresse bei dir an. Die Brücke behält meist eine kleine Gebühr.\nKommen die Coins in derselben Wallet an, ist das eine Brücke in derselben Wallet. Was unterwegs fehlt, ist eine Gebühr.'},
   aufladungt:{t:'Aufladung mit Tausch',h:'Du lädst deine Krypto-Karte mit einem anderen Coin auf, als sie führt, z. B. 1,00 USDT → 0,97823 USDC. Das ist ein Tausch und zählt wie jeder Tausch: In Österreich geht der Einkaufswert auf den neuen Coin über. In Deutschland ist es ein Verkauf zum Tageswert und ein neuer Kauf.'},
@@ -9335,7 +9336,7 @@ ${ECB_CITE}`},
   einzahlungsadr:{t:'Einzahlungsadresse',h:'Eine Adresse, die eine Karte oder Börse nur für dich anlegt, damit sie deine Einzahlungen erkennt. Sie gehört zu dieser Wallet. Von dort leitet der Anbieter die Coins weiter, z. B. über eine Brücke.'},
   // Ab 0.42
   abrechnung:{t:'Kartenzahlungen (Abrechnung)',h:'Die Adresse, an die deine Krypto-Karte bei jedem Kauf bezahlt. Ordne sie im Menü der Gegenseite „Kartenzahlungen (Abrechnung)“ zu. Dann schlägt das Tool jeden Betrag an diese Adresse als Zahlung vor. Den Kaufpreis trägst du laut Beleg ein.'},
-  unbtoken:{t:'unbekannter Token',h:'Ein Token, dessen Vertrag das Tool nicht kennt, mit „USD“ im Namen. Das Tool zählt ihn nur als USDC, wenn du es bestätigst. Mache das nur, wenn du weißt, woher er kommt, z. B. das Guthaben deiner Krypto-Karte. Betrüger verschicken gefälschte Token mit ähnlichen Namen.\nIn der Steuer zählt er wie USDC. Der Tausch von USDC in diesen Token ist dann kein Verkauf. Deine Entscheidung siehst und änderst du im Fenster „Wallets“ unter „Token“.'},
+  unbtoken:{t:'unbekannter Token',h:'Ein Token, dessen Vertrag das Tool nicht kennt, mit „USD“ im Namen. Das Tool zählt ihn nur als USDC, wenn du es bestätigst. Mache das nur, wenn du weißt, woher er kommt, z. B. das Guthaben deiner Krypto-Karte. Betrüger verschicken gefälschte Token mit ähnlichen Namen.\nIn der Steuer zählt er wie USDC. Der Tausch von USDC in diesen Token ist dann kein Verkauf. Deine Entscheidung siehst und änderst du im Fenster „Adressen“ unter „Token“.'},
   // Ab 0.39: Wallet-Datei aus dem Block-Explorer
   'k-wfload':{t:'Wallet-Datei einlesen',h:'Im Block-Explorer deines Netzwerks (z. B. etherscan.io) lädst du die Liste aller Token-Bewegungen deiner Wallet als Datei. Das Tool liest daraus nur die echten USDC und USDT und sortiert jede Bewegung ein:\n<b>Zu Tag:</b> Passt sie zu einer Ein- oder Auszahlung bei Tag, setzt das Tool dort genaue Menge, Coin, Wallet und Uhrzeit.\n<b>Übertrag:</b> Geht sie zwischen zwei deiner Wallets, entsteht ein Übertrag.\n<b>Vorschlag:</b> Passt sie zu einem Eintrag, den du selbst gemacht hast, fragt das Tool nach.\n<b>Offen:</b> Den Rest entscheidest du, wann du willst.\n<b>Wozu?</b> Genaue Mengen und Gebühren, der richtige Coin (Tag zeigt ihn nicht), Uhrzeiten für die Reihenfolge und genaue Daten für die Haltefrist in Deutschland. Vergessene Abgänge fallen auf, sie sind steuerlich wichtig.\n<b>Netzwerke:</b> Für jedes Netzwerk lädst du eine eigene Datei. Möglich sind Ethereum, BNB Chain, Polygon, Arbitrum, Base, Optimism, Linea. Noch nicht möglich: Tron (kommt später), Solana, Bitcoin, Avalanche.\n<b>Nur USDC und USDT</b> zählen. Das Tool ignoriert alle anderen Token. Es erkennt echte USDC und USDT an der Vertragsadresse, nicht am Namen.\n<b>Gebühren des Netzwerks</b> (in ETH, BNB usw.) stehen nicht in der Datei. Das Tool rechnet sie nicht.\nDie Datei bleibt in deinem Browser.'},
   'k-wf':{t:'Bewegungen aus der Wallet-Datei',h:'Alle echten USDC und USDT aus deinen Wallet-Dateien. Gerechnet werden nur Tag-Zeilen und Einträge. Eine Bewegung zählt erst, wenn sie zugeordnet ist.\n<b>Tag ↔</b> gehört zu einer Ein- oder Auszahlung bei Tag. Ein Klick springt hin.\n<b>Eintrag ↔</b> gehört zu einem Eintrag in „Woher kamen deine Coins?“.\n<b>offen</b> ist noch nicht entschieden. Mit „Entscheiden“ wählst du, was es ist, oder verknüpfst sie mit „gehört zu …“ von Hand.\n<b>ignoriert</b> zählt nicht. Mit „wieder öffnen“ holst du sie zurück.\n<b>intern</b> heißt: Beide Seiten gehören zur selben Wallet, die Bewegung zählt nicht.\n<b>verdächtig</b> ist ein sehr kleiner Betrag, oft Address Poisoning.\nDu kannst jederzeit später entscheiden, auch einzeln. Ist eine Zuordnung falsch, löst du sie mit „Verknüpfung lösen“.\n<b>Zuordnung zu Tag:</b> Eine Auszahlung bei Tag passt zu einem Eingang in deiner Wallet, eine Einzahlung zu einem Ausgang. Höchstens 3 Tage auseinander und höchstens 2 USD Unterschied, das nächste Datum zuerst. Ist das eindeutig, ordnet das Tool automatisch zu. Sonst fragt es nach.'},
@@ -9368,7 +9369,7 @@ ${ECB_CITE}`},
   vaoffen:{t:'Noch nicht zugeordnet',h:'Bewegungen, die noch keinem Vorgang zugeordnet sind: Ausgang, Eingang und offene Zeilen einer Börse.'},
   // Ab 0.49 (3): Erklärungen am Ort, an dem man sie braucht
   'k-kb':{t:'Kontostände prüfen',h:'<b>Kontrolle:</b> Weicht der Stand aus deiner App vom Bestand laut deinen Einträgen ab, fehlt meist ein Eintrag, z. B. eine Gebühr, ein Übertrag oder die genaue Menge bei Tag. Die Kontrolle gibt es, wenn der Zeitraum bis heute reicht.\n<b>Bestand laut Datei:</b> Hast du eine Wallet-Datei eingelesen, zeigt das Tool, was laut Datei in der Wallet liegt. Stimmt es, steht ✓ dabei.'},
-  'k-wl':{t:'Wallets und Adressbuch',h:'Im Adressbuch steht zu jeder Adresse, wem sie gehört. Kennt das Tool eine Adresse, zeigt es überall ihren Namen. Änderst du das Adressbuch, ändert sich die Anzeige sofort. Ordnest du eine Adresse deiner Börse oder deiner anderen Wallet zu, erkennt das Tool Überträge selbst.\n<b>Tag:</b> Gehört eine Bewegung zu einer Zeile bei Tag, merkt sich das Tool die Adresse als Tag. Tag nutzt für Einzahlungen wechselnde Adressen, die musst du nicht selbst merken.\n<b>Brücken und Dienste:</b> Ein Ausgang an eine fremde Adresse und kurz danach ein Eingang von einer fremden Adresse, fast gleich viel, ist meist eine Brücke. Das Tool merkt sich ihre Adressen („automatisch erkannt“). Mit ✎ und „Entfernen“ machst du die Zuordnung rückgängig.'},
+  'k-wl':{t:'Adressen',h:'Im Adressbuch steht zu jeder Adresse, wem sie gehört. Kennt das Tool eine Adresse, zeigt es überall ihren Namen. Änderst du das Adressbuch, ändert sich die Anzeige sofort. Ordnest du eine Adresse deiner Börse oder deiner anderen Wallet zu, erkennt das Tool Überträge selbst.\n<b>Tag:</b> Gehört eine Bewegung zu einer Zeile bei Tag, merkt sich das Tool die Adresse als Tag. Tag nutzt für Einzahlungen wechselnde Adressen, die musst du nicht selbst merken.\n<b>Brücken und Dienste:</b> Ein Ausgang an eine fremde Adresse und kurz danach ein Eingang von einer fremden Adresse, fast gleich viel, ist meist eine Brücke. Das Tool merkt sich ihre Adressen („automatisch erkannt“). Mit ✎ und „Entfernen“ machst du die Zuordnung rückgängig.'},
   lockadr:{t:'Lockadresse',h:LOOK_TXT},
   vorschlag:{t:'Vorschlag',h:'Das Tool hat Bewegungen gefunden, die zusammenpassen. Prüfe sie. Mit „Übernehmen“ trägt es den Vorgang für dich ein. Mit „Nein“ fragt es nicht wieder.'},
  herkunft:{t:'Herkunft',h:'<b>Datei Bix</b> = aus der Wallet-Datei von Bix. <b>Datei Bitvavo</b> = aus der Datei deiner Börse. <b>Tag-Daten</b> = aus den eingefügten Tag-Daten. <b>von Hand</b> = selbst eingetragen. Zwei Quellen stehen mit „+“ da.\nBeispiel: „Datei Bix + Datei Bix-Card“ heißt: Ausgang und Eingang stehen beide in deinen Dateien und passen zusammen.'},
@@ -10682,9 +10683,12 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   // Ab 0.50 Nachtrag 5 (S1): Rückfrage, sobald irgendetwas im Tool steht (vorher nur mit Konten aus Reports), mit „Sicherung speichern“
   if(stateHasData()&&!(await askBox({title:'Sicherung laden',text:`„${f.name}“ laden? Das ersetzt alle Konten, Buchungen und Krypto-Einträge, die jetzt im Tool stehen.`,ok:'Laden',danger:true,more:ASK_BK}))){e.target.value='';return}
   try{const j=JSON.parse(await readText(f));if(!j.deals||!j.accounts)throw new Error(`„${f.name}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`);S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';save();msg('datamsg','ok',`Sicherung geladen: ${Object.keys(S.accounts).length} Konten, ${Object.keys(S.deals).length} Buchungen.`);render()}catch(err){msg('datamsg','bad','Datei konnte nicht geladen werden: '+esc(err.message))}e.target.value=''};
-$('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();msg('datamsg','ok','Alles gelöscht.');render()};
+// Ab 0.66 (Florians Wunsch): Nach dem Löschen lädt das Tool die Seite neu. So startet es wie beim ersten Öffnen, mit der Begrüßung
+// (Land, „Gelesen und verstanden“) und frisch aufbereitetem Zustand (fixState). Vorher blieb die Begrüßung bis zum nächsten Neuladen aus
+// und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
+$('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.65',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.66',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -10778,7 +10782,7 @@ const GTK='Deine Daten liegen nur in diesem Browser. Die Online-Version und eine
 document.querySelectorAll('[data-orig]').forEach(e=>{e.innerHTML=ORIG_HTML});
 document.querySelectorAll('[data-gtk]').forEach(e=>{e.textContent=GTK});
 // Ab 0.63: „Genieße die Auswertung“ vor Wallet, damit man zuerst die Zahlen sieht
-const STEPS=['Verbinde MetaTrader 5 mit deinen Konten (einmalig, am Computer).','Speichere die Reports aus MetaTrader 5 und lade sie ins Tool.','Wähle den Trading Benefit (z. B. ×24).','Lade die Wechselkurse (für Euro und Steuer).','Genieße die Auswertung.','Wallet: Füge die Tag-Daten ein und trage ein, woher die Coins kamen (von Hand oder mit der Börsen-Datei). Empfohlen für „Dein echtes Geld“ in der Auswertung und die Krypto-Steuer. Wallet-Dateien sind ein zusätzlicher Weg für Fortgeschrittene.','Sieh dir die Steuer an.','Speichere eine Sicherung.'];
+const STEPS=['Verbinde MetaTrader 5 mit deinen Konten (einmalig, am Computer).','Speichere die Reports aus MetaTrader 5 und lade sie ins Tool.','Wähle den Trading Benefit (z. B. ×24).','Prüfe die Wechselkurse (für Euro und Steuer). Fehlende lädt das Tool von selbst.','Genieße die Auswertung.','Wallet: Füge die Tag-Daten ein und trage ein, woher die Coins kamen (von Hand oder mit der Börsen-Datei). Empfohlen für „Dein echtes Geld“ in der Auswertung und die Krypto-Steuer. Wallet-Dateien sind ein zusätzlicher Weg für Fortgeschrittene.','Sieh dir die Steuer an.','Speichere eine Sicherung.'];
 // Ziel je Schritt: Reiter und Element (aufklappen und hinscrollen), bei 1 und 2 das Anleitungs-Fenster ('guide') über dem Reiter Reports
 const STEP_GO=[null,['guide','connect'],['guide','save'],['reports','acc-card'],['rates'],['stats'],['wallet','dt'],['tax'],['data']];
 // Status je Schritt: 'ok' erledigt, 'todo' offen, '' neutral (6 ohne Tag-Daten, 5 und 7 immer). Schritt 1 kann das Tool nicht prüfen, er gilt wie 2.
@@ -11185,7 +11189,8 @@ if(DL_URL)$('dl-link').innerHTML=` · <a href="${DL_URL}" target="_blank" rel="n
  if(ch)save()}
 if(!S.ui.ack){$('intro-country').value='';modalOn($('intro-modal'),true)}
 render();
-// Mit Häkchen „Fehlende Kurse automatisch laden“: beim Öffnen fehlende oder vorläufige Kurse holen (sonst nie ohne Klick)
+try{if(sessionStorage.getItem(KEY+'-wiped')){sessionStorage.removeItem(KEY+'-wiped');toastShow('Alles gelöscht.')}}catch(e){}
+// Mit Häkchen „Fehlende Kurse automatisch laden“ (ab 0.66 von Anfang an gesetzt): beim Öffnen fehlende oder vorläufige Kurse holen (ohne Häkchen nie ohne Klick)
 autoRates();
 </script>
 </body>

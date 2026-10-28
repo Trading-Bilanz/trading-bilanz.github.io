@@ -143,7 +143,7 @@ footer p{margin:0 0 6px}
     <li>Verbinde MetaTrader 5 mit deinen Konten (einmalig, am Computer).</li>
     <li>Speichere die Reports aus MetaTrader 5 und lade sie ins Tool.</li>
     <li>Wähle den Trading Benefit (z. B. ×24).</li>
-    <li>Lade die Wechselkurse (für Euro und Steuer).</li>
+    <li>Prüfe die Wechselkurse (für Euro und Steuer). Fehlende lädt das Tool von selbst.</li>
     <li>Genieße die Auswertung.</li>
     <li>Wallet: Füge die Tag-Daten ein und trage ein, woher die Coins kamen (von Hand oder mit der Börsen-Datei). Empfohlen für „Dein echtes Geld“ in der Auswertung und die Krypto-Steuer. Wallet-Dateien sind ein zusätzlicher Weg für Fortgeschrittene.</li>
   </ol><!--/Q-->
@@ -230,10 +230,10 @@ footer p{margin:0 0 6px}
 <section id="kurse">
   <h3 class="st">6. Wechselkurse laden</h3>
   <p>Für Beträge in Euro und für die Steuer braucht das Tool den Wechselkurs jedes Tages, an dem du eine Buchung hast. Es nimmt den Referenzkurs der Europäischen Zentralbank (EZB). In USD funktioniert die Auswertung auch ohne.</p>
-  <p>Die meisten Tage sind schon im Tool eingebaut. Fehlen die neuesten, öffne den Reiter „Kurse“ und klicke auf „Kurse laden“.</p>
+  <p>Die meisten Tage sind schon im Tool eingebaut. Fehlen die neuesten, lädt das Tool sie von selbst aus dem Internet, sobald du es öffnest, neue Reports lädst oder Tag-Daten einfügst. Du kannst sie auch im Reiter „Kurse“ mit „Kurse laden“ holen.</p>
   <figure class="k"><a href="anleitung/tool-kurse.webp"><img src="anleitung/tool-kurse.webp" width="1148" height="549" alt="Reiter Kurse, Karte Wechselkurse: oben grün Alles vorhanden, eingerahmt der Knopf Kurse laden und das Häkchen Fehlende Kurse automatisch laden, darunter der Bereich Ohne Internet mit dem Feld EZB-Datei hierher ziehen" loading="lazy"></a>
     <figcaption>Beispiel: Oben steht grün „Alles vorhanden“. Dann ist hier nichts zu tun.</figcaption></figure>
-  <p>Mit dem Häkchen „Fehlende Kurse automatisch laden“ holt das Tool fehlende Kurse von selbst, sobald du es öffnest, neue Reports lädst oder Tag-Daten einfügst. Ohne Häkchen fragt es nur, wenn du auf „Kurse laden“ klickst.</p>
+  <p>Das Laden von selbst steuert das Häkchen „Fehlende Kurse automatisch laden“. Es ist von Anfang an gesetzt. Nimmst du es weg, geht das Tool nur ins Internet, wenn du auf „Kurse laden“ klickst.</p>
   <p><b>Ohne Internet:</b> Soll das Tool gar nicht ins Internet gehen, lade die Datei selbst von der <a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/eurofxref-graph-usd.en.html" target="_blank" rel="noopener">Seite der EZB&nbsp;↗</a> herunter und ziehe sie ins Tool. Bei jedem Abruf, auch beim Herunterladen der Datei, sieht die EZB deine IP-Adresse.</p>
   <p class="hand"><b>Am Handy:</b> Tippe im Reiter „Kurse“ unter „Ohne Internet“ auf das Feld „EZB-Datei hierher ziehen“ und wähle die Datei aus.</p>
   <p class="up"><a href="#top">↑ Inhalt</a></p>
@@ -368,7 +368,7 @@ footer p{margin:0 0 6px}
     <figcaption>Abgebucht 252, angekommen 250: Das Tool rechnet 2 USDC als Gebühr.</figcaption></figure>
   <p>Wähle bei „von Wallet“ Kraken und bei „nach Wallet“ deine Wallet. Bei „Menge“ trägst du ein, was abgebucht wurde, bei „Menge angekommen“, was in deiner Wallet ankam. Den Unterschied rechnet das Tool als Gebühr.</p>
   <h4>Deiner Wallet einen Namen geben</h4>
-  <p>Im Beispiel heißt deine Wallet „Meine Wallet“. Diesen Namen legt das Tool am Anfang selbst an. Du kannst ihn ändern: Klicke im Reiter „Wallet“ oben auf „Wallets“ und in der Zeile deiner Wallet auf ✎.</p>
+  <p>Im Beispiel heißt deine Wallet „Meine Wallet“. Diesen Namen legt das Tool am Anfang selbst an. Du kannst ihn ändern: Klicke im Reiter „Wallet“ oben auf „Adressen“ und in der Zeile deiner Wallet auf ✎.</p>
   <figure class="k"><a href="anleitung/tool-wallets.webp"><img src="anleitung/tool-wallets.webp" width="960" height="556" alt="Fenster Wallets, Karte Deine Wallets: die Zeile Meine Wallet ist zum Bearbeiten offen, eingerahmt das Feld Name mit Meine Wallet und der Knopf Speichern, darunter Bitvavo und Kraken als Börse" loading="lazy"></a></figure>
   <p>Gib zum Beispiel den Namen deiner Wallet-App ein und klicke auf „Speichern“.</p>
   <p><b>Den Kontostand trägst du ganz am Ende ein</b>, wenn „Noch offen“ erledigt ist (<a href="#abarbeiten">nächster Abschnitt</a>). Vorher passt er oft noch nicht zu deinen Einträgen.</p>

@@ -2,7 +2,7 @@
 
 Diese Regeln gelten für jede Runde. Claude liest die Datei vor jeder Runde und ergänzt sie, wenn Florian eine neue Regel festlegt.
 
-Stand: 0.65 (28.10.2026)
+Stand: 0.66 (28.10.2026)
 
 ## 0. Aufbau wie in der Auswertung, überall
 **Reiter Auswertung als Referenz:** Der Reiter „Auswertung“ ist fertig und gilt als Vorlage für alle anderen Reiter. Würde ein Auftrag dort etwas ändern, frag vorher nach, außer Florian nennt den Reiter ausdrücklich.
@@ -73,6 +73,7 @@ Technik (0.46):
 - **Fett in fetten Zeilen (ab 0.58, Florians Regel):** `<b>` ist nie fetter als 700. In Zeilen, die schon fett sind (Summe, Gesamt, markierte Zeile in „Noch offen“ und im Rundherum), ist `<b>` so fett wie der Rest der Zeile, ohne eigenes Hervorheben.
 - **„–“ bei unbekannter Investition (ab 0.58, Florians Regel):** Kann das Tool eine Rendite (oder einen Wert in % der Investition) nicht berechnen, weil die Investition fehlt, ist das „–“ ein Begriff. Er nennt je Konto den Grund (Trading Benefit fehlt, Lücke, Anfang fehlt, Invested passt nicht), bei fehlendem Trading Benefit mit dem Knopf „Zu ‚Deine Konten‘“. „–“ aus anderen Gründen (keine Trades, keine ganze Woche) bleibt ein normaler Strich. Ebenso ist „Trading Benefit fehlt“ überall ein Begriff mit diesem Knopf.
 - **Tabellen in Fenstern (ab 0.52):** Sie folgen denselben Regeln wie in der Auswertung: jede Tabelle in einer Karte mit Titel und (i), Titel und Spaltenkopf bleiben beim Scrollen im Fenster stehen (`stk`, `.sthd`, Kopie des Kopfs über `hcFix`), kein Scroll-Kasten um die Tabelle, kein seitliches Scrollen, auch nicht bei 412 px (am Handy bleibt es eine Tabelle). Die Kopfleiste des Fensters mit Titel und × steht (`h2.sah`), Titel und Kopf der Karten stehen darunter, so verdeckt das × nie einen Spaltenkopf. Karten mit Gruppen klappen mit einem Klick auf den Titel zu (Regel 13, Zustand gemerkt). Umgesetzt im Fenster „Wallets“.
+- **Name „Adressen“ (ab 0.66, Florians Wunsch):** Das Fenster „Wallets“ und sein Knopf in der Leiste des Reiters Wallet heißen „Adressen“ (auch `aria-label`, (i) „Adressen“, „Was du hier machst“, Anleitung). Die Teile darin heißen weiter „Deine Wallets“ und „Andere Adressen“. Wo diese Datei „Fenster „Wallets““ sagt, ist dieses Fenster gemeint.
 - **Fenster „Wallets“ (ab 0.52):** bis 960 px breit. Zwei gleichwertige, immer sichtbare Teile mit Überschrift und (i): „Deine Wallets“ und „Andere Adressen“. Am Handy steht in „Deine Wallets“ die Art klein unter dem Namen.
   - „Andere Adressen“: je Gruppe eine Karte, Titel mit Anzahl („Unbekannt (5)“) und (i) mit der Erklärung der Gruppe. Reihenfolge: Kartenzahlungen · Dienste · Tag · Fremd (Personen und Händler) · Unbekannt · Betrugsverdacht (beim ersten Öffnen zu).
   - Spalten: Name · Adresse mit ⧉ (Netzwerke klein darunter) · Bewegungen · ✎. Adresse und ⧉ brechen nie um (`nw`).
@@ -131,7 +132,7 @@ Eine Regel für alle (`popPlace`):
 - Farbe nur an diesen Stellen: als Zahl in der Leiste, als Punkt vor Gruppen, als schmaler Rand links, als Statuswort in Listen und (ab 0.51, Regel 14) als roter Rand mit Satz an einem fehlenden Pflichtfeld nach einem Klick auf den Hauptknopf. Keine farbigen Flächen.
 - Zahl in der Leiste: zählt alle Punkte, auch graue (ab 0.48). Rot, wenn es rote Punkte gibt, sonst gelb, wenn es gelbe gibt, sonst grau. Folgefehler zählen nicht. Solange „＋ Daten“ offen ist oder „Speichern und nächster“ läuft, steht keine Zahl da.
 - Graue Punkte zählen auch im Titel („Punkt 4 von 14“), stehen am Ende der Reihenfolge und haben „Verstanden“, das sie abhakt.
-- Fehlende Kurse (das automatische Laden ist aus) sind grau, kein Alarm: ein grauer Punkt „Kurse ab … noch nicht geladen.“ mit „Zu den Kursen“, in der Liste grau „Kurs fehlt“, unter „Bestand jetzt“ ein Satz.
+- Fehlende Kurse (das automatische Laden ist aus oder hat nicht geklappt) sind grau, kein Alarm: ein grauer Punkt „Kurse ab … noch nicht geladen.“ mit „Zu den Kursen“, in der Liste grau „Kurs fehlt“, unter „Bestand jetzt“ ein Satz.
 - Ein Unterschied im Bestand, den die offenen Vorgänge der Wallet ganz erklären, ist ein Folgefehler: kein Punkt, in „Kontostände prüfen“ grau „Erklärt sich durch … offene Vorgänge bei …“.
 - Offene Vorgänge in der Liste haben einen roten Rand links, offene mit Vorschlag einen gelben, ignorierte einen grauen.
 - Variablen: `--sig-r`, `--sig-y` (mit `--sig-y-ink` für Schrift auf Gelb), `--sig-g`, hell und dunkel.
@@ -351,3 +352,8 @@ Sie heißen „… ↗“ und sagen, dass sie eine Webseite außerhalb des Tools
   - leer: hoch (ab 641 px etwa doppelt so hoch, 231 px; am Handy normal)
   - Vorschau offen: normal (wie vor 0.51, etwa wie „Hier einfügen“ mit 4 Zeilen, 115 px)
   - Daten in diesem Bereich schon eingelesen und keine Vorschau offen: niedrig, etwa 2 Zeilen (75 px)
+- **Feld „Hier einfügen“ für Tag-Daten (ab 0.66, Florians Wunsch):** doppelt so hoch wie bis 0.65: ohne Tag-Daten 8 Zeilen, mit Tag-Daten 4 Zeilen (`renderWallet`).
+
+## 12. Kurse und Sicherung (ab 0.66)
+- **Kurse von selbst (ab 0.66, Florians Wunsch, ersetzt 0.47):** „Fehlende Kurse automatisch laden“ ist von Anfang an gesetzt, sonst zeigt das Tool nach den ersten Reports keine Euro. Wer das Häkchen nie von Hand angefasst hat, bekommt es einmal eingeschaltet (`rAutoV` 66), eine Wahl von Hand (`rAutoMan`) bleibt. Alle Texte sagen das so: Begrüßung („Fehlende Kurse lädt es von selbst. Das kannst du im Reiter „Kurse“ ausschalten.“), Datenschutz, „Wozu?“ am Häkchen, (i) „Wechselkurse“, Schritt 4 in „Erste Schritte“ („Prüfe die Wechselkurse (für Euro und Steuer). Fehlende lädt das Tool von selbst.“) und die Anleitung.
+- **„Alles löschen“ lädt neu (ab 0.66, Florians Wunsch):** Nach der Rückfrage löscht das Tool alles und lädt die Seite neu. Es startet wie beim ersten Öffnen mit der Begrüßung (Land, „Gelesen und verstanden“), danach steht der Toast „Alles gelöscht.“.
