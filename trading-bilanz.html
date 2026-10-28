@@ -60,10 +60,7 @@ h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
 .hrow h1{margin:0}
 /* Herunterladen-Hinweise (0.35): nur in der Online-Version (html.online, gesetzt bei http/https), in der heruntergeladenen Datei nie */
 html:not(.online) .onl{display:none!important}
-button.btn.hdl{font-size:var(--fs-s);padding:4px 10px;background:transparent;color:var(--ink2);flex:none}
-button.btn.hdl:hover,button.btn.hdl:focus-visible{background:var(--card);color:var(--ink)}
-/* Handy, nur online: Titel allein, darunter „Erste Schritte“ und „Herunterladen“ nebeneinander (sonst stünde „Herunterladen“ allein in einer Zeile) */
-@media (max-width:560px){html.online .hrow h1{flex-basis:100%}html.online .hrow{gap:8px 10px;margin-bottom:8px}}
+/* Ab 0.68 (Florians Regel): kein „Herunterladen“ im Kopf, „Erste Schritte“ steht auch online am Handy neben dem Titel. Herunterladen nur im Reiter „Sicherung“ und im Kästchen der Begrüßung */
 #intro-dl{margin:0 0 16px}
 /* Begrüßung online: Den Satz „Dort kannst du sie auch herunterladen …“ sagt schon der Kasten #intro-dl darüber */
 html.online #intro-modal .odl{display:none}
@@ -1148,7 +1145,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 </head>
 <body>
 <header>
-  <div class="hrow"><h1>Trading-Bilanz</h1><button type="button" class="btn h2btn noprint" id="btn-steps">Erste Schritte</button><button type="button" class="btn hdl onl noprint" id="btn-hdl" data-offdl>Herunterladen</button></div>
+  <div class="hrow"><h1>Trading-Bilanz</h1><button type="button" class="btn h2btn noprint" id="btn-steps">Erste Schritte</button></div>
   <p class="sub">Statistik und Steuerzahlen aus deinen MetaTrader-5-Reports. Deine Daten bleiben in diesem Browser.</p>
 </header>
 <nav><div class="in" id="tabs"></div><div id="fbar" class="noprint"><div class="fin"><div class="fdd" id="fdd-range"><button type="button" class="fsel" id="fb-range" aria-expanded="false" aria-controls="fp-range" title="Zeitraum wählen"></button><div class="fpan" id="fp-range" role="dialog" aria-label="Zeitraum"></div></div><div class="fdd" id="fdd-acc"><button type="button" class="fsel" id="fb-acc" aria-expanded="false" aria-controls="fp-acc" title="Konten wählen"></button><div class="fpan" id="fp-acc" role="dialog" aria-label="Konten"></div></div><div class="fdd" id="fdd-pf"><button type="button" class="fsel" id="fb-pf" aria-expanded="false" aria-controls="fp-pf" title="Performance Fee laut MT5 oder auf die Trades verteilt"></button><div class="fpan" id="fp-pf" role="dialog" aria-label="Performance Fee"></div></div><div class="fdd" id="fdd-cur"><button type="button" class="fsel" id="fb-cur" aria-expanded="false" aria-controls="fp-cur" title="Beträge in Euro oder in USD"></button><div class="fpan" id="fp-cur" role="dialog" aria-label="Währung"></div></div></div></div><div id="wbar" class="noprint"><div class="fin"><div class="fdd" id="fdd-wr"><button type="button" class="fsel" id="fb-wr" aria-expanded="false" aria-controls="fp-wr" title="Zeitraum der Wallet-Seite wählen"></button><div class="fpan" id="fp-wr" role="dialog" aria-label="Zeitraum"></div></div><button type="button" class="fsel wbb" id="wb-dt"></button><button type="button" class="fsel wbb" id="wb-wl"></button><button type="button" class="fsel wbb" id="wb-td"></button></div></div></nav>
@@ -1542,7 +1539,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <p>Lass deine Steuerzahlen von einer Steuerberaterin oder dem Finanzamt prüfen, bevor du sie verwendest. Dieses Tool ist keine Steuerberatung.</p></div>
   <p><b>Datenschutz:</b> Deine Daten bleiben in diesem Browser. Ins Internet geht das Tool nur für die Wechselkurse. Fehlende Kurse lädt es von selbst. Das kannst du im Reiter „Kurse“ ausschalten.</p>
   <!-- Nur online: früh herunterladen, weil Online-Version und Datei getrennt speichern -->
-  <div class="msg info onl" id="intro-dl"><p>Du kannst die Trading-Bilanz auch herunterladen und ganz ohne Internet nutzen. Wichtig dabei: Die Online-Version und die heruntergeladene Datei speichern getrennt. Willst du deine Daten mitnehmen, geht das ganz einfach mit einer Sicherung (Reiter „Sicherung“).</p>
+  <div class="msg info onl" id="intro-dl"><p>Du kannst die Trading-Bilanz auch herunterladen und ganz ohne Internet nutzen. Später findest du den Knopf dazu im Reiter „Sicherung“. Wichtig dabei: Die Online-Version und die heruntergeladene Datei speichern getrennt. Willst du deine Daten mitnehmen, geht das ganz einfach mit einer Sicherung, im selben Reiter.</p>
     <div class="row"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>
   <p class="small" data-orig></p>
   <!-- Ab 0.65: keine Schritte mehr, nur der Verweis auf „Erste Schritte“ -->
@@ -10690,7 +10687,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.67',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.68',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
