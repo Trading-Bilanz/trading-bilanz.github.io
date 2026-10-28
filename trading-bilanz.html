@@ -1521,6 +1521,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <h2>Export</h2>
     <p class="hint">Die Excel-Datei enthält alles, was jemand nachprüfen möchte: Übersicht mit Kennzahlen und Annahmen, Durchschnitt, Monate, Wochen, Tage, Konten, alle Trades mit Haltedauer, deine Investition, alle MT5-Buchungen mit Wechselkurs und Kurs-Datum, die Krypto-Rechnung, die Tag-Wallet-Vorgänge, deine eigenen Einträge und alle verwendeten EZB-Kurse mit Quelle.</p>
     <p class="hint"><b>Für alle, die tiefer blicken wollen:</b> In der Excel-Datei steckt alles, was das Tool weiß. Jeder Trade, jeder Handelstag, jede Woche und jeder Monat mit Betrag, Performance Fee, Investition und Rendite, dazu alle Buchungen mit Wechselkurs. Damit kannst du dir jede Auswertung selbst bauen, die das Tool nicht zeigt: eigene Durchschnitte, Filter, Diagramme, Vergleiche.</p>
+    <!-- Ab 0.67 (Florians Wunsch): auch die CSV beschreiben -->
+    <p class="hint">Die CSV-Datei enthält nur deine MT5-Buchungen als einfache Liste: eine Zeile je Buchung mit Konto, Zeitpunkt, Art, Betrag, Kosten, Wechselkurs und Betrag in Euro. Krypto, Wallet und Auswertungen sind nicht dabei. Sie passt für Programme, die eine einfache Tabelle brauchen. Zurück ins Tool lädst du weder Excel noch CSV, dafür gibt es die Sicherung.</p>
     <div class="row"><button class="btn primary" id="btn-xlsxall">Excel mit allen Daten</button><button class="btn" id="btn-csvall">Alle Buchungen als CSV</button></div>
   </div>
   <div class="card">
@@ -1764,7 +1766,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <!-- Anleitung als Fenster (gt-modal, guideOpen('tag')). Ohne Tag-Daten groß und blau, danach klein (renderGuideBtns) -->
     <div class="row gbtns" id="tag-guide-btns"><button type="button" class="btn primary" data-guide="tag">So kopierst du die Daten aus Tag</button></div>
     <p class="small" id="tagpaste-l" style="margin:10px 0 2px"><b>Hier einfügen:</b></p>
-    <textarea id="tagpaste" rows="8" placeholder="Hier den kopierten Text aus der Tag Wallet einfügen"></textarea>
+    <textarea id="tagpaste" rows="4" placeholder="Hier den kopierten Text aus der Tag Wallet einfügen"></textarea>
     <!-- Coin gilt für alle Zeilen dieses Einfügens, merkt sich den letzten Wert (S.defCoin) -->
     <div class="row tagrow" data-act><label for="tagcoin">Coin</label><select id="tagcoin"><option>USDC</option><option>USDT</option></select><button class="btn primary" id="btn-tagpaste">Übernehmen</button></div>
     <p class="small" style="margin:4px 0 0">Hast du USDC und USDT gemischt? Kein Problem, du kannst den Coin danach bei jeder Zeile ändern.</p>
@@ -6273,9 +6275,9 @@ function renderWallet(){
   const L=cxLand(),DEw=L==='DE',rg=wRange(),today=todayLocal();
   $('tagcoin').value=S.defCoin==='USDT'?'USDT':'USDC';
   const has=Object.keys(S.tag).length>0;
-  // Ohne Tag-Daten: Feld 8 Zeilen hoch, Anleitungs-Knopf groß; danach 4 Zeilen und klein. Ab 0.50 (1.1): der Knopf ist immer blau.
-  // Ab 0.66 (Florians Wunsch): doppelt so hoch wie bis 0.65 (4 bzw. 2 Zeilen)
-  $('tagpaste').rows=has?4:8;
+  // Ohne Tag-Daten: Anleitungs-Knopf groß, danach klein. Ab 0.50 (1.1): der Knopf ist immer blau.
+  // Ab 0.67 (Florians Wunsch): Feld immer 4 Zeilen hoch, mit und ohne Tag-Daten (bis 0.65 4 bzw. 2, in 0.66 8 bzw. 4)
+  $('tagpaste').rows=4;
   $('tag-guide-btns').classList.toggle('lite',has);$('tag-guide-btns').querySelector('.btn').classList.add('primary');
   // Ab 0.48 (3.9): der Knopf „● N neu ▾“ ist weg; neu steht als Punkt vor dem Datum, der Filter im Menü „Status“
   // Formular (im Fenster cx-modal): Wallet-Listen auffrischen, gewählte Werte behalten, ab 0.43 mit „+ Neue Wallet …“
@@ -10688,7 +10690,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.66',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.67',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}

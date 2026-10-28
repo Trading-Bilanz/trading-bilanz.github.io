@@ -2,7 +2,7 @@
 
 Diese Regeln gelten für jede Runde. Claude liest die Datei vor jeder Runde und ergänzt sie, wenn Florian eine neue Regel festlegt.
 
-Stand: 0.66 (28.10.2026)
+Stand: 0.67 (28.10.2026)
 
 ## 0. Aufbau wie in der Auswertung, überall
 **Reiter Auswertung als Referenz:** Der Reiter „Auswertung“ ist fertig und gilt als Vorlage für alle anderen Reiter. Würde ein Auftrag dort etwas ändern, frag vorher nach, außer Florian nennt den Reiter ausdrücklich.
@@ -352,8 +352,9 @@ Sie heißen „… ↗“ und sagen, dass sie eine Webseite außerhalb des Tools
   - leer: hoch (ab 641 px etwa doppelt so hoch, 231 px; am Handy normal)
   - Vorschau offen: normal (wie vor 0.51, etwa wie „Hier einfügen“ mit 4 Zeilen, 115 px)
   - Daten in diesem Bereich schon eingelesen und keine Vorschau offen: niedrig, etwa 2 Zeilen (75 px)
-- **Feld „Hier einfügen“ für Tag-Daten (ab 0.66, Florians Wunsch):** doppelt so hoch wie bis 0.65: ohne Tag-Daten 8 Zeilen, mit Tag-Daten 4 Zeilen (`renderWallet`).
+- **Feld „Hier einfügen“ für Tag-Daten (ab 0.67, Florians Wunsch, ersetzt 0.66):** immer 4 Zeilen hoch, mit und ohne Tag-Daten (`renderWallet`). Bis 0.65 4 bzw. 2 Zeilen, in 0.66 8 bzw. 4.
 
 ## 12. Kurse und Sicherung (ab 0.66)
 - **Kurse von selbst (ab 0.66, Florians Wunsch, ersetzt 0.47):** „Fehlende Kurse automatisch laden“ ist von Anfang an gesetzt, sonst zeigt das Tool nach den ersten Reports keine Euro. Wer das Häkchen nie von Hand angefasst hat, bekommt es einmal eingeschaltet (`rAutoV` 66), eine Wahl von Hand (`rAutoMan`) bleibt. Alle Texte sagen das so: Begrüßung („Fehlende Kurse lädt es von selbst. Das kannst du im Reiter „Kurse“ ausschalten.“), Datenschutz, „Wozu?“ am Häkchen, (i) „Wechselkurse“, Schritt 4 in „Erste Schritte“ („Prüfe die Wechselkurse (für Euro und Steuer). Fehlende lädt das Tool von selbst.“) und die Anleitung.
+- **Export beschreibt Excel und CSV (ab 0.67, Florians Wunsch):** Unter den Sätzen zur Excel-Datei steht ein Satz zur CSV: nur die MT5-Buchungen als einfache Liste, keine Krypto, kein Wallet, keine Auswertungen; zurück ins Tool lädt man nur eine Sicherung.
 - **„Alles löschen“ lädt neu (ab 0.66, Florians Wunsch):** Nach der Rückfrage löscht das Tool alles und lädt die Seite neu. Es startet wie beim ersten Öffnen mit der Begrüßung (Land, „Gelesen und verstanden“), danach steht der Toast „Alles gelöscht.“.
