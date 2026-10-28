@@ -1331,9 +1331,11 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
       <div class="sthd"><h2><span><span class="gl" data-gl="netto" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Netto</span> pro Konto und Monat</span> <button type="button" class="ib" data-gl="k-matrix" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Netto pro Konto und Monat">i</button></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
       <div class="tscroll"><table id="t-matrix"></table></div>
     </div>
-    <div class="card fold stk" data-fold="real-card" id="real-card" style="display:none">
+    <!-- Ab 0.63: immer sichtbar, ohne Tag-Daten mit Hinweis (real-empty) statt Tabelle -->
+    <div class="card fold stk" data-fold="real-card" id="real-card">
       <div class="sthd"><h2>Dein echtes Geld <button type="button" class="ib" data-gl="k-real" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Dein echtes Geld">i</button></h2><p class="small rlsub">(aus der Tag Wallet)</p></div>
-      <p class="hint">Immer alle Konten und der ganze Zeitraum.</p>
+      <p class="hint" id="real-hint">Immer alle Konten und der ganze Zeitraum.</p>
+      <div id="real-empty"></div>
       <div class="scroll"><table id="t-real"></table></div>
     </div>
     <div class="card fold stk" data-fold="st-calc" id="st-calc">
@@ -9639,7 +9641,11 @@ function renderStats(rows){
   const mLabel=m=>{const x=mSpan(m);return x?gl('rand',`${fM(m)} (${x})`):fM(m)};
   $('flt-print').textContent='Zeitraum: '+rg.label+(nocwOn()?' ohne laufende Woche':'')+(all.length>1?' · Konten: '+(allSel?'alle':sel.map(accName).join(', ')):'')+' · '+(ex?'PF verteilt':'PF laut MT5')+' · Beträge in '+(CUR_EFF==='usd'?'USD':'Euro');
   // Dein echtes Geld: immer alle Konten und der ganze Zeitraum, nur gebuchte Werte
-  const RM=realMoney();$('real-card').style.display=RM.n?'':'none';
+  const RM=realMoney();
+  // Ab 0.63: Karte immer zeigen; ohne Tag-Daten sagt sie, was im Reiter Wallet fehlt (nicht gedruckt)
+  $('real-card').classList.toggle('noprint',!RM.n);$('real-hint').style.display=RM.n?'':'none';
+  $('real-empty').innerHTML=RM.n?'':'<p>Hier siehst du, was du bei Tag eingezahlt und ausgezahlt hast und was dein Geld seit Start gebracht hat. Dafür braucht das Tool deine <b>Ein- und Auszahlungen bei Tag</b>. Trage sie im Reiter „Wallet“ ein: unter „＋ Daten“ die Tag-Daten einfügen oder von Hand.</p><div class="row"><button type="button" class="btn" data-realgo>Tag-Daten eintragen</button></div>';
+  if(!RM.n)$('t-real').innerHTML='';
   // Ab 0.47 (3.7): Ein- und Auszahlungen per Bank zusätzlich in Euro (laut Kontoauszug, sonst zum EZB-Kurs geschätzt), nur wenn es Bank-Zeilen gibt
   const bankR=k=>{const L=Object.values(S.tag).filter(t=>t.fiat&&t.status==='ok'&&t.kind===k&&(k==='aus'||t.own));if(!L.length)return '';
     const v=L.map(t=>tagBankEur(t)),sum=v.reduce((a,x)=>a+(x||0),0),nb=L.filter(t=>t.eurBank>0).length,miss=v.some(x=>x==null);
@@ -10646,7 +10652,9 @@ $('graf-avg').onchange=e=>{S.ui.graf.avg=e.target.checked;save();render()};
 // würde der Dokument-Klick-Handler es sofort wieder schließen.
 $('stats-body').addEventListener('click',e=>{
   const a=e.target.closest('a.jl');if(a){e.preventDefault();const j=a.dataset.j,i=j.indexOf('|');jumpTo(j.slice(0,i),j.slice(i+1));return}
-  if(e.target.closest('#st-avg .zlink')){e.preventDefault();e.stopPropagation();openFpanel('range')}});
+  if(e.target.closest('#st-avg .zlink')){e.preventDefault();e.stopPropagation();openFpanel('range')}
+  // Ab 0.63: Hinweis in „Dein echtes Geld“ ohne Tag-Daten öffnet „＋ Daten“ bei den Tag-Daten
+  if(e.target.closest('[data-realgo]'))dtOpen('tag')});
 $('t-week').addEventListener('animationend',e=>{const tr=e.target.closest('tr.hl');if(tr)tr.classList.remove('hl')});
 // Rechner: Eingaben speichern und nur die Karte neu zeichnen (Fokus bleibt im Feld)
 // S.ui.calc.tax und taxOn (bis 0.24: Steuer abziehen) bleiben im Speicher, werden aber nicht mehr benutzt
@@ -10671,7 +10679,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   try{const j=JSON.parse(await readText(f));if(!j.deals||!j.accounts)throw new Error(`„${f.name}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`);S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';save();msg('datamsg','ok',`Sicherung geladen: ${Object.keys(S.accounts).length} Konten, ${Object.keys(S.deals).length} Buchungen.`);render()}catch(err){msg('datamsg','bad','Datei konnte nicht geladen werden: '+esc(err.message))}e.target.value=''};
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();msg('datamsg','ok','Alles gelöscht.');render()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.62',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.63',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -10764,14 +10772,15 @@ const ORIG_HTML='Das Original der Trading-Bilanz läuft nur unter genau dieser A
 const GTK='Deine Daten liegen nur in diesem Browser. Die Online-Version und eine heruntergeladene Datei haben getrennte Speicher. Nimm deine Daten mit einer Sicherung mit.';
 document.querySelectorAll('[data-orig]').forEach(e=>{e.innerHTML=ORIG_HTML});
 document.querySelectorAll('[data-gtk]').forEach(e=>{e.textContent=GTK});
-const STEPS=['Verbinde MetaTrader 5 mit deinen Konten (einmalig, am Computer).','Speichere die Reports aus MetaTrader 5 und lade sie ins Tool.','Wähle den Trading Benefit (z. B. ×24).','Lade die Wechselkurse (für Euro und Steuer).','Wallet: Füge die Tag-Daten ein und trage ein, woher die Coins kamen (von Hand oder mit der Börsen-Datei). Empfohlen für „Dein echtes Geld“ in der Auswertung und die Krypto-Steuer. Wallet-Dateien sind ein zusätzlicher Weg für Fortgeschrittene.','Genieße die Auswertung.','Sieh dir die Steuer an.','Speichere eine Sicherung.'];
-// Ziel je Schritt: Reiter und Element (aufklappen und hinscrollen), bei 1 und 2 das Anleitungs-Fenster ('guide')
-const STEP_GO=[null,['guide','connect'],['guide','save'],['reports','acc-card'],['rates'],['wallet','dt'],['stats'],['tax'],['data']];
-// Status je Schritt: 'ok' erledigt, 'todo' offen, '' neutral (5 ohne Tag-Daten, 6 und 7 immer). Schritt 1 kann das Tool nicht prüfen, er gilt wie 2.
+// Ab 0.63: „Genieße die Auswertung“ vor Wallet, damit man zuerst die Zahlen sieht
+const STEPS=['Verbinde MetaTrader 5 mit deinen Konten (einmalig, am Computer).','Speichere die Reports aus MetaTrader 5 und lade sie ins Tool.','Wähle den Trading Benefit (z. B. ×24).','Lade die Wechselkurse (für Euro und Steuer).','Genieße die Auswertung.','Wallet: Füge die Tag-Daten ein und trage ein, woher die Coins kamen (von Hand oder mit der Börsen-Datei). Empfohlen für „Dein echtes Geld“ in der Auswertung und die Krypto-Steuer. Wallet-Dateien sind ein zusätzlicher Weg für Fortgeschrittene.','Sieh dir die Steuer an.','Speichere eine Sicherung.'];
+// Ziel je Schritt: Reiter und Element (aufklappen und hinscrollen), bei 1 und 2 das Anleitungs-Fenster ('guide') über dem Reiter Reports
+const STEP_GO=[null,['guide','connect'],['guide','save'],['reports','acc-card'],['rates'],['stats'],['wallet','dt'],['tax'],['data']];
+// Status je Schritt: 'ok' erledigt, 'todo' offen, '' neutral (6 ohne Tag-Daten, 5 und 7 immer). Schritt 1 kann das Tool nicht prüfen, er gilt wie 2.
 // 8: erledigt, wenn nach dem letzten Laden von Reports bzw. Einfügen von Tag-Daten (S.ui.lastLoad) eine Sicherung gespeichert wurde (S.ui.lastBackup).
 function stepState(){
   const accs=Object.keys(S.accounts),has=accs.length>0,u=S.ui,ok=b=>b?'ok':'todo';
-  return [ok(has),ok(has),ok(has&&accs.every(a=>S.accounts[a].factor)),ok(has&&missingRates().n===0),Object.keys(S.tag).length?'ok':'','','',
+  return [ok(has),ok(has),ok(has&&accs.every(a=>S.accounts[a].factor)),ok(has&&missingRates().n===0),'',Object.keys(S.tag).length?'ok':'','',
     ok(has&&!!u.lastBackup&&(!u.lastLoad||u.lastBackup>=u.lastLoad))];
 }
 // Inhalt von „Erste Schritte“ und der Begrüßung. jump = Schritte sind Knöpfe, die in den passenden Reiter springen (nicht in der Begrüßung).
@@ -11075,7 +11084,8 @@ document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[da
 for(const id of ['steps-modal']){const m=$(id);m.addEventListener('click',e=>{
   const b=e.target.closest('[data-step]');if(b){const [tab,el]=STEP_GO[+b.dataset.step];
     // Schritt 1 und 2: „Erste Schritte“ schließen, Anleitung öffnen; danach geht der Fokus wieder auf den Knopf „Erste Schritte“
-    if(tab==='guide'){closeModal();guideOpen(el);MODAL_FROM=$('btn-steps');return}
+    // Ab 0.63: dahinter in den Reiter Reports wechseln
+    if(tab==='guide'){closeModal();S.ui.tab='reports';save();render();guideOpen(el);MODAL_FROM=$('btn-steps');return}
     // Ab 0.44: Schritt „Tag Wallet“ öffnet „＋ Daten“ beim ersten offenen Bereich (ab 0.43 war es der Assistent)
     if(tab==='wallet'){closeModal();MODAL_FROM=null;const n=[1,2,3].find(n=>!wzOk(n));dtOpen(n?DT_STEPS[n-1]:'');return}
     MODAL_FROM=null;goTo(tab,el)}})}
