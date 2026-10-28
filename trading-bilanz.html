@@ -82,6 +82,8 @@ section{scroll-margin-top:var(--navh,70px)}
 /* Ab 0.61: Dateien warten in „＋ Daten“ (Reiter Wallet, Kacheln) */
 .dot.wait{background:var(--sig-y);color:var(--sig-y-ink)}
 .dtwh{overflow-wrap:anywhere}
+/* Ab 0.61: Dateiname in einer Meldung, zu lang für die Zeile: gekürzt mit „…“ */
+.fnq{white-space:nowrap}.fnm{display:inline-block;max-width:calc(100% - 1.2em);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
 .trow{display:contents}
 @media (max-width:700px){
   nav .in{flex-direction:column;overflow-x:visible;gap:3px;padding:6px 8px}
@@ -10825,9 +10827,11 @@ const wfWaitL=()=>WF_PEND?WF_PEND:WFP&&!WFP.stored?WFP.files.filter(f=>!(WFP.don
 function dtWait(p){return p==='bx'?(BXP?1:0)+BX_Q.length:p==='wf'?wfWaitL().length:0}
 const dtWaitN=()=>dtWait('bx')+dtWait('wf');
 const dtWaitNext=ex=>DT_STEPS.find(p=>p!==ex&&dtWait(p))||'';
-// Text je Bereich: „Börsen-Datei „x.csv““, „2 Wallet-Dateien“ (h = als HTML, nach „Die“). Wallet-Dateien ohne Namen (der ist meist nur die lange Adresse).
-function dtWaitT(p,h){const n=dtWait(p);if(p==='wf')return n===1?(h?'Wallet-Datei':'1 Wallet-Datei'):`${fI.format(n)} Wallet-Dateien`;
-  const nm=BXP?BXP.name:(BX_Q[0]||{}).name;return n===1?`Börsen-Datei „${h?esc(nm||''):nm||''}“`:`${fI.format(n)} Börsen-Dateien`}
+// Text je Bereich: „Börsen-Datei „x.csv““, „2 Wallet-Dateien“ (h = als HTML, nach „Die“). Ein langer Name endet mit „…“: im HTML so weit, wie er
+// in die Zeile passt (.fnm), im Toast nach 32 Zeichen.
+function dtWaitT(p,h){const n=dtWait(p),a=p==='bx'?'Börsen-Datei':'Wallet-Datei';if(n!==1)return `${fI.format(n)} ${a}en`;
+  const nm=(p==='bx'?(BXP?BXP.name:(BX_Q[0]||{}).name):(wfWaitL()[0]||{}).name)||'';
+  return h?`${a} <span class="fnq">„<span class="fnm" title="${esc(nm)}">${esc(nm)}</span>“</span>`:`${a} „${nm.length>32?nm.slice(0,31)+'…':nm}“`}
 // Alle wartenden Bereiche als Text für den Toast („Börsen-Datei „x.csv“ und 2 Wallet-Dateien“)
 const dtWaitAll=()=>DT_STEPS.filter(p=>dtWait(p)).map(p=>dtWaitT(p)).join(' und ');
 // Satz mit Knopf für die Meldung nach Übernehmen oder Abbrechen in Bereich ex, leer, wenn sonst nichts wartet
