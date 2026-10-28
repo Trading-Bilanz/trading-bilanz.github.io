@@ -3470,7 +3470,8 @@ function wPairApply(S,c){const o=S.wtx[c.ko],i=S.wtx[c.ki];if(!o||!i||o.st!=='op
   if(c.ty==='top')e.how='aufladung';
   // Ab 0.45: dieselbe Zwischenadresse auf beiden Seiten = Übertrag über einen Dienst
   if(c.ty==='xp'&&o.to===i.from)e.via=o.to;
-  if(c.dq>1e-9)e.qtyIn=i.qty;S.cx.push(e);o.st='cx';o.ref=e.id;i.st='cx';i.ref=e.id;i.xin=1;return e}
+  // Ab 0.59 (Nachtrag): Aufladung wie über die eigene Ladeadresse: die Gebühr ist eine Gebühr des Kartenanbieters in der Karte (ldFeeSet), nicht „Menge angekommen“
+  if(c.ty==='top')e.ld=1;else if(c.dq>1e-9)e.qtyIn=i.qty;S.cx.push(e);o.st='cx';o.ref=e.id;i.st='cx';i.ref=e.id;i.xin=1;if(c.ty==='top')ldFeeSet(S,e);return e}
 // Kette im Modell 0.42: Ausgang von Adresse a an eine fremde Adresse oder Brücke, 0 bis 3 Std. nach einem Übertrag in dieselbe Wallet, dessen
 // Ausgang (wk) an a ging und der schon eine Eingangsseite (wkIn) hat, gleiche Menge (± 0,01). Rückgabe [{ko, c, dt}]
 // Ab 0.59 (Nachtrag): Eine Weiterleitung kann mehrere Aufladungen bündeln (z. B. 25 + 35 → 60). Gibt es keinen Übertrag mit derselben Menge, zählen
@@ -3525,7 +3526,9 @@ function wLdLink(S,inO){let n=0;
 const BRK_NOTE='Brückengebühr (Unterschied laut Wallet-Datei)';
 function wLdMerge(S){let n=0;const W=S.wtx,CA=wCardSet(S),plain=c=>!!c&&c.src==='datei'&&!(c.eur>0)&&!(c.usd>0)&&!c.note&&!c.est;
   // Zwischenstand vom 27.10.2026: Gebühr als „Menge angekommen“ (qtyIn) bei der sendenden Wallet → Gebühr des Kartenanbieters in der Karte
-  for(const c of S.cx){const i=c.ld&&c.kind==='uebertrag'&&c.wkIn&&W[c.wkIn];if(!i||!(c.qtyIn>0)||c.qtyIn!==i.qty||i.coin!==c.coin)continue;delete c.qtyIn;ldFeeSet(S,c);n++}
+  // Ab 0.59 (Nachtrag): ebenso eine Aufladung ohne eigene Ladeadresse (wPairApply 'top'): Kartenguthaben auf einem Kartenkonto der Karte
+  for(const c of S.cx){const i=c.kind==='uebertrag'&&c.wkIn&&W[c.wkIn];if(!i||!(c.qtyIn>0)||c.qtyIn!==i.qty||i.coin!==c.coin)continue;
+    if(!c.ld&&!(c.how==='aufladung'&&c.src==='datei'&&wCardTok(i)&&CA.has(i.to)&&rAW(S,i.to)===c.to))continue;c.ld=1;delete c.qtyIn;ldFeeSet(S,c);n++}
   for(const [ko,o] of Object.entries(W)){if(o.st!=='int'||!(o.brg||o.swap))continue;const ki=o.brg||o.swap,i=W[ki];if(!i||i.st!=='int'||i.hash===o.hash)continue;
     const A=o.from,K=rAW(S,A);if(!K||!rOwn(S,A)||CA.has(A)||rOwn(S,o.to)||!wCardTok(i)||!CA.has(i.to)||rAW(S,i.to)!==K)continue;
     const fe=o.brg?S.cx.filter(f=>f.brk&&f.brk.includes(ko)):[];if(fe.some(f=>f.src!=='datei'||f.note!==BRK_NOTE||f.eur>0||f.est))continue;
