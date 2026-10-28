@@ -11132,7 +11132,7 @@ async function offlineDL(){try{const r=await fetch(location.href.split('#')[0],{
   catch(e){offShow(false,e.message)}}
 function offShow(ok,err){const has=hasData();
   $('off-t').textContent=ok?'Datei gespeichert':'Herunterladen hat nicht geklappt';
-  $('off-body').innerHTML=ok?`<p>Die Datei „trading-bilanz.html“ liegt meist im Ordner „Downloads“.</p><p>Öffne die Datei per Doppelklick, sie läuft im Browser ohne Internet.${has?' Hast du hier schon Daten? Dann nimm sie mit: Sicherung speichern und in der Datei unter Sicherung laden.':''}</p>`+
+  $('off-body').innerHTML=ok?`<p>Die Datei „trading-bilanz.html“ liegt meist im Ordner „Downloads“.Speichere sie dir am besten an einem Ort, wo du sie immer leicht wiederfindest.</p><p>Öffne die Datei per Doppelklick, sie läuft im Browser ohne Internet.${has?' Hast du hier schon Daten? Dann nimm sie mit: Sicherung speichern und in der Datei unter Sicherung laden.':''}</p>`+
     (has?'<div class="row"><button type="button" class="btn primary" id="off-bk">Sicherung speichern</button></div><div id="off-msg"></div>':'')
     :`<p>Das Herunterladen hat nicht geklappt (${esc(err)}). Prüfe die Internetverbindung und versuche es noch einmal.</p>`;
   openModal('off-modal');
