@@ -2,7 +2,7 @@
 
 Diese Regeln gelten für jede Runde. Claude liest die Datei vor jeder Runde und ergänzt sie, wenn Florian eine neue Regel festlegt.
 
-Stand: 0.63 (28.10.2026)
+Stand: 0.64 (28.10.2026)
 
 ## 0. Aufbau wie in der Auswertung, überall
 **Reiter Auswertung als Referenz:** Der Reiter „Auswertung“ ist fertig und gilt als Vorlage für alle anderen Reiter. Würde ein Auftrag dort etwas ändern, frag vorher nach, außer Florian nennt den Reiter ausdrücklich.
@@ -228,6 +228,7 @@ Sie heißen „… ↗“ und sagen, dass sie eine Webseite außerhalb des Tools
 - **Ab 0.50 Nachtrag 13 (Florians Festlegung):** „↗“ hängt mit geschütztem Leerzeichen am letzten Wort (`&nbsp;↗`) und bricht nie allein um, auch nicht im Knopf „Mit PayPal spenden ↗“ am Handy. Ab Nachtrag 15 überall, in Tool und Anleitung, auch in Sätzen, die einen solchen Link nennen. `tools/test-pfeil.js` meldet jedes „↗“ mit normalem Leerzeichen (Kommentare ausgenommen).
 - Ohne „↗“ bleiben Links zum Tool selbst („trading-bilanz.github.io“, „Zur Trading-Bilanz“) und Mail-Links.
 - **Links in die Anleitung mit Bildern (ab 0.53):** immer „Anleitung mit Bildern&nbsp;↗ (braucht Internet)“, volle Adresse `https://trading-bilanz.github.io/anleitung.html#…`, neuer Tab, klein (`p.small`) unter dem Einleitungstext des Bereichs. Orte: Fenster MT5 verbinden (`#mt5-verbinden`), Report speichern (`#report-speichern`), Tag-Daten kopieren (`#tag-daten`), „Was du hier machst“ (`#reiter-wallet`), „Erste Schritte“ (Anfang), „＋ Daten“ → „Börsen“ unter dem Satz zu den Formaten als „So bekommst du die Datei bei Bitvavo: Anleitung mit Bildern ↗ (braucht Internet)“ (`#boerse-datei`), „＋ Daten“ → „Von Hand“ (`#von-hand`), im (i) von „Noch offen“ als letzte Zeile (`#noch-offen`). Die Sprungmarken der Anleitung ändern sich nie; test-anleitung prüft, dass es jede gibt.
+  - **Ab 0.64 (Florians Wunsch): ganz oben.** Der Link steht direkt unter der Überschrift des Fensters bzw. Bereichs, vor jedem anderen Text, in normaler Schrift (`p.gimg`, nicht mehr `p.small`). So sieht man ihn, bevor man die Text-Anleitung liest. Er bleibt ein Textlink (kein Knopf). In „Erste Schritte“ ist er das Erste unter dem Titel. Ausnahme: im (i) von „Noch offen“ bleibt er die letzte Zeile, klein (Erklärungstafel). Kein eigener Knopf im Reiter Reports, die beiden Fenster reichen.
 
 ## 7. Schreibweise
 - Du-Form, geschlechtsneutral

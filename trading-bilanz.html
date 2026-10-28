@@ -422,6 +422,8 @@ html.mlock body{padding-right:var(--sbw,0px)}
 .gbtns.lite .btn{font-size:var(--fs-s);padding:4px 10px;color:var(--ink2)}
 /* Ab 0.50 Nachtrag 1 (2.1): blauer Knopf in der kleinen Leiste mit weißer Schrift wie alle blauen Knöpfe */
 .gbtns.lite .btn.primary{color:#fff}
+/* Ab 0.64: Link „Anleitung mit Bildern“ direkt unter dem Titel, normale Schrift (GESTALTUNG Abschnitt 6) */
+.gimg{margin:0 0 12px}
 /* Reiter Wallet (0.36): Einfügefeld 4 Zeilen hoch, mit Tag-Daten 2 (renderWallet). Coin direkt links neben „Übernehmen“. */
 #tagpaste{min-height:0;resize:vertical}
 .tagrow{margin-top:8px;gap:8px;align-items:center}
@@ -1584,22 +1586,23 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <div class="row" style="margin-top:8px"><button class="btn primary" id="btn-ratepaste">Übernehmen</button></div>
   <div id="rmmsg"></div>
 </div></div>
-<!-- Anleitungen zu MetaTrader 5 (guideOpen): Reiter Windows | Mac | Handy, das erkannte Gerät ist beim Öffnen gewählt. Texte in MT5_CONNECT und MT5_SAVE im Skript -->
+<!-- Anleitungen zu MetaTrader 5 (guideOpen): Reiter Windows | Mac | Handy, das erkannte Gerät ist beim Öffnen gewählt. Texte in MT5_CONNECT und MT5_SAVE im Skript.
+     Ab 0.64: „Anleitung mit Bildern“ direkt unter dem Titel (p.gimg), auch in gt-modal -->
 <div class="modal noprint" id="gc-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="gc-t"><button type="button" class="mx" aria-label="Schließen">×</button>
   <h2 id="gc-t">Erstes Mal: MetaTrader 5 mit deinen Konten verbinden</h2>
+  <p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#mt5-verbinden" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
   <div id="gc-body"></div>
-  <p class="small"><a href="https://trading-bilanz.github.io/anleitung.html#mt5-verbinden" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
 </div></div>
 <div class="modal noprint" id="gs-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="gs-t"><button type="button" class="mx" aria-label="Schließen">×</button>
   <h2 id="gs-t">So speicherst du den Report in MetaTrader 5</h2>
+  <p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#report-speichern" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
   <div id="gs-body"></div>
-  <p class="small"><a href="https://trading-bilanz.github.io/anleitung.html#report-speichern" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
 </div></div>
 <!-- Anleitung zum Kopieren der Tag-Seiten (guideOpen('tag')): Reiter Windows | Mac | Handy wie bei MT5, Texte in TAG_GUIDE im Skript -->
 <div class="modal noprint" id="gt-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="gt-t"><button type="button" class="mx" aria-label="Schließen">×</button>
   <h2 id="gt-t">So kopierst du die Daten aus Tag</h2>
+  <p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#tag-daten" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
   <div id="gt-body"></div>
-  <p class="small"><a href="https://trading-bilanz.github.io/anleitung.html#tag-daten" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
 </div></div>
 <!-- Ab 0.39: Anleitung Wallet-Datei, ein Text für alle Geräte (am Computer am einfachsten) -->
 <div class="modal noprint" id="wg-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="wg-t"><button type="button" class="mx" aria-label="Schließen">×</button>
@@ -1742,10 +1745,10 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <!-- Ab 0.45 (2.1, 2.2): Von Hand eintragen, eine kurze Liste in der Reihenfolge, in der man abtippt -->
   <div class="wpan" id="dh-pane" hidden>
     <h3>Von Hand eintragen</h3>
+    <!-- Ab 0.53: Link in die Anleitung, Abschnitt „Von Hand eintragen“. Ab 0.64 direkt unter dem Titel -->
+    <p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#von-hand" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
     <p class="small">Du tippst ab, was deine Apps zeigen. Gehe am besten in dieser Reihenfolge vor. Mit „Speichern und nächster“ trägst du mehrere Einträge hintereinander ein.</p>
     <p class="small">Die Punkte in „Noch offen“ kannst du liegen lassen, bis du alles eingetragen hast.</p>
-    <!-- Ab 0.53: Link in die Anleitung, Abschnitt „Von Hand eintragen“ -->
-    <p class="small"><a href="https://trading-bilanz.github.io/anleitung.html#von-hand" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
     <!-- Ab 0.50 (4.2): Reihenfolge Tag, Börse, Überträge, Karte, andere Arten, Kontostand. Ab 0.53 (B7) in Befehlsform, Kontostand erst, wenn „Noch offen“ erledigt ist -->
     <ol class="dhl">
       <li><b>Füge die Tag-Daten ein (oder trage Ein- und Auszahlungen bei Tag von Hand ein).</b><div class="row"><button type="button" class="btn" data-dhk="tagein">Einzahlung zu Tag</button><button type="button" class="btn" data-dhk="tagaus">Auszahlung von Tag</button><button type="button" class="zlink" data-dhp="tag">Tag-Daten einfügen</button></div></li>
@@ -1772,10 +1775,10 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <!-- Ab 0.44: Börsen (Börsen-Datei, sonst von Hand). Ab 0.51 (1): Namen der Börsen aus BX_FMT (#bx-fmts setzt das Skript) -->
   <div class="wpan" id="bx-load" hidden>
     <h3>Börsen</h3>
+    <!-- Ab 0.53: wie man die Datei bei Bitvavo bekommt, steht in der Anleitung (Abschnitt „Börsen-Datei laden“). Ab 0.64 direkt unter dem Titel -->
+    <p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#boerse-datei" target="_blank" rel="noopener">So bekommst du die Datei bei Bitvavo: Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
     <p class="small">Lade die Datei mit deinen Transaktionen von deiner Börse (CSV). Das Tool übernimmt Käufe, Verkäufe und Überträge zu deinen Wallets und erkennt, was schon da ist.</p>
     <p class="small" id="bx-fmts"></p>
-    <!-- Ab 0.53: wie man die Datei bei Bitvavo bekommt, steht in der Anleitung (Abschnitt „Börsen-Datei laden“) -->
-    <p class="small"><a href="https://trading-bilanz.github.io/anleitung.html#boerse-datei" target="_blank" rel="noopener">So bekommst du die Datei bei Bitvavo: Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
     <div class="drop" id="bxdrop" role="button" tabindex="0"><b>Börsen-Datei (.csv) hierher ziehen</b><span class="small">oder klicken, um sie auszuwählen</span></div>
     <input type="file" id="bxfile" accept=".csv,text/csv" multiple hidden>
     <p class="small dhint">Du kannst Dateien auch an jeder anderen Stelle ins Tool ziehen.</p>
@@ -1860,6 +1863,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <!-- Ab 0.47 (4.4): beim ersten Öffnen des Reiters Wallet (ersetzt „Wie willst du anfangen?“), wieder über das (i) in der Einleitung -->
 <div class="modal noprint" id="wi-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="wi-t"><button type="button" class="mx" aria-label="Schließen">×</button>
   <h2 id="wi-t">Was du hier machst</h2>
+  <!-- Ab 0.53: zum Teil „Reiter Wallet“ der Anleitung (alle drei Schritte), bis 0.52 zu den Tag-Daten. Ab 0.64 direkt unter dem Titel -->
+  <p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#reiter-wallet" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
   <p id="wi-p">Hier hältst du fest, wie dein Geld zu Tag und von Tag zurück geflossen ist. Daraus rechnet das Tool „Dein echtes Geld“ (was du wirklich eingezahlt und ausgezahlt hast) und, wenn du mit Krypto bezahlt hast, die Krypto-Steuer.</p>
   <p><b>So gehst du vor:</b></p>
   <ol>
@@ -1870,8 +1875,6 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   </ol>
   <p class="small">Wallet-Dateien sind ein zusätzlicher Weg für Fortgeschrittene.</p>
   <p class="small">Diese Erklärung findest du wieder über das (i) oben im Reiter Wallet.</p>
-  <!-- Ab 0.53: zum Teil „Reiter Wallet“ der Anleitung (alle drei Schritte), bis 0.52 zu den Tag-Daten -->
-  <p class="small"><a href="https://trading-bilanz.github.io/anleitung.html#reiter-wallet" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
   <!-- Ab 0.48 (4.3): Börse oder eigene Wallet (derselbe Text wie im (i) beim Anlegen, aus GL.wkind) -->
 
   <div class="row mft"><button type="button" class="btn primary" id="btn-wi-tag">Mit den Tag-Daten anfangen</button><button type="button" class="btn" data-mclose>Schließen</button></div>
@@ -10679,7 +10682,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   try{const j=JSON.parse(await readText(f));if(!j.deals||!j.accounts)throw new Error(`„${f.name}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`);S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';save();msg('datamsg','ok',`Sicherung geladen: ${Object.keys(S.accounts).length} Konten, ${Object.keys(S.deals).length} Buchungen.`);render()}catch(err){msg('datamsg','bad','Datei konnte nicht geladen werden: '+esc(err.message))}e.target.value=''};
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();msg('datamsg','ok','Alles gelöscht.');render()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.63',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.64',VDATE='28.10.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -10788,9 +10791,10 @@ function stepsHTML(jump){
   const st=stepState();
   const li=(t,i)=>{const s=st[i],d=`<span class="dot ${s}"${s==='ok'?' role="img" aria-label="erledigt"':' aria-hidden="true"'}>${s==='ok'?'✓':i+1}</span>`;
     return `<li>${jump?`<button type="button" class="chki" data-step="${i+1}">`:'<div class="chki">'}${d}<span>${t}</span>${jump?'</button>':'</div>'}</li>`};
-  return `<p>Du brauchst einmalig einen Computer mit MetaTrader 5, um deine Reports zu speichern. Danach kannst du das Tool auch am Handy nutzen.</p>
+  // Ab 0.64: „Anleitung mit Bildern“ als Erstes
+  return `<p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
+  <p>Du brauchst einmalig einen Computer mit MetaTrader 5, um deine Reports zu speichern. Danach kannst du das Tool auch am Handy nutzen.</p>
   <ol class="chk">${STEPS.map(li).join('')}</ol>
-  <p class="small"><a href="https://trading-bilanz.github.io/anleitung.html" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
   <div class="chkm"><p><b>Jeden Monat (empfohlen)</b></p><ol class="steps"><li>Speichere in MetaTrader 5 für jedes Konto den Report neu.</li><li>Ziehe alle Reports in den Reiter „Reports“. Was schon da ist, erkennt das Tool.</li><li>Füge die neuen Tag-Daten ein und sieh in „Noch offen“ nach.</li><li>Speichere eine Sicherung.</li></ol>
   <p><b>Gut zu wissen:</b> ${GTK}${jump?'<span class="onl"> Du kannst das Tool auch herunterladen und ohne Internet nutzen.</span>':''}</p>
   ${jump?'<div class="row onl"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div>':''}</div>`;
