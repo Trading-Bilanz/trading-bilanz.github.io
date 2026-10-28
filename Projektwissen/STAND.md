@@ -141,6 +141,7 @@ Was heute gilt, kurz. Die Geschichte steht in `BERICHTE/0.xx.md`, die Gestaltung
 - Satz „davon … unterwegs“ im Bestand zum 31.12. (Übertrag über den Jahreswechsel).
 - „Euro laut Kontoauszug“ bei Bank-Zeilen von Tag geht noch in keine Rechnung.
 - Testdateien schreiben, mit denen Florian jede Fehlermeldung und jeden Hinweis des Tools auslösen und ansehen kann, je Reiter, mit kurzer Liste, welche Datei welche Meldung auslöst.
+- **`test-anleitung` angleichen (Fund aus 0.64):** Die Fassung in `Projektwissen/test-anleitung.js` ist älter als die Anleitung und schlägt schon auf 0.63 an 3 Stellen fehl: Sie erwartet `STEPS.slice(0,5)` (seit 0.63 sind es 6 Schritte, die Anleitung nutzt `slice(0,6)`) und „↑ Inhalt“ mit `href="#inhalt"` (die Anleitung nutzt seit 27.10. `href="#top"`). Florian entscheidet, ob der Test oder die Seite gilt. In der Cloud fehlen dazu `test-050n1.js` (Loader) und `anleitung-fremd.json`. `test-pfeil` ist grün.
 - Vor dem Veröffentlichen: `tools/kurse-einbauen.js` nach 16:00 laufen lassen. Version 1.0 und Datum setzen, Volltest.
 - **Aufräumen:**
   - Toten Code aus der alten Entscheiden-Zeile entfernen (Bericht 0.50 Nachtrag 8, C): in `wDecHTML` die Zeilen „Adresse … merken als“ und „Rückbuchung von meiner Krypto-Karte?“, `wStH`, die Klick-Zweige `a==='addr'` und `a==='card'` in `wfAct`.
