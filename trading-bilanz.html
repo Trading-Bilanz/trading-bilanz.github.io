@@ -68,7 +68,23 @@ html:not(.online) .onl{display:none!important}
 html.online .offl{display:none}
 #intro-dl p+p{margin-top:8px}
 .ibox{background:var(--sub-bg);border:1px solid var(--line);border-radius:var(--radius);padding:2px 16px 6px;margin:14px 0}
-#intro-land{gap:8px;margin:10px 0 12px;flex-wrap:wrap}
+/* Ab 0.78 (Florians Farbregel): In der Begrüßung hat jede Farbe genau eine Aufgabe. Grau = Frage nach dem Land (.ibox), Rot = Haftung (.dstr,
+   Farben wie .disc), Gelb = Echtheit (.ystr, das Gelb für „bitte prüfen“), Blau = Download und Hauptknopf. Die Punkte der Liste sind ohne Farbe. */
+ul.ilist{list-style:none;padding:0;margin:8px 0 6px}
+ul.ilist li{position:relative;padding-left:18px;margin:5px 0}
+ul.ilist li::before{content:"";position:absolute;left:4px;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--ink2)}
+ul.ilist+.small{margin:6px 0 0}
+#intro-tax h3{font-size:16px;margin:12px 0 4px}
+#intro-tax>p{font-size:var(--fs-s)}
+#intro-tax>p.small{margin:8px 0}
+.dstr,.ystr{border-radius:8px;padding:6px 12px;font-size:var(--fs-s);color:var(--ink);margin:12px 0}
+.dstr{border:2px solid var(--neg);background:var(--bad-bg)}
+.ystr{border:2px solid var(--sig-y);background:var(--warn-bg)}
+.dstr p,.ystr p{margin:0}
+/* Drei Knöpfe gleich breit nebeneinander; passen sie nicht in eine Zeile (Handy), stehen sie untereinander in voller Breite. Kein Knopf bricht um. */
+#intro-land{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 12px}
+#intro-land .btn{white-space:nowrap;min-width:0}
+@media (max-width:560px){#intro-land{grid-template-columns:1fr}}
 #intro-land .btn[aria-pressed=true]{background:var(--btn);border-color:var(--btn);color:#fff;font-weight:700}
 #intro-land .btn[aria-pressed=true]::before{content:'✓ '}
 @keyframes stpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 70%,transparent)}100%{box-shadow:0 0 0 12px transparent}}
@@ -1595,21 +1611,31 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
      (ab 0.65): der Knopf markiert die Wahl als Pflichtfeld. Den Disclaimer zur Steuer zeigt ab 0.77 das Pop-up im Reiter „Steuer“ (#taxack-modal). -->
 <div class="modal" id="intro-modal"><div class="box" role="dialog" aria-modal="true" aria-labelledby="intro-t">
   <h2 id="intro-t">Willkommen bei der Trading-Bilanz</h2>
-  <p>Die Trading-Bilanz rechnet aus deinen MT5-Reports deine Ergebnisse: Gewinne, Verluste, Gebühren, auch umgerechnet in Euro. Die Rechnung ist nachvollziehbar und lässt sich mit deinen Reports vergleichen. Zahlst du mit USDC oder USDT ein und aus, kann sie auch diese Bewegungen erfassen.</p>
-  <p>🔒 Deine Daten bleiben in diesem Browser. Ins Internet geht das Tool nur für die Wechselkurse. Fehlende Kurse lädt es von selbst. Das kannst du im Reiter „Kurse“ ausschalten.</p>
+  <!-- Ab 0.78: Beschreibung als Liste (Punkte per CSS, ul.ilist), darunter klein der Satz zum Internet -->
+  <ul class="ilist">
+    <li><b>Ergebnisse aus deinen MT5-Reports:</b> Gewinne, Verluste, Gebühren, <b>auch in Euro</b></li>
+    <li><b>Deine Rendite</b> vor und nach Performance Fee, mit Durchschnitten pro Tag, Woche und Monat</li>
+    <li><b>Hochs und Tiefs:</b> beste und schwächste Trades, Tage, Wochen und Monate</li>
+    <li><b>Nachvollziehbar</b> und mit deinen Reports vergleichbar</li>
+    <li><b>Ein- und Auszahlungen mit USDC und USDT</b></li>
+    <li><b>Deine Daten bleiben bei dir</b> in diesem Browser.</li>
+  </ul>
+  <p class="small">Ins Internet geht das Tool nur für Wechselkurse. Das kannst du im Reiter „Kurse“ ausschalten.</p>
+  <!-- Ab 0.78: Überschrift im Kästchen, Knöpfe gleich breit (am Handy untereinander), Haftung als roter Streifen (.dstr) -->
   <div class="ibox" id="intro-tax">
+    <h3 id="intro-tax-t">Wo zahlst du Steuern?</h3>
     <p>Die Trading-Bilanz kann dir auch zeigen, was du für die Steuer brauchst. Dafür muss sie wissen, wo du steuerpflichtig bist. Bisher kennt sie Österreich und Deutschland.</p>
     <p>Wenn du woanders steuerpflichtig bist oder nur deine Ergebnisse sehen willst, wähle „Ohne Steuer“.</p>
-    <div class="row" id="intro-land" role="group" aria-label="Wo du steuerpflichtig bist"><button type="button" class="btn" data-icountry="AT" aria-pressed="false">Österreich</button><button type="button" class="btn" data-icountry="DE" aria-pressed="false">Deutschland</button><button type="button" class="btn" data-icountry="none" aria-pressed="false">Ohne Steuer</button></div>
-    <p>Die Steuerangaben sind mit KI recherchiert und ohne Gewähr. <b>Dieses Tool ist keine Steuerberatung.</b></p>
+    <div id="intro-land" role="group" aria-labelledby="intro-tax-t"><button type="button" class="btn" data-icountry="AT" aria-pressed="false">Österreich</button><button type="button" class="btn" data-icountry="DE" aria-pressed="false">Deutschland</button><button type="button" class="btn" data-icountry="none" aria-pressed="false">Ohne Steuer</button></div>
+    <div class="dstr"><p>⚠️ Die Steuerangaben sind mit KI recherchiert und ohne Gewähr. <b>Dieses Tool ist keine Steuerberatung.</b></p></div>
     <p class="small">Du kannst das jederzeit im Reiter „Steuer“ ändern.</p>
   </div>
-  <!-- Nur online: früh herunterladen, weil Online-Version und Datei getrennt speichern. Ab 0.77 steht der Satz zum Original im Kästchen -->
+  <!-- Nur online: früh herunterladen, weil Online-Version und Datei getrennt speichern. Ab 0.77 steht der Satz zum Original im Kästchen, ab 0.78 mit fettem Anfang -->
   <div class="msg info onl" id="intro-dl"><p>Du kannst die Trading-Bilanz auch herunterladen und ganz ohne Internet nutzen. Später findest du den Knopf dazu im Reiter „Sicherung“. Wichtig dabei: Die Online-Version und die heruntergeladene Datei speichern getrennt. Willst du deine Daten mitnehmen, geht das ganz einfach mit einer Sicherung, im selben Reiter.</p>
-    <p>Lade die Datei nur hier herunter, von <span class="nw">trading-bilanz.github.io</span>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p>
+    <p><b>Lade die Datei nur hier herunter,</b> von <span class="nw">trading-bilanz.github.io</span>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p>
     <div class="row"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>
-  <!-- Nur in der heruntergeladenen Datei (.offl) -->
-  <p class="offl">Neue Versionen und das Original findest du unter <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p>
+  <!-- Nur in der heruntergeladenen Datei (.offl), ab 0.78 als gelber Streifen (.ystr) -->
+  <div class="ystr offl"><p>🛡️ <b>Neue Versionen und das Original:</b> <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p></div>
   <div class="row" style="justify-content:flex-end"><button type="button" class="btn" id="btn-intro-skip">Ohne Einführung starten</button><button type="button" class="btn primary" id="btn-intro-steps">Erste Schritte</button></div>
 </div></div>
 <!-- Ab 0.77 (Teil 2): Hinweis zur Steuer beim Öffnen des Reiters „Steuer“ (Land gewählt, noch nicht bestätigt oder ältere Fassung des Texts, TAX_DISC_V).
@@ -1617,7 +1643,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
      nur die beiden Knöpfe. -->
 <div class="modal noprint" id="taxack-modal"><div class="box" role="alertdialog" aria-modal="true" aria-labelledby="taxack-t" aria-describedby="taxack-b">
   <h2 id="taxack-t">Wichtiger Hinweis zur Steuer</h2>
-  <div id="taxack-b"><p>Die steuerlichen Angaben zu Trading und Krypto (Kennzahlen, Steuersätze, Einordnung, Hinweise) habe ich mit Hilfe von KI recherchiert. Ich bin kein Steuerberater und kenne mich mit Steuern nicht aus. Ich übernehme keine Verantwortung und keine Gewähr dafür, dass diese Angaben richtig, vollständig oder aktuell sind.</p>
+  <div class="disc" id="taxack-b"><p>Die steuerlichen Angaben zu Trading und Krypto (Kennzahlen, Steuersätze, Einordnung, Hinweise) habe ich mit Hilfe von KI recherchiert. Ich bin kein Steuerberater und kenne mich mit Steuern nicht aus. Ich übernehme keine Verantwortung und keine Gewähr dafür, dass diese Angaben richtig, vollständig oder aktuell sind.</p>
   <p>Lass deine Steuerzahlen von einer Steuerberaterin oder dem Finanzamt prüfen, bevor du sie verwendest. <b>Dieses Tool ist keine Steuerberatung.</b></p></div>
   <div class="row" style="justify-content:flex-end"><button type="button" class="btn" id="btn-taxack-no">Lieber ohne Steuer weitermachen</button><button type="button" class="btn primary" id="btn-taxack-ok">Verstanden: keine Steuerberatung</button></div>
 </div></div>
@@ -11444,7 +11470,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.77',VDATE='03.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.78',VDATE='03.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
