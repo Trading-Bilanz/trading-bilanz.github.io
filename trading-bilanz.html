@@ -63,7 +63,17 @@ html:not(.online) .onl{display:none!important}
 /* Ab 0.68 (Florians Regel): kein „Herunterladen“ im Kopf, „Erste Schritte“ steht auch online am Handy neben dem Titel. Herunterladen nur im Reiter „Sicherung“ und im Kästchen der Begrüßung */
 #intro-dl{margin:0 0 16px}
 /* Begrüßung online: Den Satz „Dort kannst du sie auch herunterladen …“ sagt schon der Kasten #intro-dl darüber */
-html.online #intro-modal .odl{display:none}
+/* Ab 0.77 (Teil 1): Begrüßung. Zeile nur in der heruntergeladenen Datei (.offl); Kästchen zur Steuer hebt sich ab, ohne Signalfarbe;
+   der gewählte Knopf ist gefüllt und hat ✓; „Ohne Einführung starten“ lässt „Erste Schritte“ dreimal sanft aufleuchten (box-shadow, nichts verschiebt sich) */
+html.online .offl{display:none}
+#intro-dl p+p{margin-top:8px}
+.ibox{background:var(--sub-bg);border:1px solid var(--line);border-radius:var(--radius);padding:2px 16px 6px;margin:14px 0}
+#intro-land{gap:8px;margin:10px 0 12px;flex-wrap:wrap}
+#intro-land .btn[aria-pressed=true]{background:var(--btn);border-color:var(--btn);color:#fff;font-weight:700}
+#intro-land .btn[aria-pressed=true]::before{content:'✓ '}
+@keyframes stpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 70%,transparent)}100%{box-shadow:0 0 0 12px transparent}}
+#btn-steps.pulse{animation:stpulse 1.1s ease-out 3}
+@media (prefers-reduced-motion:reduce){#btn-steps.pulse{animation:none;box-shadow:0 0 0 3px var(--accent)}}
 #intro-dl p{margin:0}
 .sub{color:var(--ink2);margin:0}
 nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
@@ -1435,7 +1445,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <div id="tax-wrap">
   <div class="disc" id="tax-disc"><span id="disc-line"></span> <a href="#" id="disc-more">Mehr lesen</a><div id="disc-full" style="display:none;margin-top:8px"><p><b>Wichtiger Hinweis</b></p>
 <p>Dieses Tool berechnet deine Trading-Ergebnisse aus deinen MT5-Reports: Gewinne, Verluste, Gebühren und die Umrechnung in Euro. Diese Rechnung ist nachvollziehbar und lässt sich mit deinem Report vergleichen.</p>
-<p>Die steuerlichen Angaben (Kennzahlen, Steuersätze, Einordnung, Hinweise) habe ich mit Hilfe von KI recherchiert. Ich bin kein Steuerberater und kenne mich mit Steuern nicht aus. Ich übernehme keine Verantwortung und keine Gewähr dafür, dass diese Angaben richtig, vollständig oder aktuell sind.</p>
+<p>Die steuerlichen Angaben zu Trading und Krypto (Kennzahlen, Steuersätze, Einordnung, Hinweise) habe ich mit Hilfe von KI recherchiert. Ich bin kein Steuerberater und kenne mich mit Steuern nicht aus. Ich übernehme keine Verantwortung und keine Gewähr dafür, dass diese Angaben richtig, vollständig oder aktuell sind.</p>
 <p>Lass deine Steuerzahlen von einer Steuerberaterin oder dem Finanzamt prüfen, bevor du sie verwendest. Dieses Tool ist keine Steuerberatung.</p></div></div>
   <div class="yearsel noprint"><label for="yr-tax"><b>Steuerjahr</b></label><select id="yr-tax"></select>
       <button class="btn primary" id="btn-printsum">Zusammenfassung für die Steuerberatung</button>
@@ -1564,7 +1574,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   </div>
   <div class="card">
     <h2>Export</h2>
-    <p class="hint">Die Excel-Datei enthält alles, was jemand nachprüfen möchte: Übersicht mit Kennzahlen und Annahmen, Durchschnitt, Monate, Wochen, Tage, Konten, alle Trades mit Haltedauer, deine Investition, alle MT5-Buchungen mit Wechselkurs und Kurs-Datum, die Krypto-Rechnung, die Tag-Wallet-Vorgänge, deine eigenen Einträge und alle verwendeten EZB-Kurse mit Quelle.</p>
+    <!-- Ab 0.77 (Teil 3): Die Excel mit allen Daten hat keinen Steuerbezug mehr, die Zahlen für die Steuer stehen in der Steuer-Excel -->
+    <p class="hint">Die Excel-Datei enthält alles, was jemand nachprüfen möchte: Übersicht mit Summen und Annahmen, Durchschnitt, Monate, Wochen, Tage, Konten, alle Trades mit Haltedauer, deine Investition, alle MT5-Buchungen mit Wechselkurs und Kurs-Datum, deine Coins mit Gewinn und Verlust je Vorgang, die Tag-Wallet-Vorgänge, deine eigenen Einträge und alle verwendeten EZB-Kurse mit Quelle. Die Zahlen für die Steuer findest du in der Steuer-Excel im Reiter „Steuer“.</p>
     <p class="hint"><b>Für alle, die tiefer blicken wollen:</b> In der Excel-Datei steckt alles, was das Tool weiß. Jeder Trade, jeder Handelstag, jede Woche und jeder Monat mit Betrag, Performance Fee, Investition und Rendite, dazu alle Buchungen mit Wechselkurs. Damit kannst du dir jede Auswertung selbst bauen, die das Tool nicht zeigt: eigene Durchschnitte, Filter, Diagramme, Vergleiche.</p>
     <!-- Ab 0.67 (Florians Wunsch): auch die CSV beschreiben -->
     <p class="hint">Die CSV-Datei enthält nur deine MT5-Buchungen als einfache Liste: eine Zeile je Buchung mit Konto, Zeitpunkt, Art, Betrag, Kosten, Wechselkurs und Betrag in Euro. Krypto, Wallet und Auswertungen sind nicht dabei. Sie passt für Programme, die eine einfache Tabelle brauchen. Zurück ins Tool lädst du weder Excel noch CSV, dafür gibt es die Sicherung.</p>
@@ -1579,23 +1590,36 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 </main>
 <footer>Trading-Bilanz · Version <span class="ver"></span> · Keine Steuer- oder Finanzberatung, Steuerangaben KI-recherchiert und ohne Gewähr. Kryptowährungen: USDC und USDT. BTC, ETH, BNB und SOL sind noch nicht enthalten. Ein- und Auszahlungen bei Tag per Bank zählen für „Dein echtes Geld“, ohne Krypto-Steuer.<span id="dl-link"></span><br><button type="button" class="zlink" id="btn-privacy">Datenschutz</button> · <a href="https://weltenwandel.at/impressum.html" target="_blank" rel="noopener">Impressum&nbsp;↗</a> · <a href="mailto:florian@weltenwandel.at">florian@weltenwandel.at</a></footer>
 
-<div class="modal" id="intro-modal"><div class="box">
-  <h2>Willkommen bei der Trading-Bilanz</h2>
-  <div class="disc"><p><b>Wichtiger Hinweis</b></p>
-<p>Dieses Tool berechnet deine Trading-Ergebnisse aus deinen MT5-Reports: Gewinne, Verluste, Gebühren und die Umrechnung in Euro. Diese Rechnung ist nachvollziehbar und lässt sich mit deinem Report vergleichen.</p>
-<p>Die steuerlichen Angaben (Kennzahlen, Steuersätze, Einordnung, Hinweise) habe ich mit Hilfe von KI recherchiert. Ich bin kein Steuerberater und kenne mich mit Steuern nicht aus. Ich übernehme keine Verantwortung und keine Gewähr dafür, dass diese Angaben richtig, vollständig oder aktuell sind.</p>
-<p>Lass deine Steuerzahlen von einer Steuerberaterin oder dem Finanzamt prüfen, bevor du sie verwendest. Dieses Tool ist keine Steuerberatung.</p></div>
-  <p><b>Datenschutz:</b> Deine Daten bleiben in diesem Browser. Ins Internet geht das Tool nur für die Wechselkurse. Fehlende Kurse lädt es von selbst. Das kannst du im Reiter „Kurse“ ausschalten.</p>
-  <!-- Nur online: früh herunterladen, weil Online-Version und Datei getrennt speichern -->
+<!-- Ab 0.77 (Teil 1): Begrüßung ohne roten Kasten und ohne „Gelesen und verstanden“. Land über drei Knöpfe (#intro-land), unten zwei Wege:
+     „Erste Schritte“ öffnet das Fenster, „Ohne Einführung starten“ lässt den Knopf „Erste Schritte“ oben kurz aufleuchten. Ohne Wahl wie bisher
+     (ab 0.65): der Knopf markiert die Wahl als Pflichtfeld. Den Disclaimer zur Steuer zeigt ab 0.77 das Pop-up im Reiter „Steuer“ (#taxack-modal). -->
+<div class="modal" id="intro-modal"><div class="box" role="dialog" aria-modal="true" aria-labelledby="intro-t">
+  <h2 id="intro-t">Willkommen bei der Trading-Bilanz</h2>
+  <p>Die Trading-Bilanz rechnet aus deinen MT5-Reports deine Ergebnisse: Gewinne, Verluste, Gebühren, auch umgerechnet in Euro. Die Rechnung ist nachvollziehbar und lässt sich mit deinen Reports vergleichen. Zahlst du mit USDC oder USDT ein und aus, kann sie auch diese Bewegungen erfassen.</p>
+  <p>🔒 Deine Daten bleiben in diesem Browser. Ins Internet geht das Tool nur für die Wechselkurse. Fehlende Kurse lädt es von selbst. Das kannst du im Reiter „Kurse“ ausschalten.</p>
+  <div class="ibox" id="intro-tax">
+    <p>Die Trading-Bilanz kann dir auch zeigen, was du für die Steuer brauchst. Dafür muss sie wissen, wo du steuerpflichtig bist. Bisher kennt sie Österreich und Deutschland.</p>
+    <p>Wenn du woanders steuerpflichtig bist oder nur deine Ergebnisse sehen willst, wähle „Ohne Steuer“.</p>
+    <div class="row" id="intro-land" role="group" aria-label="Wo du steuerpflichtig bist"><button type="button" class="btn" data-icountry="AT" aria-pressed="false">Österreich</button><button type="button" class="btn" data-icountry="DE" aria-pressed="false">Deutschland</button><button type="button" class="btn" data-icountry="none" aria-pressed="false">Ohne Steuer</button></div>
+    <p>Die Steuerangaben sind mit KI recherchiert und ohne Gewähr. <b>Dieses Tool ist keine Steuerberatung.</b></p>
+    <p class="small">Du kannst das jederzeit im Reiter „Steuer“ ändern.</p>
+  </div>
+  <!-- Nur online: früh herunterladen, weil Online-Version und Datei getrennt speichern. Ab 0.77 steht der Satz zum Original im Kästchen -->
   <div class="msg info onl" id="intro-dl"><p>Du kannst die Trading-Bilanz auch herunterladen und ganz ohne Internet nutzen. Später findest du den Knopf dazu im Reiter „Sicherung“. Wichtig dabei: Die Online-Version und die heruntergeladene Datei speichern getrennt. Willst du deine Daten mitnehmen, geht das ganz einfach mit einer Sicherung, im selben Reiter.</p>
+    <p>Lade die Datei nur hier herunter, von <span class="nw">trading-bilanz.github.io</span>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p>
     <div class="row"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>
-  <p class="small" data-orig></p>
-  <!-- Ab 0.65: keine Schritte mehr, nur der Verweis auf „Erste Schritte“. Ab 0.69 (Florians Wunsch): ein Satz führt zur Länderfrage, die Frage
-       steht vor dem Verweis, „Erste Schritte“ fett -->
-  <p>Österreich und Deutschland besteuern Trading und Krypto nach unterschiedlichen Regeln. Damit das Tool nach den richtigen rechnet, sag ihm, wo du Steuern zahlst. Willst du nur deine Ergebnisse sehen, wähle „Ohne Steuer“.</p>
-  <p><label for="intro-country"><b>In welchem Land zahlst du Steuern?</b></label> <select id="intro-country"><option value="" disabled selected>bitte wählen</option><option value="AT">Österreich</option><option value="DE">Deutschland</option><option value="none">Ohne Steuer</option></select> <span class="small">Das kannst du jederzeit oben im Reiter „Steuer“ ändern.</span></p>
-  <p>Zum Einstieg klicke oben auf <b>„Erste Schritte“</b>. Dort findest du einen Überblick und eine genaue Anleitung.</p>
-  <div class="row" style="justify-content:flex-end"><button class="btn primary" id="btn-ack">Gelesen und verstanden</button></div>
+  <!-- Nur in der heruntergeladenen Datei (.offl) -->
+  <p class="offl">Neue Versionen und das Original findest du unter <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p>
+  <div class="row" style="justify-content:flex-end"><button type="button" class="btn" id="btn-intro-skip">Ohne Einführung starten</button><button type="button" class="btn primary" id="btn-intro-steps">Erste Schritte</button></div>
+</div></div>
+<!-- Ab 0.77 (Teil 2): Hinweis zur Steuer beim Öffnen des Reiters „Steuer“ (Land gewählt, noch nicht bestätigt oder ältere Fassung des Texts, TAX_DISC_V).
+     Vorbild „Was du hier machst“. Öffnet über modalOn wie die Begrüßung, nicht über openModal: kein ×, Esc und Klick daneben schließen es nicht,
+     nur die beiden Knöpfe. -->
+<div class="modal noprint" id="taxack-modal"><div class="box" role="alertdialog" aria-modal="true" aria-labelledby="taxack-t" aria-describedby="taxack-b">
+  <h2 id="taxack-t">Wichtiger Hinweis zur Steuer</h2>
+  <div id="taxack-b"><p>Die steuerlichen Angaben zu Trading und Krypto (Kennzahlen, Steuersätze, Einordnung, Hinweise) habe ich mit Hilfe von KI recherchiert. Ich bin kein Steuerberater und kenne mich mit Steuern nicht aus. Ich übernehme keine Verantwortung und keine Gewähr dafür, dass diese Angaben richtig, vollständig oder aktuell sind.</p>
+  <p>Lass deine Steuerzahlen von einer Steuerberaterin oder dem Finanzamt prüfen, bevor du sie verwendest. <b>Dieses Tool ist keine Steuerberatung.</b></p></div>
+  <div class="row" style="justify-content:flex-end"><button type="button" class="btn" id="btn-taxack-no">Lieber ohne Steuer weitermachen</button><button type="button" class="btn primary" id="btn-taxack-ok">Verstanden: keine Steuerberatung</button></div>
 </div></div>
 <div class="modal" id="don-modal"><div class="box">
   <h2>💚 Deine Zahlen sind fertig.</h2>
@@ -2004,6 +2028,9 @@ const RB={stand:'2026-10-12',bis:'2026-10-12',m:`
 const RBM=(()=>{const m={};for(const l of RB.m.trim().split('\n')){const [ym,...a]=l.trim().split(' ');for(const x of a){const i=x.indexOf(':');m[ym+'-'+x.slice(0,i)]=+x.slice(i+1)}}return m})();
 const DEFAULT_MAP={'deposit':'einzahlung','profit withdrawal':'gewinnauszahlung','pf deduction':'fee','capital withdrawal':'kapitalabzug'};
 const CATS={einzahlung:'Einzahlung von Kapital',kapitalabzug:'Kapitalabzug (Auszahlung von Kapital)',gewinnauszahlung:'Gewinnauszahlung (Profit Withdrawal)',fee:'Performance Fee / Gebühr (mindert den Gewinn)',ignorieren:'Ignorieren (zählt nirgends)'};
+// Ab 0.77 (Teil 2): Fassung des Hinweises zur Steuer (#taxack-modal). Ändert sich sein Text, Zahl erhöhen: Dann fragt das Tool alle wieder,
+// die eine ältere Fassung bestätigt haben (S.ui.taxAck). Hier oben, weil render() es braucht.
+const TAX_DISC_V=1;
 function blank(){return {v:1,accounts:{},deals:{},map:{},rates:{},tag:{},cx:[],wallets:['Meine Wallet'],defCoin:'USDC',rsrc:{},rown:{},tagDrop:[],tagSame:{},tagSkip:[],tagBatch:0,cxKeep:[],wbal:{},pfOk:[],wtx:{},addr:{},cxNo:0,tok:{},wign:{},cardFee:{},bxOpen:{},tagMeth:{},rcov:{load:'',file:''},ui:{tab:'reports',wFlt:{range:'all',from:'',to:''},rAuto:true,rtUsed:true,yTax:null,other:'',opt:false,flt:{range:'all',from:'',to:'',off:[],pf:'ex',cur:'eur',nocw:false,zeroDays:true},graf:{what:'period',res:'week',kind:'bar',unit:'amt',wd:'sum',avg:false},calc:{inv:'',dur:'12',unit:'m',own:'',tax:'',reinv:false,taxOn:false},unit:'pct'}}}
 let S=blank();
 try{const raw=localStorage.getItem(KEY); if(raw){S=Object.assign(blank(),JSON.parse(raw));}}catch(e){}
@@ -6475,9 +6502,10 @@ function keptMap(C,y,flt){
     for(const z of V.FO.share.get(s.key)||[]){if(!V.kept.has(z.root))continue;const r=V.SH.find(x=>x.key===z.root),same=!y||(r&&yr(r)===y);if(ks&&same)q-=z.q;else if(!ks&&!same)q+=z.q}
     if(q>0.005)m[s.e.coin]=(m[s.e.coin]||0)+q}
   return m}
-function keptText(C,y,flt){
+// Ab 0.77: neutral = ohne den Satz zum Finanzamt (Excel mit allen Daten)
+function keptText(C,y,flt,neutral){
   const l=Object.entries(keptMap(C,y,flt)).map(([c,q])=>`${fN.format(q)} ${c}`);if(!l.length)return '';
-  return `Für ${l.join(' und ')} fehlt der Einkauf. Das Tool rechnet diesen Teil ohne Gewinn oder Verlust. Deine Krypto-Zahlen können deshalb abweichen. Das Finanzamt könnte einen anderen Wert ansetzen. Trage den Einkauf ein, wenn du ihn findest.`;
+  return `Für ${l.join(' und ')} fehlt der Einkauf. Das Tool rechnet diesen Teil ohne Gewinn oder Verlust. Deine Krypto-Zahlen können deshalb abweichen.${neutral?'':' Das Finanzamt könnte einen anderen Wert ansetzen.'} Trage den Einkauf ein, wenn du ihn findest.`;
 }
 // Ab 0.46 (2.3): Euro-Betrag einer Bank-Zahlung: laut Kontoauszug, sonst zum EZB-Kurs (ecb = immer der Kurswert). null ohne Kurs.
 function tagBankEur(t,ecb){if(!ecb&&t.eurBank>0)return t.eurBank;const r=rateFor(tagAT(t).date||t.date,'USD');return r?t.usd/r:null}
@@ -8634,18 +8662,25 @@ function buildXlsx(sheets,hm){
   sheets.forEach((s,i)=>files.push({name:`xl/worksheets/sheet${i+1}.xml`,data:sx[i]}));
   return zipFiles(files);
 }
+// Ab 0.77 (Teil 3): Satz über dem Blatt „Krypto“ der Excel mit allen Daten (Florians Wortlaut)
+const KR_NOTE='Gewinn/Verlust gerechnet mit gleitendem Durchschnittspreis, getrennt je Wallet und Coin. Für die Steuer kann eine andere Rechnung gelten, siehe Steuer-Excel im Reiter „Steuer“.';
 const CATN={close:'Trade geschlossen',open:'Trade eröffnet',fee:'Performance Fee/Gebühr',gewinnauszahlung:'Gewinnauszahlung',einzahlung:'Einzahlung',kapitalabzug:'Kapitalabzug',ignorieren:'ignoriert'};
 // Ab 0.41: pay = Zahlungen im Zeitraum, dann der Satz zur Zahlung im Absatz Kryptowährungen
-function assumptions(pay){return [
- 'CFDs sind nicht verbriefte Derivate. Bei einem ausländischen Broker ohne Kapitalertragsteuer-Abzug: normaler Einkommensteuertarif (E1kv Kennzahl 857), nicht 27,5 %.',
- 'Die Performance Fee mindert den Gewinn (Werbungskosten), abgezogen im Jahr der Abbuchung.',
+// Ab 0.77 (Teil 3): nur neutrale Rechenannahmen, ohne Tarif, KESt, Werbungskosten, Paragraphen und „steuerneutral“ (nur in der Excel mit allen Daten).
+// o = {pay: Zahlungen mit Coins, cx: Krypto-Daten vorhanden, tb: ein Konto mit Trading Benefit}
+function assumptions(o){return [
  'Umrechnung: EZB-Referenzkurs (USD je EUR) vom Buchungstag laut Serverzeit des Brokers; an Wochenenden und Feiertagen der letzte Kurs davor.',
  'Ein Trade „gesamt“ ist dieselbe Position auf mehreren Konten (gleicher Schließzeitpunkt und gleiches Symbol), zusammengezählt.',
- 'Kryptowährungen: USDC/USDT sind Kryptowährungen nach § 27b EStG. Einzahlung bei Tag (Tausch in USD) = Verkauf, Auszahlung in Coins = Kauf. Auszahlung: Einkaufswert = Betrag bei Tag in USD (inklusive Gebühren) zum EZB-Kurs. Einzahlung: Erlös = Wert der weggegangenen Coins zum EZB-Kurs (1 Coin = 1 USD), der Unterschied zum Betrag bei Tag ist eine Verkaufsgebühr und wird abgezogen. Gebühren beim Kauf erhöhen den Einkaufswert, Gebühren beim Verkauf mindern den Erlös. Gebühren in Coins (z. B. für Überträge): Verkauf zum Tageswert (EStR Rz 6178). Einkaufswert nach gleitendem Durchschnittspreis, getrennt je Wallet und Coin; am selben Tag ohne Uhrzeit zuerst Zugänge, dann Abgänge. Tausch Krypto gegen Krypto ist steuerneutral, der Einkaufswert geht auf den neuen Coin über.'+(pay?' '+PAY_ANN.AT:''),
+ 'Die Performance Fee ist im Saldo und in der Spalte „Ergebnis nach PF (am Abbuchungstag)“ an dem Tag abgezogen, an dem sie abgebucht wurde. Die Spalten „PF verteilt“ verteilen sie auf die Trades ihrer Woche.',
+ ...(o.tb?['Investition und Rendite: Einzahlungen und Kapitalabzüge geteilt durch den Trading Benefit des Kontos (siehe Blatt Investition). Den Zusatzbetrag gibt der Broker dazu, er ist kein eigenes Geld.']:[]),
+ ...(o.cx?['Krypto: USDC und USDT, 1 Coin = 1 USD. Einzahlung bei Tag (Tausch in USD) = Verkauf, Auszahlung in Coins = Kauf. Auszahlung: Einkaufswert = Betrag bei Tag in USD (inklusive Gebühren) zum EZB-Kurs. Einzahlung: Erlös = Wert der weggegangenen Coins zum EZB-Kurs, der Unterschied zum Betrag bei Tag ist eine Verkaufsgebühr und wird abgezogen. Gebühren beim Kauf erhöhen den Einkaufswert, Gebühren beim Verkauf mindern den Erlös. Gebühren in Coins (z. B. für Überträge) zählen als Verkauf zum Tageswert. Einkaufswert nach gleitendem Durchschnittspreis, getrennt je Wallet und Coin; am selben Tag ohne Uhrzeit zuerst Zugänge, dann Abgänge. Bei einem Tausch Krypto gegen Krypto geht der Einkaufswert auf den neuen Coin über.'+(o.pay?' '+PAY_ANN.AT:'')]:[]),
  'Einzahlungen, die nicht das eigene Geld sind, sind nicht enthalten.']}
 function exportXlsx(year){
   // Ab 0.38: Krypto in beiden Ländern (AT gleitender Ø-Preis, DE FIFO mit Haltefrist)
-  const rows=window.__rows;const DE=S.ui.country==='DE',L=DE?'DE':'AT';const C0=cryptoCalc(L);const cxOn=S.ui.cxIncl!==false;const C=cxOn?C0:{flow:[],byY:{},byM:{},n:0,short:[],sales:[],fees:[],pots:[]};const R=year?rows.filter(r=>r.y===year):rows;const T=agg(R);
+  // Ab 0.77 (Teil 3): ohne Land und ohne Steuersprache. Bis 0.76 rechnete alles außer DE, auch „Ohne Steuer“, als Österreich. Jetzt immer der
+  // gleitende Ø-Preis (Rechnung 'AT'), immer mit Krypto (das Häkchen im Reiter Steuer zählt hier nicht), ohne Krypto-Daten keine Krypto-Blätter.
+  // Die Steuer-Excel (taxXlsx) bleibt, wie sie ist. exportXlsx wird nur noch mit null aufgerufen.
+  const rows=window.__rows;const DE=false,L='AT';const C0=cryptoCalc(L);const C=C0;const R=year?rows.filter(r=>r.y===year):rows;const T=agg(R);
   const accs=Object.keys(S.accounts).sort();const today=new Date().toISOString().slice(0,10);
   const lastD=rows.length?rows[rows.length-1].d:'';
   // Krypto-Summen des Jahres bzw. aller Jahre (alle Felder von byY addiert)
@@ -8654,31 +8689,33 @@ function exportXlsx(year){
   const holders=[...new Set(accs.map(a=>S.accounts[a].holder).filter(Boolean))].join(', ');
   const comps=[...new Set(accs.map(a=>S.accounts[a].company).filter(Boolean))].join(', ');
   const fre=realMoney().fremd;
-  const land=DE?'Deutschland':'Österreich';const ov=[[X.T('Trading-Bilanz'+(year?': Steuerjahr '+year:': alle Jahre')+' ('+land+')')],['Kennzahlen und Steuerregeln: '+land+', Stand 2026. Steuerangaben mit KI recherchiert, ohne Gewähr, keine Steuerberatung.'],[],
+  // Ab 0.77 (Teil 3): Übersicht ohne Land, ohne Kennzahlen, Steuerkategorien und Steuer-Hinweise; die Summen bleiben mit neutralen Namen
+  const ov=[[X.T('Trading-Bilanz'+(year?': '+year:': alle Jahre'))],[],
    ['Erstellt am',X.D(today)],['Datenstand (letzte MT5-Buchung)',X.D(lastD)],['Name laut MT5-Report',holders],['Broker laut MT5-Report',comps],['Konten',accs.join(', ')],
    ['Wechselkurse','EZB-Referenzkurs USD je EUR vom Buchungstag (siehe Blatt Kurse)'],[],
-   [X.B(DE?'CFD (Termingeschäfte, Abgeltungsteuer)':'CFD (nicht verbriefte Derivate, Tarif)'),X.B('EUR')],
+   [X.B('Trading (CFD)'),X.B('EUR')],
    ['Gewinne aus geschlossenen Trades',X.E(T.gain)],['Verluste aus geschlossenen Trades',X.E(T.loss)],['Kommission, Swap, Gebühren',X.E(T.costs)],['Performance Fee',X.E(T.fee)],
-   ...(DE?[[X.B('Saldo (Performance Fee nicht abgezogen) = Anlage KAP Zeile 19'),X.EB(T.res)],['darin enthaltene Verluste (inkl. Kommission und Swap der Verlust-Trades) = Anlage KAP Zeile 22',X.E(-lossDE(R))]]:[[X.B('Saldo = E1kv Kennzahl 857'),X.EB(T.tax)]]),['zur Information: Gewinnauszahlungen (nicht steuerrelevant)',X.E(T.pw)],[],
-   ...(cxOn&&C.n&&DE?[[X.B('Kryptowerte (§ 23 EStG, höchstens ein Jahr gehalten)'),X.B('EUR')],['Veräußerungspreis = '+soLine(sy,'vp'),X.E(cy.vp)],['Anschaffungskosten = '+soLine(sy,'ak'),X.E(cy.ak)],['Werbungskosten = '+soLine(sy,'wk'),X.E(cy.wk)],[X.B('Gewinn/Verlust = '+soLine(sy,'g')),X.EB(cy.gain+cy.loss)],
-     ['zur Information: steuerfrei (über ein Jahr gehalten)',X.E(cy.free)],...(year?[['Freigrenze '+year+' (alle privaten Veräußerungsgeschäfte zusammen)',X.E(freiGrenze(year))]]:[]),['Methode','FIFO je Wallet und Coin (BMF 06.03.2025, Rn. 61), Aufstellung im Blatt „Verkäufe nach FIFO“'],
-     ...(fre?[['Nicht enthalten: Einzahlungen, die nicht eigenes Geld sind (USD)',X.N(fre)]]:[]),...(keptText(C,year)?[['Fehlender Einkauf',keptText(C,year)]]:[]),[]]:[]),
-   ...(cxOn&&C.n&&!DE?[[X.B('Kryptowährungen (§ 27b EStG)'),X.B('EUR')],...(cy.nK?[['Mit KESt-Abzug: Überschüsse = E1kv Kennzahl 173',X.E(cy.gainK)],['Mit KESt-Abzug: Verluste = E1kv Kennzahl 175',X.E(cy.lossK)],['Abgezogene KESt = E1kv Kennzahl 899',X.E(cy.kest)]]:[]),['Überschüsse = E1kv Kennzahl 174',X.E(cy.gain-cy.gainK)],['Verluste = E1kv Kennzahl 176',X.E(cy.loss-cy.lossK)],[X.B('Saldo'),X.EB(cy.gain+cy.loss)],['Regelbesteuerungsoption gewünscht',S.ui.opt?'ja':'nein'],...(fre?[['Nicht enthalten: Einzahlungen, die nicht eigenes Geld sind (USD)',X.N(fre)]]:[]),...(keptText(C,year)?[['Fehlender Einkauf',keptText(C,year)]]:[]),[]]:[]),
-   [X.B('Annahmen')],...(DE?['CFDs sind Termingeschäfte; Gewinne und Verluste saldiert in Anlage KAP Zeile 19 (ab Steuerjahr 2025). Kommission und Swap abgezogen, Performance Fee nicht.','Umrechnung: EZB-Referenzkurs (USD je EUR) vom Buchungstag; an Wochenenden und Feiertagen der letzte Kurs davor.',...(payN(C,year)?[PAY_ANN.DE]:[])]:assumptions(payN(C,year))).map(a=>['',a]),[],['Keine Steuerberatung. Vor der Abgabe mit einer Steuerberaterin oder dem Finanzamt klären.']];
+   [X.B('Saldo nach PF (am Abbuchungstag)'),X.EB(T.tax)],['zur Information: Gewinnauszahlungen',X.E(T.pw)],[],
+   ...(C.n?[[X.B('Krypto (USDC und USDT)'),X.B('EUR')],['Gewinne',X.E(cy.gain)],['Verluste',X.E(cy.loss)],[X.B('Saldo'),X.EB(cy.gain+cy.loss)],
+     ...(fre?[['Nicht enthalten: Einzahlungen, die nicht eigenes Geld sind (USD)',X.N(fre)]]:[]),...(keptText(C,year,undefined,1)?[['Fehlender Einkauf',keptText(C,year,undefined,1)]]:[]),[]]:[]),
+   [X.B('Annahmen')],...assumptions({pay:payN(C,year),cx:C.n>0,tb:accs.some(a=>S.accounts[a].factor>1)}).map(a=>['',a])];
   const yms=[...new Set(R.map(r=>r.ym))].sort();
-  const mo=[[X.B('Monat'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B(DE?'CFD-Ergebnis (vor PF)':'Steuerpflichtig (CFD)'),X.B('Gewinnauszahlungen'),X.B('Krypto Gewinn/Verlust')]];
-  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=agg(rr);mo.push([fM(m),positions(rr).length,X.E(z.res),X.E(z.fee),X.E(DE?z.res:z.tax),X.E(z.pw),X.E(C.byM[m]||0)])}
-  mo.push([X.B('Summe'),positions(R).length,X.EB(T.res),X.EB(T.fee),X.EB(DE?T.res:T.tax),X.EB(T.pw),X.EB(cy.gain+cy.loss)]);
-  const wk=[[X.B('KW'),X.B('von'),X.B('bis'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B('Steuerpflichtig'),X.B('Gewinnauszahlungen')]];
+  // Ab 0.77 (Teil 3): „Steuerpflichtig“ heißt in Monate, Wochen und Konten „Ergebnis nach PF (am Abbuchungstag)“ (z.tax = Ergebnis + Performance Fee
+  // der Buchungen im Zeitraum), zur Unterscheidung von „Netto-Gewinn PF verteilt“
+  const XPF='Ergebnis nach PF (am Abbuchungstag)';
+  const mo=[[X.B('Monat'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B(XPF),X.B('Gewinnauszahlungen'),X.B('Krypto Gewinn/Verlust')]];
+  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=agg(rr);mo.push([fM(m),positions(rr).length,X.E(z.res),X.E(z.fee),X.E(z.tax),X.E(z.pw),X.E(C.byM[m]||0)])}
+  mo.push([X.B('Summe'),positions(R).length,X.EB(T.res),X.EB(T.fee),X.EB(T.tax),X.EB(T.pw),X.EB(cy.gain+cy.loss)]);
+  const wk=[[X.B('KW'),X.B('von'),X.B('bis'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B(XPF),X.B('Gewinnauszahlungen')]];
   for(const w of [...new Set(R.map(r=>r.wk))].sort()){const rr=R.filter(r=>r.wk===w);const z=agg(rr);wk.push([isoWeek(w),X.D(w),X.D(addDays(w,6)),positions(rr).length,X.E(z.res),X.E(z.fee),X.E(z.tax),X.E(z.pw)])}
-  const ko=[[X.B('Konto'),X.B('Name'),X.B('Inhaberin laut Report'),X.B('Broker'),X.B('Währung'),X.B('Trading Benefit'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B('Steuerpflichtig'),X.B('Gewinnauszahlungen'),X.B('Bester Trade'),X.B('Schlechtester Trade')]];
+  const ko=[[X.B('Konto'),X.B('Name'),X.B('Inhaberin laut Report'),X.B('Broker'),X.B('Währung'),X.B('Trading Benefit'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B(XPF),X.B('Gewinnauszahlungen'),X.B('Bester Trade'),X.B('Schlechtester Trade')]];
   for(const a of accs){const ra=R.filter(r=>r.a===a);const z=agg(ra);const ts=tradeStats(ra.filter(r=>r.cat==='close'),'eur');const A=S.accounts[a];ko.push([a,A.name||'',A.holder||'',A.company||'',A.cur,A.factor?facT(A.factor):'',ts.n,X.E(z.res),X.E(z.fee),X.E(z.tax),X.E(z.pw),ts.best?X.E(ts.best.eur):'',ts.worst?X.E(ts.worst.eur):''])}
   const P=positions(R).sort((a,b)=>a.t<b.t?-1:1);
   const tr=[[X.B('Schließzeit (Server)'),X.B('Datum'),X.B('Symbol'),X.B('Konten'),X.B('Ergebnis gesamt EUR'),...accs.map(a=>X.B('Konto '+a))]];
   for(const p of P)tr.push([p.t,X.D(p.d),p.sym,p.accs,X.E(p.eur),...accs.map(a=>p.by[a]!=null?X.E(p.by[a]):'')]);
-  const bu=[[X.B('Konto'),X.B('Zeitpunkt (Server)'),X.B('Datum'),X.B('Art'),X.B('Symbol'),X.B('Trade-Nr.'),X.B('Gewinn/Betrag'),X.B('Kosten (Komm., Swap, Gebühr)'),X.B('Summe (Kontowährung)'),X.B('Kurs vom'),X.B('Kurs USD je EUR'),X.B('Summe EUR'),X.B('Steuerlich relevant'),X.B('Kommentar')]];
+  const bu=[[X.B('Konto'),X.B('Zeitpunkt (Server)'),X.B('Datum'),X.B('Art'),X.B('Symbol'),X.B('Trade-Nr.'),X.B('Gewinn/Betrag'),X.B('Kosten (Komm., Swap, Gebühr)'),X.B('Summe (Kontowährung)'),X.B('Kurs vom'),X.B('Kurs USD je EUR'),X.B('Summe EUR'),X.B('Kommentar')]];
   R.forEach((r,i)=>{const n=i+2;const g=r.cat==='open'?0:r.x.prof,k=(r.cat==='close'||r.cat==='open')?r.x.cost:0;
-    bu.push([r.a,r.x.t,X.D(r.d),CATN[r.cat]||'unbekannt',r.x.sym,r.x.id,X.N(g),X.N(k),X.F(`G${n}+H${n}`,r.amt,5),r.rd?X.D(r.rd):'',r.rate?X.R(r.rate):'',r.rate?X.F(`I${n}/K${n}`,r.eur,2):'',(r.cat==='close'||r.cat==='open'||r.cat==='fee')?'ja':'nein',r.x.cmt||''])});
+    bu.push([r.a,r.x.t,X.D(r.d),CATN[r.cat]||'unbekannt',r.x.sym,r.x.id,X.N(g),X.N(k),X.F(`G${n}+H${n}`,r.amt,5),r.rd?X.D(r.rd):'',r.rate?X.R(r.rate):'',r.rate?X.F(`I${n}/K${n}`,r.eur,2):'',r.x.cmt||''])});
   const fl=C.flow.filter(f=>!year||f.d.slice(0,4)===year);
   const giveX=f=>!f.give?'':DE?' (Zum Weitergeben: '+f.give.map(x=>`${fmtNum(x.q)} ${f.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join('; ')+')':` (Zum Weitergeben: ${fmtNum(f.give.q)} ${f.coin}, Ø-Preis ${fDec(f.give.avg,4)} €)`;
   const kr=[[X.B('Datum'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Coins rein/raus'),X.B(DE?'Euro-Wert (Veräußerungspreis)':'Euro-Wert (Erlös)'),X.B(DE?'Werbungskosten':'Gebühr'),X.B('Einkaufswert der Coins'),X.B('Gewinn/Verlust'),...(DE?[X.B('davon steuerpflichtig')]:[]),X.B('Coins danach'),X.B('Einkaufswert danach'),...(DE?[]:[X.B('Ø-Preis danach (EUR je Coin)')])]];
@@ -8692,7 +8729,7 @@ function exportXlsx(year){
     ff.push([],[X.B('Summe steuerpflichtig'),'','','','','',X.EB(sm.ak),X.EB(sm.vp),X.EB(sm.wk),'','',X.EB(sm.g)])}
   // Bestand zum Jahresende (BMF Rn. 104): Excel eines Jahres zum 31.12., Excel aller Jahre je Jahr ein Block
   const be=[[X.B('Stichtag'),X.B('Wallet'),X.B('Coin'),...(DE?[X.B('Kaufdatum')]:[]),X.B('Menge'),X.B('Einkaufswert'),X.B(DE?'steuerfrei ab':'Ø-Preis (EUR je Coin)')]];
-  if(cxOn&&C.n){const yrs=year?[year]:[...new Set(C.flow.map(f=>f.d.slice(0,4)))].sort();
+  if(C.n){const yrs=year?[year]:[...new Set(C.flow.map(f=>f.d.slice(0,4)))].sort();
     for(const yy of yrs){const end=yy+'-12-31',CE=cryptoCalc(L,end);
       for(const p of CE.pots){if(DE)for(const l of p.lots)be.push([X.D(end),p.w,p.c,X.D(l.kd),X.N(l.q),X.E(l.ak),X.D(l.frei)]);else be.push([X.D(end),p.w,p.c,X.N(p.q),X.E(p.ak),p.q?X.R(p.ak/p.q):''])}
       if(!CE.pots.length)be.push([X.D(end),'kein Bestand'])}}
@@ -8720,8 +8757,8 @@ function exportXlsx(year){
   const xf={},xes={};for(const f of C0.flow)if(f.xfer!=null&&f.cx!=null){xf[f.cx]=f.xfer;if(f.estV)xes[f.cx]=1}
   S.cx.map((c,i)=>Object.assign({i},c)).filter(c=>!year||c.date.slice(0,4)===year).sort((a,b)=>a.date<b.date?-1:1).forEach(c=>{const ev=CX_FIELDS[c.kind]&&CX_FIELDS[c.kind].eur,ve=ev?cxEur(c):null;
     const g=gv[c.i],gt=!g?'':DE?g.give.map(x=>`${fmtNum(x.q)} ${c.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join('; '):`${fmtNum(g.give.q)} ${c.coin}, Ø-Preis ${fmtDec(g.give.avg,4)} €, Einkaufswert ${fE.format(g.give.q*g.give.avg)}`;
-    cx.push([X.D(c.date),KIND[c.kind],c.wallet,c.to||'',c.coin,X.N(c.qty),...(QI?[c.kind==='uebertrag'&&c.qtyIn>0?X.N(c.qtyIn):'']:[]),c.coin2||'',c.qty2?X.N(c.qty2):'',c.other||'',...(OQ?[c.kind==='tauschein'&&c.otherQ>0?c.otherQ:'']:[]),ev?(c.cur==='USD'?'USD':'EUR'):'',c.cur==='USD'&&c.usd!=null?X.N(c.usd):'',ev&&isFinite(ve)&&!cxMissing(c).length?X.E(ve):(c.kind==='tauschaus'&&c.eur>0?X.E(c.eur):''),cxEst(c)||xes[c.i]?'ja':'',xf[c.i]!=null?X.E(xf[c.i]):'',
-      c.gd?X.D(c.gd):'',c.kind==='eingang'&&(c.estD||(DE&&!c.gd))?'ja':'',c.fee>0?(c.cur==='USD'?X.N(c.fee):X.E(c.fee)):'',c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,c.note||'',...(HW?[cxOrigN(c)]:[])])});
+    cx.push([X.D(c.date),KIND[c.kind],c.wallet,c.to||'',c.coin,X.N(c.qty),...(QI?[c.kind==='uebertrag'&&c.qtyIn>0?X.N(c.qtyIn):'']:[]),c.coin2||'',c.qty2?X.N(c.qty2):'',c.other||'',...(OQ?[c.kind==='tauschein'&&c.otherQ>0?c.otherQ:'']:[]),ev?(c.cur==='USD'?'USD':'EUR'):'',c.cur==='USD'&&c.usd!=null?X.N(c.usd):'',ev&&isFinite(ve)&&!cxMissing(c).length?X.E(ve):(c.kind==='tauschaus'&&c.eur>0?X.E(c.eur):''),c.est||xes[c.i]?'ja':'',xf[c.i]!=null?X.E(xf[c.i]):'',
+      c.gd?X.D(c.gd):'',c.kind==='eingang'&&c.estD?'ja':'',c.fee>0?(c.cur==='USD'?X.N(c.fee):X.E(c.fee)):'',c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,c.note||'',...(HW?[cxOrigN(c)]:[])])});
   // Ab 0.39: Bewegungen aus der Wallet-Datei (Jahres-Excel: nur die des Jahres)
   const wb=[[X.B('Datum'),X.B('Zeit'),X.B('Netzwerk'),X.B('Wallet von'),X.B('Wallet nach'),X.B('rein/raus'),X.B('Coin'),X.B('ausgegeben von'),X.B('Menge'),X.B('Gegenseite'),X.B('Hash'),X.B('Status'),X.B('zugeordnet zu')]];
   Object.values(S.wtx).filter(m=>!year||m.date.slice(0,4)===year).sort((a,b)=>a.ts-b.ts).forEach(m=>{const sd=wSide(m),cp=sd==='in'?m.from:sd==='out'?m.to:'',cw=cp&&(m.st==='tag'||wIsTag(cp))?'Tag':cp&&wIsPay(cp)?'Kartenzahlungen':cp&&wIsBr(cp)?'Brücke / Dienst':sd==='in'?m.wFrom:sd==='out'?m.wTo:'',c=m.st==='cx'?cxById(m.ref):null;
@@ -8733,16 +8770,17 @@ function exportXlsx(year){
   const kq={frank:'Frankfurter (EZB-Daten)',ezb:'EZB',file:'Datei (EZB)',rb:RB_SRC(),own:'von Hand'};
   rateDates().filter(d=>!year||(d>=addDays(year+'-01-01',-10)&&d<=year+'-12-31')).forEach((d,i)=>ku.push([X.D(d),X.R(rateVal(d)),X.F(`1/B${i+2}`,1/rateVal(d),9),used.has(d)?'ja':'',kq[rateSrc(d)]]));
   ku.push([],[ECB_CITE]);
-  const sheets=[{name:'Übersicht',rows:ov,widths:[52,70]},{name:'Monate',rows:mo,freeze:1,widths:[16,8,13,15,18,18,18]},{name:'Wochen',rows:wk,freeze:1,widths:[6,11,11,8,13,15,15,18]},{name:'Konten',rows:ko,freeze:1,widths:[11,14,24,20,8,10,7,12,14,13,16,12,16]},{name:'Trades',rows:tr,freeze:1,widths:[19,11,10,7,16,...accs.map(()=>15)]},{name:'Buchungen MT5',rows:bu,freeze:1,widths:[10,19,11,20,10,11,12,14,14,11,10,12,10,18]}];
-  if(cxOn&&C.n){sheets.push({name:'Krypto',rows:kr,freeze:1,widths:DE?[11,40,14,6,13,16,14,14,12,14,12,14]:[11,40,14,6,13,14,10,14,12,12,14,12]});
+  const sheets=[{name:'Übersicht',rows:ov,widths:[52,70]},{name:'Monate',rows:mo,freeze:1,widths:[16,8,13,15,18,18,18]},{name:'Wochen',rows:wk,freeze:1,widths:[6,11,11,8,13,15,15,18]},{name:'Konten',rows:ko,freeze:1,widths:[11,14,24,20,8,10,7,12,14,13,16,12,16]},{name:'Trades',rows:tr,freeze:1,widths:[19,11,10,7,16,...accs.map(()=>15)]},{name:'Buchungen MT5',rows:bu,freeze:1,widths:[10,19,11,20,10,11,12,14,14,11,10,12,18]}];
+  // Ab 0.77 (Teil 3): Blatt „Krypto“ mit einem neutralen Satz über dem Kopf; Krypto-Blätter nur mit Krypto-Daten
+  if(C.n){sheets.push({name:'Krypto',rows:[[KR_NOTE],[],...kr],hdr:[2],skip:[0],freeze:3,widths:DE?[11,40,14,6,13,16,14,14,12,14,12,14]:[11,40,14,6,13,14,10,14,12,12,14,12]});
     if(DE)sheets.push({name:'Verkäufe nach FIFO',rows:ff,freeze:1,widths:[11,32,14,6,11,13,12,14,13,10,12,13]});
     sheets.push({name:'Bestand zum Jahresende',rows:be,freeze:1,widths:DE?[11,14,6,11,13,12,12]:[11,14,6,13,12,14]});
     if(ge.length>1)sheets.push({name:'Gebühren in Coins',rows:ge,freeze:1,widths:[11,30,14,6,11,14,14,13,14]})}
-  if((cxOn&&C.n)||(DE&&(Object.keys(S.tag).length||S.cx.length)))sheets.push({name:'Tag Wallet',rows:tg,freeze:1,widths:[10,11,...(TZ?[11,11]:[8]),11,11,6,11,14,9,15,11,10,12,...(HW?[68]:[])]},{name:'Eigene Krypto-Einträge',rows:cx,freeze:1,widths:[11,28,14,14,6,12,...(QI?[12]:[]),7,13,14,8,12,12,9,16,14,10,10,9,10,10,40,30,...(HW?[11]:[])]});
+  if(C.n||Object.keys(S.tag).length||S.cx.length)sheets.push({name:'Tag Wallet',rows:tg,freeze:1,widths:[10,11,...(TZ?[11,11]:[8]),11,11,6,11,14,9,15,11,10,12,...(HW?[68]:[])]},{name:'Eigene Krypto-Einträge',rows:cx,freeze:1,widths:[11,28,14,14,6,12,...(QI?[12]:[]),7,13,14,8,12,12,9,16,14,10,10,9,10,10,40,30,...(HW?[11]:[])]});
   if(wb.length>1)sheets.push({name:'Wallet-Bewegungen',rows:wb,freeze:1,widths:[11,9,11,14,14,10,14,10,14,30,68,11,30]});
   sheets.push({name:'Kurse',rows:ku,freeze:1,widths:[11,28,14,10,30],skip:[ku.length-1]});
   // Excel mit allen Daten: Monate, Wochen und Trades erweitert, dazu Durchschnitt, Tage und Investition
-  const XA=year?null:xlsxAll(rows,{DE,C});
+  const XA=year?null:xlsxAll(rows,{C});
   // Fehlende Kurse (nur bei „Excel mit allen Daten“ möglich, die Jahres-Excel ist dann gesperrt): Satz in der Übersicht, Euro-Zellen leer
   const mrX=year?null:missingRates();
   if(mrX&&mrX.n){const i=ov.findIndex(r=>r[0]==='Wechselkurse');ov.splice(i+1,0,['Fehlende Kurse',`Für ${nTage(mrX.days.length)} fehlen Kurse, die Euro-Werte dieser Buchungen sind leer.`])}
@@ -8872,7 +8910,7 @@ function xNice(sh,o){
 // aller Konten (Scope 'all'), Beträge in EUR und USD. Die Jahres-Excel bekommt nichts davon.
 function xlsxAll(rows,o){
   const tr=rows.filter(isTrade);if(!tr.length)return null;
-  const {DE,C}=o,accs=Object.keys(S.accounts).sort(),zero=S.ui.flt.zeroDays!==false;
+  const {C}=o,accs=Object.keys(S.accounts).sort(),zero=S.ui.flt.zeroDays!==false,XPF='Ergebnis nach PF (am Abbuchungstag)';
   const RU=curRows(rows,'usd'),U=new Map(rows.map((r,i)=>[r,RU[i]])),u=rr=>rr.map(r=>U.get(r));
   let dataEnd=rows[rows.length-1].d;for(const a of accs){const rd=repDay(a);if(rd>dataEnd)dataEnd=rd}
   const win=cntWin(tr[0].d,null,null,dataEnd);
@@ -8907,14 +8945,14 @@ function xlsxAll(rows,o){
   const cum=l=>{let e=0,v=0;for(const x of l){e+=x.z.nN;v+=x.zu.nN;x.cE=e;x.cU=v}return l};
   const W=cum(per([...new Set([...rows.map(r=>r.wk),...winKeys(win,'week')])].sort(),r=>r.wk,w=>{const td=tradeDays(w,win.s,win.e);return {end:addDays(w,6),td,full:td===5}}));
   const wochen=xSheet('Wochen',[{h:'KW',w:6,c:x=>isoWeek(x.k)},{h:'von',w:11,c:x=>X.D(x.k)},{h:'bis',w:11,c:x=>X.D(addDays(x.k,6))},{h:'Trades',w:8,c:x=>x.n},
-    {h:'Ergebnis',w:13,c:x=>X.E(x.z.res)},{h:'Performance Fee',w:15,c:x=>X.E(x.z.fee)},{h:'Steuerpflichtig',w:15,c:x=>X.E(x.z.tax)},{h:'Gewinnauszahlungen',w:18,c:x=>X.E(x.z.pw)},
+    {h:'Ergebnis',w:13,c:x=>X.E(x.z.res)},{h:'Performance Fee',w:15,c:x=>X.E(x.z.fee)},{h:XPF,w:15,c:x=>X.E(x.z.tax)},{h:'Gewinnauszahlungen',w:18,c:x=>X.E(x.z.pw)},
     ...newCols('ganze Woche')],W);
   const M=cum(per([...new Set([...rows.map(r=>r.ym),...winKeys(win,'month')])].sort(),r=>r.ym,m=>{const [f,l]=mWdays(m);let td=0;for(let d=f;d<=l;d=addDays(d,1))if(wdIdx(d)<5&&d>=win.s&&d<=win.e)td++;return {end:monthEnd(m),td,full:f>=win.s&&l<=win.e}}));
   const P=positions(rows,'all');
   const monate=xSheet('Monate',[{h:'Monat',w:16,c:x=>fM(x.k)},{h:'Trades',w:8,c:x=>x.n},{h:'Ergebnis',w:13,c:x=>X.E(x.z.res)},{h:'Performance Fee',w:15,c:x=>X.E(x.z.fee)},
-    {h:DE?'CFD-Ergebnis (vor PF)':'Steuerpflichtig (CFD)',w:18,c:x=>X.E(DE?x.z.res:x.z.tax)},{h:'Gewinnauszahlungen',w:18,c:x=>X.E(x.z.pw)},{h:'Krypto Gewinn/Verlust',w:18,c:x=>X.E(C.byM[x.k]||0)},
+    {h:XPF,w:18,c:x=>X.E(x.z.tax)},{h:'Gewinnauszahlungen',w:18,c:x=>X.E(x.z.pw)},{h:'Krypto Gewinn/Verlust',w:18,c:x=>X.E(C.byM[x.k]||0)},
     ...newCols('ganzer Monat')],M,()=>{const T=pfz(rows),TU=pfz(RU),cy=Object.values(C.byY).reduce((a,b)=>a+b.gain+b.loss,0);
-      return [[X.B('Summe'),P.length,X.EB(T.res),X.EB(T.fee),X.EB(DE?T.res:T.tax),X.EB(T.pw),X.EB(cy),'','','',X.EB(T.nN),ret(rows,false),ret(rows,true),'',dd(rows,false),dd(rows,true),X.N(TU.res),X.N(TU.fee),X.N(TU.pw),X.N(TU.nN),'']]});
+      return [[X.B('Summe'),P.length,X.EB(T.res),X.EB(T.fee),X.EB(T.tax),X.EB(T.pw),X.EB(cy),'','','',X.EB(T.nN),ret(rows,false),ret(rows,true),'',dd(rows,false),dd(rows,true),X.N(TU.res),X.N(TU.fee),X.N(TU.pw),X.N(TU.nN),'']]});
   // Trades: Positionen (gleiche Schließzeit und gleiches Symbol auf mehreren Konten), dazu Eröffnung und Haltedauer
   const HO=holdOpens(rows);let unclear=0;
   const PU=new Map(positions(RU,'all').map(p=>[p.t+'|'+p.sym,p]));
@@ -11129,13 +11167,14 @@ function renderTaxDECx(y){
   else t=sum<fg?`<p class="sigl">Zusammen ${fE.format(sum)}: unter der ${fgT} von ${fE.format(fg)}, steuerfrei.</p>`:`<p class="sigl y">Zusammen ${fE.format(sum)}: nicht unter der ${fgT} von ${fE.format(fg)}. Alles ist steuerpflichtig, zu deinem persönlichen Steuersatz.</p>`;
   $('de-fg').innerHTML=t;
 }
+// Ab 0.77 (Teil 3): ohne Spalte „Steuerrelevant“, wie die Excel mit allen Daten ohne Steuerbezug
 function csv(rows,name){
-  const head=['Konto','Name','Zeitpunkt (Server)','Datum','Art','Symbol','Gewinn/Betrag (Kontowährung)','Kosten (Kommission, Swap, Gebühr)','Summe (Kontowährung)','Kurs (USD je EUR)','Summe EUR','Steuerrelevant','Trade-Nr.','Kommentar'];
+  const head=['Konto','Name','Zeitpunkt (Server)','Datum','Art','Symbol','Gewinn/Betrag (Kontowährung)','Kosten (Kommission, Swap, Gebühr)','Summe (Kontowährung)','Kurs (USD je EUR)','Summe EUR','Trade-Nr.','Kommentar'];
   const nameOf={close:'Trade geschlossen',open:'Trade eröffnet',fee:'Performance Fee/Gebühr',gewinnauszahlung:'Gewinnauszahlung',einzahlung:'Einzahlung',kapitalabzug:'Kapitalabzug',ignorieren:'ignoriert'};
   const n2=v=>isNaN(v)?'':String(Math.round(v*1e6)/1e6).replace('.',',');
   const lines=[head.join(';')];
   for(const r of rows){const A=S.accounts[r.a]||{};
-    lines.push([r.a,A.name||'',r.x.t,fD(r.d),nameOf[r.cat]||'unbekannt',r.x.sym,n2(r.cat==='close'?r.x.prof:r.cat==='open'?0:r.x.prof),n2(r.cat==='close'||r.cat==='open'?r.x.cost:0),n2(r.amt),n2(r.rate),n2(r.eur),(r.cat==='close'||r.cat==='open'||r.cat==='fee')?'ja':'nein',r.x.id,(r.x.cmt||'').replace(/;/g,',')].join(';'))}
+    lines.push([r.a,A.name||'',r.x.t,fD(r.d),nameOf[r.cat]||'unbekannt',r.x.sym,n2(r.cat==='close'?r.x.prof:r.cat==='open'?0:r.x.prof),n2(r.cat==='close'||r.cat==='open'?r.x.cost:0),n2(r.amt),n2(r.rate),n2(r.eur),r.x.id,(r.x.cmt||'').replace(/;/g,',')].join(';'))}
   download(name,'﻿'+lines.join('\r\n'),'text/csv;charset=utf-8');
 }
 function updateNavH(){const h=document.querySelector('nav').getBoundingClientRect().height;document.documentElement.style.setProperty('--navh',h+'px')}
@@ -11172,7 +11211,16 @@ function render(){
   if(GP)glPlace();
   // Ab 0.43: Schritte-Leiste des Assistenten, beim ersten Öffnen des Reiters Wallet ohne Daten der Assistent
   dtAuto();
+  taxAckAuto();
 }
+// Ab 0.77 (Teil 2): Hinweis zur Steuer beim Öffnen des Reiters, solange Österreich oder Deutschland gewählt ist (auch ein alter Stand ohne Land
+// rechnet als Österreich) und die aktuelle Fassung nicht bestätigt ist. Nie bei „Ohne Steuer“. Ein Landwechsel nach der Bestätigung fragt nicht wieder.
+function taxAckDue(){return S.ui.tab==='tax'&&S.ui.country!=='none'&&S.ui.taxAck!==TAX_DISC_V}
+function taxAckAuto(){const m=$('taxack-modal');if(!taxAckDue()||m.classList.contains('on')||$('intro-modal').classList.contains('on')||MODAL||ASK)return;
+  modalOn(m,true);$('btn-taxack-ok').focus({preventScroll:true})}
+// „Verstanden“ merkt die Fassung. „Lieber ohne Steuer“ stellt auf „Ohne Steuer“ (ohne Warnung, wie jeder Wechsel dorthin) und merkt nichts.
+$('btn-taxack-ok').onclick=()=>{S.ui.taxAck=TAX_DISC_V;save();modalOn($('taxack-modal'),false)};
+$('btn-taxack-no').onclick=()=>{S.ui.country='none';save();modalOn($('taxack-modal'),false);render()};
 
 /* ---------------- Events ---------------- */
 $('drop').onclick=()=>$('file').click();
@@ -11306,7 +11354,21 @@ $('de-pb').oninput=e=>{S.ui.dePb=e.target.value;save();render()};
 $('de-kist').onchange=e=>{S.ui.deKist=+e.target.value;save();render()};
 // Ab 0.65: Das Land ist Pflicht (Regel 14), damit niemand die Frage ganz unten übersieht
 // needMark scrollt nur, wenn das Feld außerhalb der Seite liegt; hier liegt es oft unten im Fenster verdeckt, darum selbst in die Mitte holen
-$('btn-ack').onclick=async()=>{const c=$('intro-country');if(!c.value){needMark($('intro-modal'),[[c,'Wähle das Land, in dem du Steuern zahlst.']]);c.scrollIntoView({block:'center'});return}if(!(await landOk(c.value))){c.value=S.ui.country;return}S.ui.ack=true;S.ui.country=c.value;save();modalOn($('intro-modal'),false);render()};
+// Ab 0.77 (Teil 1): Land über drei Knöpfe (gemerkt in INTRO_LAND bis unten geklickt wird), unten zwei Wege. Ohne Wahl markieren beide Knöpfe die
+// Wahl als Pflichtfeld, wie ab 0.65 „Gelesen und verstanden“. „Erste Schritte“ öffnet das Fenster, „Ohne Einführung starten“ lässt den Knopf
+// „Erste Schritte“ oben dreimal aufleuchten (bei weniger Bewegung ein ruhiger Ring).
+let INTRO_LAND='';
+function introLand(v){INTRO_LAND=v;$('intro-land').querySelectorAll('[data-icountry]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.icountry===v)));if(v)needClear($('intro-land'))}
+$('intro-land').addEventListener('click',e=>{const b=e.target.closest('[data-icountry]');if(b)introLand(b.dataset.icountry)});
+async function introDone(steps){const g=$('intro-land');
+  if(!INTRO_LAND){needMark($('intro-modal'),[[g,'Wähle das Land, in dem du Steuern zahlst.']]);g.scrollIntoView({block:'center'});return}
+  if(!(await landOk(INTRO_LAND)))return;
+  S.ui.ack=true;S.ui.country=INTRO_LAND;save();modalOn($('intro-modal'),false);render();
+  const bs=$('btn-steps');if(steps){openModal('steps-modal');MODAL_FROM=bs;return}
+  bs.focus({preventScroll:true});bs.classList.remove('pulse');void bs.offsetWidth;bs.classList.add('pulse');
+  clearTimeout(introDone.t);introDone.t=setTimeout(()=>bs.classList.remove('pulse'),matchMedia('(prefers-reduced-motion: reduce)').matches?2500:3600)}
+$('btn-intro-steps').onclick=()=>introDone(true);
+$('btn-intro-skip').onclick=()=>introDone(false);
 $('btn-don-no').onclick=()=>{donPause(91);modalOn($('don-modal'),false)};
 $('btn-don-done').onclick=()=>{donPause(365);modalOn($('don-modal'),false)};
 $('btn-don-go').onclick=()=>{modalOn($('don-modal'),false);S.ui.tab='support';save();render();window.scrollTo(0,0)};
@@ -11378,11 +11440,11 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   if(stateHasData()&&!(await askBox({title:'Sicherung laden',text:`„${f.name}“ laden? Das ersetzt alle Konten, Buchungen und Krypto-Einträge, die jetzt im Tool stehen.`,ok:'Laden',danger:true,more:ASK_BK}))){e.target.value='';return}
   try{S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';save();msg('datamsg','ok',`Sicherung geladen: ${Object.keys(S.accounts).length} Konten, ${Object.keys(S.deals).length} Buchungen.`);render()}catch(err){msg('datamsg','bad','Datei konnte nicht geladen werden: '+esc(err.message))}e.target.value=''};
 // Ab 0.66 (Florians Wunsch): Nach dem Löschen lädt das Tool die Seite neu. So startet es wie beim ersten Öffnen, mit der Begrüßung
-// (Land, „Gelesen und verstanden“) und frisch aufbereitetem Zustand (fixState). Vorher blieb die Begrüßung bis zum nächsten Neuladen aus
+// (Land, ab 0.77 mit „Erste Schritte“ und „Ohne Einführung starten“) und frisch aufbereitetem Zustand (fixState). Vorher blieb die Begrüßung bis zum nächsten Neuladen aus
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.76',VDATE='02.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.77',VDATE='03.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -11746,7 +11808,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
   const v=$(p==='bx'?'bxprev':'wfprev').querySelector('.tprev')||$(p==='bx'?'bx-load':'wf-load');if(v)v.scrollIntoView({behavior:'smooth',block:'nearest'})});
 async function dropFiles(files){files=[...(files||[])];if(!files.length)return;
   // Begrüßung offen: nichts verarbeiten (der Browser öffnet die Datei trotzdem nicht)
-  if($('intro-modal').classList.contains('on'))return;
+  if($('intro-modal').classList.contains('on')||$('taxack-modal').classList.contains('on'))return;
   if(ASK){toast(`Schließe zuerst das Fenster „${$('ask-t').textContent}“.`,4000);return}
   if(MODAL&&MODAL.id!=='dt-modal'&&mBusy(MODAL)){toast(`Schließe zuerst das Fenster „${mTitle(MODAL)}“.`,4000);return}
   const K=await Promise.all(files.map(fileKind));
@@ -11895,7 +11957,7 @@ if(DL_URL)$('dl-link').innerHTML=` · <a href="${DL_URL}" target="_blank" rel="n
  // Ab 0.50 (2.2 b): gespeicherte Antworten, die auf nicht mehr Vorhandenes zeigen oder nichts bewirken, fallen weg
  if(naClean(S))ch++;
  if(ch)save()}
-if(!S.ui.ack){$('intro-country').value='';modalOn($('intro-modal'),true)}
+if(!S.ui.ack){introLand('');modalOn($('intro-modal'),true)}
 render();
 try{if(sessionStorage.getItem(KEY+'-wiped')){sessionStorage.removeItem(KEY+'-wiped');toastShow('Alles gelöscht.')}}catch(e){}
 // Mit Häkchen „Fehlende Kurse automatisch laden“ (ab 0.66 von Anfang an gesetzt): beim Öffnen fehlende oder vorläufige Kurse holen (ohne Häkchen nie ohne Klick)
