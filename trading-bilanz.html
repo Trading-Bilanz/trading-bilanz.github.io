@@ -3415,7 +3415,7 @@ function addrAssign(S,a,to,own,ask,fr){const x=S.addr[a],toTag=to==='tag',toPay=
   else if(toFr)S.addr[a]={own:false,fr:1,name:fr};
   else{const y=Object.assign({},x,{wallet:newW,own:!!own});delete y.tag;delete y.pay;delete y.br;delete y.load;delete y.auto;delete y.fr;delete y.name;delete y.nameMan;delete y.fw;S.addr[a]=y}
   return {changed}}
-// Ab 0.56 (1): ein Satz für jede Stelle, die einer Adresse eine Wallet zuordnet: „Alle 5 Bewegungen der Adresse 0x55e4…7de2 gehören dann zu „Exodus“.“,
+// Ab 0.56 (1): ein Satz für jede Stelle, die einer Adresse eine Wallet zuordnet: „Alle 5 Bewegungen der Adresse 0xea06…ea06 gehören dann zu „Exodus“.“,
 // bei einer vorläufigen Wallet dazu „Die vorläufige Wallet „…“ geht in „Exodus“ auf.“, am Ende „Fortfahren?“
 function addrMvTxt(S,a,nm){const n=Object.values(S.wtx).filter(m=>m.from===a||m.to===a).length,x=S.addr[a],oldW=x&&!x.tag&&!x.pay&&!x.br&&!x.load?x.wallet:'',ad=`${a.slice(0,6)}…${a.slice(-4)}`;
   const prov=!!oldW&&oldW!==nm&&isProv(S,oldW)&&!!(S.wlater&&S.wlater[oldW]&&S.wlater[oldW].addr===a);
@@ -4268,7 +4268,7 @@ function wFileDrop(S,a,net){const r={mv:0,kept:0,cx:0,hand:0,tag:0},x=S.addr[a];
 // „Später zuordnen“ vergeben wurden
 // Ab 0.50 Nachtrag 2 (4.2): ohne vorläufige Wallets („Noch nicht zugeordnet“), ohne Namen aus „Später zuordnen“
 function wfpWallets(S,D,i){const o=S.wallets.filter(w=>!(S.wmeta&&S.wmeta[w]&&S.wmeta[w].prov));for(const f of D.files.slice(0,i)){if(f.later)continue;const w=f.wallet==='+'||f.wallet==='+k'?f.newName.trim():f.wallet;if(w&&!o.includes(w))o.push(w)}return o}
-// „Später zuordnen“ (ab 0.50 Nachtrag 2): keine echte Wallet, sondern die vorläufige „Noch nicht zugeordnet (0x6105…fdbb)“. wImport merkt sie als
+// „Später zuordnen“ (ab 0.50 Nachtrag 2): keine echte Wallet, sondern die vorläufige „Noch nicht zugeordnet (0xea01…ea01)“. wImport merkt sie als
 // vorläufig (S.wmeta[w].prov) und behält die Datei (S.wlater[w] = {name, addr, text}), damit „Noch offen“ sie später zuordnen kann
 const wProvName=a=>`Noch nicht zugeordnet (${a.slice(0,6)}…${a.slice(-4)})`;
 function wfpLater(f){f.wallet='+';f.newName=wProvName(f.addr);f.later=1;delete f.skip}
@@ -6846,7 +6846,7 @@ function vgWas(v){if(v.mv.length===1&&(v.k==='open'||v.k==='ign')){const s=wSide
   if(v.k==='int'&&v.mv.length===2&&S.wtx[v.mv[0]].swap)return 'Umtausch';
   // Ab 0.49 (2.3): aus bzw. in einen anderen Coin getauscht heißt in „Was“ „Tausch“; die genaue Art steht aufgeklappt
   if(v.k==='tauschein'||v.k==='tauschaus')return 'Tausch';
-  // Ab 0.48 (3.3): überall „Geschenk von jemandem“ / „Geschenk an jemanden“, mit Namen „Geschenk von Susanne“
+  // Ab 0.48 (3.3): überall „Geschenk von jemandem“ / „Geschenk an jemanden“, mit Namen „Geschenk von Anna“
   if(v.k==='weg'||v.k==='eingang'){const fn=vgGiftN(v)||vgFrN(v);return v.k==='weg'?'Geschenk an '+(fn||'jemanden'):'Geschenk von '+(fn||'jemandem')}
   return v.art==='intern'?'intern':v.art}
 // Ab 0.46 (5.4): Umbruch nur nach dem Komma (am Handy bei langen Mengen)
@@ -7040,8 +7040,8 @@ function vgDetH(v,fl,DEw,PM,F,rw){const eg=vgEG(v,fl),oc=vgOcH(v,fl,DEw),L=[oc&&
 // beiden Seiten (Brücke): die Netzwerke
 function vgAdrT(v){const M=v.mv.map(k=>S.wtx[k]).filter(Boolean).sort((a,b)=>a.ts-b.ts);if(!M.length)return '';
   const o=(v.from&&M.find(m=>rAW(S,m.from)===v.from&&rAW(S,m.to)!==v.from))||M[0],i=(v.to&&[...M].reverse().find(m=>rAW(S,m.to)===v.to&&rAW(S,m.from)!==v.to))||M[M.length-1];
-  // Ab 0.48 (3.8): Übertrag über eine Weiterleitung: „über Weiterleitung 0xcacc…4fdf“ (Name, wenn einer vergeben ist); die ganze Kette im Detail.
-  // Ab 0.48 (3.5): gleiche Adresse und gleiches Netzwerk links und rechts (Tausch im selben Konto): „in 0x6105…fdbb“. Ab 0.48 (3.1): kein Umbruch in Adressen.
+  // Ab 0.48 (3.8): Übertrag über eine Weiterleitung: „über Weiterleitung 0xea08…ea08“ (Name, wenn einer vergeben ist); die ganze Kette im Detail.
+  // Ab 0.48 (3.5): gleiche Adresse und gleiches Netzwerk links und rechts (Tausch im selben Konto): „in 0xea01…ea01“. Ab 0.48 (3.1): kein Umbruch in Adressen.
   const c0=v.cx.length?cxById(v.cx[0]):null;if(c0&&c0.via){const x=S.addr[c0.via];return `über Weiterleitung <span class="nw">${esc(x&&x.name?x.name:wShort(c0.via))}</span>`}
   if(o.from===i.to&&o.net!==i.net)return vgAr(esc(wNet(o.net)),esc(wNet(i.net)));if(o.from===i.to)return `in <span class="nw">${wShort(o.from)}</span>`;return vgAr(`<span class="nw">${wShort(o.from)}</span>`,wShort(i.to))}
 // ✎ rechts: Haupteintrag, Tag-Fenster, bei offenen Bewegungen „Entscheiden“, sonst aufklappen. Rückgabe [Art, Wert, Text]
@@ -7472,7 +7472,7 @@ function tdEur(q,d){const r=(d&&rateFor(d,'USD'))||(()=>{const ds=rateDates();re
 // Ab 0.47 (1.5): Tag-Zeile ohne stille Wallet. tagSilent = alte Zeile, der das Tool bis 0.46 still die erste Wallet gegeben hat (nicht von Hand
 // gewählt, nicht mit einer Datei verknüpft, keine Bank-Zeile, nicht „So lassen“). tagWN = Name für Anzeige und Excel.
 const tagSilent=t=>t.status==='ok'&&!t.fiat&&!t.hand&&!t.wq&&!t.wok&&!t.wk&&!!t.own&&!(t.man&&t.man.w)&&!!wW0(S)&&t.wallet===wW0(S);
-// Ab 0.48 (3.3): Geschenke überall „Geschenk von jemandem“ / „Geschenk an jemanden“, mit Namen „Geschenk von Susanne“
+// Ab 0.48 (3.3): Geschenke überall „Geschenk von jemandem“ / „Geschenk an jemanden“, mit Namen „Geschenk von Anna“
 const tagWN=t=>t.wq==='q'?'Wallet offen':t.wq==='g'?(t.kind==='aus'?'Geschenk an '+(t.pn||'jemanden'):'Geschenk von '+(t.pn||'jemandem')):t.wallet;
 const tagWCur=t=>t.fiat?'~b':t.wq==='q'?'~q':t.wq==='g'?'~g':t.wallet;
 // Innere Töpfe der Rechnung ('@q:ID' Tag-Einzahlung mit offener Herkunft, '@g:ID' Geschenk ohne Wallet) für Anzeige und Excel
@@ -7988,7 +7988,7 @@ function renderTodo(C){
   const nU=V.filter(x=>x.sug&&x.sug.uniq&&!x.sug.noAll).length+wAskUniq(Object.keys(S.wtx).length?wPairMap():new Map()).length;
   const card=tdCard;
   // Ab 0.47 (2.6): „Alle Punkte“ als linksbündige Liste in zeitlicher Reihenfolge, eine Zeile je Punkt, Farbpunkt am Anfang; Klick springt zum Punkt
-  // Ab 0.48 (2.1): offene Beträge an bzw. von derselben Adresse stehen in einer Zeile („4 × an 0x427f…aea1“, zusammen je Coin), Klick springt zum ersten
+  // Ab 0.48 (2.1): offene Beträge an bzw. von derselben Adresse stehen in einer Zeile („4 × an 0xea03…ea03“, zusammen je Coin), Klick springt zum ersten
   const grpK=x=>{if(!x.mv||!['offen','frage','klein'].includes(x.kind)||!S.wtx[x.mv])return '';const m=S.wtx[x.mv],s=wSide(m),cp=s==='in'?m.from:s==='out'?m.to:'';return cp?s+'|'+cp:''};
   const GR={};V.forEach((x,i)=>{const g=grpK(x);if(g)(GR[g]||(GR[g]=[])).push(i)});
   const allL=()=>`<table class="tdlist"><colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup><thead><tr><th><span class="vh">Stufe</span></th><th>Datum</th><th>Wallet</th><th>Was fehlt</th><th>Menge</th></tr></thead><tbody>${V.map((x,i)=>{let l=x.li||{d:'',w:'',what:tdTitle(x),q:''};
@@ -10148,7 +10148,7 @@ ${ECB_CITE}`},
   wbal:{t:'Laut deiner Wallet',h:'Trage die Menge dieses Coins ein, wie sie in deiner Wallet steht, nicht den Gesamtwert deiner Wallet in Dollar.\n<b>laut Datei</b>: Summe aller USDC oder USDT dieser Wallet aus deinen Wallet-Dateien, rein minus raus, über alle Netzwerke. Das stimmt nur, wenn die Datei die ganze Geschichte der Wallet enthält.'},
   einkaufswert:{t:'Einkaufswert',h:'Was die Coins in diesem Topf zusammen gekostet haben, inklusive Kaufgebühren.',de:'Was die Coins gekostet haben, inklusive Kaufgebühren. Bei einem Geschenk: was die schenkende Person bezahlt hat.'},
   opreis:{t:'Ø-Preis',h:'Jede Wallet ist wie ein Topf: Das Tool merkt sich, wie viele Coins drin sind und was sie zusammen gekostet haben (Einkaufswert). Geteilt ergibt das den Ø-Preis. Gehen Coins raus, nehmen sie den Ø-Preis mit.'},
-  zuordnen:{t:'So ordnest du zu',h:'<b>Entscheiden:</b> Bei einer offenen Bewegung wählst du, was sie war, z. B. „Kauf“ oder „Zahlung“. Das Formular ist dann schon ausgefüllt, oft fehlt nur der Wert.\n<b>gehört zu …:</b> Hast du den Vorgang schon eingetragen, z. B. einen Übertrag von Hand, verbindest du die Bewegung damit. Beispiel: Eingang 999,00 bei Bix gehört zu deinem Übertrag bitvavo → Bix.\n<b>Gegenseite anklicken:</b> Ein Klick auf die Adresse der Gegenseite öffnet ein Menü. Dort sagst du, wem sie gehört: einer deiner Wallets, Tag, einer Brücke oder den Kartenzahlungen deiner Karte. Das gilt für alle Bewegungen mit dieser Adresse. Beispiel: 0xf12f… gehört zu trustyfy, dann werden beide Ausgänge dorthin Überträge.\n<b>Ignorieren:</b> für Bewegungen, die nicht zählen sollen, z. B. Betrugsversuche mit winzigen Beträgen. Zurückholen: in „Alle Vorgänge“ Filter → Status „ignoriert“ → „wieder öffnen“.\n<b>Verknüpfung lösen:</b> Hat das Tool etwas falsch verbunden, klappe den Vorgang in „Alle Vorgänge“ auf und klicke bei der Bewegung auf „Verknüpfung lösen“ (bei einer Brücke „keine Brücke“). Das Tool schlägt das Paar danach nicht mehr vor.\n<b>Vorschläge:</b> Was das Tool fast sicher erkannt hat, steht unter „Vorschläge“ mit Ja und Nein. „Alle eindeutigen übernehmen“ sagt zu allen eindeutigen Ja.'},
+  zuordnen:{t:'So ordnest du zu',h:'<b>Entscheiden:</b> Bei einer offenen Bewegung wählst du, was sie war, z. B. „Kauf“ oder „Zahlung“. Das Formular ist dann schon ausgefüllt, oft fehlt nur der Wert.\n<b>gehört zu …:</b> Hast du den Vorgang schon eingetragen, z. B. einen Übertrag von Hand, verbindest du die Bewegung damit. Beispiel: Eingang 999,00 bei Bix gehört zu deinem Übertrag bitvavo → Bix.\n<b>Gegenseite anklicken:</b> Ein Klick auf die Adresse der Gegenseite öffnet ein Menü. Dort sagst du, wem sie gehört: einer deiner Wallets, Tag, einer Brücke oder den Kartenzahlungen deiner Karte. Das gilt für alle Bewegungen mit dieser Adresse. Beispiel: 0xea07… gehört zu trustyfy, dann werden beide Ausgänge dorthin Überträge.\n<b>Ignorieren:</b> für Bewegungen, die nicht zählen sollen, z. B. Betrugsversuche mit winzigen Beträgen. Zurückholen: in „Alle Vorgänge“ Filter → Status „ignoriert“ → „wieder öffnen“.\n<b>Verknüpfung lösen:</b> Hat das Tool etwas falsch verbunden, klappe den Vorgang in „Alle Vorgänge“ auf und klicke bei der Bewegung auf „Verknüpfung lösen“ (bei einer Brücke „keine Brücke“). Das Tool schlägt das Paar danach nicht mehr vor.\n<b>Vorschläge:</b> Was das Tool fast sicher erkannt hat, steht unter „Vorschläge“ mit Ja und Nein. „Alle eindeutigen übernehmen“ sagt zu allen eindeutigen Ja.'},
   restgeb:{t:'Rest bei einer Börse',h:'Bei dieser Wallet (meist eine Börse ohne Wallet-Datei) bleibt laut deinen Einträgen ein kleiner Rest, obwohl du alles weitergeschickt hast. Börsen ziehen beim Abheben oft eine feste Gebühr ab, z. B. 1,10 USDC je Abhebung. Die siehst du nicht in der Wallet-Datei, nur in der Abrechnung der Börse.\n<b>Auf die Überträge verteilen:</b> Je Kauf wird der Rest gleichmäßig auf die Überträge danach verteilt. Abgebucht ist dann etwas mehr, als ankam, der Unterschied ist die Gebühr.\n<b>Als eine Gebühr buchen:</b> ein Eintrag „Gebühr“ mit dem ganzen Rest.\nSteuerlich ist eine Gebühr in Coins ein Verkauf zum Tageswert, meist geht es um Cents. Liegt bei der Börse wirklich noch etwas, lass es so.'},
   'k-vg':{t:'Alle Vorgänge',h:'Eine Zeile je Vorgang. Ein Klick klappt ihn auf, <b>✎</b> bearbeitet ihn.\n<b>Erledigen</b> steht bei offenen Zeilen statt ✎. Der Knopf öffnet denselben Punkt wie in „Noch offen“.'},
   vgstatus:{t:'Status',h:'<b>fertig</b> = alles da, der Vorgang zählt. <b>Kurs fehlt</b> = für diesen Tag ist noch kein Kurs geladen, der Euro-Wert fehlt. <b>offen</b> = noch nicht entschieden, steht unter „Noch offen“. <b>Vorschlag</b> = das Tool hat eine Idee, darunter klein welche (z. B. „Übertrag zu Bitvavo?“). <b>doppelt?</b> = steht vielleicht zweimal da (an beiden Zeilen). <b>Einkauf fehlt</b> = für diesen Abgang kennt das Tool den Einkauf nicht. <b>vertippt?</b>, <b>Reihenfolge</b>, <b>prüfen</b> = bitte ansehen, Einzelheiten in „Noch offen“. <b>Wert fehlt</b> = der Eintrag zählt erst, wenn der Wert drin ist (sonst steht da, was fehlt). <b>geschätzt</b> = der Wert ist geschätzt. <b>ignoriert</b> = zählt nicht. <b>verdächtig</b> = winziger Betrag, vermutlich ein Betrugsversuch.'},
