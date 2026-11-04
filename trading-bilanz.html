@@ -136,6 +136,9 @@ section.on{display:block}
 /* Ab 0.80 (4): Karte „Buchungsarten“. Roter Rand links = „bitte wählen“ (sperrt), gelber = „noch unklar“. Am Handy ein Block je Art statt der Tabelle:
    fett die Art, „1 Buchung · 25,68 USD“, Beispiel, Menü über die ganze Breite (Florians Festlegung, Ausnahme zu GESTALTUNG §1 Handy) */
 #map-table td.mapl,#map-table td.mapx{white-space:normal}
+/* Ab 0.81 (2): Hinweis „Prüfe die Art: …“ grau unter dem Menü (keine Sperre, kein Rand), am Handy im Block unter dem Auswahlmenü */
+#map-table td.mapc{white-space:normal}
+#map-table .mapv{max-width:24em}
 #map-table .mapw{display:block;color:var(--ink2);margin-top:2px}
 #map-table .mapm{display:none}
 #map-table tr.mapr>td:first-child{box-shadow:inset 3px 0 0 var(--sig-r)}
@@ -2090,7 +2093,8 @@ function mapKey(x){return mapLabel(x).toLowerCase()}
 // und „Upgrade-…“ (positiv, derselbe Betrag × Trading Benefit). Das „-“ im Kommentar ist kein Vorzeichen, der Betrag kommt aus Profit.
 // Passt Upgrade ≈ |Adjust| × Trading Benefit des Kontos (± 0,01 USD), gilt ohne Frage: Adjust = Gewinnauszahlung, Upgrade = Einzahlung von Kapital.
 // Das geht vor eigenen Zuordnungen. Passt der Faktor nicht oder fehlt der Trading Benefit, ordnet das Tool nichts zu (die Zeilen gehen über S.map,
-// ohne Zuordnung „bitte wählen“), und bad trägt den Hinweis für die Karte „Buchungsarten“. Ein Adjust ohne Upgrade (oder umgekehrt): kein Paar, kein Hinweis.
+// ohne Zuordnung „bitte wählen“), und bad trägt den Hinweis für die Karte „Buchungsarten“ (ab 0.81 immer mit den Zahlen). Ein Adjust ohne Upgrade
+// (oder umgekehrt): kein Paar, kein Hinweis.
 // RV = Zwischenspeicher, gilt für dieses S.deals und bis zum nächsten save() bzw. render().
 let RV=null,RV_D=null;
 const RV_AD=/^adjust(?![a-z])/i,RV_UP=/^upgrade(?![a-z])/i;
@@ -2106,7 +2110,8 @@ function rvScan(){
     if(f>0)for(const ka of G.ad){const xa=S.deals[ka],ku=G.up.find(u=>!used.has(u)&&Math.abs(S.deals[u].prof+xa.prof*f)<=0.0100001);if(ku){used.add(ku);ok[ka]='gewinnauszahlung';ok[ku]='einzahlung'}}
     const ra=G.ad.filter(k=>!ok[k]),ru=G.up.filter(k=>!ok[k]);
     for(let i=0;i<Math.min(ra.length,ru.length);i++){const xa=S.deals[ra[i]],xu=S.deals[ru[i]];
-      const h=f>0?`Upgrade ${n2(xu.prof)} ÷ Adjust ${n2(xa.prof)} = ${q(xu.prof/-xa.prof)}, eingestellt ist ${facT(f)}.`:'Trading Benefit für dieses Konto fehlt.';
+      // Ab 0.81 (1): auch ohne Trading Benefit mit den Zahlen, damit man den Faktor gleich sieht
+      const h=`Upgrade ${n2(xu.prof)} ÷ Adjust ${n2(xa.prof)} = ${q(xu.prof/-xa.prof)}, `+(f>0?`eingestellt ist ${facT(f)}.`:'Trading Benefit für dieses Konto fehlt.');
       bad[ra[i]]=h;bad[ru[i]]=h}
   }
   RV={ok,bad};RV_D=S.deals;return RV;
@@ -2467,11 +2472,20 @@ function catOf(x){
 }
 // Ab 0.80 (4): Inhalt der Karte „Buchungsarten“ je Schlüssel: unbekannte Buchungen (cat null) und Buchungen mit eigener Zuordnung (S.map).
 // Nicht dabei: Trades, erkannte Reinvest-Paare, Buchungen, die nur über DEFAULT_MAP zählen. ex = früheste Buchung, hints = Hinweise zum Paar.
+// Ab 0.81 (2): sign = sanfter Hinweis „Prüfe die Art: …“ (keine Rückfrage: die gibt es nur in den Fragen an die Steuerberatung, ab 0.72), wenn die
+// gewählte Art nicht zum Vorzeichen passt (MAP_SIGN: Einzahlung soll +, Kapitalabzug und Gewinnauszahlung sollen − sein). Nur für eigene
+// Zuordnungen (S.map), nicht für „Performance Fee / Gebühr“ (kann in einer Verlustwoche + sein), „noch unklar“ und „bitte wählen“. Gerechnet wird weiter mit dem Vorzeichen aus dem Report. Betrag 0 zählt nicht.
+const MAP_SIGN={einzahlung:1,kapitalabzug:-1,gewinnauszahlung:-1};
+function mapSign(e){const want=MAP_SIGN[e.cat];if(!want||S.map[e.k]!==e.cat)return '';
+  const L=e.deals.filter(x=>x.prof*want<0);if(!L.length)return '';
+  const sum=L.reduce((a,x)=>a+x.prof,0),v=(sum>0?'+':'')+usd(sum),art=CATS[e.cat].replace(/ \(.*\)$/,'');
+  return `Prüfe die Art: ${art}, aber ${L.length===1?v:`${fI.format(L.length)} Buchungen mit zusammen ${v}`}.`}
 function mapKinds(){const m={},R=rvScan();
   for(const [dk,x] of Object.entries(S.deals)){if(x.type==='buy'||x.type==='sell'||R.ok[dk])continue;const k=mapKey(x);
     if(S.map[k]==null&&DEFAULT_MAP[k])continue;
-    const e=m[k]||(m[k]={k,label:mapLabel(x),n:0,sum:0,ex:x,cat:catOf(x),hints:[]});e.n++;e.sum+=x.prof;if(x.t<e.ex.t)e.ex=x;
+    const e=m[k]||(m[k]={k,label:mapLabel(x),n:0,sum:0,ex:x,cat:catOf(x),hints:[],deals:[],sign:''});e.n++;e.sum+=x.prof;e.deals.push(x);if(x.t<e.ex.t)e.ex=x;
     const h=R.bad[dk];if(h&&!e.hints.includes(h))e.hints.push(h)}
+  for(const e of Object.values(m))e.sign=mapSign(e);
   return m}
 function unknownKinds(){const m={};for(const [k,e] of Object.entries(mapKinds()))if(e.cat===null)m[k]=e;return m}
 // Ab 0.80 (3): alle Buchungen „noch unklar“ (für die Hinweise oben in Auswertung und Steuer)
@@ -9611,7 +9625,8 @@ $('chainmsg').addEventListener('animationend',e=>{const m=e.target.closest&&e.ta
 $('chainmsg').addEventListener('toggle',e=>{const d=e.target.closest&&e.target.closest('[data-chd]');if(d){if(d.open)CH_OPEN.add(d.dataset.chd);else CH_OPEN.delete(d.dataset.chd)}
   const r=e.target.closest&&e.target.closest('[data-chr]');if(r){if(r.open)CHR_OPEN.add(r.dataset.chr);else CHR_OPEN.delete(r.dataset.chr)}},true);
 // Ab 0.80 (4): Karte „Buchungsarten“. Oben „bitte wählen“ (roter Rand links, sperrt Auswertung und Steuer) und „noch unklar“ (gelber Rand), darunter die
-// eigenen Zuordnungen, jede mit Menü und jederzeit änderbar. Nicht dabei: DEFAULT_MAP und erkannte Reinvest-Paare (mapKinds). Der Erklärungssatz steht nur,
+// eigenen Zuordnungen, jede mit Menü und jederzeit änderbar. Nicht dabei: DEFAULT_MAP und erkannte Reinvest-Paare (mapKinds). Ab 0.81 unter dem Menü
+// grau „Prüfe die Art: …“ (mapSign), ohne Sperre und ohne Rand, am Handy damit im Block unter dem Auswahlmenü. Der Erklärungssatz steht nur,
 // solange etwas auf „bitte wählen“ steht. Kommt eine neue unbekannte oder unklare Art dazu, klappt die Karte einmal auf, ohne den gemerkten Zustand
 // zu ändern (S.ui.mapSeen, wie ocSeen bei „Andere Coins“). Am Handy (bis 700 px) macht das CSS aus jeder Zeile einen Block.
 function renderMap(){
@@ -9619,7 +9634,8 @@ function renderMap(){
   if(!E.length){card.style.display='none';return}
   card.style.display='';
   E.sort((a,b)=>o(a)-o(b)||(a.label.toLowerCase()<b.label.toLowerCase()?-1:1));
-  {const O=E.filter(e=>o(e)<2).map(e=>e.k).sort(),seen=S.ui.mapSeen||[],nu=O.some(k=>!seen.includes(k));if(nu)card.classList.remove('closed');if(nu||O.length!==seen.length){S.ui.mapSeen=O;save()}}
+  // Ab 0.81 (2): ein neuer Hinweis „Prüfe die Art“ klappt die Karte ebenso einmal auf (Eintrag „v:“ + Schlüssel in S.ui.mapSeen)
+  {const O=[...E.filter(e=>o(e)<2).map(e=>e.k),...E.filter(e=>e.sign).map(e=>'v:'+e.k)].sort(),seen=S.ui.mapSeen||[],nu=O.some(k=>!seen.includes(k));if(nu)card.classList.remove('closed');if(nu||O.length!==seen.length){S.ui.mapSeen=O;save()}}
   $('map-txt').hidden=!E.some(e=>e.cat===null);
   const dt=x=>`${fD(dOf(x.t))} ${String(x.t).slice(11,16)}`;
   let h=`<thead><tr><th class="l">Buchungstext im Report</th><th>Anzahl</th><th>Summe</th><th>Beispiel</th><th>Bedeutung</th></tr></thead><tbody>`;
@@ -9628,7 +9644,7 @@ function renderMap(){
     h+=`<tr${cls?` class="${cls}"`:''}><td class="l mapl"><b>${esc(e.label)}</b>${e.hints.map(t=>`<span class="small mapw">Nicht als Reinvest erkannt: ${esc(t)}</span>`).join('')}</td>`+
       `<td class="mapn">${fI.format(e.n)}<span class="mapm"> ${e.n===1?'Buchung':'Buchungen'}</span></td><td class="maps">${usd(e.sum)}</td>`+
       `<td class="mapx">${dt(x)}, <span class="nw">Konto ${esc(x.a)}</span>${org&&org!==e.label?` <span class="nw">(„${esc(org)}“)</span>`:''}</td>`+
-      `<td class="mapc"><select data-map="${esc(e.k)}" aria-label="Bedeutung von ${esc(e.label)}">${opts}</select></td></tr>`}
+      `<td class="mapc"><select data-map="${esc(e.k)}" aria-label="Bedeutung von ${esc(e.label)}">${opts}</select>${e.sign?`<span class="small mapw mapv">${esc(e.sign)}</span>`:''}</td></tr>`}
   $('map-table').innerHTML=h+'</tbody>';
   $('map-table').querySelectorAll('[data-map]').forEach(s=>s.onchange=()=>{if(s.value){S.map[s.dataset.map]=s.value;save();renderKeepFocus()}});
 }
@@ -11570,7 +11586,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.80',VDATE='04.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.81',VDATE='04.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
