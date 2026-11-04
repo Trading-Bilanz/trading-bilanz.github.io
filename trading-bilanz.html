@@ -70,6 +70,8 @@ html.online .offl{display:none}
 .ibox{background:var(--sub-bg);border:1px solid var(--line);border-radius:var(--radius);padding:2px 16px 6px;margin:14px 0}
 /* Ab 0.78 (Florians Farbregel): In der Begrüßung hat jede Farbe genau eine Aufgabe. Grau = Frage nach dem Land (.ibox), Rot = Haftung (.dstr,
    Farben wie .disc), Gelb = Echtheit (.ystr, das Gelb für „bitte prüfen“), Blau = Download und Hauptknopf. Die Punkte der Liste sind ohne Farbe. */
+/* Ab 0.79 (Florians Auftrag, Ausnahme zur Farbregel): Titel im Grün der Häkchen fertiger Reiter (.dot.ok, --pos), hell 5,3 : 1 und dunkel 7,2 : 1 auf --card */
+#intro-t{color:var(--pos)}
 ul.ilist{list-style:none;padding:0;margin:8px 0 6px}
 ul.ilist li{position:relative;padding-left:18px;margin:5px 0}
 ul.ilist li::before{content:"";position:absolute;left:4px;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--ink2)}
@@ -1610,13 +1612,14 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
      „Erste Schritte“ öffnet das Fenster, „Ohne Einführung starten“ lässt den Knopf „Erste Schritte“ oben kurz aufleuchten. Ohne Wahl wie bisher
      (ab 0.65): der Knopf markiert die Wahl als Pflichtfeld. Den Disclaimer zur Steuer zeigt ab 0.77 das Pop-up im Reiter „Steuer“ (#taxack-modal). -->
 <div class="modal" id="intro-modal"><div class="box" role="dialog" aria-modal="true" aria-labelledby="intro-t">
-  <h2 id="intro-t">Willkommen bei der Trading-Bilanz</h2>
-  <!-- Ab 0.78: Beschreibung als Liste (Punkte per CSS, ul.ilist), darunter klein der Satz zum Internet -->
+  <!-- Ab 0.79: „Trading-Bilanz“ bricht nicht um (.nw statt geschütztem Bindestrich, damit die Suche nach „Trading-Bilanz“ den Titel findet) -->
+  <h2 id="intro-t">Willkommen bei der <span class="nw">Trading-Bilanz</span></h2>
+  <!-- Ab 0.78: Beschreibung als Liste (Punkte per CSS, ul.ilist), darunter klein der Satz zum Internet. Ab 0.79 Florians neue Liste -->
   <ul class="ilist">
-    <li><b>Ergebnisse aus deinen MT5-Reports:</b> Gewinne, Verluste, Gebühren, <b>auch in Euro</b></li>
+    <li><b>Ergebnisse aus deinen MT5-Reports:</b> Gewinne, Verluste, Gebühren, auch in Euro</li>
     <li><b>Deine Rendite</b> vor und nach Performance Fee, mit Durchschnitten pro Tag, Woche und Monat</li>
-    <li><b>Hochs und Tiefs:</b> beste und schwächste Trades, Tage, Wochen und Monate</li>
-    <li><b>Nachvollziehbar</b> und mit deinen Reports vergleichbar</li>
+    <li><b>Hochs und Tiefs:</b> beste und schwächste Trades, Tage und Wochen</li>
+    <li><b>Grafiken:</b> Ergebnis und Rendite im Verlauf, nach Wochentag, Verteilung deiner Trades und deine Investition</li>
     <li><b>Ein- und Auszahlungen mit USDC und USDT</b></li>
     <li><b>Deine Daten bleiben bei dir</b> in diesem Browser.</li>
   </ul>
@@ -11470,7 +11473,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.78',VDATE='03.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.79',VDATE='03.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
