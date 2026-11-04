@@ -133,6 +133,27 @@ section.on{display:block}
 .card h2{font-size:18px;margin:0 0 6px}
 .card h3{font-size:15px;margin:14px 0 6px}
 .hint{color:var(--ink2);font-size:14px;margin:4px 0 10px}
+/* Ab 0.80 (4): Karte „Buchungsarten“. Roter Rand links = „bitte wählen“ (sperrt), gelber = „noch unklar“. Am Handy ein Block je Art statt der Tabelle:
+   fett die Art, „1 Buchung · 25,68 USD“, Beispiel, Menü über die ganze Breite (Florians Festlegung, Ausnahme zu GESTALTUNG §1 Handy) */
+#map-table td.mapl,#map-table td.mapx{white-space:normal}
+#map-table .mapw{display:block;color:var(--ink2);margin-top:2px}
+#map-table .mapm{display:none}
+#map-table tr.mapr>td:first-child{box-shadow:inset 3px 0 0 var(--sig-r)}
+#map-table tr.mapy>td:first-child{box-shadow:inset 3px 0 0 var(--sig-y)}
+#map-table select{max-width:100%}
+@media(max-width:700px){
+  #map-table,#map-table tbody,#map-table tr,#map-table td{display:block;width:auto}
+  #map-table thead{display:none}
+  #map-table tr{padding:10px 0 10px 12px;border-bottom:1px solid var(--line)}
+  #map-table tr.mapr{box-shadow:inset 3px 0 0 var(--sig-r)}#map-table tr.mapy{box-shadow:inset 3px 0 0 var(--sig-y)}
+  #map-table tr.mapr>td:first-child,#map-table tr.mapy>td:first-child{box-shadow:none}
+  #map-table td{border:0;padding:0;text-align:left;white-space:normal}
+  #map-table td.mapn,#map-table td.maps{display:inline}
+  #map-table td.maps::before{content:' · '}
+  #map-table .mapm{display:inline}
+  #map-table td.mapc{margin-top:8px}
+  #map-table select{width:100%}
+}
 .small{font-size:var(--fs-s);color:var(--muted)}
 .drop{border:2px dashed var(--line);border-radius:var(--radius);padding:30px 16px;text-align:center;cursor:pointer;transition:.15s;background:var(--bg)}
 .drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
@@ -1256,18 +1277,20 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <div id="chainmsg"></div>
   </div>
 
-  <div class="card" id="map-card" style="display:none">
-    <h2>Unbekannte Buchungsarten</h2>
-    <p class="hint">Das Tool kennt diese Buchungen noch nicht. Sage einmal, was sie bedeuten; das Tool merkt es sich. Erst danach zeigt das Tool Auswertung und Steuer. Unsicher, was eine Buchung bedeutet? Schaue beim Beispiel-Datum im MT5-Report nach oder frage den Support deines Brokers.</p>
-    <div class="scroll"><table id="map-table"></table></div>
-  </div>
-
   <!-- Aufgebaut wie die Karten der Auswertung: stehender Titel mit ⓘ, stehende Kopie der Kopfzeile (HC_CARDS) -->
   <div class="card fold stk" data-fold="acc-card" id="acc-card">
     <div class="sthd"><h2>Deine Konten <button type="button" class="ib" data-gl="k-konten" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Deine Konten">i</button></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
     <div class="tscroll"><table id="acc-table"></table></div>
     <!-- Ab 0.58 (5): Menü „für alle ▾“ im Spaltenkopf „Trading Benefit“ (Knopf in der Tabelle und in ihrer Kopie, siehe facAllBtn) -->
     <span class="fdd noprint" id="fdd-tb"><span class="fpan" id="fp-tb" role="dialog" aria-label="Trading Benefit für alle Konten"></span></span>
+  </div>
+
+  <!-- Ab 0.80 (4): „Buchungsarten“ (bis 0.79 „Unbekannte Buchungsarten“ über „Deine Konten“). Direkt unter „Deine Konten“, Titel steht nicht fest.
+       Sichtbar mit unbekannten Buchungen oder eigenen Zuordnungen mit Buchungen (renderMap). Vorgabe zugeklappt, gemerkt in S.ui.fold -->
+  <div class="card fold closed" data-fold="map-card" id="map-card" style="display:none">
+    <h2 class="hx">Buchungsarten <button type="button" class="ib" data-gl="k-buchungsarten" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Buchungsarten">i</button></h2>
+    <p class="hint" id="map-txt">Das Tool kennt diese Buchungen noch nicht. Sage einmal, was sie bedeuten; das Tool merkt es sich. Erst danach zeigt das Tool Auswertung und Steuer. Unsicher, was eine Buchung bedeutet? Schaue beim Beispiel-Datum im MT5-Report nach, frage den Support deines Brokers oder wähle „Noch unklar“.</p>
+    <table id="map-table"></table>
   </div>
   <div id="next-reports" class="noprint"></div>
 </section>
@@ -2056,14 +2079,51 @@ const RB={stand:'2026-10-12',bis:'2026-10-12',m:`
 // Eingebaute Kurse als Datum → Kurs. Sie bleiben in der Datei und kommen nie in den Browser-Speicher (S.rates).
 const RBM=(()=>{const m={};for(const l of RB.m.trim().split('\n')){const [ym,...a]=l.trim().split(' ');for(const x of a){const i=x.indexOf(':');m[ym+'-'+x.slice(0,i)]=+x.slice(i+1)}}return m})();
 const DEFAULT_MAP={'deposit':'einzahlung','profit withdrawal':'gewinnauszahlung','pf deduction':'fee','capital withdrawal':'kapitalabzug'};
-const CATS={einzahlung:'Einzahlung von Kapital',kapitalabzug:'Kapitalabzug (Auszahlung von Kapital)',gewinnauszahlung:'Gewinnauszahlung (Profit Withdrawal)',fee:'Performance Fee / Gebühr (mindert den Gewinn)',ignorieren:'Ignorieren (zählt nirgends)'};
+// Ab 0.80 (3, 4): Menütexte neu, „Ignorieren (zählt nirgends)“ wird „Noch unklar“ (unklar): zählt nirgends, sperrt aber nichts, das Tool zeigt einen Hinweis
+const CATS={einzahlung:'Einzahlung von Kapital',kapitalabzug:'Kapitalabzug',gewinnauszahlung:'Gewinnauszahlung (Profit Withdrawal)',fee:'Performance Fee / Gebühr',unklar:'Noch unklar (vorerst nicht eingerechnet)'};
+// Ab 0.80 (2): Merken und Gruppieren ohne Beträge: Zahlen im Buchungstext werden zu „…“ („Upgrade-25.68“ und „Upgrade-30.00“ → „upgrade-…“).
+// mapLabel zeigt die Art in der Schreibweise des Reports („Upgrade-…“). Die Schlüssel in DEFAULT_MAP haben keine Ziffern und bleiben gleich.
+const MAP_NUM=/\d+(?:[.,]\d+)*/g;
+function mapLabel(x){return String(x.cmt||x.type||'').trim().replace(MAP_NUM,'…')}
+function mapKey(x){return mapLabel(x).toLowerCase()}
+// Ab 0.80 (1): Reinvest bei Tag. Der Knopf „Reinvest“ bucht in derselben Sekunde zwei balance-Zeilen: „Adjust-…“ (negativ, der abgeschöpfte Gewinn)
+// und „Upgrade-…“ (positiv, derselbe Betrag × Trading Benefit). Das „-“ im Kommentar ist kein Vorzeichen, der Betrag kommt aus Profit.
+// Passt Upgrade ≈ |Adjust| × Trading Benefit des Kontos (± 0,01 USD), gilt ohne Frage: Adjust = Gewinnauszahlung, Upgrade = Einzahlung von Kapital.
+// Das geht vor eigenen Zuordnungen. Passt der Faktor nicht oder fehlt der Trading Benefit, ordnet das Tool nichts zu (die Zeilen gehen über S.map,
+// ohne Zuordnung „bitte wählen“), und bad trägt den Hinweis für die Karte „Buchungsarten“. Ein Adjust ohne Upgrade (oder umgekehrt): kein Paar, kein Hinweis.
+// RV = Zwischenspeicher, gilt für dieses S.deals und bis zum nächsten save() bzw. render().
+let RV=null,RV_D=null;
+const RV_AD=/^adjust(?![a-z])/i,RV_UP=/^upgrade(?![a-z])/i;
+function rvScan(){
+  if(RV&&RV_D===S.deals)return RV;
+  const ok={},bad={},by={};
+  for(const [k,x] of Object.entries(S.deals)){if(!x||x.type!=='balance')continue;const c=String(x.cmt||'').trim(),ad=RV_AD.test(c)&&x.prof<0,up=RV_UP.test(c)&&x.prof>0;if(!ad&&!up)continue;
+    const g=x.a+'|'+x.t;(by[g]||(by[g]={a:x.a,ad:[],up:[]}))[ad?'ad':'up'].push(k)}
+  const n2=v=>fN.format(Math.abs(v)),q=v=>String(Math.round(v*100)/100).replace('.',',');
+  for(const G of Object.values(by)){
+    if(!G.ad.length||!G.up.length)continue;
+    const f=(S.accounts[G.a]||{}).factor,used=new Set();
+    if(f>0)for(const ka of G.ad){const xa=S.deals[ka],ku=G.up.find(u=>!used.has(u)&&Math.abs(S.deals[u].prof+xa.prof*f)<=0.0100001);if(ku){used.add(ku);ok[ka]='gewinnauszahlung';ok[ku]='einzahlung'}}
+    const ra=G.ad.filter(k=>!ok[k]),ru=G.up.filter(k=>!ok[k]);
+    for(let i=0;i<Math.min(ra.length,ru.length);i++){const xa=S.deals[ra[i]],xu=S.deals[ru[i]];
+      const h=f>0?`Upgrade ${n2(xu.prof)} ÷ Adjust ${n2(xa.prof)} = ${q(xu.prof/-xa.prof)}, eingestellt ist ${facT(f)}.`:'Trading Benefit für dieses Konto fehlt.';
+      bad[ra[i]]=h;bad[ru[i]]=h}
+  }
+  RV={ok,bad};RV_D=S.deals;return RV;
+}
 // Ab 0.77 (Teil 2): Fassung des Hinweises zur Steuer (#taxack-modal). Ändert sich sein Text, Zahl erhöhen: Dann fragt das Tool alle wieder,
 // die eine ältere Fassung bestätigt haben (S.ui.taxAck). Hier oben, weil render() es braucht.
 const TAX_DISC_V=1;
 function blank(){return {v:1,accounts:{},deals:{},map:{},rates:{},tag:{},cx:[],wallets:['Meine Wallet'],defCoin:'USDC',rsrc:{},rown:{},tagDrop:[],tagSame:{},tagSkip:[],tagBatch:0,cxKeep:[],wbal:{},pfOk:[],wtx:{},addr:{},cxNo:0,tok:{},wign:{},cardFee:{},bxOpen:{},tagMeth:{},rcov:{load:'',file:''},ui:{tab:'reports',wFlt:{range:'all',from:'',to:''},rAuto:true,rtUsed:true,yTax:null,other:'',opt:false,flt:{range:'all',from:'',to:'',off:[],pf:'ex',cur:'eur',nocw:false,zeroDays:true},graf:{what:'period',res:'week',kind:'bar',unit:'amt',wd:'sum',avg:false},calc:{inv:'',dur:'12',unit:'m',own:'',tax:'',reinv:false,taxOn:false},unit:'pct'}}}
 let S=blank();
 try{const raw=localStorage.getItem(KEY); if(raw){S=Object.assign(blank(),JSON.parse(raw));}}catch(e){}
-function fixState(){const b=blank();for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','tagSame','tagSkip','tagBatch','cxKeep','wbal','pfOk','wtx','addr','cxNo','tok','wign','cardFee','bxOpen','tagMeth'])if(S[k]==null||typeof S[k]!==typeof b[k])S[k]=b[k];
+function fixState(){const b=blank();RV=null;
+  // Ab 0.80 (2, 3): gespeicherte Zuordnungen auf Schlüssel ohne Beträge umstellen, „ignorieren“ wird „unklar“. Treffen zwei alte Schlüssel auf einen neuen:
+  // eine echte Bedeutung geht vor „unklar“, zwei verschiedene echte werden „unklar“ (sichtbar in „Buchungsarten“, nichts ändert sich still)
+  if(!S.map||typeof S.map!=='object'||Array.isArray(S.map))S.map={};
+  {const M={};for(const [k,v0] of Object.entries(S.map)){const v=v0==='ignorieren'?'unklar':v0,nk=mapKey({cmt:k});if(!v)continue;const o=M[nk];
+    M[nk]=o==null||o===v||o==='unklar'?v:v==='unklar'?o:'unklar'}S.map=M}
+for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','tagSame','tagSkip','tagBatch','cxKeep','wbal','pfOk','wtx','addr','cxNo','tok','wign','cardFee','bxOpen','tagMeth'])if(S[k]==null||typeof S[k]!==typeof b[k])S[k]=b[k];
   const old=S.ui||{};S.ui=Object.assign(b.ui,old);
   // bis Version 0.14: eigener Zeitraum für die Kacheln (yStats, stFrom, stTo) → gemeinsamer Filter
   if(!old.flt||typeof old.flt!=='object'){const f={range:'all',from:'',to:'',off:[]};const y=String(old.yStats||'');if(y==='custom'){f.range='custom';f.from=old.stFrom||'';f.to=old.stTo||''}else if(/^\d{4}$/.test(y))f.range='y:'+y;S.ui.flt=f}
@@ -2160,7 +2220,7 @@ fixState();
 // der noch nicht übernommen ist.
 const modalDirty=M=>M.id==='dt-modal'?!!$('tagpaste').value.trim():M.dataset.dirty==='1';
 // Ab 0.47 (4.3): Speichern setzt nur das „geändert“ des obersten Fensters zurück (jedes Fenster merkt sich seins in data-dirty)
-function save(){try{if(MODAL)delete MODAL.dataset.dirty}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){msg('datamsg','bad','Speichern im Browser nicht möglich. Bitte regelmäßig eine Sicherung speichern.');}}
+function save(){RV=null;try{if(MODAL)delete MODAL.dataset.dirty}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){msg('datamsg','bad','Speichern im Browser nicht möglich. Bitte regelmäßig eine Sicherung speichern.');}}
 
 /* ---------------- Hilfen ---------------- */
 const $=id=>document.getElementById(id);
@@ -2398,12 +2458,24 @@ function bufText(buf){let enc='utf-8';if(buf[0]===0xFF&&buf[1]===0xFE)enc='utf-1
 function readText(f){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(bufText(new Uint8Array(fr.result)));fr.onerror=()=>rej(fr.error);fr.readAsArrayBuffer(f)})}
 
 /* ---------------- Buchungsarten ---------------- */
+// Ab 0.80 (1, 2): erkannte Reinvest-Paare zuerst (rvScan), dann eigene Zuordnung und eingebaute über den Schlüssel ohne Beträge (mapKey)
 function catOf(x){
   if(x.type==='buy'||x.type==='sell')return /out/.test(x.dir)?'close':'open';
-  const k=(x.cmt||x.type).toLowerCase().trim();
-  return S.map[k]||DEFAULT_MAP[k]||null;
+  const p=rvScan().ok[x.a+':'+x.id];if(p)return p;
+  const k=mapKey(x),v=S.map[k]||DEFAULT_MAP[k]||null;
+  return v==='ignorieren'?'unklar':v;
 }
-function unknownKinds(){const m={};for(const x of Object.values(S.deals)){if(catOf(x)===null){const k=(x.cmt||x.type).toLowerCase().trim();(m[k]=m[k]||{label:x.cmt||x.type,n:0,sum:0,ex:x});m[k].n++;m[k].sum+=x.prof}}return m}
+// Ab 0.80 (4): Inhalt der Karte „Buchungsarten“ je Schlüssel: unbekannte Buchungen (cat null) und Buchungen mit eigener Zuordnung (S.map).
+// Nicht dabei: Trades, erkannte Reinvest-Paare, Buchungen, die nur über DEFAULT_MAP zählen. ex = früheste Buchung, hints = Hinweise zum Paar.
+function mapKinds(){const m={},R=rvScan();
+  for(const [dk,x] of Object.entries(S.deals)){if(x.type==='buy'||x.type==='sell'||R.ok[dk])continue;const k=mapKey(x);
+    if(S.map[k]==null&&DEFAULT_MAP[k])continue;
+    const e=m[k]||(m[k]={k,label:mapLabel(x),n:0,sum:0,ex:x,cat:catOf(x),hints:[]});e.n++;e.sum+=x.prof;if(x.t<e.ex.t)e.ex=x;
+    const h=R.bad[dk];if(h&&!e.hints.includes(h))e.hints.push(h)}
+  return m}
+function unknownKinds(){const m={};for(const [k,e] of Object.entries(mapKinds()))if(e.cat===null)m[k]=e;return m}
+// Ab 0.80 (3): alle Buchungen „noch unklar“ (für die Hinweise oben in Auswertung und Steuer)
+function unklarDeals(){return Object.values(S.deals).filter(x=>x.type!=='buy'&&x.type!=='sell'&&catOf(x)==='unklar').sort((p,q)=>p.t<q.t?-1:p.t>q.t?1:0)}
 
 /* ---------------- Kurse ----------------
    Drei Ebenen, beim Nachschlagen zusammengeführt (RM): eigene Kurse (S.rown) < eingebaut (RBM) < geladen oder aus Datei (S.rates, beides EZB).
@@ -8693,7 +8765,7 @@ function buildXlsx(sheets,hm){
 }
 // Ab 0.77 (Teil 3): Satz über dem Blatt „Krypto“ der Excel mit allen Daten (Florians Wortlaut)
 const KR_NOTE='Gewinn/Verlust gerechnet mit gleitendem Durchschnittspreis, getrennt je Wallet und Coin. Für die Steuer kann eine andere Rechnung gelten, siehe Steuer-Excel im Reiter „Steuer“.';
-const CATN={close:'Trade geschlossen',open:'Trade eröffnet',fee:'Performance Fee/Gebühr',gewinnauszahlung:'Gewinnauszahlung',einzahlung:'Einzahlung',kapitalabzug:'Kapitalabzug',ignorieren:'ignoriert'};
+const CATN={close:'Trade geschlossen',open:'Trade eröffnet',fee:'Performance Fee/Gebühr',gewinnauszahlung:'Gewinnauszahlung',einzahlung:'Einzahlung',kapitalabzug:'Kapitalabzug',unklar:'noch unklar',ignorieren:'noch unklar'};
 // Ab 0.41: pay = Zahlungen im Zeitraum, dann der Satz zur Zahlung im Absatz Kryptowährungen
 // Ab 0.77 (Teil 3): nur neutrale Rechenannahmen, ohne Tarif, KESt, Werbungskosten, Paragraphen und „steuerneutral“ (nur in der Excel mit allen Daten).
 // o = {pay: Zahlungen mit Coins, cx: Krypto-Daten vorhanden, tb: ein Konto mit Trading Benefit}
@@ -9538,14 +9610,27 @@ $('chainmsg').addEventListener('keydown',e=>{const i=e.target.closest('[data-chi
 $('chainmsg').addEventListener('animationend',e=>{const m=e.target.closest&&e.target.closest('.msg.hl');if(m)m.classList.remove('hl')});
 $('chainmsg').addEventListener('toggle',e=>{const d=e.target.closest&&e.target.closest('[data-chd]');if(d){if(d.open)CH_OPEN.add(d.dataset.chd);else CH_OPEN.delete(d.dataset.chd)}
   const r=e.target.closest&&e.target.closest('[data-chr]');if(r){if(r.open)CHR_OPEN.add(r.dataset.chr);else CHR_OPEN.delete(r.dataset.chr)}},true);
+// Ab 0.80 (4): Karte „Buchungsarten“. Oben „bitte wählen“ (roter Rand links, sperrt Auswertung und Steuer) und „noch unklar“ (gelber Rand), darunter die
+// eigenen Zuordnungen, jede mit Menü und jederzeit änderbar. Nicht dabei: DEFAULT_MAP und erkannte Reinvest-Paare (mapKinds). Der Erklärungssatz steht nur,
+// solange etwas auf „bitte wählen“ steht. Kommt eine neue unbekannte oder unklare Art dazu, klappt die Karte einmal auf, ohne den gemerkten Zustand
+// zu ändern (S.ui.mapSeen, wie ocSeen bei „Andere Coins“). Am Handy (bis 700 px) macht das CSS aus jeder Zeile einen Block.
 function renderMap(){
-  const u=unknownKinds();const ks=Object.keys(u);
-  if(!ks.length){$('map-card').style.display='none';return}
-  $('map-card').style.display='';
-  let h=`<tr><th class="l">Buchungstext im Report</th><th>Anzahl</th><th>Summe</th><th class="l">Beispiel</th><th>Bedeutung</th></tr>`;
-  for(const k of ks){const x=u[k];h+=`<tr><td class="l"><b>${esc(x.label)}</b></td><td>${x.n}</td><td>${usd(x.sum)}</td><td class="l">${esc(x.ex.t)}, Konto ${x.ex.a}</td><td><select data-map="${esc(k)}"><option value="">bitte wählen</option>${Object.entries(CATS).map(([c,l])=>`<option value="${c}">${l}</option>`).join('')}</select></td></tr>`}
-  $('map-table').innerHTML=h;
-  $('map-table').querySelectorAll('[data-map]').forEach(s=>s.onchange=()=>{if(s.value){S.map[s.dataset.map]=s.value;save();render()}});
+  const card=$('map-card'),E=Object.values(mapKinds()),o=e=>e.cat===null?0:e.cat==='unklar'?1:2;
+  if(!E.length){card.style.display='none';return}
+  card.style.display='';
+  E.sort((a,b)=>o(a)-o(b)||(a.label.toLowerCase()<b.label.toLowerCase()?-1:1));
+  {const O=E.filter(e=>o(e)<2).map(e=>e.k).sort(),seen=S.ui.mapSeen||[],nu=O.some(k=>!seen.includes(k));if(nu)card.classList.remove('closed');if(nu||O.length!==seen.length){S.ui.mapSeen=O;save()}}
+  $('map-txt').hidden=!E.some(e=>e.cat===null);
+  const dt=x=>`${fD(dOf(x.t))} ${String(x.t).slice(11,16)}`;
+  let h=`<thead><tr><th class="l">Buchungstext im Report</th><th>Anzahl</th><th>Summe</th><th>Beispiel</th><th>Bedeutung</th></tr></thead><tbody>`;
+  for(const e of E){const x=e.ex,org=String(x.cmt||'').trim(),cls=e.cat===null?'mapr':e.cat==='unklar'?'mapy':'';
+    const opts=(e.cat===null?'<option value="" selected>bitte wählen</option>':'')+Object.entries(CATS).map(([c,l])=>`<option value="${c}"${c===e.cat?' selected':''}>${l}</option>`).join('');
+    h+=`<tr${cls?` class="${cls}"`:''}><td class="l mapl"><b>${esc(e.label)}</b>${e.hints.map(t=>`<span class="small mapw">Nicht als Reinvest erkannt: ${esc(t)}</span>`).join('')}</td>`+
+      `<td class="mapn">${fI.format(e.n)}<span class="mapm"> ${e.n===1?'Buchung':'Buchungen'}</span></td><td class="maps">${usd(e.sum)}</td>`+
+      `<td class="mapx">${dt(x)}, <span class="nw">Konto ${esc(x.a)}</span>${org&&org!==e.label?` <span class="nw">(„${esc(org)}“)</span>`:''}</td>`+
+      `<td class="mapc"><select data-map="${esc(e.k)}" aria-label="Bedeutung von ${esc(e.label)}">${opts}</select></td></tr>`}
+  $('map-table').innerHTML=h+'</tbody>';
+  $('map-table').querySelectorAll('[data-map]').forEach(s=>s.onchange=()=>{if(s.value){S.map[s.dataset.map]=s.value;save();renderKeepFocus()}});
 }
 // Daten der Buchungen (MT5 und Tag), für den Stand im Reiter Kurse
 function bookRange(){let mn='',mx='';const f=d=>{if(!mn||d<mn)mn=d;if(d>mx)mx=d};for(const x of Object.values(S.deals))f(dOf(x.t));for(const t of Object.values(S.tag))f(tagD(t));return [mn,mx]}
@@ -9587,10 +9672,20 @@ function renderRates(){
 function guard(id){
   const st=status();const parts=[];
   if(!Object.keys(S.accounts).length)parts.push('Lade zuerst im Reiter „Reports“ deine MT5-Reports.');
-  else if(st.unk)parts.push(`Im Reiter „Reports“ sind noch ${st.unk} Buchungsart(en) offen.`);
-  $(id).innerHTML=parts.length?`<div class="card"><div class="msg warn">${parts.join('<br>')}</div></div>`:'';
+  else if(st.unk)parts.push(`Im Reiter „Reports“ ${st.unk===1?'ist':'sind'} in „Buchungsarten“ noch ${st.unk} ${st.unk===1?'Buchungsart':'Buchungsarten'} offen. <button type="button" class="zlink" data-mapgo>Zu den Buchungsarten</button>`);
+  // Ab 0.80 (3): Buchungen „noch unklar“ sperren nichts, oben steht dann ein Hinweis (unklarH)
+  $(id).innerHTML=parts.length?`<div class="card"><div class="msg warn">${parts.join('<br>')}</div></div>`:unklarH(id==='tax-guard');
   return !parts.length;
 }
+// Ab 0.80 (3): Hinweis oben in Auswertung und Steuer, solange es Buchungen „noch unklar“ gibt: Anzahl, Betrag, Datum, Konto, Link zur Karte.
+// Im Reiter Steuer zusätzlich „Sag das deiner Steuerberatung.“ Nicht in Zusammenfassung und Steuer-Excel. Mit „Ohne Steuer“ ohne das Wort Steuer.
+function unklarH(tax){const L=unklarDeals();if(!L.length)return '';
+  const n=L.length,sum=L.reduce((s,x)=>s+x.prof,0),sg=v=>(v>0?'+':'')+usd(v),d1=fD(dOf(L[0].t)),d2=fD(dOf(L[n-1].t)),A=[...new Set(L.map(x=>x.a))].sort();
+  const when=d1===d2?`am ${d1}`:`vom ${d1} bis ${d2}`,acc=A.length===1?`Konto ${esc(A[0])}`:`Konten ${esc(and2(A))}`;
+  const t=(n===1?`1 Buchung ist noch unklar: ${sg(sum)} ${when}, ${acc}. Sie ist nicht eingerechnet.`:`${fI.format(n)} Buchungen sind noch unklar: zusammen ${sg(sum)}, ${when}, ${acc}. Sie sind nicht eingerechnet.`)+
+    (S.ui.country==='none'?' Investition und Ergebnis können daher abweichen.':' Investition, Ergebnis und Steuer können daher abweichen.')+(tax?' Sag das deiner Steuerberatung.':'');
+  return `<div class="card"><p class="sigl y" style="margin:0">${t} <button type="button" class="zlink" data-mapgo>Zu den Buchungsarten</button></p></div>`}
+for(const id of ['stats-guard','tax-guard'])$(id).addEventListener('click',e=>{if(e.target.closest('[data-mapgo]'))goTo('reports','map-card')});
 function yearOptions(sel,ys,withAll,cur){
   sel.innerHTML=(withAll?'<option value="all">Gesamter Zeitraum</option>':'')+ys.map(y=>`<option value="${y}">${y}</option>`).join('');
   sel.value=(cur&&(cur==='all'?withAll:ys.includes(cur)))?cur:(withAll?'all':ys[ys.length-1]);
@@ -9965,6 +10060,8 @@ const GL={
   bankfx:{t:'Ein- und Auszahlungen per Bank',h:'Tag tauscht Euro sofort in USD. Dieser Tausch selbst ist kein Krypto-Vorgang.\nUngeklärt ist, ob ein Kursgewinn auf das USD-Guthaben steuerpflichtig ist, wenn es später wieder in Euro zurückgetauscht wird. Das Tool berechnet das nicht. Wenn du per Bank einzahlst, kläre das mit deiner Steuerberatung.\nDen Euro-Betrag trägst du bei der Zeile mit ✎ ein („Euro laut Kontoauszug“). Ohne Angabe rechnet das Tool mit dem EZB-Kurs und markiert den Wert als geschätzt.'},
   wabgl:{t:'Abgleich',h:'✓: Der Bestand laut deinen Einträgen passt zur Wallet-Datei bzw. zu dem Stand, den du aus deiner App eingetragen hast. Ein Unterschied unter 0,01 zählt nicht.\n✗: Es gibt einen Unterschied. Fahre mit der Maus über das ✗, dann siehst du ihn mit Richtung. Ein Klick öffnet „Kontostände prüfen“ bei dieser Zeile.\n„–“: Es gibt nichts zum Vergleichen.'},
   'k-real':{t:'Dein echtes Geld',h:'Was du bei Tag eingezahlt und ausgezahlt hast und was dein Geld seit Start gebracht hat.'},
+  // Ab 0.80 (4): (i) der Karte „Buchungsarten“, Wortlaut von Florian
+  'k-buchungsarten':{t:'Buchungsarten',h:'Jede Buchung im MT5-Report, die kein Trade ist, braucht eine Bedeutung. Danach rechnet das Tool:\n• Einzahlung von Kapital (z. B. Deposit, Reinvestition): Geld, das auf dein MT5-Konto kommt, mit Trading Benefit. Die Investition steigt um Betrag ÷ Trading Benefit. Das ist kein Gewinn.\n• Kapitalabzug: Du nimmst eingesetztes Geld wieder vom Konto, zum Beispiel wenn du ein Konto verkleinerst oder auflöst. Die Investition sinkt. Das ist kein Verlust.\n• Gewinnauszahlung (Profit Withdrawal): Du hebst Gewinn vom MT5-Konto ab. Ergebnis und Investition bleiben gleich. Versteuert werden die Trades, nicht die Auszahlung.\n• Performance Fee / Gebühr (z. B. PF Deduction): Sie mindert deinen Gewinn. Ob sie auch die Steuer mindert, hängt vom Land ab. Das steht im Reiter Steuer.\n• Noch unklar: Die Buchung zählt vorerst nirgends, und das Tool zeigt einen Hinweis. Ordne sie zu, sobald du weißt, was sie ist.'},
   'k-konten':{t:'Deine Konten',h:'Alle Konten aus deinen Reports. Wähle bei jedem den Trading Benefit und, wenn du möchtest, einen Namen.'},
   'k-kurse':{t:'Wechselkurse',h:`Ohne Kurse funktioniert die Auswertung in USD vollständig. Für Euro und für die Steuer braucht das Tool den Kurs jedes Tages, an dem du eine Buchung hast. Es rechnet jede Buchung mit dem Referenzkurs der Europäischen Zentralbank (EZB) vom Tag der Buchung um. An Wochenenden und Feiertagen gilt der letzte Kurs davor.
 <b>Woher die Kurse kommen:</b> Eingebaut sind die EZB-Kurse ab 2023 bis zum Stand dieser Version (${fD(RB.stand)}). Neuere holt das Tool von selbst aus dem Internet, sobald sie fehlen (Häkchen „Fehlende Kurse automatisch laden“), oder mit „Kurse laden“: direkt von der EZB, und wenn sie nicht antwortet, vom Dienst Frankfurter, der die EZB-Kurse unverändert weitergibt. Wenn du nicht willst, dass das Tool ins Internet geht, nimmst du dort das Häkchen weg und liest die Datei der EZB ein. Fehlt ein Kurs trotzdem, trägst du ihn von Hand ein.
@@ -10122,7 +10219,7 @@ ${ECB_CITE}`},
 <b>Datei:</b> aus der Datei der EZB, die du eingelesen hast.
 <b>Von Hand:</b> von dir eingetragen.
 <b>Rangfolge:</b> Geladene Kurse und Kurse aus der Datei gehen vor eingebauten. Eigene Kurse gelten nur für Tage ohne EZB-Kurs. Kommt für so einen Tag später ein EZB-Kurs, ersetzt er deinen.`},
-  tb:{t:'Trading Benefit',h:'Bei Tag auch „Amplifier“ genannt. Tag vervielfacht dein eingezahltes Geld im MT5: Bei ×24 stehen 100 USD als 2.400 USD da. Gewinne, Performance Fee und Gewinnauszahlungen sind nicht vervielfacht.\n<b>So findest du ihn:</b> Im Tag-Portal CopyX → Follower Hub → Strategies, dort „Balance“ geteilt durch „Invested“. Nicht verwechseln mit der Spalte „Multiplier“, die ist etwas anderes.\n×1 heißt: kein Trading Benefit. Die Steuerzahlen hängen nicht davon ab, nur Investition und Rendite.\n<b>Anderer Wert:</b> Wähle „andere Zahl …“ und gib ihn ein, z. B. 12,5. Mit „für alle ▾“ im Spaltenkopf trägst du einen Wert für mehrere Konten ein.'},
+  tb:{t:'Trading Benefit',h:'Bei Tag auch „Amplifier“ genannt. Tag vervielfacht dein eingezahltes Geld im MT5: Bei ×24 stehen 100 USD als 2.400 USD da. Gewinne und Performance Fee sind nicht vervielfacht.\n<b>So findest du ihn:</b> Im Tag-Portal CopyX → Follower Hub → Strategies, dort „Balance“ geteilt durch „Invested“. Nicht verwechseln mit der Spalte „Multiplier“, die ist etwas anderes.\n×1 heißt: kein Trading Benefit. Die Steuerzahlen hängen nicht davon ab, nur Investition und Rendite.\n<b>Anderer Wert:</b> Wähle „andere Zahl …“ und gib ihn ein, z. B. 12,5. Mit „für alle ▾“ im Spaltenkopf trägst du einen Wert für mehrere Konten ein.'},
   invk:{t:'Investition',h:'Das Geld, das du selbst in dieses Konto eingesetzt hast, in USD: Einzahlungen geteilt durch den Trading Benefit. Es sollte genau mit „Invested“ im Tag-Portal übereinstimmen (CopyX → Follower Hub → Strategies). Weicht es ab, stimmt wahrscheinlich der Trading Benefit nicht.'},
   repvom:{t:'Report vom',h:'Das Datum, an dem du den Report in MT5 gespeichert hast. Das Tool kennt die Buchungen nach diesem Datum noch nicht. Für aktuelle Zahlen speichere den Report neu und lade ihn hier.'},
   abgl:{t:'Abgleich',h:'Das Tool zählt alle Buchungen zusammen, die es aus dem Report gelesen hat, und vergleicht sie mit den Summen am Ende des Reports: Kommission, Gebühr, Swap und Gewinn aus der Summenzeile der Buchungen, deinen letzten Kontostand mit dem Kontostand dort, dazu „Nettogewinn gesamt“ (bis auf Rundung) und die Zahl der Trades. Geprüft wird der zuletzt geladene Report.\n<b>✓ stimmt:</b> Alles wurde vollständig gelesen.\n<b>⚠ Abweichung:</b> Darunter steht die Zeile, die nicht passt, mit dem gelesenen Wert und dem Wert im Report. Das Tool hat den Report vielleicht nicht ganz richtig gelesen. Speichere ihn frisch aus MT5 und lade ihn hier noch einmal. Bleibt die Warnung, stimmen die Zahlen dieses Kontos vielleicht nicht. Schreibe mir dann bitte an florian@weltenwandel.at.'},
@@ -11199,7 +11296,7 @@ function renderTaxDECx(y){
 // Ab 0.77 (Teil 3): ohne Spalte „Steuerrelevant“, wie die Excel mit allen Daten ohne Steuerbezug
 function csv(rows,name){
   const head=['Konto','Name','Zeitpunkt (Server)','Datum','Art','Symbol','Gewinn/Betrag (Kontowährung)','Kosten (Kommission, Swap, Gebühr)','Summe (Kontowährung)','Kurs (USD je EUR)','Summe EUR','Trade-Nr.','Kommentar'];
-  const nameOf={close:'Trade geschlossen',open:'Trade eröffnet',fee:'Performance Fee/Gebühr',gewinnauszahlung:'Gewinnauszahlung',einzahlung:'Einzahlung',kapitalabzug:'Kapitalabzug',ignorieren:'ignoriert'};
+  const nameOf={close:'Trade geschlossen',open:'Trade eröffnet',fee:'Performance Fee/Gebühr',gewinnauszahlung:'Gewinnauszahlung',einzahlung:'Einzahlung',kapitalabzug:'Kapitalabzug',unklar:'noch unklar',ignorieren:'noch unklar'};
   const n2=v=>isNaN(v)?'':String(Math.round(v*1e6)/1e6).replace('.',',');
   const lines=[head.join(';')];
   for(const r of rows){const A=S.accounts[r.a]||{};
@@ -11228,7 +11325,7 @@ function scrollAnchor(){
 }
 function keepAnchor(a){if(!a||a.tab!==S.ui.tab||a.el.offsetParent===null)return;const d=a.el.getBoundingClientRect().top-a.top;if(Math.abs(d)>0.5)window.scrollBy(0,d)}
 function render(){
-  const anc=scrollAnchor();
+  RV=null;const anc=scrollAnchor();
   const st=status();renderTabs(st);const rows=enrich();addAnalysis(rows);
   window.__rows=rows;renderAccounts(rows);renderChain();renderMap();renderNext();renderGuideBtns();renderRates();renderRateList();renderWallet();
   if(S.ui.tab==='stats')renderStats(rows);else renderFbar(false);
@@ -11473,7 +11570,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.79',VDATE='03.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.80',VDATE='04.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -11933,7 +12030,7 @@ function renderNext(){
     const here=tab==='reports',nx=(t,b,go)=>`<div class="card"><p style="margin:0 0 10px"><b>Als Nächstes:</b> ${t}</p><button type="button" class="btn primary" data-go="${go}">${b}</button></div>`;
     let h='';
     if(!has)h='';
-    else if(unk)h=nx(`Sage ${here?'oben':'im Reiter „Reports“'} bei den unbekannten Buchungsarten, was sie bedeuten.`,'Zu den Buchungsarten','reports|map-card');
+    else if(unk)h=nx(`Sage ${here?'oben':'im Reiter „Reports“'} in „Buchungsarten“, was die neuen Buchungen bedeuten.`,'Zu den Buchungsarten','reports|map-card');
     else if(st[2]!=='ok')h=nx('Wähle bei jedem Konto den Trading Benefit.','Zu „Deine Konten“','reports|acc-card');
     else h=`<div class="row" style="justify-content:flex-end;margin:0 0 ${st[3]!=='ok'?4:16}px"><button type="button" class="btn primary" data-go="stats|">Weiter zur Auswertung →</button></div>`+
       (st[3]!=='ok'?`<p class="small" style="text-align:right;margin:0 0 16px">Für Euro und Steuer: <button type="button" class="zlink" data-rl="nx-${tab}">Kurse laden</button></p><div id="nx-${tab}"></div>`:'');

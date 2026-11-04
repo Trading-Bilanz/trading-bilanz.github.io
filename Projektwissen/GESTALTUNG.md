@@ -2,7 +2,7 @@
 
 Diese Regeln gelten für jede Runde. Claude liest die Datei vor jeder Runde und ergänzt sie, wenn Florian eine neue Regel festlegt.
 
-Stand: 0.78 (03.11.2026)
+Stand: 0.80 (04.11.2026)
 
 ## 0. Aufbau wie in der Auswertung, überall
 **Reiter Auswertung als Referenz:** Der Reiter „Auswertung“ ist fertig und gilt als Vorlage für alle anderen Reiter. Würde ein Auftrag dort etwas ändern, frag vorher nach, außer Florian nennt den Reiter ausdrücklich.
@@ -33,7 +33,7 @@ Stand: 0.78 (03.11.2026)
     - „So lassen“ (Rest, fehlender Einkauf, alte Tag-Wallet, doppelt): in „Noch offen“ am Ende von „Alle Punkte“ immer „Mit ‚So lassen‘ erledigt (n)“, auch bei 0, aufklappbar, je Punkt ein Satz und „Wieder anzeigen“.
     - „Menge stimmt“ (Bitvavo-Gebühr, ab 0.72 Nachtrag 3): an derselben Stelle und mitgezählt, aber als graue Zeile „Bitvavo-Gebühr vom TT.MM.JJJJ: als geprüft markiert“ mit dem grauen Knopf „zurücknehmen“.
 13. **Karten zuklappen (ab 0.50):** Ein Klick auf den Titel klappt eine Karte nur, wenn Drücken und Loslassen der Maus beide auf dem Titel waren (nicht in einem Feld, Knopf, Menü oder Begriff) und dabei kein Text markiert wurde. Gilt für alle Karten, auch in der Auswertung.
-14. **Pflichtfelder (Reiter Wallet, ab 0.51, Florians Regel):** Gilt im ganzen Reiter Wallet und in allen Fenstern, die von dort aufgehen („＋ Daten“, „Noch offen“, Formulare, „Wallets“, Fenster der Tag-Zeile, „Kontostände prüfen“, Menü der Gegenseite, „+ Neue Wallet …“). Andere Reiter bleiben, wie sie sind (bewusst: Trading Benefit, unbekannte Buchungsarten, Notlösung „Invested“, Kurse von Hand, Zeitraum „Individuell“, Rechner).
+14. **Pflichtfelder (Reiter Wallet, ab 0.51, Florians Regel):** Gilt im ganzen Reiter Wallet und in allen Fenstern, die von dort aufgehen („＋ Daten“, „Noch offen“, Formulare, „Wallets“, Fenster der Tag-Zeile, „Kontostände prüfen“, Menü der Gegenseite, „+ Neue Wallet …“). Andere Reiter bleiben, wie sie sind (bewusst: Trading Benefit, Karte „Buchungsarten“, Notlösung „Invested“, Kurse von Hand, Zeitraum „Individuell“, Rechner).
     - Der Hauptknopf („Übernehmen“, „Zuordnen und weiter“, „Speichern“, „Eintragen“, „Adresse merken“, „Wallet hinzufügen“, OK bei „+ Neue Wallet …“ und „Fremd …“) ist nie gesperrt, nur weil etwas fehlt. Er bleibt blau und klickbar.
     - Ein Klick prüft. Jedes fehlende oder ungültige Feld bekommt einen sanften roten Rand (`--sig-r`, leichter Schein) und leuchtet einmal kurz auf (bei `prefers-reduced-motion` nur der Rand). Gruppen (z. B. Radios) bekommen den Rahmen außen herum.
     - Direkt unter dem ersten Feld steht ein kurzer Satz, was fehlt (`--sig-r-txt`), z. B. „Gib der Börse einen Namen.“, „Wähle die Wallet zu dieser Adresse.“, „Wähle das Netzwerk dieser Datei.“, „Entscheide, was diese Zeile ist.“, „Gib der neuen Wallet einen Namen.“. Steht schon ein Satz unter dem Formular („Es fehlt: …“, Meldung im Fenster „Wallets“, in der Tag-Zeile, in „Kontostände prüfen“, bei der Kartengebühr), bleibt er, und die Felder werden nur markiert. Toasts für fehlende Namen gibt es nicht mehr.
@@ -57,7 +57,7 @@ Technik (0.46):
 - Fenster: ein gemeinsamer Weg zum Schließen (× in der festen Kopfzeile, Esc, Klick daneben). Fenster mit Eingaben merken „geändert“ (`MODAL_DIRTY`), dann fragt ein Klick daneben nach.
 
 ## 1. Tabellen
-- **Handy (ab 0.50, Regel 1):** Am Handy bleiben Tabellen Tabellen. Blöcke ‚Bezeichnung: Wert‘ gibt es nur dort, wo Florian sie ausdrücklich festgelegt hat. Bisher: ‚Eingelesene Dateien‘ und die Tag-Vorschau.
+- **Handy (ab 0.50, Regel 1):** Am Handy bleiben Tabellen Tabellen. Blöcke ‚Bezeichnung: Wert‘ gibt es nur dort, wo Florian sie ausdrücklich festgelegt hat. Bisher: ‚Eingelesene Dateien‘, die Tag-Vorschau und ab 0.80 die Karte „Buchungsarten“ (Abschnitt 16).
 - Alle Tabellen sehen aus wie in „Auswertung“: gleiche Kopfzeile (Farbe, Schrift, Größe, Hintergrund).
 - Spaltenköpfe und Inhalte sind zentriert. Nur die erste Spalte steht links.
 - Überschrift und Spaltenköpfe bleiben beim Scrollen stehen (sticky). Technik wie in der Auswertung: Karte mit `stk`, Titel in `.sthd`, Spaltenköpfe als Kopie (`hcFix`, `HC_CARDS`). Ein Wrapper mit `overflow` verhindert sonst sticky. Ab 0.54 haben alle Karten im Reiter Wallet und in seinen Fenstern einen stehenden Titel, auch „Rechenwege“ (Klick klappt zu, auch von unten) und „Token“.
@@ -415,3 +415,13 @@ Sie heißen „… ↗“ und sagen, dass sie eine Webseite außerhalb des Tools
 - **Ein Platzhalter stimmt immer:** „leer = …“ steht nur da, wenn das Tool bei leerem Feld wirklich so rechnet.
 - **„optional“** statt „freiwillig“ in Platzhaltern und in den Vorschauen beim Einlesen (ab 0.75 Nachtrag 1).
 - **„Weiß ich nicht“:** Das Feld daneben ist nie gesperrt. Tippt man einen Wert oder wählt ein Datum, geht das Häkchen weg. Setzt man das Häkchen, wird das Feld geleert. Eine Funktion für alle Paare (`unkPair`, `data-unk`).
+
+## 16. Buchungsarten (ab 0.80, Florians Regeln)
+- **Karte „Buchungsarten“** (bis 0.79 „Unbekannte Buchungsarten“ über „Deine Konten“) steht direkt unter „Deine Konten“. Titel mit (i) (`k-buchungsarten`, Wortlaut von Florian), Titel steht beim Scrollen **nicht** fest (keine `stk`/`.sthd`), Auf- und Zuklappen wie jede Karte, gemerkt in `S.ui.fold`.
+- **Sichtbar,** sobald es unbekannte Buchungen gibt oder eigene Zuordnungen (`S.map`), zu denen noch Buchungen da sind. Wer nie eine unbekannte Buchung hatte, sieht sie nie. Nicht darin: eingebaute Zuordnungen (`DEFAULT_MAP`) und erkannte Reinvest-Paare.
+- **Inhalt:** oben „bitte wählen“ (roter Rand links, sperrt Auswertung und Steuer), dann „noch unklar“ (gelber Rand), darunter die eigenen Zuordnungen, jede mit Menü, jederzeit änderbar (speichert und rechnet neu). Am PC Tabelle Buchungstext · Anzahl · Summe · Beispiel · Bedeutung; Beispiel im Format des Tools „02.11.2026 20:09, Konto 70106506“, weicht der Text vom Namen der Art ab, dahinter („Upgrade-25.68“). Am Handy (bis 700 px) ein Block je Art: fett die Art, „1 Buchung · 25,68 USD“, Beispiel, Menü über die ganze Breite.
+- **Zuklappen:** Vorgabe zu. Kommt eine neue unbekannte oder „noch unklare“ Art dazu, klappt sie einmal auf, ohne den gemerkten Zustand zu ändern (`S.ui.mapSeen`, wie „Andere Coins“).
+- **Erklärungssatz** („Das Tool kennt diese Buchungen noch nicht. … oder wähle „Noch unklar“.“) steht direkt in der Karte, aber nur, solange etwas auf „bitte wählen“ steht (sonst stimmt „Erst danach …“ nicht).
+- **Menütexte:** „Einzahlung von Kapital“, „Kapitalabzug“, „Gewinnauszahlung (Profit Withdrawal)“, „Performance Fee / Gebühr“, „Noch unklar (vorerst nicht eingerechnet)“. In Excel und CSV heißt die Art „noch unklar“.
+- **„Noch unklar“** zählt nirgends, sperrt aber nichts. Solange es solche Buchungen gibt, steht oben in Auswertung und Steuer ein Satz mit gelbem Rand (`.sigl.y`): „1 Buchung ist noch unklar: +25,68 USD am 02.11.2026, Konto 70106506. Sie ist nicht eingerechnet. Investition, Ergebnis und Steuer können daher abweichen.“ (mehrere: „3 Buchungen sind noch unklar: zusammen …, vom … bis …“), im Reiter Steuer dazu „Sag das deiner Steuerberatung.“, am Ende der Link „Zu den Buchungsarten“. Bei „Ohne Steuer“ „Investition und Ergebnis können daher abweichen.“ Nicht in Zusammenfassung und Steuer-Excel.
+- **Reinvest** erkennt das Tool ohne Frage (STAND Abschnitt 3); ist der Faktor falsch oder fehlt, steht in der Zeile „Nicht als Reinvest erkannt: …“ mit den Zahlen.
