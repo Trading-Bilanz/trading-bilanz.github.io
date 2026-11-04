@@ -334,7 +334,7 @@ button.zlink{border:0;background:none;padding:0;font:inherit;cursor:pointer}
 #wbar.on{display:block}
 #wbar .fin{max-width:1180px;margin:0 auto;padding:5px 16px;display:flex;gap:8px;align-items:center;flex-wrap:nowrap}
 /* Ab 0.44: Leiste „Zeitraum · Wallets · ＋ Daten · Noch offen · Land“ in einer Zeile; Stufen wählt fitWbar (#wbar[data-st]) */
-#wbar .wbb,#wbar #fdd-ld{flex:none}
+#wbar .wbb{flex:none}
 #wbar.meas .fdd,#wbar.meas .fsel{flex:none!important;max-width:none!important}#wbar.meas .fsel .ft{white-space:nowrap!important}
 #wbar[data-st] .fsel .ft{white-space:nowrap}
 #wbar .wbn{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--accent);color:var(--on-mid);font-size:12px;font-weight:700}
@@ -540,8 +540,6 @@ html.mlock body{padding-right:var(--sbw,0px)}
 .wfd ul{margin:4px 0;padding-left:20px}
 .wfc{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin:6px 0}
 .wfc .btn{text-align:left;white-space:normal}
-.wfdec{border:1px solid var(--line);border-radius:var(--radius);padding:6px 10px;margin:2px 0;text-align:left}
-.wfdec .row{margin:4px 0;align-items:center}
 /* Ab 0.40: Reiter Wallet neu geordnet (Überblick, Noch offen, Daten einlesen, Details) */
 .wsw{gap:8px;margin:8px 0 4px}
 .wsw .btn[aria-expanded="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
@@ -695,10 +693,7 @@ button.dtt.dtk{display:flex;flex-direction:column;justify-content:space-between;
 .dtk .dtfo{display:flex;align-items:center;gap:6px;min-width:0}
 .dtk .dtts{overflow-wrap:normal;word-break:normal}
 #wf-adv{border-left:3px solid var(--line);padding:8px 12px;margin:8px 0}#wf-adv[hidden]{display:none}#wf-adv p{margin:0 0 8px}
-/* Ab 0.45: zwei Wege beim ersten Start, Bereich „Von Hand eintragen“, „Gerade eingetragen“ */
-.dtw{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}
-button.dtt.dtwb{grid-template-columns:1fr;grid-template-areas:"t" "s";padding:16px;gap:4px}
-@media(max-width:560px){.dtw{grid-template-columns:1fr}}
+/* Ab 0.45: Bereich „Von Hand eintragen“, „Gerade eingetragen“ */
 .dhl{padding-left:22px}.dhl>li{margin:12px 0}.dhl .row{margin-top:6px}
 details.dhc{margin:4px 0}details.dhc summary{cursor:pointer;color:var(--accent)}
 #cx-sess{flex:1 0 100%;max-height:26vh;overflow:auto;margin:-4px 0 2px}#cx-sess[hidden]{display:none}#cx-sess p{margin:0}#cx-sess ul.cxsl{margin:2px 0;padding-left:18px}#cx-sess li{margin:2px 0}
@@ -744,9 +739,6 @@ button.dtt{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"d t"
 button.dtt .dot{grid-area:d}button.dtt .dttt{grid-area:t;font-weight:600;overflow-wrap:anywhere}button.dtt .dtts{grid-area:s}
 button.dtt.on{border-color:var(--accent);background:var(--accent-soft)}
 .dtsm{margin:6px 0 2px}
-.dtbar{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin:2px 0 8px}
-.dtbar span{display:block;height:100%;background:var(--accent);border-radius:999px}
-.dtgt{margin:4px 0 8px}
 #dt-panes>.wpan{margin-top:8px}
 .bxd{margin:6px 0}.bxd .fopt{display:inline-flex;margin-right:14px;padding:3px 0}
 /* Ab 0.44: feste Knopfleiste unten in jedem Fenster (Inhalt scrollt darüber). Stellvertreter-Knöpfe in „＋ Daten“: das Original ist versteckt. */
@@ -816,8 +808,6 @@ mark{background:var(--mark,#ffe58a);color:inherit;border-radius:2px}
 #t-tok th,#t-tok td{padding:6px 6px;white-space:normal;vertical-align:middle}
 #t-tok td.l{text-align:left}
 #t-tok .btn{padding:2px 8px}
-.wpay .row{align-items:center}
-.wpay input.wpct{width:6ch}
 .wftk{margin:8px 0}
 .wfn{overflow-wrap:anywhere}
 .wftk p{margin:2px 0}
@@ -1066,15 +1056,6 @@ a.url{overflow-wrap:anywhere}
 .qr svg{width:100%;height:100%;display:block}
 .chk-ok{color:var(--pos);font-weight:600}.chk-bad{color:var(--neg);font-weight:600}
 kbd{display:inline-block;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;background:var(--bg);padding:1px 6px;font:12px/1.4 ui-monospace,Consolas,monospace}
-.cphelp{margin:6px 0}
-.cphelp .now{padding:8px 10px;background:var(--accent-soft);border-radius:8px;font-size:14px}
-.cphelp details{margin-top:6px}
-.cphelp summary{font-size:var(--fs-s);font-weight:600}
-.cphelp ul{margin:6px 0;padding-left:20px;font-size:var(--fs-s);color:var(--ink2)}
-.cphelp ul li{margin:4px 0}
-.cphelp .now ol.steps{margin:4px 0 0}
-.cphelp .now p{margin:4px 0}
-.cphelp .ow{font-size:var(--fs-s);color:var(--ink2);margin:6px 0 0}
 details.more summary{font-size:var(--fs-s);font-weight:600;color:var(--accent)}
 details.more .hint{margin-top:6px}
 .card.fold>h2,.card.fold>.sthd>h2,.card.fold>.sthd>h4{cursor:pointer;user-select:none}
@@ -1292,7 +1273,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
        Sichtbar mit unbekannten Buchungen oder eigenen Zuordnungen mit Buchungen (renderMap). Vorgabe zugeklappt, gemerkt in S.ui.fold -->
   <div class="card fold closed" data-fold="map-card" id="map-card" style="display:none">
     <h2 class="hx">Buchungsarten <button type="button" class="ib" data-gl="k-buchungsarten" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Buchungsarten">i</button></h2>
-    <p class="hint" id="map-txt">Das Tool kennt diese Buchungen noch nicht. Sage einmal, was sie bedeuten; das Tool merkt es sich. Erst danach zeigt das Tool Auswertung und Steuer. Unsicher, was eine Buchung bedeutet? Schaue beim Beispiel-Datum im MT5-Report nach, frage den Support deines Brokers oder wähle „Noch unklar“.</p>
+    <p class="hint" id="map-txt">Das Tool kennt diese Buchungen noch nicht. Sage einmal, was sie bedeuten. Das Tool merkt es sich. Erst danach zeigt das Tool Auswertung und Steuer. Unsicher, was eine Buchung bedeutet? Schaue beim Beispiel-Datum im MT5-Report nach, frage den Support deines Brokers oder wähle „Noch unklar“.</p>
     <table id="map-table"></table>
   </div>
   <div id="next-reports" class="noprint"></div>
@@ -1373,7 +1354,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <!-- Ab 0.44: Titelzeile „Alle Vorgänge · Filter · Einfach | Alle Einzelheiten · Suche“; Wallets und „+ Eintrag“ stehen in der Leiste bzw. in „＋ Daten“ -->
     <div class="row vgfoc noprint" id="vg-focus"></div>
     <div id="cxmsg2"></div>
-    <p class="small" id="cx-empty" style="display:none">Noch keine Einträge. Mit „+ Eintrag“ trägst du Käufe, Geschenke, Verkäufe, Überträge und Tausch ein.</p>
+    <p class="small" id="cx-empty" style="display:none">Noch keine Einträge. Unter „＋ Daten“ → „Von Hand“ trägst du Käufe, Geschenke, Verkäufe, Überträge und Tausch ein.</p>
     <div class="vgl" id="vg-list" data-wbox="d"></div>
     <!-- Ab 0.45 (4.6): Summe dessen, was der Filter zeigt -->
     <p class="vgsum" id="vg-sum"></p>
@@ -1490,7 +1471,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <div class="disc" id="tax-disc"><span id="disc-line"></span> <a href="#" id="disc-more">Mehr lesen</a><div id="disc-full" style="display:none;margin-top:8px"><p><b>Wichtiger Hinweis</b></p>
 <p>Dieses Tool berechnet deine Trading-Ergebnisse aus deinen MT5-Reports: Gewinne, Verluste, Gebühren und die Umrechnung in Euro. Diese Rechnung ist nachvollziehbar und lässt sich mit deinem Report vergleichen.</p>
 <p>Die steuerlichen Angaben zu Trading und Krypto (Kennzahlen, Steuersätze, Einordnung, Hinweise) habe ich mit Hilfe von KI recherchiert. Ich bin kein Steuerberater und kenne mich mit Steuern nicht aus. Ich übernehme keine Verantwortung und keine Gewähr dafür, dass diese Angaben richtig, vollständig oder aktuell sind.</p>
-<p>Lass deine Steuerzahlen von einer Steuerberaterin oder dem Finanzamt prüfen, bevor du sie verwendest. Dieses Tool ist keine Steuerberatung.</p></div></div>
+<p>Lass deine Steuerzahlen von einer Steuerberatung oder dem Finanzamt prüfen, bevor du sie verwendest. Dieses Tool ist keine Steuerberatung.</p></div></div>
   <div class="yearsel noprint"><label for="yr-tax"><b>Steuerjahr</b></label><select id="yr-tax"></select>
       <button class="btn primary" id="btn-printsum">Zusammenfassung für die Steuerberatung</button>
       <button class="btn" id="btn-xlsxyear">Excel für dieses Jahr</button>
@@ -1531,7 +1512,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
         <li>Nachweise zu Ein- und Auszahlungen (Tag Wallet, Börse, Wallet).</li>
         <li>Aufbewahrung: 7 Jahre.</li>
       </ul>
-      <p class="small">Abgabe der Steuererklärung über FinanzOnline in der Regel bis 30. Juni des Folgejahres. Keine Steuerberatung: Die Einordnung beruht auf öffentlich zugänglichen Informationen (Stand 2026). Kläre deine Situation vor der Abgabe mit einer Steuerberaterin oder dem Finanzamt.</p>
+      <p class="small">Abgabe der Steuererklärung über FinanzOnline in der Regel bis 30. Juni des Folgejahres. Keine Steuerberatung: Die Einordnung beruht auf öffentlich zugänglichen Informationen (Stand 2026). Kläre deine Situation vor der Abgabe mit deiner Steuerberatung oder dem Finanzamt.</p>
     </div>
     <div class="card fold stk" data-fold="tx-not" id="tx-not">
       <div class="sthd"><h2 class="hx">Was das Tool nicht rechnet <button type="button" class="ib" data-gl="k-taxnot" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Was das Tool nicht rechnet">i</button></h2></div>
@@ -1560,7 +1541,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <div class="card fold stk" data-fold="de-docs" id="de-docs">
       <div class="sthd"><h2 class="hx">Unterlagen aufheben <button type="button" class="ib" data-gl="k-taxdocs" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Unterlagen aufheben">i</button></h2></div>
       <ul><li>Die MT5-Reports aller Konten für das ganze Jahr (HTML-Dateien).</li><li>Die Zusammenfassung als PDF und die Excel-Datei.</li><li>Nachweise zu Ein- und Auszahlungen.</li></ul>
-      <p class="small">Wer Kapitalerträge ohne Steuerabzug hat, muss sie in der Steuererklärung angeben. Keine Steuerberatung: Kläre deine Situation mit einer Steuerberaterin oder dem Finanzamt.</p>
+      <p class="small">Wer Kapitalerträge ohne Steuerabzug hat, muss sie in der Steuererklärung angeben. Keine Steuerberatung: Kläre deine Situation mit deiner Steuerberatung oder dem Finanzamt.</p>
     </div>
     <div class="card fold stk" data-fold="de-not" id="de-not">
       <div class="sthd"><h2 class="hx">Was das Tool nicht rechnet <button type="button" class="ib" data-gl="k-taxnot" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Was das Tool nicht rechnet">i</button></h2></div>
@@ -1673,7 +1654,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <div class="modal noprint" id="taxack-modal"><div class="box" role="alertdialog" aria-modal="true" aria-labelledby="taxack-t" aria-describedby="taxack-b">
   <h2 id="taxack-t">Wichtiger Hinweis zur Steuer</h2>
   <div class="disc" id="taxack-b"><p>Die steuerlichen Angaben zu Trading und Krypto (Kennzahlen, Steuersätze, Einordnung, Hinweise) habe ich mit Hilfe von KI recherchiert. Ich bin kein Steuerberater und kenne mich mit Steuern nicht aus. Ich übernehme keine Verantwortung und keine Gewähr dafür, dass diese Angaben richtig, vollständig oder aktuell sind.</p>
-  <p>Lass deine Steuerzahlen von einer Steuerberaterin oder dem Finanzamt prüfen, bevor du sie verwendest. <b>Dieses Tool ist keine Steuerberatung.</b></p></div>
+  <p>Lass deine Steuerzahlen von einer Steuerberatung oder dem Finanzamt prüfen, bevor du sie verwendest. <b>Dieses Tool ist keine Steuerberatung.</b></p></div>
   <div class="row" style="justify-content:flex-end"><button type="button" class="btn" id="btn-taxack-no">Lieber ohne Steuer weitermachen</button><button type="button" class="btn primary" id="btn-taxack-ok">Verstanden: keine Steuerberatung</button></div>
 </div></div>
 <div class="modal" id="don-modal"><div class="box">
@@ -1872,7 +1853,6 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
      gewählte Bereich (DT.pane). Beim ersten Öffnen des Reiters Wallet ohne Daten geführt (Schritt n von 4). Unten eine feste Knopfleiste (dtFoot). -->
 <div class="modal noprint" id="dt-modal"><div class="box hx dtbox" role="dialog" aria-modal="true" aria-labelledby="dt-t"><button type="button" class="mx" aria-label="Schließen">×</button>
   <h2 id="dt-t">＋ Daten</h2>
-  <div id="dt-guide"></div>
   <div class="dttl" id="dt-tiles" role="group" aria-label="Datenquellen"></div>
   <p class="small dtsm"><button type="button" class="zlink" id="dt-files" aria-expanded="false" aria-controls="df-pane">Eingelesene Dateien</button></p>
   <div id="dt-panes">
@@ -2118,7 +2098,8 @@ function rvScan(){
 }
 // Ab 0.77 (Teil 2): Fassung des Hinweises zur Steuer (#taxack-modal). Ändert sich sein Text, Zahl erhöhen: Dann fragt das Tool alle wieder,
 // die eine ältere Fassung bestätigt haben (S.ui.taxAck). Hier oben, weil render() es braucht.
-const TAX_DISC_V=1;
+// Ab 0.82: Fassung 2 („von einer Steuerberatung“ statt „von einer Steuerberaterin“)
+const TAX_DISC_V=2;
 function blank(){return {v:1,accounts:{},deals:{},map:{},rates:{},tag:{},cx:[],wallets:['Meine Wallet'],defCoin:'USDC',rsrc:{},rown:{},tagDrop:[],tagSame:{},tagSkip:[],tagBatch:0,cxKeep:[],wbal:{},pfOk:[],wtx:{},addr:{},cxNo:0,tok:{},wign:{},cardFee:{},bxOpen:{},tagMeth:{},rcov:{load:'',file:''},ui:{tab:'reports',wFlt:{range:'all',from:'',to:''},rAuto:true,rtUsed:true,yTax:null,other:'',opt:false,flt:{range:'all',from:'',to:'',off:[],pf:'ex',cur:'eur',nocw:false,zeroDays:true},graf:{what:'period',res:'week',kind:'bar',unit:'amt',wd:'sum',avg:false},calc:{inv:'',dur:'12',unit:'m',own:'',tax:'',reinv:false,taxOn:false},unit:'pct'}}}
 let S=blank();
 try{const raw=localStorage.getItem(KEY); if(raw){S=Object.assign(blank(),JSON.parse(raw));}}catch(e){}
@@ -2225,7 +2206,7 @@ fixState();
 // der noch nicht übernommen ist.
 const modalDirty=M=>M.id==='dt-modal'?!!$('tagpaste').value.trim():M.dataset.dirty==='1';
 // Ab 0.47 (4.3): Speichern setzt nur das „geändert“ des obersten Fensters zurück (jedes Fenster merkt sich seins in data-dirty)
-function save(){RV=null;try{if(MODAL)delete MODAL.dataset.dirty}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){msg('datamsg','bad','Speichern im Browser nicht möglich. Bitte regelmäßig eine Sicherung speichern.');}}
+function save(){RV=null;try{if(MODAL)delete MODAL.dataset.dirty}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){msg('datamsg','bad','Speichern im Browser nicht möglich. Speichere regelmäßig eine Sicherung.');}}
 
 /* ---------------- Hilfen ---------------- */
 const $=id=>document.getElementById(id);
@@ -2291,22 +2272,6 @@ function detectOS(){
   return 'win';
 }
 const OS=detectOS();
-const CP_FLOW={
-  win:'In die Liste klicken, dann <kbd>Strg</kbd>+<kbd>A</kbd> (alles markieren) und <kbd>Strg</kbd>+<kbd>C</kbd> (kopieren). Danach unten ins Feld klicken und mit <kbd>Strg</kbd>+<kbd>V</kbd> einfügen (oder Rechtsklick → „Einfügen“), und auf „Übernehmen“ klicken.',
-  mac:'In die Liste klicken, dann <kbd>⌘ Cmd</kbd>+<kbd>A</kbd> (alles markieren) und <kbd>⌘ Cmd</kbd>+<kbd>C</kbd> (kopieren). Danach unten ins Feld klicken und mit <kbd>⌘ Cmd</kbd>+<kbd>V</kbd> einfügen (oder Rechtsklick → „Einfügen“), und auf „Übernehmen“ klicken.',
-  mobile:'In die Liste tippen, lange drücken und „Alles auswählen“, dann „Kopieren“ wählen. Danach unten ins Feld tippen, lange drücken und „Einfügen“ wählen, und auf „Übernehmen“ tippen.',
-  mouse:'Mit gedrückter linker Maustaste über die Liste ziehen, oder Menü „Bearbeiten → Alles auswählen“ (in Firefox auch per Rechtsklick, in Chrome und Vivaldi nicht). Dann Rechtsklick (am Mac: Klick mit zwei Fingern oder ctrl-Klick) → „Kopieren“. Unten ins Feld klicken, Rechtsklick → „Einfügen“, und auf „Übernehmen“ klicken.'
-};
-const CP_LBL={win:'Windows',mac:'Mac',mobile:'Handy',mouse:'Mit der Maus'};
-// Hilfe nach Gerät: das erkannte Gerät oben, die anderen unter „Andere Wege“. flow/lbl = Texte und Namen je Gerät, extra = weitere Wege am Ende.
-// list = die Texte sind ganze Listen (Anleitungen), dann steht der Name darüber statt davor.
-function devHelpHTML(flow,lbl,extra,list){
-  const base=OS==='mobile'?['mobile','mac','win']:OS==='mac'?['mac','win','mobile']:['win','mac','mobile'];
-  const [first,...rest]=[...base,...(extra||[])];
-  const one=k=>list?`<b>${lbl[k]}:</b>${flow[k]}`:`<b>${lbl[k]}:</b> ${flow[k]}`;
-  return `<div class="now">${one(first)}</div><details><summary>Andere Wege</summary>${list?rest.map(k=>`<div class="ow">${one(k)}</div>`).join(''):`<ul>${rest.map(k=>`<li>${one(k)}</li>`).join('')}</ul>`}</details>`;
-}
-function copyHelpHTML(){return devHelpHTML(CP_FLOW,CP_LBL,['mouse'])}
 // Anleitungen für MetaTrader 5 (Reiter „Reports“). Mac: gleiche Menüs wie unter Windows angenommen (noch ungetestet), ohne Tastenkürzel.
 const MT5_LBL={win:'Windows',mac:'Mac',mobile:'Handy'};
 const MT5_PC='<p>Das geht nur am Computer. MetaTrader 5 am Handy und im Browser kann keine Reports speichern.</p>';
@@ -2357,7 +2322,6 @@ function pasteKeyHTML(){
   return OS==='mobile'?'im Feld lange drücken, dann „Einfügen“':OS==='mac'?'<kbd>⌘ Cmd</kbd>+<kbd>V</kbd>':'<kbd>Strg</kbd>+<kbd>V</kbd>';
 }
 function initDeviceHelp(){
-  document.querySelectorAll('[data-cphelp]').forEach(el=>el.innerHTML=copyHelpHTML());
   $('gc-body').innerHTML=guideHTML('gc',MT5_CONNECT);$('gs-body').innerHTML=guideHTML('gs',MT5_SAVE);$('gt-body').innerHTML=guideHTML('gt',{win:tagGuide('win'),mac:tagGuide('mac'),mobile:tagGuide('mobile')});
   const tpl=$('tagpaste-l');if(tpl)tpl.innerHTML=`<b>Hier einfügen:</b> <span class="small">(${pasteKeyHTML()}, oder im Feld Rechtsklick → „Einfügen“)</span>`;
   const mob=OS==='mobile';
@@ -2573,7 +2537,7 @@ let RATE_BUSY=false;
 async function loadRates(extra){
   if(RATE_BUSY)return null;
   const mr=missingRates(),need=[...mr.days,...mr.prov];if(extra)need.push(extra);
-  if(!Object.keys(S.deals).length&&!Object.keys(S.tag).length&&!extra){const m={type:'warn',text:'Lade zuerst im Reiter „Reports“ deine Reports.'};msg('ratemsg',m.type,m.text);return m}
+  if(!Object.keys(S.deals).length&&!Object.keys(S.tag).length&&!extra){const m={type:'warn',text:'Lade zuerst im Reiter „Reports“ deine MT5-Reports.'};msg('ratemsg',m.type,m.text);return m}
   const start=need.length?need.sort()[0]:rateCov(),from=addDays(start,-10),now=new Date(),mx=localDay(now);
   RATE_BUSY=true;$('ratestatus').textContent='lade …';
   rateIdx();const had=RM;let got=0,nw=0,rep=0,src='',today=false;
@@ -2618,7 +2582,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-rl],[data-
    (eurofxref-hist.zip, entpackt im Browser), die entpackte eurofxref-hist.csv oder eine CSV aus dem EZB-Datenportal bzw. der Daten-API
    (TIME_PERIOD, OBS_VALUE), gelesen von parseRateCsv. Nur USD je EUR. */
 const RATEFILE_MSG='In dieser Datei hat das Tool keine USD-Kurse gefunden. Gemeint ist die Datei, die du auf der Seite der EZB mit „Download XML (SDMX)“ herunterlädst.';
-const UNZIP_MSG='Bitte die ZIP-Datei entpacken und die CSV-Datei einlesen.';
+const UNZIP_MSG='Entpacke die ZIP-Datei und lies die CSV-Datei ein.';
 async function unzipCsv(b){
   const dv=new DataView(b.buffer,b.byteOffset,b.byteLength),td=new TextDecoder();let e=b.length-22;
   while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;if(e<0)throw new Error('Die ZIP-Datei ist beschädigt. '+UNZIP_MSG);
@@ -2932,7 +2896,7 @@ function nyData(rows,y){const out=[];
 function nyNotes(rows,y){
   const land=S.ui.country==='DE'?'Deutschland':'Österreich',out=[];
   for(const {Y,a,b,sum} of nyData(rows,y)){const loc=t=>'23'+t.slice(2);
-    out.push(`Am 01.01.${Y} ${a===b?`um ${a} Uhr`:`zwischen ${a} und ${b} Uhr`} (Zeit des Brokers, Zypern) gibt es Buchungen mit zusammen ${fE.format(sum)}. In ${land} war es da ${a===b?`${loc(a)} Uhr`:`zwischen ${loc(a)} und ${loc(b)} Uhr`} am 31.12.${Y-1}. Diese Buchungen könnten ${Y===+y?`steuerlich ins Jahr ${Y-1} gehören`:'noch zu diesem Jahr gehören'}. Bitte mit der Steuerberatung klären.`)}
+    out.push(`Am 01.01.${Y} ${a===b?`um ${a} Uhr`:`zwischen ${a} und ${b} Uhr`} (Zeit des Brokers, Zypern) gibt es Buchungen mit zusammen ${fE.format(sum)}. In ${land} war es da ${a===b?`${loc(a)} Uhr`:`zwischen ${loc(a)} und ${loc(b)} Uhr`} am 31.12.${Y-1}. Diese Buchungen könnten ${Y===+y?`steuerlich ins Jahr ${Y-1} gehören`:'noch zu diesem Jahr gehören'}. Kläre das mit deiner Steuerberatung.`)}
   return out}
 // Performance Fee und Netto-Gewinn einer Gruppe von Zeilen in beiden Stellungen des Schalters (dazu alles aus agg()):
 // PF laut MT5: fV = gebuchte PF am Tag der Buchung, nV = Ergebnis vor PF + gebuchte PF.
@@ -4891,14 +4855,9 @@ function wOpenBal(C){const b={},B=(w,c)=>b[w+'|'+c]||(b[w+'|'+c]={in:0,out:0,n:0
   for(const [id,l] of Object.entries(wTagQ(S,C||cryptoCalc()))){const t=S.tag[id];if(!t||l.length!==1||l[0].key[0]==='m')continue;const x=B(l[0].w,t.coin);
     if(t.kind==='ein')x.out+=Math.abs(t.qty);else x.in+=Math.abs(t.qty);x.n++}
   return b}
-// Hinweis auf offene Bewegungen (Krypto-Karten der Steuer, der Knopf führt ab 0.40 zu „Noch offen“). Nicht in Zusammenfassung und Excel.
-function wOpenHint(){const n=wOpenN();if(!n)return '';
-  return `<div class="msg info noprint">${n===1?'1 Bewegung':fI.format(n)+' Bewegungen'} aus der Wallet-Datei ${n===1?'ist':'sind'} noch offen. Die Krypto-Zahlen sind erst vollständig, wenn alle entschieden sind.<div class="row"><button type="button" class="btn" data-wfgo>Zu den Bewegungen</button></div></div>`}
-document.addEventListener('click',e=>{if(e.target.closest('[data-wfgo]')){goTo('wallet','w-todo')}});
-// Ab 0.42: Einträge des Steuerjahrs, die unvollständig sind (z. B. Zahlung ohne Wert), zählen nicht mit. Hinweis nur dann (Krypto-Karten der Steuer).
-function wIncHint(y){const L=S.cx.filter(c=>c.date&&c.date.slice(0,4)===y&&cxMissing(c).length);if(!L.length)return '';
-  const val=L.every(c=>cxMissing(c).every(x=>x==='Betrag in USD'||x==='Wert in Euro')),n=L.length;
-  return `<div class="msg warn noprint">${val?(n===1?'1 Eintrag ohne Wert zählt noch nicht mit.':`${fI.format(n)} Einträge ohne Wert zählen noch nicht mit.`):(n===1?'1 unvollständiger Eintrag zählt noch nicht mit.':`${fI.format(n)} unvollständige Einträge zählen noch nicht mit.`)} Ergänze ${n===1?'ihn':'sie'} im Reiter Wallet unter „Noch offen“.<div class="row"><button type="button" class="btn" data-wfgo>Noch offen</button></div></div>`}
+// Ab 0.82: Knöpfe „Zu „Noch offen““ (Reiter Steuer) und „Noch offen“ (Meldung nach dem Einlesen einer Wallet-Datei) öffnen das Fenster „Noch offen“
+// wie der Knopf in der Leiste (bis 0.81 sprangen sie zu einer Stelle w-todo, die es nicht gibt). wOpenHint und wIncHint (seit 0.72 ohne Aufruf) sind weg.
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-wfgo]')){e.preventDefault();closeFpanel();todoOpen()}});
 // Herkunft unter „Was“ in „Woher kamen deine Coins?“ (nur wenn es Bewegungen gibt)
 function cxOrigin(c){if(!Object.keys(S.wtx).length)return '';
   const j=t=>c.wk?`<button type="button" class="zlink" data-wjm="${esc(c.wk)}">${t} ↔</button>`:t;
@@ -5333,7 +5292,7 @@ function renderBxPrev(){const box=$('bxprev');if(!BXP){box.innerHTML='';return}
   h+=`${ne?`<p class="small">${pl(ne,'Ein- oder Auszahlung in Euro','Ein- und Auszahlungen in Euro')} nicht übernommen (kein Krypto).</p>`:''}${oth.map(([c,n])=>`<p class="small">${pl(n,'Zeile','Zeilen')} ${esc(c)} nicht übernommen. ${/^ETH/.test(c)?'Das Tool rechnet ETH noch nicht.':'Das Tool rechnet nur USDC und USDT.'}</p>`).join('')}${P.open?`<p class="small">${pl(P.open,'nicht abgeschlossene Zeile','nicht abgeschlossene Zeilen')} weggelassen.</p>`:''}`;
   // Ab 0.51 (2): „Übernehmen“ nie gesperrt, der Klick markiert den fehlenden Namen
   box.innerHTML=h+`<div class="row" data-act style="margin-top:10px"><button type="button" class="btn primary" id="btn-bxsave">Übernehmen</button><button type="button" class="btn" id="btn-bxcancel">Abbrechen</button></div></div>`;needRe(box)}
-function bxSave(){const D=BXP,w=bxW();if(!D)return;if(!w)return needMark($('bxprev'),[['[data-bxn]','Gib der Börse einen Namen.']]);const plan=bvPlan(S,D.P,w,D.aw);
+function bxSave(){const D=BXP,w=bxW();if(!D)return;if(!w)return needMark($('bxprev'),[['[data-bxn]','Gib der Börse einen Namen ein, z. B. Bitvavo.']]);const plan=bvPlan(S,D.P,w,D.aw);
   // Ab 0.47 (Nachtrag 2, 7): die Datei für „Eingelesene Dateien“ merken (pre = Einträge ohne Merker der Börse vor dem Einlesen)
   const pre=new Set(S.cx.filter(c=>!c.bv).map(c=>c.id)),n0=nwSnap();
   // Ab 0.53 (B5): Punkte in „Noch offen“ vorher (Kennung und Stufe), damit die Meldung neue Punkte und neue Vorschläge an Tag-Zeilen nennt
@@ -5396,23 +5355,14 @@ const LOOK_TXT='Betrüger schicken winzige Beträge oder gefälschte Token von A
 /* ---------------- Karte „Bewegungen aus der Wallet-Datei“ ---------------- */
 // WF_OPEN = Bewegungen mit offenem Feld „Entscheiden“, WF_PAIRS = mit offener Liste „gehört zu …“ (nicht gespeichert). Ab 0.40 gibt es beides
 // in „Details“ (Schlüssel 'd:…', ab 0.43 Liste „Alle Vorgänge“ vg-list) und in „Noch offen“ (Schlüssel 't:…'), jeweils für sich. Der Behälter trägt data-wbox.
+// Ab 0.82: Das Feld „Entscheiden“ (wStH, wDecHTML: „Was ist das?“, „Adresse … merken als“, „Rückbuchung von meiner Krypto-Karte?“) ist weg, es war nicht mehr
+// zu sehen. „Gehört zu einem Eintrag“ in „Noch offen“ nutzt die Liste wPairsList direkt.
 const WF_OPEN=new Set(),WF_PAIRS=new Set();
-const WF_KINDS={in:['kauf','eingang','hatte','tauschein','rueckerst','uebertrag'],out:['verkauf','bezahlung','weg','verloren','tauschaus','gebuehr','uebertrag'],zw:['uebertrag']};
-const WF_KN=k=>k==='uebertrag'?'Übertrag (zwischen deinen Wallets)':KIND[k];
 // Ab 0.40: ganze Adresse kopieren (kleiner Knopf ⧉ neben der Adresse), danach kurze Meldung unten
 const cpBtn=a=>`<button type="button" class="cpb noprint" data-cp="${esc(a)}" title="Ganze Adresse kopieren" aria-label="Adresse ${wShort(a)} kopieren">⧉</button>`;
 
 // Wallet-Spalte: eigene Seite, bei Überträgen zwischen eigenen Adressen von → nach, intern nur die eine Wallet
 const wWl=m=>m.st==='int'?esc(m.wFrom||m.wTo):m.side==='zw'?`${esc(m.wFrom)} → ${esc(m.wTo)}`:esc(wOwnW(m)||'');
-// Status-Zelle mit Sprung, Lösen, Wieder öffnen oder „Entscheiden“ (p = Behälter 'd' oder 't')
-function wStH(m,p){const K=esc(m.k),ul=`<button type="button" class="zlink" data-wa="unlink" data-k="${K}">Verknüpfung lösen</button>`;
-  if(m.st==='tag')return `<button type="button" class="zlink" data-wjt="${esc(m.ref)}">Tag ↔</button><br><span class="small">${ul}</span>`;
-  if(m.st==='cx')return `<button type="button" class="zlink" data-wjc="${m.ref}">Eintrag ↔</button><br><span class="small">${ul}</span>`;
-  if(m.st==='ign')return `ignoriert<br><button type="button" class="zlink small" data-wa="reopen" data-k="${K}">wieder öffnen</button>`;
-  if(m.st==='int'&&m.swap)return `${gl('intern','intern')}<br><span class="small">${esc(wSwapTxt(m))}</span><br><button type="button" class="zlink small" data-wa="unlink" data-k="${K}">kein Tausch</button>`;
-  if(m.st==='int'&&(m.brg||m.chain))return `${gl('intern','intern')}<br><span class="small">${esc(wBrTxt(m))}</span><br><button type="button" class="zlink small" data-wa="unlink" data-k="${K}">keine Brücke</button>`;
-  if(m.st==='int')return `${gl('intern','intern')}${m.idiff>0?`<br><span class="small">${fmtNum(m.idiff)} ${m.coin} Unterschied zwischen Aus- und Eingang</span>`:''}`;
-  return `${m.sus?gl('verdaechtig','verdächtig'):'offen'}<br><button type="button" class="btn sm" data-wa="dec" data-k="${K}" aria-expanded="${WF_OPEN.has(p+':'+m.k)}">Entscheiden</button>`}
 // Ab 0.43: die Bewegungen aus der Wallet-Datei stehen in der Liste „Alle Vorgänge“ (renderVg, vgMvH)
 // Frage zu einer offenen Bewegung (wAsk), immer sichtbar unter der Zeile
 // Ab 0.50 (3.2): Rückfragen mit Vorschlag im festen Aufbau (sugBox): „Vorschlag: …“, „Warum:“, „Wenn du übernimmst: …“, Knöpfe
@@ -5455,7 +5405,6 @@ function wAskHTML(k,m,q){const K=esc(k),b=(a,t,id,cls)=>`<button type="button" c
 const askNm=q=>!q?'':q.ty==='cx'?(q.c.kind==='uebertrag'?'Zuordnung zum Übertrag':`Zuordnung zum Eintrag „${KIND[q.c.kind]}“`):q.ty==='xin'?'Eingang eines Übertrags':['tagfix','tagmulti','tagnear'].includes(q.ty)?'Zuordnung zu Tag':q.ty==='sus'?'Ignorieren':q.ty==='pay'?'Zahlung':'';
 // Ab 0.43: wie du Ignoriertes zurückholst (neben jedem „Ignorieren“)
 const IGN_BACK='Zurückholen: in „Alle Vorgänge“ Filter → Status „ignoriert“ → „wieder öffnen“.';
-// Feld „Entscheiden“: Art wählen (öffnet das Formular), gehört zu …, Adresse merken als …, Ignorieren. p = Behälter ('d' oder 't').
 // Ab 0.45: Liste „gehört zu …“ (Tag-Zeilen, Einträge, Eingangsseiten, Überträge über dieselbe Zwischenadresse, Rückerstattung)
 function wPairsList(k,m){const K=esc(k),side=m.side||'in';let h='';
   {const w=wOwnW(m),l=wPairs(m,wTagsFree(),S.cx,side==='in'&&w?S.cx.filter(c=>c.to===w&&c.wk!==k&&xinFree(S,c,S.wtx[k])):[]).slice(0,12);
@@ -5467,21 +5416,6 @@ function wPairsList(k,m){const K=esc(k),side=m.side||'in';let h='';
         `<button type="button" class="btn" data-wa="pick" data-k="${K}" data-id="${x.x?'x':'c'}:${x.c.id}">${KIND[x.c.kind]} vom ${fD(x.c.date)}, ${fmtNum(x.c.qty)} ${x.c.coin} ${x.c.kind==='uebertrag'?`von ${esc(x.c.wallet)} nach ${esc(x.c.to)}`:`bei ${esc(x.c.wallet)}`}${x.x?' (Seite, die ankam)':''}</button>`).join('')}</div>`:
         VV?'':'<p class="small">Keine Tag-Zeile und kein Eintrag ohne Verknüpfung in 7 Tagen davor oder danach.</p>'}
   return h}
-function wDecHTML(k,m,p){const K=esc(k),side=m.side||'in',cpA=side==='in'?m.from:side==='out'?m.to:'',cpW=side==='in'?m.wFrom:side==='out'?m.wTo:'';
-  // Ab 0.45 (1.2): Gegenseite derselben Wallet ist kein Übertrag (das wäre „W → W“)
-  const pre=(cpW&&cpW!==wOwnW(m))||side==='zw'?'uebertrag':side==='out'&&wIsPay(cpA)?'bezahlung':'';
-  let h=`<div class="wfdec"><div class="row"><label>Was ist das? <select data-wkind="${K}"><option value="">bitte wählen</option>${WF_KINDS[side].map(x=>`<option value="${x}" ${x===pre?'selected':''}>${WF_KN(x)}</option>`).join('')}</select></label><button type="button" class="btn primary" data-wa="kind" data-k="${K}">Eintragen</button></div>`;
-  if(side!=='zw'){
-    h+=`<div class="row"><button type="button" class="btn" data-wa="pairs" data-k="${K}" aria-expanded="${WF_PAIRS.has(p+':'+k)}">gehört zu …</button><button type="button" class="btn" data-wa="ign" data-k="${K}">Ignorieren</button><span class="small">${IGN_BACK}</span></div>`;
-    // Ab 0.42 bei einem Eingang auch Überträge in diese Wallet, deren Eingangsseite noch frei ist (x = als Eingangsseite verknüpfen)
-    if(WF_PAIRS.has(p+':'+k))h+=wPairsList(k,m);
-    if(!cpW&&!wIsTag(cpA)&&!wIsPay(cpA))h+=`<div class="row"><span>Adresse ${wAdr(cpA)}${cpBtn(cpA)} merken als</span><select data-waw="${K}" aria-label="Wallet zu dieser Adresse">${S.wallets.filter(w=>!wProv(w)).map(w=>`<option>${esc(w)}</option>`).join('')}<option value="+">+ Neue Wallet …</option><option value="+k">+ Neue Karte …</option><option value="~pay">Kartenzahlungen (Abrechnung)</option><option value="~br" ${wIsBr(cpA)?'selected':''}>Brücke / Dienst</option></select><input type="text" data-wan="${K}" placeholder="Name der neuen Wallet" aria-label="Name der neuen Wallet" style="width:16ch;display:none"><button type="button" class="btn" data-wa="addr" data-k="${K}">Merken</button></div>
-      <p class="small">Für Adressen deiner anderen Wallets oder einer Börse, an die du Coins schickst oder von der du sie bekommst. ${gl('gegenseite','Was heißt das?')}</p>`;
-    // Ab 0.44: USDC auf Base von einer unbekannten Adresse: vielleicht eine Rückbuchung von deiner Krypto-Karte (Adresse wird dein Kartenkonto)
-    if(side==='in'&&m.net==='base'&&m.coin==='USDC'&&!S.addr[cpA]&&!wCardTok(m))h+=`<div class="row wcard"><span>${gl('rueckbuchung','Rückbuchung')} von meiner Krypto-Karte? Wallet der Karte:</span><select data-wcw="${K}" aria-label="Wallet der Karte">${S.wallets.filter(w=>!wProv(w)).map(w=>`<option ${/card|karte/i.test(w)?'selected':''}>${esc(w)}</option>`).join('')}<option value="+">+ Neue Wallet …</option><option value="+k">+ Neue Karte …</option></select><input type="text" data-wcn="${K}" placeholder="Name, z. B. Meine Karte" aria-label="Name der neuen Wallet" style="width:16ch;display:none"><button type="button" class="btn" data-wa="card" data-k="${K}">Übernehmen</button></div>
-      <p class="small">${CARD_LOAD_TXT}</p>`}
-  else h+=`<div class="row"><button type="button" class="btn" data-wa="ign" data-k="${K}">Ignorieren</button><span class="small">${IGN_BACK}</span></div>`;
-  return h+'<div class="wfdmsg"></div></div>'}
 // Adressbuch im Fenster „Wallets“ (ab 0.40 mit ⧉ und ✎). Ab 0.52 ohne eigene Bearbeitungszeile: Namen direkt, Zuordnen über „zuordnen ›“ bzw. das
 // kurze Feld an der Adresse, ✎ nur noch für „In der Liste zeigen“ und „Entfernen“.
 const wNMoves=a=>Object.values(S.wtx).filter(m=>m.from===a||m.to===a).length;
@@ -5670,7 +5604,7 @@ function addrDelClick(b){const a=b.dataset.ad,x=S.addr[a];if(!x)return;
 // Neue Wallet anlegen (für „Adresse merken als …“): Name prüfen wie im Fenster „Wallets“
 // Ab 0.70 Nachtrag 1 (1.4): kind 'karte' bei „+ Neue Karte …“ (nur für eine Wallet, die es noch nicht gab). W_NEWV = Wert einer der beiden Wahlen.
 function wNewWallet(n,kind){n=String(n||'').trim();if(!n)return null;if(!S.wallets.includes(n)){S.wallets.push(n);if(kind==='karte'){S.wmeta=S.wmeta||{};S.wmeta[n]=Object.assign({},S.wmeta[n],{kind:'karte',card:true})}}return n}
-const W_NEWV=v=>v==='+'||v==='+k',W_NEWK=v=>v==='+k'?'karte':'',W_NEED=v=>v==='+k'?'Gib der neuen Karte einen Namen.':'Gib der neuen Wallet einen Namen.',W_PH=v=>v==='+k'?'Name der neuen Karte':'Name der neuen Wallet';
+const W_NEWV=v=>v==='+'||v==='+k',W_NEWK=v=>v==='+k'?'karte':'',W_NEED=v=>v==='+k'?'Gib der neuen Karte einen Namen ein, z. B. Meine Karte.':'Gib der neuen Wallet einen Namen ein, z. B. Bix.',W_PH=v=>v==='+k'?'Name der neuen Karte':'Name der neuen Wallet';
 // Ab 0.40: Wallet umbenennen oder mit einer anderen zusammenführen (n gibt es schon). Ändert jede Stelle, die den Namen trägt.
 function wRename(o,n){if(S.w0===o)S.w0=n;
   if(S.wallets.includes(n))S.wallets=S.wallets.filter(w=>w!==o);else S.wallets=S.wallets.map(w=>w===o?n:w);
@@ -5716,7 +5650,7 @@ function renderWalletList(){const C=cryptoCalc(),nc=WL_MOB.matches?4:5;
 WL_MOB.addEventListener&&WL_MOB.addEventListener('change',()=>{if(MODAL&&MODAL.id==='wl-modal')renderWalletList()});
 // Ab 0.52 (5.2): k = gewählte Art. Art und Merker Karte speichert das Tool erst, wenn der Name gültig ist (und nach dem Ja beim Zusammenführen).
 function wlSave(i,v,k){const o=S.wallets[i],n=String(v||'').trim();
-  if(!n){msg('walletmsg','bad','Gib einen Namen ein.');return needMark($('wl-modal'),[['[data-wln]','']])}
+  if(!n){msg('walletmsg','bad','Gib der Wallet einen Namen ein, z. B. Bix.');return needMark($('wl-modal'),[['[data-wln]','']])}
   const setK=()=>{if(k==null)return;S.wmeta=S.wmeta||{};S.wmeta[o]=Object.assign({},S.wmeta[o],{kind:k,card:k==='karte'})};
   if(n===o){setK();save()}
   else{
@@ -5946,7 +5880,7 @@ function apInfoH(a,k){const x=S.addr[a]||null,A=esc(a),m=k?S.wtx[k]:null,lock=!!
     if(x&&x.own&&!x.tag&&S.wallets.includes(x.wallet))who+=`<p class="small"><button type="button" class="zlink" data-apwr="${S.wallets.indexOf(x.wallet)}">Wallet umbenennen …</button></p>`}
   return top+apAddrH(a)+who+`<div class="apcs"></div><p><button type="button" class="btn sm" data-cp="${A}">Adresse kopieren</button></p><p class="small">Nur zum Zuordnen. Wenn du Geld sendest, kopiere die Adresse immer aus der Quelle.</p>`}
 // Name speichern (Dienst: svcRename, Fremd: Name), aus dem kurzen Feld. Ab 0.54 [E1] mit „Rückgängig“
-function apNameSave(a,n){const x=S.addr[a];if(!x)return;if(x.br){svcRename(a,n);return}n=String(n||'').trim();if(x.fr){if(!n){const i=[...document.querySelectorAll('[data-apn]')].find(e=>e.dataset.apn===a&&e.isConnected);if(i)needMark(i.closest('#adpop')||i.parentNode,[[i,'Gib einen Namen ein.']]);else toast('Gib einen Namen ein.',2500);return}const snap=JSON.stringify(S);x.name=n;save();apClose();render();toastUndo(`Die Adresse heißt jetzt „${n}“.`,snap)}}
+function apNameSave(a,n){const x=S.addr[a];if(!x)return;if(x.br){svcRename(a,n);return}n=String(n||'').trim();if(x.fr){if(!n){const i=[...document.querySelectorAll('[data-apn]')].find(e=>e.dataset.apn===a&&e.isConnected);if(i)needMark(i.closest('#adpop')||i.parentNode,[[i,'Gib einen Namen ein, z. B. Anna.']]);else toast('Gib einen Namen ein, z. B. Anna.',2500);return}const snap=JSON.stringify(S);x.name=n;save();apClose();render();toastUndo(`Die Adresse heißt jetzt „${n}“.`,snap)}}
 // Knöpfe im kurzen Feld (#adpop): Umbenennen, Wallet umbenennen (Adressbuch bei dieser Wallet), OK im Namensfeld, „In der Liste zeigen“
 function apInfoAct(e,box){const sv=e.target.closest('[data-aps]');if(sv){apNameSave(sv.dataset.aps,box.querySelector('[data-apn]').value);return true}
   // Ab 0.70 Nachtrag 1 (1.7): Umbenennen direkt im kurzen Feld (vorher öffnete sich das Fenster „Adressen“, aus „Noch offen“ ohne Weg zurück)
@@ -5966,7 +5900,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches&&e.
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches&&e.target.matches('#adpop [data-apwn]')){e.preventDefault();apWlRen($('adpop'),+e.target.dataset.apwn)}});
 // Ab 0.70 Nachtrag 1 (1.7): Wallet umbenennen aus dem kurzen Feld (wlSave wie im Fenster „Adressen“, samt Rückfrage beim Zusammenführen), mit „Rückgängig“
 function apWlRen(box,i){const inp=box.querySelector('[data-apwn]'),o=S.wallets[i];if(!inp||o==null)return;const n=inp.value.trim();
-  if(!n){needMark(inp.parentNode,[[inp,'Gib einen Namen ein.']]);if(AP)apPlace();return}if(n===o){apClose(true);return}
+  if(!n){needMark(inp.parentNode,[[inp,'Gib der Wallet einen Namen ein, z. B. Bix.']]);if(AP)apPlace();return}if(n===o){apClose(true);return}
   const snap=JSON.stringify(S),had=S.wallets.includes(n);if(wlSave(i,n)===false)return;msg('walletmsg','','');apClose();toastUndo(had?`„${o}“ gehört jetzt zu „${n}“.`:`„${o}“ heißt jetzt „${n}“.`,snap)}
 function apOpen(el){if(AP&&AP.el===el){apClose(true);return}apClose();const p=$('adpop');let h='';
   // Ab 0.45 (1.4): Dienst mit Namen und Umbenennen
@@ -6013,7 +5947,7 @@ function apAssign(a,v,nm,o){o=o||{};const snap=JSON.stringify(S),nw=v==='+w'||v=
 // Ab 0.54 (1, P1): Menü „Gehört zu:“. Pfeiltasten im geschlossenen Menü merken die Wahl nur vor (Chrome und Edge unter Windows melden dabei
 // schon „change“). Angewendet wird bei Enter, beim Verlassen des Menüs oder bei einer Wahl mit der Maus. Esc stellt die vorige Wahl wieder her.
 // Bei „+ Neue Wallet …“, „+ Neue Börse …“ und „Fremd …“ erscheint darunter das Namensfeld mit OK (Enter = OK, Esc = zurück, leer = Regel 14).
-const AP_NEED={'+w':'Gib der neuen Wallet einen Namen.','+k':'Gib der neuen Karte einen Namen.','+ex':'Gib der Börse einen Namen, z. B. Bitvavo.',fr:'Gib einen Namen ein, z. B. Anna.'};
+const AP_NEED={'+w':'Gib der neuen Wallet einen Namen ein, z. B. Bix.','+k':'Gib der neuen Karte einen Namen ein, z. B. Meine Karte.','+ex':'Gib der Börse einen Namen ein, z. B. Bitvavo.',fr:'Gib einen Namen ein, z. B. Anna.'};
 const AP_PH={'+w':'Name der neuen Wallet','+k':'Name der neuen Karte','+ex':'Name, z. B. Bitvavo',fr:'Name, z. B. Anna'};
 const apNn=s=>s.closest('.apwho').querySelector('.apnn');
 function apSelGo(s){const v=s.value,cur=s.dataset.cur||'',n=apNn(s);delete s.dataset.kb;
@@ -6041,9 +5975,6 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
 // „Rückgängig“ und dem gemerkten Stand, ein späterer Klick nimmt also nie mehrere Änderungen zurück.
 function toastUndo(t,snap,after){const f=()=>{S=JSON.parse(snap);save();render();if(after)after();toast('Rückgängig gemacht.',2500)};toastAct(t,'Rückgängig',f);TOAST_U=f}
 // Klicks in „Alle Vorgänge“ (vg-list) und „Noch offen“ (wtodo): derselbe Ablauf, Felder werden im Behälter des Knopfs gesucht
-function wfChange(e){const s=e.target.closest('[data-waw],[data-wcw]');if(s){const i=s.parentNode.querySelector('[data-wan],[data-wcn]');if(i){i.style.display=W_NEWV(s.value)?'':'none';if(W_NEWV(s.value)){i.setAttribute('aria-label',W_PH(s.value));if(i.dataset.wan!=null)i.placeholder=W_PH(s.value);i.focus()}}}}
-// Ab 0.44: Satz zum Kartenkonto (Entscheiden, Was ist das?)
-const CARD_LOAD_TXT='Lade die Datei dieser Adresse (Netzwerk Base), dann erkennt das Tool Aufladungen und Kartenzahlungen.';
 function wfAct(e){
   const box=e.target.closest('[data-wbox]');if(!box)return;const p=box.dataset.wbox,Q=s=>box.querySelector(s);
   // Ab 0.45 (3.3): aus „Noch offen“ in die Liste: danach steht dort die Leiste „← Zurück zu „Noch offen““
@@ -6054,27 +5985,7 @@ function wfAct(e){
   const b=e.target.closest('[data-wa]');if(!b)return;const a=b.dataset.wa,k=b.dataset.k,m=S.wtx[k],id=b.dataset.id,P=p+':'+k,ek=CSS.escape(k);if(!m)return;
   const focus=sel=>{const r=box.querySelector(sel);if(r)r.focus()};
   const done=()=>{wSync();save();render();focus(p==='d'?`[data-wk="${ek}"] button, [data-wk="${ek}"] .zlink`:`[data-wtk="${ek}"] button`)};
-  if(a==='dec'){if(WF_OPEN.has(P))WF_OPEN.delete(P);else WF_OPEN.add(P);render();focus(`[data-wkind="${ek}"]`);return}
-  if(a==='pairs'){if(WF_PAIRS.has(P))WF_PAIRS.delete(P);else WF_PAIRS.add(P);render();focus(`[data-wa="pairs"][data-k="${ek}"]`);return}
   if(a==='tpairs'){WF_OPEN.add(P);WF_PAIRS.add(P);render();focus(`[data-wa="pairs"][data-k="${ek}"]`);return}
-  if(a==='kind'){const s=Q(`[data-wkind="${ek}"]`),kind=s&&s.value;
-    if(!kind){const x=b.closest('.wfdec').querySelector('.wfdmsg');x.innerHTML='<div class="msg warn">Wähle zuerst, was das ist.</div>';if(s)needMark(b.closest('.wfdec'),[[s,'']]);return}
-    const side=wSide(m)||'in',own=wOwnW(m)||(side==='zw'?m.wFrom:''),other=w=>S.wallets.find(x=>x!==w)||w;
-    let wallet=own,to='';
-    if(kind==='uebertrag'){if(side==='in'){to=m.wTo;wallet=m.wFrom||other(m.wTo)}else if(side==='out'){wallet=m.wFrom;to=m.wTo||other(m.wFrom)}else{wallet=m.wFrom;to=m.wTo}
-      // Ab 0.45 (1.2): nie „W → W“ vorbelegen (Gegenseite gehört zur selben Wallet): die nächste andere Wallet
-      if(wallet&&to===wallet)to=other(wallet)}
-    WF_OPEN.delete(P);openCx(null,{kind,date:m.date,wallet,to,coin:m.coin,qty:m.qty,wk:k,time:m.time});return}
-  if(a==='addr'){const s=Q(`[data-waw="${ek}"]`),n=Q(`[data-wan="${ek}"]`);
-    // Ab 0.43: auch als Kartenzahlungen (Abrechnung) oder Brücke / Dienst merken
-    if(s.value==='~pay'||s.value==='~br'){const cp=wSide(m)==='in'?m.from:m.to,to=s.value==='~pay'?'pay':'br',go=()=>{if(!addrAssign(S,cp,to,false,askCb('wfa:'+cp,go)))return;WF_OPEN.delete(P);done()};go();return}
-    const w=W_NEWV(s.value)?wNewWallet(n.value,W_NEWK(s.value)):s.value;if(!w){b.closest('.wfdec').querySelector('.wfdmsg').innerHTML=`<div class="msg warn">${s.value===''?'Wähle zuerst, wer das ist.':W_NEED(s.value)}</div>`;return}
-    // Ab 0.50 Nachtrag 6: über addrAssign (Rückfrage, wenn ein eingetragener Name verloren geht; vorher blieb er halb stehen)
-    const side=wSide(m),cp=side==='in'?m.from:m.to,go=()=>{if(!addrAssign(S,cp,w,!!(S.addr[cp]&&S.addr[cp].own),askCb('wfw:'+cp,go)))return;WF_OPEN.delete(P);done()};go();return}
-  // Ab 0.44: Rückbuchung von der Krypto-Karte: Absender wird eigene Adresse (Kartenkonto) der gewählten Wallet, ohne Datei
-  if(a==='card'){const s=Q(`[data-wcw="${ek}"]`),n=Q(`[data-wcn="${ek}"]`),w=W_NEWV(s.value)?wNewWallet(n.value,W_NEWK(s.value)):s.value;
-    if(!w){b.closest('.wfdec').querySelector('.wfdmsg').innerHTML='<div class="msg warn">Gib der neuen Wallet einen Namen.</div>';return}
-    const go=()=>{if(!addrAssign(S,m.from,w,true,askCb('wfc:'+m.from,go)))return;WF_OPEN.delete(P);done();toast(`Adresse ${wShort(m.from)} ist jetzt dein Kartenkonto in „${w}“. ${CARD_LOAD_TXT}`,6000)};go();return}
   // Ab 0.48 (2.1): aus „Noch offen“: weitere offene Beträge an dieselbe Adresse als Bündel anbieten
   if(a==='ign'){m.st='ign';m.ref='';delete m.pend;WF_OPEN.delete(P);done();return}
   if(a==='reopen'){m.st='open';done();return}
@@ -6098,7 +6009,7 @@ function wfAct(e){
 }
 // Vorbelegung des Formulars für eine Kartenzahlung (ab 0.42)
 const payPre=k=>{const m=S.wtx[k];return {kind:'bezahlung',date:m.date,wallet:m.wFrom,coin:m.coin,qty:m.qty,wk:k,time:m.time,cur:'USD'}};
-for(const id of ['vg-list','wtodo','mv-body']){$(id).addEventListener('change',wfChange);$(id).addEventListener('click',wfAct)}
+for(const id of ['vg-list','wtodo','mv-body'])$(id).addEventListener('click',wfAct)
 // Unklare Auszahlungen: gleicher Tag und Betrag, auf einer Tag-Seite öfter als auf der anderen (beide Seiten eingefügt). Je Fall eine Frage,
 // bis die Person antwortet: „verschiedene“ merkt sich S.tagSame[key], „Dieselbe“ entfernt die überzähligen (ohne Gegenstück) und merkt ihre Nummern.
 function tagAmbig(){const g={};
@@ -6113,13 +6024,11 @@ function tagAskHTML(L){
   const w=n=>({1:'einmal',2:'zweimal',3:'dreimal',4:'viermal'})[n]||n+'-mal',z=n=>({2:'zwei',3:'drei',4:'vier'})[n]||n;
   return L.map(x=>`<div class="wtd"><div class="msg info">Am ${dS(x.d)} gibt es Auszahlungen über ${usd(x.usd)}, auf einer Tag-Seite ${w(x.max)}, auf der anderen ${w(x.min)}. Sind es ${z(x.max)} verschiedene?
     <div class="row"><button type="button" class="btn" data-tgn="${esc(x.k)}">${z(x.max)[0].toUpperCase()+String(z(x.max)).slice(1)} verschiedene</button><button type="button" class="btn" data-tgs="${esc(x.k)}|${x.extra.map(esc).join(',')}">Dieselbe</button>${(t=>t?`<button type="button" class="zlink" data-wjt="${esc(t.id)}">in der Liste zeigen</button>`:'')(Object.values(S.tag).find(t=>t.kind==='aus'&&t.date+'|'+t.usd.toFixed(2)===x.k))}</div></div></div>`).join('')}
-// Ab 0.42: Kartenzahlungen. PAY_NOEST = Wallets, bei denen das Häkchen „Wert schätzen“ aus ist (nicht gespeichert, anfangs an).
 // Ab 0.50 Nachtrag 5 (W10): Rückfrage zu „Dieselbe“: Auszahlung(en), Angaben (wie beim Entfernen einer Tag-Zeile), verknüpfte Bewegungen
 function tagSameTxt(ids){const L=ids.map(id=>S.tag[id]).filter(Boolean),n=L.length,t=L[0],nm=Object.values(S.wtx).filter(m=>m.st==='tag'&&ids.includes(m.ref)).length;
-  return [n===1?`Die überzählige Auszahlung vom ${fD(t.date)} über ${usd(t.usd)} entfernen?`:`Die ${fI.format(n)} überzähligen Auszahlungen vom ${fD(t.date)} über je ${usd(t.usd)} entfernen?`,
+  return [n===1?`Die überzählige Auszahlung vom ${fD(t.date)} über ${usd(t.usd)} löschen?`:`Die ${fI.format(n)} überzähligen Auszahlungen vom ${fD(t.date)} über je ${usd(t.usd)} löschen?`,
     [tagLossTxt(tagLoss(L),n>1),nm?(n===1?'Die verknüpfte Bewegung aus der Wallet-Datei ist danach wieder offen.':`${fI.format(nm)} ${nm===1?'verknüpfte Bewegung aus einer Wallet-Datei ist':'verknüpfte Bewegungen aus Wallet-Dateien sind'} danach wieder offen.`):'',
      n===1?'Fügst du die Tag-Daten später nochmal ein, bleibt sie weg.':'Fügst du die Tag-Daten später nochmal ein, bleiben sie weg.'].filter(Boolean).join('\n')].join('\n\n')}
-const PAY_NOEST=new Set();
 function payPct(w){const e=$('wtodo').querySelector(`[data-paypct="${CSS.escape(w)}"]`),s=e?String(e.value).trim():'';if(!s)return 3;const v=parseDe(s.replace('.',','));return v>=0&&v<=50?v:NaN}
 // Ab 0.47 (2.5): Prozentfeld der Kartengebühr je Zahlung (gemerkt je Wallet in S.cardFee), „Übernehmen“ legt diese eine Zahlung an
 const payMsg=(el,t)=>{const b=el.closest('.tdsug');const m=b&&b.querySelector('.wpaymsg');if(m)m.innerHTML=t?`<div class="msg warn">${t}</div>`:''};
@@ -6131,16 +6040,11 @@ $('wtodo').addEventListener('click',e=>{
     // Ab 0.51 (2): Der Satz bleibt, das Prozentfeld wird zusätzlich markiert
     if(isNaN(v)){payMsg(p1,'Kartengebühr: Schreibe eine Zahl von 0 bis 50, z. B. 3 oder 1,5.');const f=$('wtodo').querySelector(`[data-paypct="${CSS.escape(w)}"]`);if(f)needMark(p1.closest('.tdsug')||$('wtodo'),[[f,'']]);return}
     const L=payBulk(S,[k],v,true);wSync();save();render();toast(L.length?`Zahlung angelegt, Kartengebühr ${plainDe(v)} %.`:'Nichts angelegt.',3500);return}
-  const pb=e.target.closest('[data-paybulk]');if(pb){const w=pb.dataset.paybulk,est=!PAY_NOEST.has(w),v=est?payPct(w):null;
-    if(est&&isNaN(v)){pb.closest('.wpay').querySelector('.wpaymsg').innerHTML='<div class="msg warn">Kartengebühr: Schreibe eine Zahl von 0 bis 50, z. B. 3 oder 1,5.</div>';return}
-    const CA=wCardSet(S),ks=Object.keys(S.wtx).filter(k=>{const m=S.wtx[k];return m.st==='open'&&m.wFrom===w&&wPayMv(S,m,CA)});
-    const L=payBulk(S,ks,est?v:null,true);wSync();save();render();
-    toast(`${L.length===1?'1 Zahlung':fI.format(L.length)+' Zahlungen'} angelegt${est?`, Wert geschätzt mit ${plainDe(v)} % Kartengebühr`:', ohne Wert. Trage den Kaufpreis unter „Hinweise“ mit ✎ ein'}.`,4500);return}
   const n=e.target.closest('[data-tgn]');if(n){S.tagSame[n.dataset.tgn]='n';save();render();return}
   // Ab 0.50 Nachtrag 5 (W10): „Dieselbe“ entfernt die überzähligen Tag-Zeilen erst nach einer Rückfrage mit „Sicherung speichern“
   const s=e.target.closest('[data-tgs]');if(s){const v=s.dataset.tgs,i=v.lastIndexOf('|'),k=v.slice(0,i),ids=v.slice(i+1).split(',').filter(Boolean);
     const go=()=>{for(const id of ids){delete S.tag[id];S.tagDrop.push(id)}naDrop(S,{});S.tagSame[k]='1';save();render()},L=ids.filter(id=>S.tag[id]);if(!L.length){go();return}
-    askBox({title:L.length===1?'Tag-Zeile entfernen':'Tag-Zeilen entfernen',text:tagSameTxt(L),ok:'Entfernen',danger:true,more:ASK_BK}).then(ok=>{if(ok)go()});return}
+    askBox({title:L.length===1?'Tag-Zeile löschen':'Tag-Zeilen löschen',text:tagSameTxt(L),ok:'Löschen',danger:true,more:ASK_BK}).then(ok=>{if(ok)go()});return}
   // Fehlender Einkauf: eintragen, „Hatte ich schon“ oder „So lassen“ (dann ausgeblendet, gerechnet wie bisher); unvollständiger Eintrag; Kurse
   // Ab 0.46 (3.7): „Eintragen, woher sie kamen“ öffnet ohne Vorauswahl der Art (k leer), „Hatte ich schon“ mit
   const fl=e.target.closest('[data-fill]');if(fl){const [k,d,wl,c,q]=fl.dataset.fill.split('|');endEdit();openCx(null,{kind:k,date:d,wallet:wl,coin:c,qty:+q,dir:'in'});return}
@@ -7030,7 +6934,7 @@ function renderOc(C,DEw,rg){const card=$('oc-card'),has=S.cx.some(c=>(c.kind==='
   $('oc-h').textContent=`Andere Coins (${fI.format(R.length)}${nO?`, ${fI.format(nO)} offen`:''})`;
   $('t-oc').innerHTML=`<tr><th class="l">Datum</th><th class="ocpc">Wallet</th><th>Richtung</th><th class="ocpc">Menge</th><th>Wert<span class="ocm">${gl('ocstatus','Status')}</span></th><th class="ocpc">${gl('ocstatus','Status')}</th></tr>`+(R.length?R.map(r=>{const c=r.c,w=esc(wDispW(c.wallet));
     return `<tr data-oc="${c.id}"><td class="l">${dS(c.date)}<span class="small ocm">${w}</span></td><td class="ocpc">${w}</td><td><span class="nw">${r.dir}</span><span class="small ocm">${r.q}</span></td><td class="ocpc">${r.q}</td><td><span class="ocv">${r.lab} <b class="nw">${r.val!=null&&isFinite(r.val)?fE.format(r.val):'–'}</b>${r.suf}</span><span class="small ocw">${r.woher}</span><span class="ocm">${ST(r)}</span></td><td class="ocpc">${ST(r)}</td></tr>`}).join(''):`<tr><td colspan="6" class="small">In diesem Zeitraum gibt es keinen Tausch mit anderen Coins.</td></tr>`);
-  $('oc-foot').textContent=DEw?'Gewinne und Verluste anderer Coins rechnet dieses Tool nicht.':'Gewinne und Verluste anderer Coins gehören in dieselbe Steuererklärung; dieses Tool rechnet sie nicht.';
+  $('oc-foot').textContent=DEw?'Gewinne und Verluste anderer Coins rechnet dieses Tool nicht.':'Gewinne und Verluste anderer Coins gehören in dieselbe Steuererklärung. Dieses Tool rechnet sie nicht.';
   if(!card.classList.contains('nohc'))hcFix(card)}
 document.addEventListener('click',e=>{if(!e.target.closest)return;
   const v=e.target.closest('[data-ocv]');if(v){e.preventDefault();vgJump('c:'+v.dataset.ocv);return}
@@ -7183,7 +7087,7 @@ $('vg-list').addEventListener('click',e=>{
   // Ab 0.47 (Regel 9): Rückfragen im eigenen Fenster
   const cd=e.target.closest('[data-cxd]');if(cd){const id=+cd.dataset.cxd;const run=()=>{const c=cxById(id);if(!c)return;
       // Ab 0.50 Nachtrag 5: Die Gebühr aus der Wallet-Datei geht immer mit, die Rückfrage sagt das („Diesen Übertrag löschen?“)
-      const fq=cxFeeTxt(id),q=[fq?'Diesen Übertrag löschen?':'Diesen Eintrag löschen?',[fq,c.wk?'Die Bewegung aus der Wallet-Datei ist danach ignoriert. Mit „wieder öffnen“ kannst du sie zurückholen.':''].filter(Boolean).join('\n')].filter(Boolean).join('\n\n');
+      const fq=cxFeeTxt(id),q=[fq?'Diesen Übertrag löschen?':'Diesen Eintrag löschen?',[fq,c.wk?'Die Bewegung aus der Datei ist danach „ignoriert“. Mit „wieder öffnen“ holst du sie zurück.':''].filter(Boolean).join('\n')].filter(Boolean).join('\n\n');
       if(!askOk('del:'+id,q,run,{title:'Eintrag löschen',ok:'Löschen',danger:true,more:ASK_BK}))return;
       cxDel(id);if(EDIT===id)EDIT=null;msg('cxmsg2','','');wSync();save();render()};run()}});
 // Ab 0.48 (Nachtrag 1, 1.2): „Mit Euro“ blendet die Spalten Euro und Gewinn/Verlust ein (S.ui.vgEur); ein Klick klappt die Karte nicht zu
@@ -7256,9 +7160,9 @@ $('btn-tgcancel').onclick=()=>{msg('tgmsg','','');closeModal()};
 // Ab 0.50 Nachtrag 4: „Diese Tag-Zeile entfernen?“ mit den Angaben, die verloren gehen (ohne Anzahl), und der verknüpften Bewegung.
 // Der Satz zu „Mein Geld“ nur bei einer Einzahlung.
 function tagDelTxt(t){const m=t.wk&&S.wtx[t.wk];
-  return ['Diese Tag-Zeile entfernen?',[tagLossTxt(tagLoss([t]),false),m&&m.st==='tag'&&m.ref===t.id?'Die verknüpfte Bewegung aus der Wallet-Datei ist danach wieder offen.':'',
+  return ['Diese Tag-Zeile löschen?',[tagLossTxt(tagLoss([t]),false),m&&m.st==='tag'&&m.ref===t.id?'Die verknüpfte Bewegung aus der Wallet-Datei ist danach wieder offen.':'',
     'Fügst du die Tag-Daten später nochmal ein, taucht die Zeile wieder auf.',t.kind==='ein'?'Wenn eine Einzahlung nicht dein Geld war, nimm lieber das Häkchen bei „Mein Geld“ weg.':''].filter(Boolean).join('\n')].join('\n\n')}
-$('btn-tgdel').onclick=()=>{const id=TG_ID;if(!S.tag[id]||!askOk('tgdel:'+id,tagDelTxt(S.tag[id]),reclick($('btn-tgdel')),{title:'Tag-Zeile entfernen',ok:'Entfernen',danger:true,more:ASK_BK}))return;
+$('btn-tgdel').onclick=()=>{const id=TG_ID;if(!S.tag[id]||!askOk('tgdel:'+id,tagDelTxt(S.tag[id]),reclick($('btn-tgdel')),{title:'Tag-Zeile löschen',ok:'Löschen',danger:true,more:ASK_BK}))return;
   {const act=keepActive();delete S.tag[id];naAfterDrop({},act)}wSync();save();closeModal();render()};
 // Ab 0.55 (1, 2): Woher/Wohin neu für die andere Art, Wahl, „Euro laut Kontoauszug“ und Angaben zum Geschenk bleiben (auch der gemerkte Stand v0)
 $('tg-kind').addEventListener('change',()=>{const k=$('tg-kind').value,R=$('tg-wf'),t=S.tag[TG_ID];if(!t)return;$('tg-own-l').style.display=k==='ein'?'':'none';
@@ -7280,7 +7184,7 @@ document.addEventListener('keydown',e=>{if(e.key!=='Enter'||!e.target.closest||!
 // „Noch offen“ (ab 0.40, ab 0.43 nach Wichtigkeit): Steuerlich wichtig (offene Bewegungen von oder an unbekannte Adressen, erste Lücken),
 // Vorschläge (neue Regeln: Brücke, Paar, Kette, Börse ohne Datei; dazu die bisherigen Rückfragen und Betrugsverdacht; „Alle eindeutigen
 // übernehmen“), Kartenzahlungen, Hinweise (Lücken mit „Vertippt?“, Folgen eingeklappt, Kurse, unvollständige Einträge), Kleinkram (eingeklappt).
-// Hinweise wartet der Assistent bis Schritt 4 ab (wzHold). Rückgabe {n, parts} für die Zeile im Überblick und den Zähler im Titel.
+// Rückgabe {n, parts} für die Zeile im Überblick und den Zähler im Titel.
 // Ab 0.43: Zahlen aus dem letzten Aufbau von „Noch offen“ (für den Assistenten)
 let LAST_TODO=null;
 const SUG_ASK=['tagfix','tagmulti','xin','cx','tagnear'];
@@ -7465,10 +7369,8 @@ function sugH(s,inCard){const I=esc(s.id),x=sugInfo(s);if(!x)return '';
 const plainH=h=>{const d=document.createElement('div');d.innerHTML=h;for(const x of d.querySelectorAll('.cpb'))x.remove();for(const x of d.querySelectorAll('button'))x.replaceWith(document.createTextNode(x.textContent));return d.textContent.replace(/\s+/g,' ').trim()};
 function sugPlain(x){return {d:x.d?dS(x.d)+(x.t?' '+x.t.slice(0,5):''):'',q:x.frage?plainH(x.frage):'',v:plainH(x.name+(x.kurz?', '+x.kurz:'')),w:(x.warum||[]).map(([t,h])=>(t?t+' ':'')+plainH(h)).join(' · ')}}
 // Ab 0.45 (1.12): Punkte nach Wirkung. lv 'r' = fehlt für die Steuer, 'y' = bitte prüfen, 'g' = gut zu wissen. eur = betrifft ca. (nur rot,
-// Menge ÷ EZB-Kurs des Tages, ohne Kurs der letzte bekannte), t = Zeit, h = Inhalt, kids = Folgen (grau, zählen nicht), hold = wartet im
-// geführten „＋ Daten“ bis Schritt 4, ref = Sprung in die Liste ('m:…', 't:…', 'c:…'). Rückgabe [{id, lv, kind, t, eur, h, title, ref, kids, hold}]
+// Menge ÷ EZB-Kurs des Tages, ohne Kurs der letzte bekannte), t = Zeit, h = Inhalt, kids = Folgen (grau, zählen nicht) ref = Sprung in die Liste ('m:…', 't:…', 'c:…'). Rückgabe [{id, lv, kind, t, eur, h, title, ref, kids}]
 const TD_LV={r:'Fehlt für die Steuer',y:'Bitte prüfen',g:'Gut zu wissen'};
-const TD_LVT={r:'Ohne diese Angaben stimmt die Steuer nicht.',y:'Vermutlich ein Fehler oder ein Vorschlag des Tools. Schaue es dir an.',g:'Zur Information. Du musst nichts tun.'};
 // Ab 0.48 (1.2): Unterschied d (laut Datei bzw. App minus laut Einträgen) gegen die offenen Vorgänge o ({in, out, n}): ok = ganz erklärt, rest = was bleibt
 function balWhy(d,o){const e=o?o.in-o.out:0,rest=d-e;return {ok:!!(o&&o.n)&&Math.abs(rest)<=1e-6+1e-9,rest}}
 const balN=n=>n===1?'dem offenen Vorgang':`den ${fI.format(n)} offenen Vorgängen`;
@@ -7756,7 +7658,6 @@ function todoItems(C){
       big:`Doppelt eingetragen? Der Übertrag ${esc(a.wallet)} → ${esc(a.to)} steht zweimal da.`,why:`${ln(a)} und ${ln(b)}. „einen löschen“ löscht ${b.wk||b.wkIn?'den jüngeren':'den von Hand'} (${ln(b)}).`,
       body:`<div class="row"><button type="button" class="btn" data-dupdel="${a.id}|${b.id}">einen löschen</button><button type="button" class="btn" data-dupkeep="${a.id}|${b.id}">beide behalten</button></div>`,
       li:{d:a.date,w:a.wallet,what:'doppelt?',q:fmtNum(a.qty)+' '+a.coin}})}
-  const hold=typeof wzHold==='function'&&wzHold();
   // Folgen einer Ursache von außen (EXK[Schlüssel] = graue Zeilen), auch über Überträge weiter
   const EXK={};for(const x of EXT){const L=kidsOf(x.key);if(L.length)EXK[x.key]=L}
   // Ab 0.71 (4.3, 4.5): ein Punkt je Lücke mit eigenem Rest (own); ist ein Teil Folge, nennen graue Zeilen die Ursachen und „Offen hier“ (fp)
@@ -7765,18 +7666,18 @@ function todoItems(C){
     if(od){const lb=f=>f.k==='tagaus'?'Auszahlung von Tag':f.k==='tagein'?'Einzahlung bei Tag':esc(f.label),nt=od.ins.filter(f=>!f.tm);
       const txt=nt.length?`Am ${dm(e.d)} um ${e.tm.slice(0,5)} gingen ${fN.format(-e.q)} ${e.coin} aus „${esc(e.w)}“ weg. ${nt.map(f=>`${lb(f)} (${fN.format(f.q)} ${f.coin})`).join(', ')} am selben Tag ${nt.length===1?'hat':'haben'} keine Uhrzeit, und an keiner Stelle des Tages geht es auf. Trage ${nt.length===1?'beim '+lb(nt[0]):'dort'} die Uhrzeit ein.`:
         `Am ${dm(e.d)} um ${e.tm.slice(0,5)} gingen ${fN.format(-e.q)} ${e.coin} weg, ${od.ins.map(f=>`um ${f.tm.slice(0,5)} kamen ${fN.format(f.q)} ${f.coin} an (${lb(f)})`).join(', ')}. Prüfe die Uhrzeiten.`;
-      I.push({id:'o:'+s.key,lv:'y',kind:'order',t:wSec(e.d,e.tm),eur:0,hold,ref:refOf(nt[0]||e),kids:fo,fp:fp(s),hdS:tdHdL(e.d,e.tm),big:'Vermutlich nur die Reihenfolge.',why:txt,
+      I.push({id:'o:'+s.key,lv:'y',kind:'order',t:wSec(e.d,e.tm),eur:0,ref:refOf(nt[0]||e),kids:fo,fp:fp(s),hdS:tdHdL(e.d,e.tm),big:'Vermutlich nur die Reihenfolge.',why:txt,
         body:`<div class="row">${(nt.length?nt:od.ins).map(f=>jE(f,'Zugang in der Liste zeigen')).join('')}${jE(e,'Abgang in der Liste zeigen')}</div>`,li:Object.assign(li,{what:'Reihenfolge'})});continue}
     const fill=`${e.d}|${esc(e.w)}|${e.coin}|${s.miss}`,ty=wTypo(S,s);
     if(ty){const c=ty.c;
-      I.push({id:'v:'+s.key,lv:'y',kind:'typo',t:wSec(e.d,etm(e)),eur:0,hold,ref:'c:'+c.id,kids:fo,fp:fp(s),hdS:tdHdL(c.date,c.time),
+      I.push({id:'v:'+s.key,lv:'y',kind:'typo',t:wSec(e.d,etm(e)),eur:0,ref:'c:'+c.id,kids:fo,fp:fp(s),hdS:tdHdL(c.date,c.time),
         big:`Vertippt? Vielleicht ${fN.format(ty.sug)} statt ${fN.format(ty.self?c.qty:c.qtyIn>0&&c.kind==='uebertrag'?c.qtyIn:c.qty)}.`,
         why:ty.self?`${esc(KIND[c.kind]||c.kind)} am ${dm(c.date)}: ${fN.format(c.qty)} ${c.coin}. Laut deinen Einträgen lagen dort nur ${fN.format(s.have)} ${e.coin}.`:`${esc(KIND[c.kind]||c.kind)} am ${dm(c.date)}: ${fN.format(c.qtyIn>0&&c.kind==='uebertrag'?c.qtyIn:c.qty)} ${c.coin}. ${ty.same?'Am selben Tag':`Am ${dm(e.d)}`} gingen ${fN.format(ty.out)} weg, es fehlen ${fN.format(s.miss)}.`,
         body:`<div class="row"><button type="button" class="btn primary" data-cxe2="${c.id}">✎ ${esc(KIND[c.kind]||'Eintrag')} prüfen</button></div>`,
         alt:`<button type="button" class="btn sm" data-fill="|${fill}">Eintragen, woher sie kamen</button><button type="button" class="btn sm" data-fill="hatte|${fill}">Hatte ich schon</button><button type="button" class="btn sm" data-keep="${esc(s.key)}">So lassen</button>`,
         li:Object.assign(li,{what:'vertippt?'})});continue}
     // Ab 0.47 (2.3): sachlich, was fehlt und was das Tool ohne die Angabe macht; darunter die Erklärung in einer Zeile; Formular gleich offen
-    I.push({id:'g:'+s.key,lv:'r',kind:'gap',t:wSec(e.d,etm(e)),eur:tdEur(own,e.d),hold,ref:refOf(e),kids:fo,fp:fp(s),ar:{t:wSec(e.d,etm(e)||'12:00:00'),self:refOf(e),w:e.w},
+    I.push({id:'g:'+s.key,lv:'r',kind:'gap',t:wSec(e.d,etm(e)),eur:tdEur(own,e.d),ref:refOf(e),kids:fo,fp:fp(s),ar:{t:wSec(e.d,etm(e)||'12:00:00'),self:refOf(e),w:e.w},
       hdS:tdHdL(e.d,etm(e)),big:`Für ${fN.format(s.miss)} ${e.coin} aus ${esc(e.w)} fehlt der Einkauf. Ohne ihn rechnet das Tool diesen Teil ohne Gewinn oder Verlust.`,why:`${gapTxt(s)} ${gl('cxmiss','Was heißt das?')}`,
       form:{pre:{kind:'',date:e.d,wallet:e.w,coin:e.coin,qty:+s.miss.toFixed(8),dir:'in'}},
       alt:`<button type="button" class="btn sm" data-tdhatte>Hatte ich schon</button><button type="button" class="btn sm" data-keep="${esc(s.key)}">So lassen</button>`,li:Object.assign(li,{what:'Einkauf nicht bekannt'})})}
@@ -7798,25 +7699,25 @@ function todoItems(C){
    for(const t of TQ)I.push(tq(t,'r',false));
    for(const t of Object.values(S.tag))if(tagSilent(t)&&!twIds.has(t.id))I.push(tq(t,'y',true))}
   for(const c of S.cx){const ms=cxMissing(c);if(!ms.length)continue;
-    I.push({id:'i:'+c.id,lv:'r',kind:'inc',valOnly:ms.every(m=>/^(Wert in Euro|Betrag in USD)$/.test(m)),t:c.date?wSec(c.date,c.time||''):0,eur:tdEur(c.qty,c.date),hold,ref:'c:'+c.id,
+    I.push({id:'i:'+c.id,lv:'r',kind:'inc',valOnly:ms.every(m=>/^(Wert in Euro|Betrag in USD)$/.test(m)),t:c.date?wSec(c.date,c.time||''):0,eur:tdEur(c.qty,c.date),ref:'c:'+c.id,
       hdS:tdHdL(c.date,c.time),big:`Eintrag „${esc(KIND[c.kind]||c.kind)}“${c.qty>0?`, ${fmtNum(c.qty)} ${c.coin}`:''}: Es fehlt ${esc(ms.join(', '))}.`,why:'Ohne diese Angabe zählt der Eintrag nicht in der Rechnung.',form:{id:c.id},
       li:{d:c.date,w:c.wallet,what:'Angabe fehlt',q:c.qty>0?fmtNum(c.qty)+' '+c.coin:''}})}
-  for(const c of S.cx.filter(payOld))I.push({id:'b:'+c.id,lv:'y',kind:'payold',t:wSec(c.date,c.time||''),eur:0,hold,ref:'c:'+c.id,hdS:tdHdL(c.date,c.time),
+  for(const c of S.cx.filter(payOld))I.push({id:'b:'+c.id,lv:'y',kind:'payold',t:wSec(c.date,c.time||''),eur:0,ref:'c:'+c.id,hdS:tdHdL(c.date,c.time),
     big:`Zahlung, ${fmtNum(c.qty)} ${c.coin}: Der Wert ist mit dem Tageswert der Coins geschätzt.`,why:'Neu gilt der Kaufpreis bzw. der abgebuchte Betrag minus Gebühr. Prüfe den Wert.',form:{id:c.id},
     alt:`<button type="button" class="btn sm" data-estok="${c.id}">Passt so</button>`,li:{d:c.date,w:c.wallet,what:'Wert prüfen',q:fmtNum(c.qty)+' '+c.coin}});
   // Ab 0.72 Nachtrag 2 (2): Bitvavo-Kaufgebühr in einer anderen Währung als Euro steht nur in der Notiz und zählt nicht. Gelber Punkt, bis „Menge stimmt“ (c.bvFeeOk). Ab Nachtrag 3 zurücknehmbar (keepItems).
   for(const c of S.cx){const m=!c.bvFeeOk&&bvFeeM(c);if(!m)continue;
-    I.push({id:'bf:'+c.id,lv:'y',kind:'bvfee',t:c.date?wSec(c.date,c.time||''):0,eur:0,hold,ref:'c:'+c.id,hdS:tdHdL(c.date,c.time),
+    I.push({id:'bf:'+c.id,lv:'y',kind:'bvfee',t:c.date?wSec(c.date,c.time||''):0,eur:0,ref:'c:'+c.id,hdS:tdHdL(c.date,c.time),
       big:`Bitvavo: Gebühr von ${esc(m[1])} ${esc(m[2])} beim Kauf am ${fD(c.date)}.`,why:'Das Tool rechnet sie noch nicht. Prüfe, ob die Menge in deiner Wallet stimmt.',
       alt:`<button type="button" class="btn sm" data-bvfeeok="${c.id}">Menge stimmt</button>`,li:{d:c.date,w:c.wallet,what:'Gebühr prüfen',q:esc(m[1])+' '+esc(m[2])}})}
   // Ab 0.74 (2.4): Ersatzwert in Österreich: gelber Punkt, bis ein echter Wert eingetragen ist oder „Ersatzwert bestätigen“ (c.eOk, zurücknehmbar in keepItems)
   for(const c of S.cx){if(!cxSwOpen(c)||cxMissing(c).length)continue;
-    I.push({id:'es:'+c.id,lv:'y',kind:'swapest',t:c.date?wSec(c.date,c.time||''):0,eur:0,hold,ref:'c:'+c.id,hdS:tdHdL(c.date,c.time),
+    I.push({id:'es:'+c.id,lv:'y',kind:'swapest',t:c.date?wSec(c.date,c.time||''):0,eur:0,ref:'c:'+c.id,hdS:tdHdL(c.date,c.time),
       big:`Aus ${esc(c.other)} getauscht am ${fD(c.date)}: Einkaufswert fehlt.`,why:`Das Tool rechnet mit einem ${gl('ersatzwert','Ersatzwert')}: dem Wert deiner ${esc(c.coin)} am Tausch-Tag. In Österreich zählt, was dich die ${esc(c.other)} damals gekostet haben. Der Ersatzwert kann zu hoch oder zu niedrig sein.`,
       body:`<p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#tausch" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p><div class="row"><button type="button" class="btn primary" data-cxe2="${c.id}">Einkaufswert eintragen</button><button type="button" class="btn" data-eok="${c.id}">Ersatzwert bestätigen</button></div>`,li:{d:c.date,w:c.wallet,what:'Einkaufswert prüfen',q:fmtNum(c.qty)+' '+c.coin}})}
   // Ab 0.74 (Nachtrag Landwechsel): Der eigene Wert stammt aus dem anderen Land. Kein „So lassen“, sonst bliebe der Fehler unbemerkt.
   for(const c of S.cx){if(!cxSwLand(c)||cxMissing(c).length)continue;const T=landTx(c.evL,cxLand(),[c.coin],1);
-    I.push({id:'el:'+c.id,lv:'y',kind:'swapland',t:c.date?wSec(c.date,c.time||''):0,eur:0,hold,ref:'c:'+c.id,hdS:tdHdL(c.date,c.time),
+    I.push({id:'el:'+c.id,lv:'y',kind:'swapland',t:c.date?wSec(c.date,c.time||''):0,eur:0,ref:'c:'+c.id,hdS:tdHdL(c.date,c.time),
       big:`Aus ${esc(c.other)} getauscht am ${fD(c.date)}: Wert stammt aus ${c.evL==='DE'?'Deutschland':'Österreich'}, bitte prüfen.`,why:`${T.statt} ${T.dauer}`,
       body:`<div class="row"><button type="button" class="btn primary" data-cxe2="${c.id}">Eintrag bearbeiten</button></div>`,li:{d:c.date,w:c.wallet,what:'Wert prüfen',q:fmtNum(c.qty)+' '+c.coin}})}
   // Ab 0.45 (5.2): Wallet mit Kartenguthaben (WUSD) ohne Angabe: Ist das deine Karte?
@@ -7842,7 +7743,7 @@ function todoItems(C){
   // Ab 0.47 (2.8): Rest bei Wallets ohne eigene Datei (z. B. Börse), bisher ein Satz im Überblick
   // Ab 0.47 (Nachtrag 2, 4): „So lassen“ merkt diesen Rest (Wallet, Coin, Menge) in S.cxKeep, der Punkt kommt für ihn nicht wieder
   const restK=r=>'rest|'+r.w+'|'+r.coin+'|'+r.q;
-  if(!hold)for(const r of wRest(S,C.pots).filter(r=>!S.cxKeep.includes(restK(r))))I.push({id:'r:'+r.w+'|'+r.coin,lv:'y',kind:'rest',t:0,eur:0,ref:'',big:`Rest bei ${esc(r.w)}: ${fmtNum(r.q)} ${r.coin}. Gebühren?`,why:gl('restgeb','Was heißt das?'),
+  for(const r of wRest(S,C.pots).filter(r=>!S.cxKeep.includes(restK(r))))I.push({id:'r:'+r.w+'|'+r.coin,lv:'y',kind:'rest',t:0,eur:0,ref:'',big:`Rest bei ${esc(r.w)}: ${fmtNum(r.q)} ${r.coin}. Gebühren?`,why:gl('restgeb','Was heißt das?'),
     body:`<div class="row"><button type="button" class="btn" data-rsplit="${esc(r.w)}">Auf ${r.xs.length===1?'den Übertrag':'die '+fI.format(r.xs.length)+' Überträge'} verteilen</button><button type="button" class="btn" data-rfee="${esc(r.w)}">Als eine Gebühr buchen</button><button type="button" class="btn" data-keep="${esc(restK(r))}">So lassen</button></div>`,
     li:{d:'',w:r.w,what:'Rest ohne Datei',q:fmtNum(r.q)+' '+r.coin}});
   // Gefälschte Token, die schon als USDC zählen (1.10)
@@ -7872,7 +7773,7 @@ function todoItems(C){
 // Ab 0.46 (2.8): Solange „＋ Daten“ offen ist oder „Speichern und nächster“ läuft, steht keine Zahl in der Leiste
 const tdQuiet=()=>DT.open||CX_SESS.length>0;
 // Ab 0.48 (2.3): auch graue Punkte zählen; Farbe rot, sonst gelb, sonst grau
-function todoCount(I){if(tdQuiet())return {n:0,r:0,y:0,g:0,lv:''};const v=I.filter(x=>!x.hold||!(typeof wzHold==='function'&&wzHold()));const r=v.filter(x=>x.lv==='r').length,y=v.filter(x=>x.lv==='y').length,g=v.filter(x=>x.lv==='g').length;return {n:r+y+g,r,y,g,lv:r?'r':y?'y':g?'g':''}}
+function todoCount(I){if(tdQuiet())return {n:0,r:0,y:0,g:0,lv:''};const r=I.filter(x=>x.lv==='r').length,y=I.filter(x=>x.lv==='y').length,g=I.filter(x=>x.lv==='g').length;return {n:r+y+g,r,y,g,lv:r?'r':y?'y':g?'g':''}}
 let TD_ITEMS=[],TD_POS=0,TD_CUR='',TD_KIND='',TD_ALL=false,TD_BACK=false;
 // Ab 0.46 (4.2): keine Kacheln mehr. Das Formular steht gleich in der Karte („Was war das?“), dazu die Knöpfe „Gehört zu einem Eintrag“ und
 // „Zählt nicht (ignorieren)“. TD_KIND = '' (Formular), 'pairs' oder 'ign'.
@@ -7947,7 +7848,7 @@ function tdMvParts(x,nsug){const k=x.mv,m=S.wtx[k],M=wMv(k),s=M.side||'in',K=esc
   const P=new Set(wViaFor(S,k).map(c=>c.ko===k?c.ki:c.ko));for(const c of wPairCands(S))if(c.ko===k)P.add(c.ki);else if(c.ki===k)P.add(c.ko);
   const self=(vgBuild(S).find(v=>v.mv.includes(k))||{}).id||'';
   o.ar=tdAround({t:wSec(m.date,m.time),self,P,label:`${s==='in'?'Eingang':s==='out'?'Ausgang':'Bewegung'} ${fmtNum(m.qty)} ${wCoinT(m)}`});
-  if(TD_KIND==='pairs'){WF_PAIRS.add('t:'+k);const dec=wDecHTML(k,M,'t'),i=dec.indexOf('<div class="wfc">');o.slot=`<div class="tdslot">${i>=0?`<p class="small">${gl('tdpairs','Gehört das zu einem dieser Einträge?')}</p>`+dec.slice(i).replace(/<div class="row"><span>Adresse[\s\S]*$/,'</div>'):'<p class="small">Keine Tag-Zeile und kein Eintrag ohne Verknüpfung in 7 Tagen davor oder danach.</p>'}</div>`}
+  if(TD_KIND==='pairs'){const pl=s==='zw'?'':wPairsList(k,M);o.slot=`<div class="tdslot">${pl.includes('<div class="wfc">')?`<p class="small">${gl('tdpairs','Gehört das zu einem dieser Einträge?')}</p>`+pl:'<p class="small">Keine Tag-Zeile und kein Eintrag ohne Verknüpfung in 7 Tagen davor oder danach.</p>'}</div>`}
   else if(TD_KIND==='ign')o.slot=`<div class="tdslot"><p class="small">Die Bewegung zählt dann nicht. ${IGN_BACK}</p><div class="row"><button type="button" class="btn primary" data-wa="ign" data-k="${K}">Ignorieren</button></div></div>`;
   else o.slot=`${o.sug||nsug?'<p class="tdq small">Oder trage selbst ein, was es war:</p>':''}<div class="tdslot" id="td-slot"></div>`;
   o.alt=[['pairs','Gehört zu einem Eintrag'],['ign','Ignorieren']].map(([v,t])=>`<button type="button" class="btn sm${TD_KIND===v?' on':''}" data-tdk="${v}" aria-pressed="${TD_KIND===v}">${t}</button>`).join('')+(TD_KIND?'<button type="button" class="zlink" data-tdk="">zurück zum Formular</button>':'');
@@ -7988,7 +7889,7 @@ function tdTitle(x){const d=document.createElement('div');d.innerHTML=x.big||x.h
 // Ab 0.46: TD_MK = Bewegung, die ✎ gesucht hat, wenn sie in einem Sammelpunkt steht (Kartenzahlungen): dort markiert.
 let TD_MK='';
 function renderTodo(C){
-  const I=todoItems(C),hold=typeof wzHold==='function'&&wzHold(),V=I.filter(x=>!(hold&&x.hold)),K=todoCount(I);TD_ITEMS=V;
+  const I=todoItems(C),V=I,K=todoCount(I);TD_ITEMS=V;
   // Ab 0.50 (3.1): je Punkt die Bewegungen und Vorgänge, die er betrifft; hat ein späterer Punkt mit Vorschlag eine davon, merkt sich der frühere ihn (sugAt)
   {const V0=vgBuild(S),vOf=k=>(V0.find(v=>v.mv.includes(k))||{}).id,keys=x=>{const ks=new Set(),add=k=>{if(!k||!S.wtx[k])return;ks.add('m:'+k);const v=vOf(k);if(v)ks.add('v:'+v)};
       if(x.mv)add(x.mv);if(x.sug){for(const k of x.sug.ks)add(k);if(x.sug.ty==='pair')for(const c of x.sug.l){add(c.ko);add(c.ki);const p=sugPI(c);if(p)for(const k of p.ks)add(k)}}
@@ -8012,7 +7913,7 @@ function renderTodo(C){
     const on=gi?gi.includes(TD_POS):i===TD_POS;
     return `<tr class="${on?'on':''}" data-tdgo="${i}"${on?' aria-current="true"':''}><td><span class="sdot sd-${x.lv}" role="img" aria-label="${esc(TD_LV[x.lv])}"></span></td><td>${l.d?dS(l.d):''}<span class="small tdlw">${esc(wDispW(l.w||''))}</span></td><td>${esc(wDispW(l.w||''))}</td><td><button type="button" class="zlink" data-tdgo="${i}">${esc(l.what).replace(/(0x[0-9a-fA-F]{4}…[0-9a-fA-F]{4})/g,'<span class="nw">$1</span>')}</button></td><td>${esc(l.q||'').replace(/([\d.,]+ [A-Za-z.]+)/g,'<span class="nw">$1</span>')}</td></tr>`}).join('')}</tbody></table>`;
   // Ab 0.46 (2.7a): unten klein der Schalter für die Krypto-Steuer (derselbe wie im Reiter Steuer); bei „Ohne Steuer“ nicht
-  const cxt=S.ui.country==='none'?'':`<p class="small tdcx">${S.ui.cxIncl===false?'Die Krypto-Steuer ist aus. ':'Du rechnest die Krypto-Steuer nicht mit diesem Tool? '}<button type="button" class="zlink" data-tdcx>${S.ui.cxIncl===false?'Krypto-Steuer einschalten':'Krypto-Steuer abschalten'}</button></p>`;
+  const cxt=S.ui.country==='none'?'':`<p class="small tdcx">${S.ui.cxIncl===false?'Die Krypto-Steuer ist aus. ':'Du rechnest die Krypto-Steuer nicht mit diesem Tool? '}<button type="button" class="zlink" data-tdcx>${S.ui.cxIncl===false?'Krypto-Steuer einschalten':'Krypto-Steuer ausschalten'}</button></p>`;
   // Ab 0.70: „Alle Vorschläge ansehen und übernehmen (n)“ direkt unter dem Titel, über der Karte (vorher in „Alle Punkte“)
   $('wtodo').innerHTML=(V.length?(WZ_FOCUS?`<p class="small">Nur „${esc(WZ_FOCUS)}“ <button type="button" class="zlink" data-vgall>alle zeigen</button></p>`:'')+(nU?`<div class="row tdsa"><button type="button" class="btn primary" data-sugall>Alle Vorschläge ansehen und übernehmen (${fI.format(nU)})</button></div>`:'')+card(x)+
     `<details class="tdall"${TD_ALL?' open':''}><summary>Alle Punkte (${fI.format(V.length)})</summary>${allL()}${keepH()}</details>`:
@@ -8223,7 +8124,7 @@ let TD_KEEP=false;
 // Ab 0.72 Nachtrag 2 (2): Kauf von Bitvavo mit einer Gebühr in anderer Währung als Euro (steht nur in der Notiz)
 function bvFeeM(c){return c.bv&&c.kind==='kauf'&&/^Gebühr ([\d.,]+) (\S+) \(Bitvavo\)$/.exec(String(c.note||''))}
 // Ab 0.74 (7.1): Krypto-Steuer aus- oder einschalten: dieselbe Rückfrage aus „Noch offen“ und „Was du hier machst“
-function cxTaxToggle(b){const on=S.ui.cxIncl!==false;if(!askOk('tdcx',on?'Krypto-Steuer abschalten? Dann fehlt Krypto in Abrechnung, Zusammenfassung, Excel und Steuerschätzung, und „Noch offen“ zeigt nur noch Punkte zu deinen Beständen. Du kannst sie jederzeit wieder einschalten.':'Krypto-Steuer wieder einschalten?',reclick(b),{ok:on?'Abschalten':'Einschalten'}))return;
+function cxTaxToggle(b){const on=S.ui.cxIncl!==false;if(!askOk('tdcx',on?'Krypto-Steuer ausschalten? Dann fehlt Krypto in Abrechnung, Zusammenfassung, Excel und Steuerschätzung, und „Noch offen“ zeigt nur noch Punkte zu deinen Beständen. Du kannst sie jederzeit wieder einschalten.':'Krypto-Steuer wieder einschalten?',reclick(b),{title:on?'Krypto-Steuer ausschalten':'Krypto-Steuer einschalten',ok:on?'Ausschalten':'Einschalten'}))return;
   S.ui.cxIncl=!on;save();render();toast(on?'Krypto-Steuer ist aus.':'Krypto-Steuer ist an.')}
 function wiCxFill(){$('wi-cx').innerHTML=S.ui.country==='none'?'':S.ui.cxIncl===false?'<p>Die Krypto-Steuer ist aus.</p><div class="row"><button type="button" class="btn" data-tdcx>Krypto-Steuer einschalten</button></div>':'<p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#anderes-tool" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p><p><b>Rechnest du deine Kryptos schon mit einem anderen Tool</b>, z. B. Blockpit? Dann bleib dort und schalte die Krypto-Steuer hier aus. Sonst zählen deine USDC und USDT doppelt. Die Trading-Bilanz rechnet dann nur den CFD-Teil der Steuer.</p><p>Wichtig für das andere Tool: Eine Einzahlung bei Tag zählt als Verkauf deiner USDC oder USDT, eine Auszahlung von Tag als Kauf. So rechnet die Trading-Bilanz. Markiere sie im anderen Tool genauso und kläre das mit deiner Steuerberatung.</p><div class="row"><button type="button" class="btn" data-tdcx>Krypto-Steuer hier ausschalten</button></div>'}
 $('wi-cx').addEventListener('click',e=>{const b=e.target.closest('[data-tdcx]');if(b)cxTaxToggle(b)});
@@ -8277,7 +8178,7 @@ $('wtodo').addEventListener('toggle',()=>tdFitH(),true);
 $('wtodo').addEventListener('input',e=>{const i=e.target.closest('[data-cfp]');if(!i)return;const box=i.closest('.tdcfee'),c=cxById(+box.dataset.cfk),x=box.querySelector('[data-cfx]');if(c&&x)x.textContent=cardFeeTxt(c,cfPct(box))});
 $('wtodo').addEventListener('change',e=>{if(!e.target.matches('[data-cfi]'))return;const box=e.target.closest('.tdcfee'),n=box.querySelectorAll('[data-cfi]:checked').length,b=box.querySelector('[data-cfall]');if(b){b.textContent=`Übernehmen (${fI.format(n)})`;b.disabled=!n}});
 // Ab 0.47 (3.4): Vorschlag oben im Formular-Fenster: dieselben Knöpfe; nach „Übernehmen“ oder „Nein“ schließt das Fenster
-$('cx-sug').addEventListener('change',wfChange);$('cx-sug').addEventListener('click',wfAct);$('cx-sug').addEventListener('click',tdClick);
+$('cx-sug').addEventListener('click',wfAct);$('cx-sug').addEventListener('click',tdClick);
 $('cx-sug').addEventListener('click',e=>{if(e.target.closest('button[data-wa],button[data-sug],button[data-sugno],button[data-dupkeep]')&&MODAL&&MODAL.id==='cx-modal'){endEdit();closeModal()}});
 // Ab 0.47 (3.3): „Erledigen“ in der Liste und in der Teiltabelle: derselbe Punkt wie in „Noch offen“
 document.addEventListener('click',e=>{const b=e.target.closest('[data-vtd]');if(!b)return;e.preventDefault();closeFpanel();todoOpen(b.dataset.vtd)});
@@ -9764,7 +9665,7 @@ let FP_OPEN=null;
 const UNIT_DD=['u1','u2','u3'];
 // Menüs, die rechts am Knopf im Kartentitel stehen und bei Platzmangel volle Fensterbreite bekommen (placeU)
 const TITLE_DD=[...UNIT_DD,'vs','va','vw'];
-const WALLET_DD=['vs','va','vw','wr','ld'];
+const WALLET_DD=['vs','va','vw','wr'];
 // Kartenfilter im Reiter Wallet (ab 0.38): Menü → Schlüssel in S.ui.cf. Gespeichert sind die abgewählten Werte, Neues ist also sichtbar.
 // Ab 0.43 nur noch der Filter der Liste „Alle Vorgänge“ (vf → S.ui.cf.vg); die Werte der alten Karten bleiben gespeichert, ungenutzt
 const CF_KEY={vs:'vg',va:'vg',vw:'vg'};
@@ -9795,11 +9696,11 @@ function cfBtn(w,shown,total){const on=cfOn(w);$('fb-'+w).textContent=(on?`${fI.
 function walletYears(){return [...new Set([...Object.values(S.tag).map(t=>tagD(t).slice(0,4)),...S.cx.filter(c=>c.date).map(c=>c.date.slice(0,4)),...Object.values(S.wtx).map(m=>m.date.slice(0,4))])].sort()}
 const wRange=()=>fltRange(walletYears(),S.ui.wFlt);
 const inRange=(d,rg)=>(!rg.from||d>=rg.from)&&(!rg.to||d<=rg.to);
-// Leiste unter den Reitern, nur im Reiter Wallet. Ab 0.44: Zeitraum · Wallets · ＋ Daten · Noch offen (Zahl, rot bei steuerlich wichtig) · Land.
+// Leiste unter den Reitern, nur im Reiter Wallet. Ab 0.44: Zeitraum · Wallets · ＋ Daten · Noch offen (Zahl, rot bei steuerlich wichtig). Das Menü „Land“ ist ab 0.82 auch im Skript weg.
 // Stufen (fitWbar, #wbar[data-st]): 1 Zeitraum lang, 2 Zeitraum kurz, 3 „Offen“ statt „Noch offen“, 4 nur Symbole. Die erste, die in eine Zeile passt.
 function wbHtml(st){const T=LAST_TODO||{n:0,nW:0},rg=wRange(),n=T.n||0,badge=`<span class="wbn${T.lv==='r'?' imp':T.lv==='y'?' chk':T.lv==='g'?' inf':''}">${n?fI.format(n):''}</span>`,sym=t=>`<span class="wbi" aria-hidden="true">${t}</span>`;
   return {wr:fbBtn(2,'range',st>=2?fltRangeShort(rg):rg.label),wl:st>=4?sym('▤'):'Adressen',dt:(st>=4?sym('＋'):'＋ Daten ')+(dtWaitN()?'<span class="wbn chk">!</span>':''),
-    td:(st>=4?(n?'':sym('✓')):st>=3?'Offen ':'Noch offen ')+badge,ld:`<span class="ft">${cxLand()}</span><span class="fc">▾</span>`}}
+    td:(st>=4?(n?'':sym('✓')):st>=3?'Offen ':'Noch offen ')+badge}}
 let WB_ST=1;
 function fitWbar(){const fin=$('wbar').querySelector('.fin'),cs=getComputedStyle(fin),avail=fin.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),gap=parseFloat(cs.columnGap)||0;
   // Ab 0.46 (3.4): Zeitraum · ＋ Daten · Wallets · Noch offen (das Land steht im Reiter Steuer)
@@ -9811,9 +9712,9 @@ function fitWbar(){const fin=$('wbar').querySelector('.fin'),cs=getComputedStyle
   $('wb-td').setAttribute('aria-label',`Noch offen: ${T.n?fI.format(T.n)+(T.nW?`, davon ${fI.format(T.nW)} fehlt für die Steuer`:''):'nichts offen'}`)}
 function renderWbar(show){
   $('wbar').classList.toggle('on',show);
-  if(!show){if(FP_OPEN==='wr'||FP_OPEN==='ld')closeFpanel();return}
+  if(!show){if(FP_OPEN==='wr')closeFpanel();return}
   fitWbar();
-  if(FP_OPEN==='wr'||FP_OPEN==='ld')updFpanel();
+  if(FP_OPEN==='wr')updFpanel();
 }
 // Beschriftung eines Filterknopfs in Stufe st: Stufe 1 mit „Zeitraum:“ bzw. „Konten:“ davor, Stufe 4 und 6 ohne Pfeil
 function fbBtn(st,k,t){const bare=st===4||st===6,lbl=st===1?{range:'Zeitraum:',acc:'Konten:'}[k]:'';
@@ -9921,9 +9822,6 @@ function buildFpanel(which){
     $('fp-wr').innerHTML=`<div class="fgrp">${opts.map(([v,l])=>`<label class="fopt"><input type="radio" name="wrange" value="${v}"><span>${esc(l)}</span></label>`).join('')}
       <div class="row fcust" id="wrcust"><label>Anfang<br><input type="date" id="wr-from"></label><label>Ende<br><input type="date" id="wr-to"></label></div><div id="wrmsg"></div>
       <p class="frand">Gerechnet wird immer mit allen Einträgen. Der Zeitraum ändert nur, was die Karten zeigen. Der Bestand gilt am Ende des Zeitraums, beim gesamten Zeitraum bis heute („Bestand jetzt“).</p></div>${FDONE}`;
-  }else if(which==='ld'){
-    // Ab 0.44: Land (gilt für das ganze Tool), ausgeschrieben, mit der Art der Krypto-Rechnung
-    $('fp-ld').innerHTML=`<div class="fgrp">${[['AT','Österreich','Krypto-Rechnung mit gleitendem Durchschnittspreis'],['DE','Deutschland','Krypto-Rechnung nach FIFO mit Haltefrist']].map(([v,l,d])=>`<label class="fopt two"><input type="radio" name="fland" value="${v}"><span><b>${l}</b><span class="od">${d}</span></span></label>`).join('')}</div>`;
   }else if(which==='vs'){
     // Ab 0.48 (3.10): Status mit Mehrfachauswahl wie die Konto-Auswahl der Auswertung; oben „Nur neue (n)“ (3.9)
     const nN=vgBuild(S).filter(vgNew).length;
@@ -9981,8 +9879,6 @@ function updFpanel(){
     $('wrcust').style.display=f.range==='custom'?'':'none';
     for(const [id,v] of [['wr-from',f.from],['wr-to',f.to]]){const i=$(id);if(document.activeElement!==i)i.value=v||''}
     $('wrmsg').innerHTML=f.range==='custom'&&wRange().bad?`<div class="msg warn">${fltBadMsg(f)}</div>`:'';
-  }else if(FP_OPEN==='ld'){
-    $('fp-ld').querySelectorAll('input[name=fland]').forEach(i=>i.checked=i.value===cxLand());
   }else if(CF_KEY[FP_OPEN]){
     const w=FP_OPEN,p=$('fp-'+w);
     p.querySelectorAll('[data-cf]').forEach(i=>i.checked=!cfOff(w,i.dataset.cf,i.value));
@@ -10028,7 +9924,7 @@ let FP_UP=null;
 function fpFit(){
   if(!FP_OPEN)return;const p=$('fp-'+FP_OPEN),b=$('fb-'+FP_OPEN);if(!b||!b.getClientRects().length)return;
   const nav=document.querySelector('nav'),inNav=nav.contains(b);
-  FP_UP=popPlace(b,p,{top:inNav?0:nav.getBoundingClientRect().bottom,up:FP_UP,right:TITLE_DD.includes(FP_OPEN)||FP_OPEN==='wk'||FP_OPEN==='ld'});
+  FP_UP=popPlace(b,p,{top:inNav?0:nav.getBoundingClientRect().bottom,up:FP_UP,right:TITLE_DD.includes(FP_OPEN)||FP_OPEN==='wk'});
 }
 // Beim Scrollen der Seite und bei jeder Größenänderung (auch nur der Höhe) neu einpassen, einmal pro Frame
 {let q=0;const f=e=>{if(FP_OPEN&&!q&&!popOwnScroll(e))q=requestAnimationFrame(()=>{q=0;fpFit()})};
@@ -11096,7 +10992,7 @@ function renderTax(rows){
   // Ab 0.72 (2.1): Karte „Konten und Name“; ab hier nur die Buchungen der zählenden Konten (auch für Fragen und Hochrechnung)
   renderTaxAcc();rows=rows.filter(r=>taxIn(r.a));
   const DE=S.ui.country==='DE';
-  $('disc-line').innerHTML=DE?'ⓘ Regeln für <b>Deutschland</b>, Stand 2026, nur CFDs. <b>Für Deutschland gibt es mehr offene Punkte als für Österreich.</b> Steuerangaben mit KI recherchiert, <b>ohne Gewähr</b>. Bitte unbedingt prüfen lassen.':'ⓘ Regeln für <b>Österreich</b>, Stand 2026. Steuerangaben mit KI recherchiert, <b>ohne Gewähr</b>. Bitte prüfen lassen.';$('tax-body').style.display=DE?'none':'';$('tax-de').style.display=DE?'':'none';
+  $('disc-line').innerHTML=DE?'ⓘ Regeln für <b>Deutschland</b>, Stand 2026, nur CFDs. <b>Für Deutschland gibt es mehr offene Punkte als für Österreich.</b> Steuerangaben mit KI recherchiert, <b>ohne Gewähr</b>. Lass sie unbedingt prüfen.':'ⓘ Regeln für <b>Österreich</b>, Stand 2026. Steuerangaben mit KI recherchiert, <b>ohne Gewähr</b>. Lass sie prüfen.';$('tax-body').style.display=DE?'none':'';$('tax-de').style.display=DE?'':'none';
   // Fehlen im gewählten Jahr Kurse (nach der Schonfrist), ist nur dieses Jahr gesperrt: Hinweis statt Zahlen, ohne Zusammenfassung, Excel, Drucken und CSV.
   // Andere Jahre bleiben nutzbar. Vorläufige Kurse (Schonfrist) sperren nicht, darüber steht dann der Hinweis dazu.
   // Ab 0.72 (1.7, 1.8): ruhigerer Text; für Krypto zählen auch Tage früherer Jahre (missingRates mit tax)
@@ -11117,7 +11013,7 @@ function renderTax(rows){
   // Ab 0.72 (2.3): Datenstand der zählenden Konten statt der letzten Buchung über alle Konten
   const lastD=taxDs(y);notes.push(...taxDsNotes(y,lastD));
   // Ab 0.73 (2.6): „Der Saldo ist negativ“ steht im Begriff auf „Saldo CFD“, die grauen Zeilen (taxDsGone) in der Konten-Karte; Sätze mit schmalem Rand statt Fläche
-  glSet('tx-salcfd','Beilage E1kv, Kennzahl 857: sonstige Einkünfte aus Kapitalvermögen zum Tarif. Jede Buchung ist zum EZB-Kurs ihres Tages umgerechnet.'+(T.tax<0?'\nDer Saldo ist negativ. Ob und wie ein Verlust mit anderen Einkünften ausgeglichen werden darf, ist eingeschränkt. Bitte mit einer Steuerberaterin klären.':''));
+  glSet('tx-salcfd','Beilage E1kv, Kennzahl 857: sonstige Einkünfte aus Kapitalvermögen zum Tarif. Jede Buchung ist zum EZB-Kurs ihres Tages umgerechnet.'+(T.tax<0?'\nDer Saldo ist negativ. Ob und wie ein Verlust mit anderen Einkünften ausgeglichen werden darf, ist eingeschränkt. Kläre das mit deiner Steuerberatung.':''));
   $('taxnotes').innerHTML=notes.map(n=>`<p class="sigl y">${n}</p>`).join('')+(hasFiat()?`<p class="sigl">${gl('bankeur','Einzahlungen in Euro per Bank')}: Ob ein Kursgewinn auf das USD-Guthaben steuerpflichtig ist, rechnet das Tool nicht.</p>`:'');
   // Krypto
   const C=cryptoCalc('AT');const CY=Object.assign({gain:0,loss:0,n:0,gainK:0,lossK:0,nK:0,kest:0,fee:0},C.byY[y]);const hasCxData=C.n>0;const cxIncl=S.ui.cxIncl!==false;const hasCx=hasCxData&&cxIncl;const cxs=hasCx?CY.gain+CY.loss:0;
@@ -11128,7 +11024,7 @@ function renderTax(rows){
   glSet('tx-salcx',`Aus ${CY.n===1?'1 Verkauf':fI.format(CY.n)+' Verkäufen'} (Einzahlungen bei Tag, Verkäufe, Zahlungen).`);
   glSet('k-taxat',hasCxData?'<b>Krypto:</b> '+GL['k-atcx'].h+(payN(C,y)?'\n'+PAY_ANN.AT:''):'');
   $('t-taxparts').innerHTML=taxTabH({c:{y,cfd:R.length>0,cx:hasCx,opt:!!S.ui.opt},T,R,cy:CY,DE:false},hasCxData,cxIncl);
-  $('taxcx-warn').innerHTML=hasCxData&&!cxIncl?'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung, Excel und Steuerschätzung). Krypto-Gewinne sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberaterin.</p>':hasCxData?taxCxNote(C,y):'';
+  $('taxcx-warn').innerHTML=hasCxData&&!cxIncl?'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung, Excel und Steuerschätzung). Krypto-Gewinne sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>':hasCxData?taxCxNote(C,y):'';
   $('tx-not-l').innerHTML=taxNotList('AT');
   // Schätzung
   if(document.activeElement!==$('other'))$('other').value=S.ui.other;
@@ -11400,7 +11296,7 @@ $('cx-gift').innerHTML=giftH('cx','ein');
 for(const id of ['cx-unkp','cx-unkd','cx-kest','cx-nft','cx-date','cx-gd'])$(id).addEventListener('change',()=>cxHelp());
 $('btn-cx').onclick=()=>addCx();
 $('btn-cxdel').onclick=()=>{
-  if(EDIT_TAG){const id=EDIT_TAG;if(!S.tag[id]||!askOk('del:t'+id,'Diesen Eintrag löschen?',reclick($('btn-cxdel')),{title:'Tag-Zeile löschen',ok:'Löschen',danger:true,more:ASK_BK}))return;{const act=keepActive();delete S.tag[id];naAfterDrop({},act)}endEdit();wSync();save();closeModal();render();toast('Gelöscht.');return}
+  if(EDIT_TAG){const id=EDIT_TAG;if(!S.tag[id]||!askOk('del:t'+id,'Diese Tag-Zeile löschen?',reclick($('btn-cxdel')),{title:'Tag-Zeile löschen',ok:'Löschen',danger:true,more:ASK_BK}))return;{const act=keepActive();delete S.tag[id];naAfterDrop({},act)}endEdit();wSync();save();closeModal();render();toast('Gelöscht.');return}
   const id=EDIT,c=cxById(id),fq=c?cxFeeTxt(id):'';if(!c||!askOk('del:'+id,[fq?'Diesen Übertrag löschen?':'Diesen Eintrag löschen?',[fq,c.wk||c.wkIn?'Die Bewegung aus der Datei ist danach „ignoriert“. Mit „wieder öffnen“ holst du sie zurück.':''].filter(Boolean).join('\n')].filter(Boolean).join('\n\n'),reclick($('btn-cxdel')),{title:'Eintrag löschen',ok:'Löschen',danger:true,more:ASK_BK}))return;
   cxDel(id);endEdit();wSync();save();closeModal();render();toast('Gelöscht.')};
 $('btn-cxnext').onclick=async()=>{CX_NEXT=true;try{await addCx()}finally{CX_NEXT=false}};
@@ -11520,8 +11416,8 @@ $('btn-xlsxall').onclick=()=>exportXlsx(null);
 // Ab 0.46 (6.2): neue Wallet mit Art und freiwilliger Adresse (Format geprüft; bei einer Börse eine Adresse der Börse, sonst eine eigene)
 // Ab 0.51 (2): Der Satz darunter (walletmsg) bleibt, das Feld wird zusätzlich markiert
 function addWallet(){const v=$('newwallet').value.trim(),k=$('newwallet-k').value,a=$('newwallet-a').value.trim().toLowerCase(),nd=s=>needMark($('wl-modal'),[[s,'']]);
-  if(!v){msg('walletmsg','warn','Schreibe zuerst einen Namen, z. B. Bitvavo.');return nd('#newwallet')}if(S.wallets.includes(v)){msg('walletmsg','warn',`„${esc(v)}“ gibt es schon.`);return nd('#newwallet')}
-  if(a&&!/^0x[0-9a-f]{40}$/.test(a)){msg('walletmsg','bad','Die Adresse ist nicht gültig. Sie beginnt mit 0x, danach folgen 40 Zeichen (0 bis 9, a bis f). Lass das Feld leer, wenn du sie nicht weißt.');return nd('#newwallet-a')}
+  if(!v){msg('walletmsg','warn',k==='boerse'?'Gib der Börse einen Namen ein, z. B. Bitvavo.':k==='karte'?'Gib der neuen Karte einen Namen ein, z. B. Meine Karte.':'Gib der neuen Wallet einen Namen ein, z. B. Bix.');return nd('#newwallet')}if(S.wallets.includes(v)){msg('walletmsg','warn',`„${esc(v)}“ gibt es schon.`);return nd('#newwallet')}
+  if(a&&!/^0x[0-9a-f]{40}$/.test(a)){msg('walletmsg','bad','Das ist keine gültige Adresse. Sie beginnt mit 0x, danach folgen 40 Zeichen (0 bis 9, a bis f). Lass das Feld leer, wenn du sie nicht weißt.');return nd('#newwallet-a')}
   S.wallets.push(v);S.wmeta=S.wmeta||{};S.wmeta[v]=Object.assign({},S.wmeta[v],{kind:k,card:k==='karte'});if(a&&!addrAssign(S,a,v,k!=='boerse',askCb('nw:'+a,()=>addWallet()))){S.wallets=S.wallets.filter(x=>x!==v);return}
   $('newwallet').value='';$('newwallet-a').value='';const n=a?wSync():0;save();msg('walletmsg','ok',`„${esc(v)}“ hinzugefügt${a?` mit der Adresse ${wShort(a)}`:''}.${n?` ${n===1?'Eine Bewegung wurde':fI.format(n)+' Bewegungen wurden'} zugeordnet.`:''}${esc(provMsg())}`);render()}
 $('btn-wallet').onclick=addWallet;
@@ -11586,7 +11482,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.81',VDATE='04.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.82',VDATE='04.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -11769,20 +11665,15 @@ function closeModal(){if(!MODAL)return;const was=MODAL;modalOn(MODAL,false);MODA
   if(MODAL_FROM&&MODAL_FROM.isConnected)MODAL_FROM.focus();MODAL_FROM=null}
 /* ---------------- Ab 0.44: „＋ Daten“ (Fenster dt-modal) ----------------
    Ersetzt den Assistenten, die Schritte-Leiste und die Karte „Daten einlesen“. Vier Kacheln mit Status (wzOk): Tag-Daten, Börsen, Wallet-Dateien,
-   Offenes zuordnen (öffnet „Noch offen“). Darunter der gewählte Bereich DT.pane ('tag', 'bx', 'wf', 'files'). DT.guide = geführt (beim ersten
-   Öffnen des Reiters Wallet ohne Daten): „Schritt n von 4“, Balken, ein Hauptknopf. S.ui.wz = {st: {1..4: 'ok' | 'skip'}, seen} wie in 0.43.
-   Unten eine feste Knopfleiste (dtFoot): die Knöpfe der letzten sichtbaren Zeile [data-act] im Bereich (z. B. „Übernehmen“, „Weiter“) als
-   Stellvertreter (DT_PX), dazu „Weiter“ bzw. „Fertig“. Hinweise (Einkauf fehlt usw.) warten, solange der geführte Weg vor Schritt 4 steht (wzHold). */
-const DT={open:false,pane:'',guide:false,step:1,ways:false};let DT_PX=[];
+   Offenes zuordnen (öffnet „Noch offen“). Darunter der gewählte Bereich DT.pane ('tag', 'bx', 'wf', 'files', 'hand'). S.ui.wz = {st, seen} wie in 0.43
+   (st aus alten Ständen zählt in wzOk weiter). Ab 0.82 ohne den geführten Weg („Schritt n von N“, „Wie willst du anfangen?“, wzHold), er war seit 0.47
+   nicht mehr erreichbar. Unten eine feste Knopfleiste (dtFoot): die Knöpfe der letzten sichtbaren Zeile [data-act] im Bereich (z. B. „Übernehmen“) als
+   Stellvertreter (DT_PX), dazu „Schließen“. */
+const DT={open:false,pane:''};let DT_PX=[];
 // Ab 0.46 (3.1): vier Kacheln vom Einfachen zum Aufwendigen. „Offenes zuordnen“ fällt weg, das steht oben als „Noch offen“.
-// n = Nummer in S.ui.wz.st und wzOk (1 Tag-Daten, 2 Börsen, 3 Wallet-Dateien, 5 Von Hand). Geführter Weg „Ich lade Dateien“: DT_STEPS (3 Schritte).
+// n = Nummer in S.ui.wz.st und wzOk (1 Tag-Daten, 2 Börsen, 3 Wallet-Dateien, 5 Von Hand). DT_STEPS = Reihenfolge der Bereiche mit Dateien (Nummer der Kachel, wartende Dateien).
 const DT_K=[{p:'tag',n:1,t:'Tag-Daten'},{p:'hand',n:5,t:'Von Hand',sub:'empfohlen'},{p:'bx',n:2,t:'Börsen'},{p:'wf',n:3,t:'Wallet-Dateien',sub:'für Fortgeschrittene'}];
-const DT_STEPS=['tag','bx','wf'],DT_T={tag:'Tag-Daten',bx:'Börsen',wf:'Wallet-Dateien'};
-const DT_G={tag:'Kopiere deine Ein- und Auszahlungen aus der Tag Wallet und füge sie hier ein. Wie das geht, zeigt die Anleitung.',
-  bx:`Lade die Datei deiner Börse (bisher ${bxNames()}) oder trage Käufe, Verkäufe, Gebühren, Tausch und Geschenke von Hand ein.`,
-  wf:'Lade für jede eigene Adresse die Datei aus dem Block-Explorer. Du kannst mehrere Dateien auf einmal wählen.'};
-// Ab 0.46: Hinweise warten, solange „＋ Daten“ offen ist (tdQuiet); wzHold bleibt für die Stellen, die ihn fragen
-const wzHold=()=>DT.open&&DT.guide;
+const DT_STEPS=['tag','bx','wf'];
 // Erledigt: 1 Tag-Daten da, 2 Einträge da oder „Weiter“, 3 Bewegungen da, 5 Einträge von Hand
 // Ab 0.45: Einträge von Hand (Einträge nicht aus einer Datei, Tag-Zeilen von Hand)
 const dtHandN=()=>S.cx.filter(c=>c.src!=='datei'&&!c.bv&&!c.feeOf&&!c.brk&&c.ldf==null).length+Object.values(S.tag).filter(t=>t.hand).length;
@@ -11816,16 +11707,12 @@ function dtStat(n){const pl=(x,a,b)=>`${fI.format(x)} ${x===1?a:b}`;
   if(n===3){const x=wFileList(S).length;return x?pl(x,'Datei','Dateien'):''}
   if(n===5){const x=dtHandN();return x?pl(x,'Eintrag','Einträge'):''}
   return ''}
-function dtRender(){const n=DT.step,g=DT.guide,N=DT_STEPS.length,P=DT_STEPS[n-1];dtWaitClean();
-  $('dt-t').textContent=g?`Schritt ${n} von ${N}`:'＋ Daten';
-  $('dt-guide').innerHTML=g?`<div class="dtbar" role="progressbar" aria-valuemin="1" aria-valuemax="${N}" aria-valuenow="${n}" aria-label="Schritt ${n} von ${N}"><span style="width:${n/N*100}%"></span></div><p class="dtgt"><b>${DT_T[P]}.</b> ${DT_G[P]}</p>`:'';
-  // Ab 0.45 (2.2): beim ersten Start ohne Daten zwei gleichwertige Wege
-  if(DT.ways){$('dt-t').textContent='Wie willst du anfangen?';$('dt-guide').innerHTML=`<div class="dtw"><button type="button" class="dtt dtwb" data-dtway="hand"><span class="dttt">Ich tippe aus meinen Apps ab</span><span class="small dtts">Käufe, Verkäufe, Überträge, Tag und Karte von Hand, am Ende der Kontostand</span></button><button type="button" class="dtt dtwb" data-dtway="files"><span class="dttt">Ich lade Dateien</span><span class="small dtts">Tag-Daten, Börsen-Datei und Wallet-Dateien, das Tool ordnet selbst zu</span></button></div><p class="small">Du kannst beides mischen und später jederzeit wechseln.</p>`;
-    $('dt-tiles').innerHTML='';$('dt-tiles').hidden=true;$('dt-files').parentNode.hidden=true;for(const id of ['tw-paste','bx-load','wf-load','df-pane','dh-pane'])$(id).hidden=true;dtFoot();return}
+function dtRender(){dtWaitClean();
+  $('dt-t').textContent='＋ Daten';
   $('dt-tiles').hidden=false;$('dt-files').parentNode.hidden=false;
   // Gleicher Aufbau je Kachel: oben Titel (Platz für zwei Zeilen, mit „empfohlen“ bzw. „für Fortgeschrittene“), unten Zeichen und Stand auf einer Linie
   // Ab 0.61: Warten Dateien des Bereichs (dtWait), steht „!“ statt Häkchen oder Nummer und „1 Datei wartet“ statt des Stands
-  $('dt-tiles').innerHTML=DT_K.map(x=>{const ok=wzOk(x.n),st=dtStat(x.n),on=g?x.p===P:x.p===DT.pane,si=DT_STEPS.indexOf(x.p),wt=dtWait(x.p);
+  $('dt-tiles').innerHTML=DT_K.map(x=>{const ok=wzOk(x.n),st=dtStat(x.n),on=x.p===DT.pane,si=DT_STEPS.indexOf(x.p),wt=dtWait(x.p);
     const dot=wt?'<span class="dot wait" role="img" aria-label="wartet">!</span>':`<span class="dot ${ok?'ok':''}" ${ok?'role="img" aria-label="erledigt"':'aria-hidden="true"'}>${ok?'✓':si<0?'✎':si+1}</span>`;
     return `<button type="button" class="dtt dtk${on?' on':''}" data-dtp="${x.p}" aria-pressed="${on}"><span class="dtth"><span class="dttt">${x.t}</span>${x.sub?`<span class="small dtsub">${x.sub}</span>`:''}</span><span class="dtfo">${dot}<span class="small dtts">${wt?`${fI.format(wt)} ${wt===1?'Datei wartet':'Dateien warten'}`:st||'noch keine'}</span></span></button>`}).join('');
   for(const [p,id] of [['tag','tw-paste'],['bx','bx-load'],['wf','wf-load'],['files','df-pane'],['hand','dh-pane']])$(id).hidden=DT.pane!==p;
@@ -11837,34 +11724,27 @@ function wfAdv(){const ok=!!S.ui.wfOk;$('wf-adv').hidden=ok;for(const id of ['wf
 // Feste Knopfleiste: Knöpfe der letzten sichtbaren Zeile [data-act] als Stellvertreter, dazu Weiter/Fertig
 function dtFoot(){const f=$('dt-foot');if(!DT.open){f.innerHTML='';DT_PX=[];return}
   for(const b of $('dt-panes').querySelectorAll('.actin'))b.classList.remove('actin');
-  const id={tag:'tw-paste',bx:'bx-load',wf:'wf-load',files:'df-pane',hand:'dh-pane'}[DT.pane],pane=id&&!DT.ways&&$(id);
+  const id={tag:'tw-paste',bx:'bx-load',wf:'wf-load',files:'df-pane',hand:'dh-pane'}[DT.pane],pane=id&&$(id);
   // Tag: „Übernehmen“ erst in der Leiste, wenn etwas eingefügt ist (sonst „Weiter“ im geführten Weg)
   const rows=pane?[...pane.querySelectorAll('[data-act]')].filter(r=>r.getClientRects().length&&!(r.classList.contains('tagrow')&&!$('tagpaste').value.trim())):[],last=rows[rows.length-1];
   DT_PX=last?[...last.querySelectorAll('button')].filter(b=>b.getClientRects().length):[];
   const px=DT_PX.map((b,i)=>`<button type="button" class="${esc(b.className)}" data-dtpx="${i}"${b.disabled?' disabled':''}>${b.innerHTML}</button>`).join('');
   for(const b of DT_PX)b.classList.add('actin');
   const has=DT_PX.some(b=>b.classList.contains('primary')),pr=has?'':' primary';
-  // Ein klarer Hauptknopf: Hat der Bereich eigene Knöpfe, stehen nur sie und „Schließen“ da; sonst „Weiter“ (blau) bzw. „Schließen“.
-  // Ab 0.50 (1.1): „Schließen“ statt „Fertig“, grau; am letzten geführten Schritt hakt „Schließen“ den Schritt ab (dtNext)
-  // Ab 0.61: ohne eigene Knöpfe und außerhalb des geführten Wegs „Weiter zu …“ (blau), wenn in einem anderen Bereich Dateien warten
-  const nx=!DT_PX.length&&!DT.guide&&!DT.ways?dtWaitNext(DT.pane):'',nxb=nx?`<button type="button" class="btn primary" data-dtwait="${nx}">${nx==='bx'?'Weiter zu den Börsen':'Weiter zu den Wallet-Dateien'}</button>`:'';
-  f.innerHTML=px+nxb+(DT_PX.length||nx?'<button type="button" class="btn" data-dtclose>Schließen</button>':DT.guide?(DT.step<DT_STEPS.length?'<button type="button" class="btn primary" data-dtnext>Weiter</button><button type="button" class="btn" data-dtclose>Schließen</button>':'<button type="button" class="btn" data-dtnext>Schließen</button>'):'<button type="button" class="btn" data-dtclose>Schließen</button>')}
+  // Ein klarer Hauptknopf: Hat der Bereich eigene Knöpfe, stehen sie und „Schließen“ da. Ab 0.50 (1.1) „Schließen“ statt „Fertig“, grau.
+  // Ab 0.61: ohne eigene Knöpfe „Weiter zu …“ (blau), wenn in einem anderen Bereich Dateien warten
+  const nx=!DT_PX.length?dtWaitNext(DT.pane):'',nxb=nx?`<button type="button" class="btn primary" data-dtwait="${nx}">${nx==='bx'?'Weiter zu den Börsen':'Weiter zu den Wallet-Dateien'}</button>`:'';
+  f.innerHTML=px+nxb+'<button type="button" class="btn" data-dtclose>Schließen</button>'}
 $('tagpaste').addEventListener('input',()=>{if(DT.open)dtFoot()});
 new MutationObserver(()=>{if(DT.open)dtFoot()}).observe($('dt-panes'),{childList:true,subtree:true,attributes:true,attributeFilter:['disabled','hidden']});
-// Öffnen: pane = Bereich ('tag', 'bx', 'wf', 'files' oder ''), guide = geführt (beim ersten offenen Schritt)
-function dtOpen(pane,guide){if(S.ui.tab!=='wallet'){S.ui.tab='wallet';save();render()}
-  DT.open=true;DT.guide=!!guide;if(guide)DT.step=([1,2,3].find(n=>!wzOk(n))||1);
-  // Ab 0.45 (2.2): ganz ohne Daten zuerst die Wahl zwischen Abtippen und Dateien
-  DT.ways=!!guide&&!S.ui.wz.way&&!S.cx.length&&!Object.keys(S.tag).length&&!Object.keys(S.wtx).length;
-  DT.pane=pane!=null?pane:guide?DT_STEPS[DT.step-1]:'';
+// Öffnen: pane = Bereich ('tag', 'bx', 'wf', 'files', 'hand' oder '')
+function dtOpen(pane){if(S.ui.tab!=='wallet'){S.ui.tab='wallet';save();render()}
+  DT.open=true;DT.pane=pane||'';
   S.ui.wz.seen=1;save();openModal('dt-modal');render();dtRender()}
-function dtGo(n){DT.step=Math.max(1,Math.min(DT_STEPS.length,n));DT.pane=DT_STEPS[DT.step-1];render();dtRender();const t=$('dt-tiles').querySelector('.dtt.on');if(t)t.focus()}
-// Weiter im geführten Weg (der Schritt gilt dann als erledigt). Ab 0.46 schließt „Fertig“ nach dem letzten Schritt nur (die Zahl bei „Noch offen“ erscheint dann).
-function dtNext(){const n=DT.step;S.ui.wz.st[n]='ok';save();if(n>=DT_STEPS.length){closeModal();return}dtGo(n+1)}
 // Schließen (×, Esc, „Fertig“, Klick daneben): Hinweise frei
 // Ab 0.61: Wartende Dateien bleiben (auch WF_PEND), ein Toast nennt sie. Danach der Sprung zum Trading Benefit neuer Konten (TB_PEND), aber nicht,
 // wenn gleich ein anderes Fenster aufgeht oder „＋ Daten“ wieder offen ist (z. B. „Wem gehört diese Adresse?“)
-function dtClose(){DT.open=false;DT.guide=false;DT.ways=false;DT_PX=[];S.ui.wz.seen=1;save();render();
+function dtClose(){DT.open=false;DT_PX=[];S.ui.wz.seen=1;save();render();
   setTimeout(()=>{if(DT.open)return;const tb=MODAL?[]:TB_PEND.filter(a=>S.accounts[a]&&!(S.accounts[a].factor>0));if(!MODAL)TB_PEND=[];if(tb.length)tbGo();
     const w=dtWaitAll(),t=[tb.length?tbTxt(tb):'',w?`Noch nicht übernommen: ${w}. Du findest sie in „＋ Daten“.`:''].filter(Boolean).join(' ');
     if(w)toastAct(t,'＋ Daten öffnen',()=>dtOpen(dtWaitNext()));else if(t)toast(t)},0)}
@@ -11894,16 +11774,10 @@ $('vg-card').addEventListener('click',e=>{if(e.target.closest('[data-tdbk]')){to
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-addrguide]')){e.preventDefault();glClose();if(MODAL&&MODAL.id==='td-modal')tdGuideOpen();else addrGuideOpen()}});
 // Anleitung „Wem gehört diese Adresse?“ (Phase 5: aufklappbar oben im Adressbuch)
 function addrGuideOpen(){while(MODAL)closeModal();msg('walletmsg','','');openModal('wl-modal');const d=$('addr-guide');if(d){d.open=true;d.scrollIntoView({block:'start'})}}
-$('dt-tiles').addEventListener('click',e=>{const t=e.target.closest('[data-dtp]');if(!t)return;const p=t.dataset.dtp,si=DT_STEPS.indexOf(p);
-  if(DT.guide&&si>=0){dtGo(si+1);return}if(p==='hand')DT.guide=false;
+$('dt-tiles').addEventListener('click',e=>{const t=e.target.closest('[data-dtp]');if(!t)return;const p=t.dataset.dtp;
   DT.pane=DT.pane===p?'':p;render();dtRender();const b=$('dt-tiles').querySelector(`[data-dtp="${p}"]`);if(b)b.focus()});
 $('dt-foot').addEventListener('click',e=>{const p=e.target.closest('[data-dtpx]');if(p){const b=DT_PX[+p.dataset.dtpx];if(b&&!b.disabled)b.click();return}
-  if(e.target.closest('[data-dtnext]')){dtNext();return}
   if(e.target.closest('[data-dtclose]'))closeModal()});
-// Ab 0.45 (2.2): Wahl des Wegs; Bereich „Von Hand eintragen“: Art vorbelegt, Tag-Daten, zum Bestand
-$('dt-guide').addEventListener('click',e=>{const b=e.target.closest('[data-dtway]');if(!b)return;S.ui.wz.way=b.dataset.dtway;DT.ways=false;save();
-  if(b.dataset.dtway==='hand'){DT.guide=false;DT.pane='hand'}else{DT.step=([1,2,3].find(n=>!wzOk(n))||1);DT.pane=DT_STEPS[DT.step-1]}
-  render();dtRender();const t=$('dt-tiles').querySelector('.dtt.on')||$('dt-tiles').querySelector('.dtt');if(t)t.focus()});
 // Ab 0.70 Nachtrag 1 (1.5): „Aufladung“ = Übertrag nach der Karte, „(Karten-)Zahlung“ = Zahlung mit der Karte. Gibt es genau eine Wallet der Art
 // „Karte“, ist sie dort vorbelegt, sonst steht oben „bitte wählen“ (pick). „von Wallet“ wie bisher (cw = zuletzt gewählt), aber nie eine Karte.
 function cxCardPre(kind,cw){const KA=S.wallets.filter(w=>!wProv(w)&&wKindOf(w)==='karte'),k1=KA.length===1?KA[0]:'';
@@ -12064,7 +11938,7 @@ async function offlineDL(){try{const r=await fetch(location.href.split('#')[0],{
   catch(e){offShow(false,e.message)}}
 function offShow(ok,err){const has=hasData();
   $('off-t').textContent=ok?'Datei gespeichert':'Herunterladen hat nicht geklappt';
-  $('off-body').innerHTML=ok?`<p>Die Datei „trading-bilanz.html“ liegt meist im Ordner „Downloads“.Speichere sie dir am besten an einem Ort, wo du sie immer leicht wiederfindest.</p><p>Öffne die Datei per Doppelklick, sie läuft im Browser ohne Internet.${has?' Hast du hier schon Daten? Dann nimm sie mit: Sicherung speichern und in der Datei unter Sicherung laden.':''}</p>`+
+  $('off-body').innerHTML=ok?`<p>Die Datei „trading-bilanz.html“ liegt meist im Ordner „Downloads“. Speichere sie dir am besten an einem Ort, wo du sie immer leicht wiederfindest.</p><p>Öffne die Datei per Doppelklick, sie läuft im Browser ohne Internet.${has?' Hast du hier schon Daten? Dann nimm sie mit: Sicherung speichern und in der Datei unter Sicherung laden.':''}</p>`+
     (has?'<div class="row"><button type="button" class="btn primary" id="off-bk">Sicherung speichern</button></div><div id="off-msg"></div>':'')
     :`<p>Das Herunterladen hat nicht geklappt (${esc(err)}). Prüfe die Internetverbindung und versuche es noch einmal.</p>`;
   openModal('off-modal');
