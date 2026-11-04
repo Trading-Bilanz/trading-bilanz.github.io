@@ -1,8 +1,9 @@
-# Projektwissen Trading-Bilanz
+# Trading-Bilanz
 
-Das Projektwissen zur Trading-Bilanz liegt in `Projektwissen/`. Florian löscht den Ordner und diese `CLAUDE.md`, bevor er die Seite öffentlich teilt.
+Dieses Repo ist öffentlich (GitHub Pages), auch seine Git-Geschichte. Hier liegt nur das Tool: `trading-bilanz.html`, `anleitung.html`, `anleitung/`.
 
-- Vor jeder Runde `Projektwissen/GESTALTUNG.md` und `Projektwissen/STAND.md` lesen und sich an `GESTALTUNG.md` halten.
-- Am Ende jeder Runde `STAND.md` nachführen (Version, Reiter, feste Begriffe, offene Punkte). Neue Regeln von Florian kommen in `GESTALTUNG.md`, mit „ab 0.xx“.
-- Beide Dateien im selben Commit wie die Änderung am Tool mitschicken.
-- Keine echten Daten hier ablegen: Das Repo ist öffentlich (GitHub Pages), auch die Git-Geschichte.
+- Projektwissen, Tests und Backups liegen im privaten Werkstatt-Repo der Organisation. Dessen `CLAUDE.md` regelt die Arbeitsweise.
+- Runden mit beiden Repos starten.
+- Fehlt die Werkstatt in einer Sitzung: Änderungen am Projektwissen nur im Bericht auflisten, keine Kopie hier anlegen.
+- Kein Projektwissen hier pflegen. Ein Ordner `Projektwissen/` hier ist veraltet.
+- Keine echten oder privaten Daten hier ablegen.
