@@ -2392,7 +2392,7 @@ async function loadFiles(files){
     try{
       const txt=await readText(f);
       const r=parseReport(txt);
-      if(!r.acc||!(r.deals.length||r.dealHd)){out.push(`<b>${esc(f.name)}</b>: kein MT5-Kontoreport erkannt. Lade die Datei aus MT5 (Verlauf → rechte Maustaste → Bericht → HTML). Das Tool kann eine PDF- oder Excel-Datei nicht lesen.`);continue;}
+      if(!r.acc||!(r.deals.length||r.dealHd)){out.push(`<b>${esc(f.name)}</b>: kein MT5-Kontoreport erkannt. Lade die Datei aus MT5 („Kontohistorie“ → rechte Maustaste → „Bericht“ → „HTML (Internet Explorer)“). Das Tool kann eine PDF- oder Excel-Datei nicht lesen.`);continue;}
       // Ab 0.61: neu angelegte Konten merken (nw, ohne Trading Benefit: dropFiles springt dorthin)
       if(!S.accounts[r.acc]&&!nw.includes(r.acc))nw.push(r.acc);
       const A=S.accounts[r.acc]||(S.accounts[r.acc]={name:'',factor:null,cur:r.cur,holder:r.holder,company:r.company,repDate:''});
@@ -5985,7 +5985,13 @@ function wfAct(e){
   const b=e.target.closest('[data-wa]');if(!b)return;const a=b.dataset.wa,k=b.dataset.k,m=S.wtx[k],id=b.dataset.id,P=p+':'+k,ek=CSS.escape(k);if(!m)return;
   const focus=sel=>{const r=box.querySelector(sel);if(r)r.focus()};
   const done=()=>{wSync();save();render();focus(p==='d'?`[data-wk="${ek}"] button, [data-wk="${ek}"] .zlink`:`[data-wtk="${ek}"] button`)};
-  if(a==='tpairs'){WF_OPEN.add(P);WF_PAIRS.add(P);render();focus(`[data-wa="pairs"][data-k="${ek}"]`);return}
+  // Ab 0.83: „gehört zu …“ im Hinweis „Das kam von Tag …“ öffnet dieselbe Liste wie „Gehört zu einem Eintrag“ (TD_KIND 'pairs') beim Punkt dieser Bewegung
+  // in „Noch offen“. Bis 0.82 merkte er sich nur etwas für das Feld „Entscheiden“, das es seit 0.82 nicht mehr gibt, und zeigte nichts.
+  // Aus dem Formular (Vorschlag oben, #cx-sug): Formular schließen (bei Eingaben mit Rückfrage), dann „Noch offen“ bei diesem Punkt.
+  if(a==='tpairs'){const go=()=>{if(!(MODAL&&MODAL.id==='td-modal'))todoOpen('m:'+k);else if(TD_CUR!=='m:'+k){TD_CUR='m:'+k;TD_KIND='';render()}if(TD_KIND!=='pairs')tdKind('pairs')};
+    if(MODAL&&MODAL.id==='cx-modal'){const M=MODAL;if(!modalDirty(M)){closeModal();go();return}
+      askBox({title:'Nicht gespeichert',text:'Du hast in diesem Fenster etwas eingegeben und noch nicht gespeichert.',ok:'Verwerfen',no:'Weiter bearbeiten',danger:true}).then(v=>{if(!v||MODAL!==M)return;delete M.dataset.dirty;closeModal();go()});return}
+    go();return}
   // Ab 0.48 (2.1): aus „Noch offen“: weitere offene Beträge an dieselbe Adresse als Bündel anbieten
   if(a==='ign'){m.st='ign';m.ref='';delete m.pend;WF_OPEN.delete(P);done();return}
   if(a==='reopen'){m.st='open';done();return}
@@ -11482,7 +11488,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.82',VDATE='04.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.83',VDATE='04.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
