@@ -1,6 +1,6 @@
 # Trading-Bilanz
 
-Dieses Repo ist öffentlich (GitHub Pages), auch seine Git-Geschichte. Hier liegt nur das Tool: `trading-bilanz.html`, `anleitung.html`, `anleitung/`.
+Dieses Repo ist öffentlich (GitHub Pages), auch seine Git-Geschichte. Hier liegt nur das Tool: `trading-bilanz.html`, `anleitung.html`, `anleitung/`, dazu `icons/` (Icons, Vorschaubilder, Skript `icons/icons-erzeugen.py`) und `README.md`.
 
 - Projektwissen, Tests und Backups liegen im privaten Werkstatt-Repo der Organisation. Dessen `CLAUDE.md` regelt die Arbeitsweise.
 - Runden mit beiden Repos starten.
