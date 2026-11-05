@@ -6726,8 +6726,10 @@ let KB_AT='';
 // Ab 0.50 (2.1): eine Grenze für „passt“ in „Bestand jetzt“, „Kontostände prüfen“ und „Noch offen“
 const BAL_TOL=0.01;
 // Ab 0.48 (1.2): grau, ob die offenen Vorgänge der Wallet den Unterschied erklären (ganz oder mit Rest)
+// Ab 0.88 (0): Erklären sie ihn nicht ganz, heißt es „Erklärt sich vermutlich durch {n} offene Vorgänge.“ Solange die Wallet offene Vorgänge hat,
+// steht der Unterschied nur hier (und als ✗ in „Bestand jetzt“), der Punkt W-56 in „Noch offen“ kommt erst ohne offene Vorgänge.
 function kbWhy(d,o,c,w){if(Math.abs(d)<BAL_TOL||!o||!o.n)return '';const x=balWhy(d,o),n=o.n===1?'1 offenen Vorgang':`${fI.format(o.n)} offene Vorgänge`;
-  return `<span class="small kbex">${x.ok?`Erklärt sich durch ${n} bei ${esc(w)}.`:`Nach ${balN(o.n)} bleiben ${fN.format(Math.abs(x.rest))} ${c} Unterschied.`}</span>`}
+  return `<span class="small kbex">${x.ok?`Erklärt sich durch ${n} bei ${esc(w)}.`:`Erklärt sich vermutlich durch ${n}.`}</span>`}
 function kbRender(){const C=cryptoCalc(),WB=wBal(),OB=wOpenBal(C),K=new Set([...C.pots.map(p=>p.w+'|'+p.c),...Object.keys(S.wbal||{}),...Object.keys(WB)]);
   // Ab 0.48 (Nachtrag 1, 3.3): jede Wallet hat eine Zeile, auch ohne Bestand, Datei oder App-Stand (Standard-Coin), dort nur das leere Feld
   for(const w of S.wallets)if(![...K].some(k=>k.slice(0,k.lastIndexOf('|'))===w))K.add(w+'|'+(S.defCoin==='USDT'?'USDT':'USDC'));
@@ -7475,7 +7477,6 @@ function sugPlain(x){return {d:x.d?dS(x.d)+(x.t?' '+x.t.slice(0,5):''):'',q:x.fr
 const TD_LV={r:'Fehlt für die Steuer',y:'Bitte prüfen',g:'Gut zu wissen'};
 // Ab 0.48 (1.2): Unterschied d (laut Datei bzw. App minus laut Einträgen) gegen die offenen Vorgänge o ({in, out, n}): ok = ganz erklärt, rest = was bleibt
 function balWhy(d,o){const e=o?o.in-o.out:0,rest=d-e;return {ok:!!(o&&o.n)&&Math.abs(rest)<=1e-6+1e-9,rest}}
-const balN=n=>n===1?'dem offenen Vorgang':`den ${fI.format(n)} offenen Vorgängen`;
 // Ab 0.48 (1.3): Vorgänge nach dem letzten geladenen Kurs (rateCov), deren Tag keinen Kurs hat (Schonfrist 24 Std. wie bisher, rateInfo) und bei denen
 // deshalb ein Euro-Wert im Rechenweg fehlt. from = erster Werktag der EZB nach dem letzten Kurs, key = Stand für „Verstanden“.
 let TD_RG={ids:new Set(),n:0,from:'',key:''};
@@ -7829,12 +7830,14 @@ function todoItems(C){
   // Kontostand laut App oder Datei weicht ab (2.4, gelb, ab 0,01).
   // Ab 0.48 (1.2): Erklären die offenen Vorgänge dieser Wallet den Unterschied ganz (wOpenBal, auf 0,000001), ist es ein Folgefehler: kein Punkt
   // (der Satz steht grau in „Kontostände prüfen“). Sonst bleibt der Punkt mit dem Rest. Text mit Richtung.
+  // Ab 0.88 (0): Der Punkt kommt erst, wenn die Wallet keine offenen Vorgänge mehr hat (wOpenBal: offene Bewegungen aus Wallet-Dateien und offene
+  // Tag-Zeilen dieser Wallet). Bis dahin steht der Unterschied in „Kontostände prüfen“ mit „Erklärt sich vermutlich durch …“ (kbWhy).
   {const WB=Object.keys(S.wtx).length?wBal():{},OB=wOpenBal(C),K=new Set([...C.pots.map(p=>p.w+'|'+p.c),...Object.keys(S.wbal||{}),...Object.keys(WB)]);
    for(const k of K){const i=k.lastIndexOf('|'),w=k.slice(0,i),c=k.slice(i+1),p=C.pots.find(p=>p.w===w&&p.c===c),q=p?p.q:0,o=OB[k];
-     for(const [src,v] of [['App',S.wbal[k]],['Datei',WB[k]?WB[k].q:null]]){if(v==null||Math.abs(v-q)<BAL_TOL)continue;const d=v-q,x=balWhy(d,o);if(x.ok)continue;
+     for(const [src,v] of [['App',S.wbal[k]],['Datei',WB[k]?WB[k].q:null]]){if(v==null||Math.abs(v-q)<BAL_TOL||(o&&o.n))continue;const d=v-q,x=balWhy(d,o);
        const r=x.rest,dir=`Laut deinen Einträgen sind ${fN.format(Math.abs(r))} ${c} ${r<0?'mehr':'weniger'} bei ${esc(w)} als laut ${src==='App'?'deiner App':'Datei'}. Vermutlich fehlt ein ${r<0?'Abgang':'Zugang'}.`;
        I.push({id:'w:'+src+':'+k,lv:'y',kind:'bal',t:0,eur:0,ref:'',big:`Bestand bei ${esc(w)} passt nicht: laut deinen Einträgen ${fmtNum(q)} ${c}, laut ${src==='App'?'deiner App':'Datei'} ${fmtNum(v)}.`,
-         why:(o&&o.n?`Nach ${balN(o.n)} bleiben ${fN.format(Math.abs(r))} ${c} Unterschied. `:'')+dir,body:`<div class="row"><button type="button" class="btn primary" data-tdbal="${esc(k)}">Zum Bestand</button></div>`,
+         why:dir,body:`<div class="row"><button type="button" class="btn primary" data-tdbal="${esc(k)}">Zum Bestand</button></div>`,
          li:{d:'',w,what:'Bestand passt nicht',q:fmtNum(Math.abs(r))+' '+c}})}}}
   // Ab 0.48 (1.3): Kurse nach dem letzten geladenen fehlen (grau, kein Alarm; das automatische Laden ist aus oder hat nicht geklappt). „Verstanden“ merkt den Stand (S.rateOk).
   {const RG=TD_RG=rateGap(C);VG_RATE=RG.ids;
@@ -11619,7 +11622,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.87',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.88',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
