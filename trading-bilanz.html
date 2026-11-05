@@ -1657,6 +1657,13 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <p>Lass deine Steuerzahlen von einer Steuerberatung oder dem Finanzamt prüfen, bevor du sie verwendest. <b>Dieses Tool ist keine Steuerberatung.</b></p></div>
   <div class="row" style="justify-content:flex-end"><button type="button" class="btn" id="btn-taxack-no">Lieber ohne Steuer weitermachen</button><button type="button" class="btn primary" id="btn-taxack-ok">Verstanden: keine Steuerberatung</button></div>
 </div></div>
+<!-- Ab 0.85 (G-54): Hinweis beim Start, wenn sich der gespeicherte Stand nicht laden oder zeichnen lässt (bootShow, Text vom Skript). Wie #taxack-modal
+     über modalOn: kein ×, Esc und Klick daneben schließen es nicht, nur die beiden Knöpfe. Bis dahin speichert das Tool nichts (BOOT_BAD). -->
+<div class="modal noprint" id="boot-modal"><div class="box" role="alertdialog" aria-modal="true" aria-labelledby="boot-t" aria-describedby="boot-b">
+  <h2 id="boot-t">Gespeicherter Stand</h2>
+  <div id="boot-b"></div><div id="boot-msg"></div>
+  <div class="row" style="justify-content:flex-end"><button type="button" class="btn danger" id="btn-boot-wipe">Alles löschen</button><button type="button" class="btn primary" id="btn-boot-load">Sicherung laden</button></div>
+</div></div>
 <div class="modal" id="don-modal"><div class="box">
   <h2>💚 Deine Zahlen sind fertig.</h2>
   <p>Ich hoffe, sie machen dir Freude! Wenn dir die Trading-Bilanz geholfen hat, freue ich mich sehr über eine Wertschätzung.</p>
@@ -2102,7 +2109,13 @@ function rvScan(){
 const TAX_DISC_V=2;
 function blank(){return {v:1,accounts:{},deals:{},map:{},rates:{},tag:{},cx:[],wallets:['Meine Wallet'],defCoin:'USDC',rsrc:{},rown:{},tagDrop:[],tagSame:{},tagSkip:[],tagBatch:0,cxKeep:[],wbal:{},pfOk:[],wtx:{},addr:{},cxNo:0,tok:{},wign:{},cardFee:{},bxOpen:{},tagMeth:{},rcov:{load:'',file:''},ui:{tab:'reports',wFlt:{range:'all',from:'',to:''},rAuto:true,rtUsed:true,yTax:null,other:'',opt:false,flt:{range:'all',from:'',to:'',off:[],pf:'ex',cur:'eur',nocw:false,zeroDays:true},graf:{what:'period',res:'week',kind:'bar',unit:'amt',wd:'sum',avg:false},calc:{inv:'',dur:'12',unit:'m',own:'',tax:'',reinv:false,taxOn:false},unit:'pct'}}}
 let S=blank();
-try{const raw=localStorage.getItem(KEY); if(raw){S=Object.assign(blank(),JSON.parse(raw));}}catch(e){}
+// Ab 0.85 (Fund 2 aus 0.84): Lässt sich der gespeicherte Stand beim Start nicht lesen, aufbereiten oder zeichnen, stürzt das Tool nicht ab. Es startet
+// mit einem leeren Stand und zeigt den Hinweis #boot-modal (bootShow). BOOT_BAD: Solange er gilt, speichert save() nichts, der Stand im Speicher
+// bleibt, bis die Person „Sicherung laden“ oder „Alles löschen“ wählt. BOOT_RAW = der gespeicherte Text (für „Sicherung speichern“ in der Rückfrage).
+// SAVE_OFF: Bis der Start fertig gezeichnet ist und während „Sicherung laden“ eine Datei ausprobiert, merkt sich save() nur, dass gespeichert werden
+// soll (SAVE_DUE). Nach einem guten Start speichert das Tool dann einmal.
+let BOOT_BAD=false,BOOT_RAW='',SAVE_OFF=true,SAVE_DUE=false;
+try{const raw=localStorage.getItem(KEY); if(raw){try{S=Object.assign(blank(),JSON.parse(raw))}catch(e){console.warn('Gespeicherter Stand:',e);BOOT_BAD=true;BOOT_RAW=raw}}}catch(e){}
 function fixState(){const b=blank();RV=null;
   // Ab 0.80 (2, 3): gespeicherte Zuordnungen auf Schlüssel ohne Beträge umstellen, „ignorieren“ wird „unklar“. Treffen zwei alte Schlüssel auf einen neuen:
   // eine echte Bedeutung geht vor „unklar“, zwei verschiedene echte werden „unklar“ (sichtbar in „Buchungsarten“, nichts ändert sich still)
@@ -2200,13 +2213,15 @@ for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','t
   for(const d of Object.keys(S.rown))if(S.rates[d]!=null||RBM[d]!=null)delete S.rown[d];
   for(const A of Object.values(S.accounts))delete A.pfOk; // 0.32 vor dem Nachtrag: Ausblenden je Konto, jetzt gemeinsam in S.pfOk
   if(!S.rcov.load){const ds=Object.keys(S.rates).filter(d=>!/Datei/.test(S.rsrc[d]||'')).sort();if(ds.length)S.rcov.load=ds[ds.length-1]}}
-fixState();
+// Ab 0.85: Scheitert der Start mit dem gespeicherten Stand, gilt BOOT_BAD, das Tool arbeitet mit einem leeren Stand weiter (siehe oben)
+function bootFail(e){console.warn('Gespeicherter Stand:',e);if(!BOOT_BAD){BOOT_BAD=true;try{BOOT_RAW=localStorage.getItem(KEY)||''}catch(x){BOOT_RAW=''}}S=blank();fixState()}
+try{fixState()}catch(e){bootFail(e)}
 // Ab 0.46 (Regel 7): Eingaben in einem Fenster, die noch nicht gespeichert sind. Jedes Speichern setzt es zurück.
 // Ab 0.47 (4.3): Ein Fenster gilt als geändert, wenn in ihm selbst etwas eingegeben wurde. „＋ Daten“ nur, wenn im Feld für die Tag-Daten Text steht,
 // der noch nicht übernommen ist.
 const modalDirty=M=>M.id==='dt-modal'?!!$('tagpaste').value.trim():M.dataset.dirty==='1';
 // Ab 0.47 (4.3): Speichern setzt nur das „geändert“ des obersten Fensters zurück (jedes Fenster merkt sich seins in data-dirty)
-function save(){RV=null;try{if(MODAL)delete MODAL.dataset.dirty}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){msg('datamsg','bad','Speichern im Browser nicht möglich. Speichere regelmäßig eine Sicherung.');}}
+function save(){RV=null;if(BOOT_BAD)return;if(SAVE_OFF){SAVE_DUE=true;return}try{if(MODAL)delete MODAL.dataset.dirty}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){msg('datamsg','bad','Speichern im Browser nicht möglich. Speichere regelmäßig eine Sicherung.');}}
 
 /* ---------------- Hilfen ---------------- */
 const $=id=>document.getElementById(id);
@@ -2411,7 +2426,7 @@ async function loadFiles(files){
         if(o){d++;if(fresh&&(dif(o.bal,x.bal)||dif(o.prof,x.prof)||dif(o.cost,x.cost))){S.deals[k]=Object.assign({a:r.acc},x);u++}continue}
         S.deals[k]=Object.assign({a:r.acc},x);a++}
       added+=a;dup+=d;upd+=u;nOk++;
-      out.push(r.deals.length?`<b>${esc(f.name)}</b>: Konto ${r.acc}, ${a} neue Buchungen${d?`, ${d} schon vorhanden`:''}${u?`, davon ${u} aktualisiert (Kontostand oder Betrag aus diesem Report übernommen)`:''}.`:
+      out.push(r.deals.length?`<b>${esc(f.name)}</b>: Konto ${r.acc}, ${a} ${a===1?'neue Buchung':'neue Buchungen'}${d?`, ${d} schon vorhanden`:''}${u?`, davon ${u} aktualisiert (Kontostand oder Betrag aus diesem Report übernommen)`:''}.`:
         `<b>${esc(f.name)}</b>: Konto ${r.acc}, keine Buchungen in diesem Report.`);
     }catch(e){out.push(`<b>${esc(f.name)}</b>: konnte nicht gelesen werden (${esc(e.message)}).`)}
   }
@@ -5096,7 +5111,7 @@ function wfSave(){
   // Ab 0.48 (3.9): alles, was dieses Einlesen anlegt, ist neu
   const n0=nwSnap(),st=wImport(Dx);nwMark(n0);if(st.neu.length)S.ui.lastLoad=new Date().toISOString();
   if(cur){D.done.push(cur);D.last={w:cur,n:st.neu.length,open:st.neu.filter(k=>S.wtx[k]&&S.wtx[k].st==='open').length};WZ_FOCUS=cur}else WFP=null;save();
-  const parts=[...st.own.map(x=>`Adresse ${wShort(x.a)} war als fremde Adresse von ${esc(x.w)} gespeichert. Sie ist jetzt deine eigene.`),`${fI.format(st.neu.length)} neue Bewegungen übernommen${st.known?`, ${fI.format(st.known)} waren schon da`:''}.`];
+  const parts=[...st.own.map(x=>`Adresse ${wShort(x.a)} war als fremde Adresse von ${esc(x.w)} gespeichert. Sie ist jetzt deine eigene.`),`${fI.format(st.neu.length)} ${st.neu.length===1?'neue Bewegung':'neue Bewegungen'} übernommen${st.known?`, ${fI.format(st.known)} ${st.known===1?'war':'waren'} schon da`:''}.`];
   if(st.tag.length||st.tr)parts.push(`${fI.format(st.tag.length)} zu Tag zugeordnet, ${fI.format(st.tr)} ${st.tr===1?'Übertrag':'Überträge'}.`);
   {const nl=Dx.files.filter(f=>f.later&&wfUse(f)).length;if(nl)parts.push(`${fI.format(nl)} ${nl===1?'Datei':'Dateien'} später zuordnen. Du findest ${nl===1?'sie':'sie'} in „Noch offen“.`)}
   if(st.xin.length)parts.push(`${fI.format(st.xin.length)} ${st.xin.length===1?'Eingang':'Eingänge'} zu ${st.xin.length===1?'einem Übertrag':'Überträgen'} zugeordnet.`);
@@ -5109,7 +5124,7 @@ function wfSave(){
   // Ab 0.61: wartet noch eine Börsen-Datei, sagt es die Meldung (mit Knopf)
   msg('wfmsg','ok',parts.join(' ')+dtWaitH('wf'));dtRe();
   // Ab 0.70 Nachtrag 1 (1.7): aus „Noch offen“ geöffnet und alles übernommen: zurück in „Noch offen“
-  if(!WFP&&MODAL&&MODAL.id==='dt-modal'&&tdUnder()){closeModal();toast(`Übernommen: ${fI.format(st.neu.length)} neue Bewegungen.`)}
+  if(!WFP&&MODAL&&MODAL.id==='dt-modal'&&tdUnder()){closeModal();toast(`Übernommen: ${fI.format(st.neu.length)} ${st.neu.length===1?'neue Bewegung':'neue Bewegungen'}.`)}
 }
 $('wfprev').addEventListener('change',e=>{const i=e.target.dataset.wfw;
   // Ab 0.44: Ein Name, der bei einer früheren Datei neu eingetippt wurde, steht direkt als Wallet (wImport legt sie an)
@@ -5303,7 +5318,10 @@ function bxSave(){const D=BXP,w=bxW();if(!D)return;if(!w)return needMark($('bxpr
   const und=L=>L.length<2?L.join(''):L.slice(0,-1).join(', ')+' und '+L[L.length-1];
   const nk=[[cnt('bxaus'),`Auszahlung von ${w} ohne gewählte Wallet`,`Auszahlungen von ${w} ohne gewählte Wallet`],[cnt('bxein'),`Einzahlung in ${w}, deren Herkunft das Tool nicht kennt`,`Einzahlungen in ${w}, deren Herkunft das Tool nicht kennt`],
     [cnt('rest'),`Rest bei ${w}, den die Käufe und Auszahlungen nicht erklären`,`Reste bei ${w}, die die Käufe und Auszahlungen nicht erklären`],[cnt('gap'),'fehlender Einkauf','fehlende Einkäufe']],nk0=nk.reduce((a,x)=>a+x[0],0),nw=nu.length-nk0;
-  const neu=nu.length?` Dadurch ${nu.length===1?'steht 1 neuer Punkt':`stehen ${fI.format(nu.length)} neue Punkte`} in „Noch offen“: ${und([...nk.filter(x=>x[0]).map(x=>(x[0]===1&&/^(Rest|fehlender)/.test(x[1])?'ein ':fI.format(x[0])+' ')+(x[0]===1?x[1]:x[2])),...(nw?[pl(nw,'weiterer Punkt','weitere Punkte')]:[])])}.`:'';
+  // Ab 0.85 (Fund 5 aus 0.84): genau ein neuer Punkt ohne Aufschlüsselung. Bei mehreren heißt ein einzelner Rest mit seinem Namen aus „Alle Punkte“
+  // („der Punkt „Gebühr prüfen““) statt „1 weiterer Punkt“. Ohne bekannte Art (nur Rest) keine Aufschlüsselung, sie würde nur die Zahl wiederholen.
+  const nw1=nw===1?nu.find(x=>!['bxaus','bxein','rest','gap'].includes(x.kind)):null,nw1n=nw1&&nw1.li&&nw1.li.what?String(nw1.li.what):'';
+  const neu=nu.length===1?' Dadurch steht 1 neuer Punkt in „Noch offen“.':nu.length?` Dadurch stehen ${fI.format(nu.length)} neue Punkte in „Noch offen“${nk0?`: ${und([...nk.filter(x=>x[0]).map(x=>(x[0]===1&&/^(Rest|fehlender)/.test(x[1])?'ein ':fI.format(x[0])+' ')+(x[0]===1?x[1]:x[2])),...(nw?[nw1n?`der Punkt „${nw1n}“`:pl(nw,'weiterer Punkt','weitere Punkte')]:[])])}`:''}.`:'';
   const tsT=ts?` Zu ${pl(ts,'Tag-Zeile','Tag-Zeilen')} gibt es jetzt einen Vorschlag.`:'';
   const T=[st.neu?pl(st.neu,'neuer Eintrag','neue Einträge'):'',st.ersetzt?pl(st.ersetzt,'Eintrag ersetzt','Einträge ersetzt'):'',st.behalten?pl(st.behalten,'Eintrag behalten','Einträge behalten'):'',
     st.xfer?pl(st.xfer,'Übertrag neu','Überträge neu'):'',st.xferUpd?pl(st.xferUpd,'Übertrag ergänzt','Überträge ergänzt'):'',st.dep?pl(st.dep,'Einzahlung zugeordnet','Einzahlungen zugeordnet'):'',
@@ -6104,7 +6122,7 @@ function pasteTag(){
   const unk=P.unk.filter(u=>!S.tagSkip.includes(u.id)&&!S.tag[u.id]),old=P.unk.length-unk.length;
   if(!P.rows.length&&!unk.length){
     const ign=P.skip.prop+P.skip.other;
-    msg('tagmsg','warn',ign?`Nur interne Überträge oder Provisionen gefunden (${ign} Zeilen), keine Ein- oder Auszahlungen. Setze bei „Transaction History“ den Filter Method „PSP“.`:old?`Hier stehen nur Zeilen, die du früher weggelassen hast (${old}).`:`Im eingefügten Text wurden keine Vorgänge gefunden. Kopiere die ganze Seite noch einmal (${copyShortHTML()}) und füge sie hier ein.`);
+    msg('tagmsg','warn',ign?`Nur interne Überträge oder Provisionen gefunden (${ign} ${ign===1?'Zeile':'Zeilen'}), keine Ein- oder Auszahlungen. Setze bei „Transaction History“ den Filter Method „PSP“.`:old?`Hier stehen nur Zeilen, die du früher weggelassen hast (${old}).`:`Im eingefügten Text wurden keine Vorgänge gefunden. Kopiere die ganze Seite noch einmal (${copyShortHTML()}) und füge sie hier ein.`);
     renderTagPrev();return}
   msg('tagmsg','','');
   // Ohne Betrag kann eine Zeile nur weggelassen werden, das ist dann schon entschieden
@@ -6155,7 +6173,7 @@ function tagPrevH(){
     }
   }else chk.push(`<p class="small">Die Prüfung mit den Summen bei Tag fehlt, weil oben auf der eingefügten Seite keine Summen stehen. Kopiere die ganze Seite. ${TAG_WHY}</p>`);
   const ign=P.skip.prop+P.skip.other;
-  const skipTxt=[ign?`${ign} Zeilen weggelassen (interne Überträge oder Provisionen)`:'',D.old?`${D.old} Zeilen hast du früher weggelassen`:'',M.dup?`${M.dup} waren schon da`:''].filter(Boolean).join(' · ');
+  const skipTxt=[ign?`${ign} ${ign===1?'Zeile':'Zeilen'} weggelassen (interne Überträge oder Provisionen)`:'',D.old?`${D.old} ${D.old===1?'Zeile':'Zeilen'} hast du früher weggelassen`:'',M.dup?`${M.dup} ${M.dup===1?'war':'waren'} schon da`:''].filter(Boolean).join(' · ');
   const opt=(i,v,l,dis)=>`<label class="fopt"><input type="radio" name="tu-${i}" value="${v}" data-tu="${i}" ${D.dec[i]===v?'checked':''} ${dis?'disabled':''}><span>${l}</span></label>`;
   const un=D.unk.map((u,i)=>`<div class="tunk"><div><b>${u.date?fD(u.date):'ohne Datum'}</b> · ${u.usd>0?usd(u.usd):'ohne erkennbaren Betrag'}</div><div class="small tunkt">${esc(u.text)}</div>
     <div class="tug" data-tug="${i}" role="radiogroup" aria-label="Was ist diese Zeile?">${opt(i,'ein','Einzahlung',!(u.usd>0&&u.date))}${opt(i,'aus','Auszahlung',!(u.usd>0&&u.date))}${opt(i,'skip','weglassen')}</div></div>`).join('');
@@ -6200,8 +6218,10 @@ function saveTag(){
   // Ab 0.47 (1.5): keine stille Wallet mehr. Wahl in der Vorschau (D.wsel[id]): Wallet, '~g' (Geschenk) oder nichts = weiß ich noch nicht (wq 'q').
   // Bank-Zeilen haben keine Wallet-Frage (sie zählen nicht in der Krypto-Rechnung).
   // Ab 0.51 (3): „Bank“ in der Vorschau ('~b') macht die Zeile zur Bank-Zahlung, von Hand gewählt (man.b, man.w), die Menge merkt sich qPre
-  for(const r of M.add){const q=r.net>0?r.net:r.usd;delete r.net;const v=r.fiat?'':(D.wsel&&D.wsel[r.id])||'~q',bk=v==='~b';if(bk)r.fiat=true;
-    S.tag[r.id]=Object.assign(r,{coin:r.fiat?'EUR':coin,qty:q,own:true,wallet:S.wallets.includes(v)?v:'',batch:S.tagBatch,man:bk?{w:1,b:1}:{}},bk?{qPre:q}:{},r.time?{tz:'tag'}:{},v==='~q'||v==='~g'?{wq:v.slice(1)}:{});
+  // Ab 0.85 (Fund 1 aus 0.84): Eine Wallet aus der Vorschau gilt als Wahl der Person (man.w), auch die erste Wallet. Die Person hat sie gesehen und
+  // gespeichert. Vorher galt „Meine Wallet“ danach als „vom Tool gewählt“ (tagSilent, W-49)
+  for(const r of M.add){const q=r.net>0?r.net:r.usd;delete r.net;const v=r.fiat?'':(D.wsel&&D.wsel[r.id])||'~q',bk=v==='~b',wv=S.wallets.includes(v);if(bk)r.fiat=true;
+    S.tag[r.id]=Object.assign(r,{coin:r.fiat?'EUR':coin,qty:q,own:true,wallet:wv?v:'',batch:S.tagBatch,man:bk?{w:1,b:1}:wv?{w:1}:{}},bk?{qPre:q}:{},r.time?{tz:'tag'}:{},v==='~q'||v==='~g'?{wq:v.slice(1)}:{});
     // Ab 0.55 (1): Angaben zum Geschenk wie im Fenster der Tag-Zeile (gEur, gd, gEurU, gdU, pn)
     const g=v==='~g'&&GP[r.id];if(g){const t=S.tag[r.id];if(g.v.pn)t.pn=g.v.pn;if(g.ein){if(g.v.unkp)t.gEurU=1;else t.gEur=g.C.eur;if(g.v.unkd)t.gdU=1;else t.gd=g.C.gd}}}
   D.unk.forEach((u,i)=>{if(D.dec[i]==='skip'&&!S.tagSkip.includes(u.id))S.tagSkip.push(u.id)});
@@ -6214,7 +6234,7 @@ function saveTag(){
   const a=M.add.length;if(a)S.ui.lastLoad=new Date().toISOString();
   const ign=D.P.skip.prop+D.P.skip.other+D.dec.filter(x=>x==='skip').length;
   const wn=wSync();nwMark(n0);TAGP=null;save();$('tagpaste').value='';
-  msg('tagmsg','ok',`${a-nRep} neue Vorgänge übernommen${nRep?`, ${nRep} ${nRep===1?'Eintrag':'Einträge'} von Hand ersetzt`:''}${M.dup?`, ${M.dup} waren schon da`:''}${M.times.length?`, bei ${M.times.length===1?'einer Auszahlung':M.times.length+' Auszahlungen'} die Uhrzeit ergänzt`:''}${ign?`, ${ign} Zeilen weggelassen`:''}.${a?' Neue Vorgänge sind mit ● markiert.':''}${wn?` ${wn===1?'Ein Vorgang wurde':fI.format(wn)+' Vorgänge wurden'} mit der Wallet-Datei verknüpft.`:''} Prüfe unten Art, Coin und „Mein Geld“.`);
+  msg('tagmsg','ok',`${a-nRep} ${(a-nRep)===1?'neuer Vorgang':'neue Vorgänge'} übernommen${nRep?`, ${nRep} ${nRep===1?'Eintrag':'Einträge'} von Hand ersetzt`:''}${M.dup?`, ${M.dup} ${M.dup===1?'war':'waren'} schon da`:''}${M.times.length?`, bei ${M.times.length===1?'einer Auszahlung':M.times.length+' Auszahlungen'} die Uhrzeit ergänzt`:''}${ign?`, ${ign} ${ign===1?'Zeile':'Zeilen'} weggelassen`:''}.${a?a===1?' Der neue Vorgang ist mit ● markiert.':' Neue Vorgänge sind mit ● markiert.':''}${wn?` ${wn===1?'Ein Vorgang wurde':fI.format(wn)+' Vorgänge wurden'} mit der Wallet-Datei verknüpft.`:''} Prüfe unten Art, Coin und „Mein Geld“.`);
   render();if(a)autoRates();
 }
 // Nicht unterstützte Coins (ⓘ „Woher kamen deine Coins?“ und Krypto-Karte der Steuer)
@@ -8130,8 +8150,11 @@ let TD_KEEP=false;
 // Ab 0.72 Nachtrag 2 (2): Kauf von Bitvavo mit einer Gebühr in anderer Währung als Euro (steht nur in der Notiz)
 function bvFeeM(c){return c.bv&&c.kind==='kauf'&&/^Gebühr ([\d.,]+) (\S+) \(Bitvavo\)$/.exec(String(c.note||''))}
 // Ab 0.74 (7.1): Krypto-Steuer aus- oder einschalten: dieselbe Rückfrage aus „Noch offen“ und „Was du hier machst“
-function cxTaxToggle(b){const on=S.ui.cxIncl!==false;if(!askOk('tdcx',on?'Krypto-Steuer ausschalten? Dann fehlt Krypto in Abrechnung, Zusammenfassung, Excel und Steuerschätzung, und „Noch offen“ zeigt nur noch Punkte zu deinen Beständen. Du kannst sie jederzeit wieder einschalten.':'Krypto-Steuer wieder einschalten?',reclick(b),{title:on?'Krypto-Steuer ausschalten':'Krypto-Steuer einschalten',ok:on?'Ausschalten':'Einschalten'}))return;
-  S.ui.cxIncl=!on;save();render();toast(on?'Krypto-Steuer ist aus.':'Krypto-Steuer ist an.')}
+// Ab 0.85 (Fund 3 aus 0.84): an allen drei Stellen gleich, auch beim Häkchen „Krypto in diese Abrechnung aufnehmen“ im Reiter Steuer (keep: dort
+// renderKeepFocus wie bisher). Ausschalten mit Rückfrage (S-22), Einschalten ohne, beides mit Toast (S-23). Abbrechen ändert nichts. Rückgabe: geschaltet?
+async function cxTaxSet(on,keep){if(!on&&!(await askBox({title:'Krypto-Steuer ausschalten',text:'Krypto-Steuer ausschalten? Dann fehlt Krypto in Abrechnung, Zusammenfassung, Excel und Steuerschätzung, und „Noch offen“ zeigt nur noch Punkte zu deinen Beständen. Du kannst sie jederzeit wieder einschalten.',ok:'Ausschalten'})))return false;
+  S.ui.cxIncl=on;save();if(keep)renderKeepFocus();else render();toast(on?'Krypto-Steuer ist an.':'Krypto-Steuer ist aus.');return true}
+function cxTaxToggle(){return cxTaxSet(S.ui.cxIncl===false)}
 function wiCxFill(){$('wi-cx').innerHTML=S.ui.country==='none'?'':S.ui.cxIncl===false?'<p>Die Krypto-Steuer ist aus.</p><div class="row"><button type="button" class="btn" data-tdcx>Krypto-Steuer einschalten</button></div>':'<p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#anderes-tool" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p><p><b>Rechnest du deine Kryptos schon mit einem anderen Tool</b>, z. B. Blockpit? Dann bleib dort und schalte die Krypto-Steuer hier aus. Sonst zählen deine USDC und USDT doppelt. Die Trading-Bilanz rechnet dann nur den CFD-Teil der Steuer.</p><p>Wichtig für das andere Tool: Eine Einzahlung bei Tag zählt als Verkauf deiner USDC oder USDT, eine Auszahlung von Tag als Kauf. So rechnet die Trading-Bilanz. Markiere sie im anderen Tool genauso und kläre das mit deiner Steuerberatung.</p><div class="row"><button type="button" class="btn" data-tdcx>Krypto-Steuer hier ausschalten</button></div>'}
 $('wi-cx').addEventListener('click',e=>{const b=e.target.closest('[data-tdcx]');if(b)cxTaxToggle(b)});
 // Ab 0.74 (2.4): „Aus anderem Coin getauscht“ in Österreich mit Ersatzwert, noch nicht bestätigt
@@ -11392,7 +11415,8 @@ $('country').onchange=async e=>{const v=e.target.value;if(!(await landOk(v))){e.
 $('wb-wl').addEventListener('click',e=>{e.stopPropagation();msg('walletmsg','','');openModal('wl-modal')});
 $('wb-td').addEventListener('click',e=>{e.stopPropagation();todoOpen()});
 // Ab 0.73 (2.1): Das Häkchen steht in der Tabelle der Jahresabrechnung, die neu gezeichnet wird
-document.addEventListener('change',e=>{const t=e.target;if(t&&t.dataset&&t.dataset.cxincl){S.ui.cxIncl=t.checked;save();renderKeepFocus()}});
+// Ab 0.85: wie der Link in „Noch offen“ (cxTaxSet). Bricht jemand die Rückfrage ab, bleibt das Häkchen gesetzt
+document.addEventListener('change',e=>{const t=e.target;if(t&&t.dataset&&t.dataset.cxincl)return cxTaxSet(t.checked,true).then(ok=>{if(!ok)t.checked=S.ui.cxIncl!==false})});
 $('de-other').addEventListener('change',e=>{if(!askDots([[e.target,'Andere private Veräußerungsgewinne']],$('de-fg'),()=>e.target.dispatchEvent(new Event('change'))))return;S.ui.deOther=e.target.value.trim();save();render()});
 $('de-pb').oninput=e=>{S.ui.dePb=e.target.value;save();render()};
 $('de-kist').onchange=e=>{S.ui.deKist=+e.target.value;save();render()};
@@ -11473,24 +11497,43 @@ $('btn-print').onclick=()=>{window.print();maybeDonate()};
 $('btn-csvall').onclick=()=>{csv(window.__rows,'Trading-Buchungen-alle.csv');maybeDonate()};
 // Ab 0.50 Nachtrag 5: Steht schon etwas im Tool (Reports, Krypto, eigene Kurse, Wallets)? Dann fragt „Sicherung laden“ nach.
 const stateHasData=()=>!!(Object.keys(S.accounts).length||Object.keys(S.deals).length||S.cx.length||Object.keys(S.tag).length||Object.keys(S.wtx).length||Object.keys(S.wign||{}).length||(S.bxF||[]).length||Object.keys(S.addr).length||Object.keys(S.rown).length||S.wallets.some(w=>w!=='Meine Wallet'));
-function saveBackup(){S.ui.lastBackup=new Date().toISOString();save();download(`Trading-Bilanz-Sicherung-${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(S),'application/json')}
+// Ab 0.85: Ließ sich der gespeicherte Stand beim Start nicht laden (BOOT_BAD), sichert „Sicherung speichern“ (in der Rückfrage zu „Alles löschen“) ihn so,
+// wie er im Speicher steht, nicht den leeren Stand im Fenster
+function saveBackup(){const fn=`Trading-Bilanz-Sicherung-${new Date().toISOString().slice(0,10)}.json`;if(BOOT_BAD){download(fn,BOOT_RAW||JSON.stringify(S),'application/json');return}
+  S.ui.lastBackup=new Date().toISOString();save();download(fn,JSON.stringify(S),'application/json')}
 $('btn-backup').onclick=()=>{saveBackup();msg('datamsg','ok','Sicherung gespeichert. Lege die Datei an einen sicheren Ort.');maybeDonate()};
 $('btn-restore').onclick=()=>$('restorefile').click();
 $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   // Ab 0.70: zuerst lesen und prüfen. Keine Sicherung: sofort die rote Meldung, ohne Rückfrage, nichts ändert sich
   // Ab 0.84 (G-18): Kein JSON (oder nicht lesbar) zeigt denselben Satz wie eine JSON-Datei ohne Konten (G-17). G-19 (Aufbereiten scheitert, unten) hat einen
   // eigenen Satz. In beiden Fällen steht die Meldung des Browsers nur in der Konsole
+  // Ab 0.85: Kommt „Sicherung laden“ aus dem Hinweis beim Start (BOOT_BAD), stehen die Meldungen dort (#boot-msg)
+  const mid=BOOT_BAD?'boot-msg':'datamsg';
   let j;try{j=JSON.parse(await readText(f))}catch(err){console.warn('Sicherung laden:',err);j=null}
-  if(!j||!j.deals||!j.accounts){msg('datamsg','bad',`Datei konnte nicht geladen werden: „${esc(f.name)}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`);e.target.value='';return}
+  if(!j||!j.deals||!j.accounts){msg(mid,'bad',`Datei konnte nicht geladen werden: „${esc(f.name)}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`);e.target.value='';return}
   // Ab 0.50 Nachtrag 5 (S1): Rückfrage, sobald irgendetwas im Tool steht (vorher nur mit Konten aus Reports), mit „Sicherung speichern“
   if(stateHasData()&&!(await askBox({title:'Sicherung laden',text:`„${f.name}“ laden? Das ersetzt alle Konten, Buchungen und Krypto-Einträge, die jetzt im Tool stehen.`,ok:'Laden',danger:true,more:ASK_BK}))){e.target.value='';return}
-  try{S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';save();msg('datamsg','ok',`Sicherung geladen: ${Object.keys(S.accounts).length} Konten, ${Object.keys(S.deals).length} Buchungen.`);render()}catch(err){console.warn('Sicherung laden:',err);msg('datamsg','bad',`Die Sicherung „${esc(f.name)}“ ließ sich nicht laden. Sie ist vielleicht beschädigt.`)}e.target.value=''};
+  // Ab 0.85 (Fund 2 aus 0.84): zuerst probeweise: einlesen, aufbereiten und zeichnen, ohne den alten Stand anzutasten und ohne zu speichern (SAVE_OFF).
+  // Erst wenn alles geklappt hat, ersetzt die Sicherung den alten Stand und wird gespeichert. Scheitert ein Schritt, zeichnet das Tool den alten Stand
+  // wieder, im Speicher hat sich nichts geändert (G-19).
+  const old=S;SAVE_OFF=true;SAVE_DUE=false;
+  try{S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';render()}
+  catch(err){console.warn('Sicherung laden:',err);S=old;SAVE_OFF=false;SAVE_DUE=false;RV=null;try{render()}catch(e2){console.warn(e2)}
+    msg(mid,'bad',`Die Sicherung „${esc(f.name)}“ ließ sich nicht laden. Sie ist vielleicht beschädigt.`);e.target.value='';return}
+  SAVE_OFF=false;SAVE_DUE=false;if(BOOT_BAD){BOOT_BAD=false;BOOT_RAW='';modalOn($('boot-modal'),false)}save();
+  const nA=Object.keys(S.accounts).length,nD=Object.keys(S.deals).length;
+  msg('datamsg','ok',`Sicherung geladen: ${nA} ${nA===1?'Konto':'Konten'}, ${nD} ${nD===1?'Buchung':'Buchungen'}.`);e.target.value=''};
+// Ab 0.85 (G-54): Hinweis beim Start, wenn sich der gespeicherte Stand nicht laden ließ. Die Knöpfe gehen dieselben Wege wie im Reiter „Sicherung“.
+function bootShow(){$('boot-b').innerHTML='<p>Dein gespeicherter Stand ließ sich nicht laden. Lade eine Sicherung oder lösche alles und fang neu an.</p><p class="small">Bis du etwas wählst, bleibt der gespeicherte Stand unverändert in diesem Browser.</p>';
+  msg('boot-msg','','');modalOn($('boot-modal'),true);$('btn-boot-load').focus()}
+$('btn-boot-load').onclick=()=>$('restorefile').click();
+$('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ab 0.66 (Florians Wunsch): Nach dem Löschen lädt das Tool die Seite neu. So startet es wie beim ersten Öffnen, mit der Begrüßung
 // (Land, ab 0.77 mit „Erste Schritte“ und „Ohne Einführung starten“) und frisch aufbereitetem Zustand (fixState). Vorher blieb die Begrüßung bis zum nächsten Neuladen aus
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
-$('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
+$('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.84',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.85',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -11832,7 +11875,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
   const v=$(p==='bx'?'bxprev':'wfprev').querySelector('.tprev')||$(p==='bx'?'bx-load':'wf-load');if(v)v.scrollIntoView({behavior:'smooth',block:'nearest'})});
 async function dropFiles(files){files=[...(files||[])];if(!files.length)return;
   // Begrüßung offen: nichts verarbeiten (der Browser öffnet die Datei trotzdem nicht)
-  if($('intro-modal').classList.contains('on')||$('taxack-modal').classList.contains('on'))return;
+  if($('intro-modal').classList.contains('on')||$('taxack-modal').classList.contains('on')||$('boot-modal').classList.contains('on'))return;
   if(ASK){toast(`Schließe zuerst das Fenster „${$('ask-t').textContent}“.`,4000);return}
   if(MODAL&&MODAL.id!=='dt-modal'&&mBusy(MODAL)){toast(`Schließe zuerst das Fenster „${mTitle(MODAL)}“.`,4000);return}
   const K=await Promise.all(files.map(fileKind));
@@ -11969,6 +12012,8 @@ document.querySelectorAll('.ver').forEach(e=>e.textContent=`${VERSION} vom ${VDA
 if(DL_URL)$('dl-link').innerHTML=` · <a href="${DL_URL}" target="_blank" rel="noopener">Neueste Version herunterladen&nbsp;↗</a>`;
 // Ab 0.47: Ergänzungen beim Öffnen, die Funktionen aus späteren Blöcken brauchen: „davon Gebühr“ aus der alten Notiz „Gebühr 4,00 € (Bitvavo)“
 // (die Notiz bleibt), Überträge aus der Börse mit den gemerkten Mengen (bxRepair)
+// Ab 0.85: Scheitert hier etwas oder beim ersten Zeichnen, gilt der gespeicherte Stand als nicht ladbar (bootFail, Hinweis bootShow unten)
+try{
 {let ch=0;for(const c of S.cx)if(c.kind==='kauf'&&!(c.feeIn>0)){const m=String(c.note||'').match(/^Gebühr ([\d.]*\d(?:,\d+)?) € \(Bitvavo\)$/);if(m&&parseDe(m[1])>0){c.feeIn=parseDe(m[1]);ch++}}
  if(bxRepair(S))ch++;
  // Ab 0.47 (Nachtrag 2, 1 und 3): Aufladung mit Coin-Wechsel zusammenfassen; verknüpfte Tag-Zeilen mit der Wallet ihrer Bewegung (wFix); Tag-Zeilen
@@ -11981,11 +12026,13 @@ if(DL_URL)$('dl-link').innerHTML=` · <a href="${DL_URL}" target="_blank" rel="n
  // Ab 0.50 (2.2 b): gespeicherte Antworten, die auf nicht mehr Vorhandenes zeigen oder nichts bewirken, fallen weg
  if(naClean(S))ch++;
  if(ch)save()}
-if(!S.ui.ack){introLand('');modalOn($('intro-modal'),true)}
-render();
+if(!BOOT_BAD&&!S.ui.ack){introLand('');modalOn($('intro-modal'),true)}
+render()}catch(e){bootFail(e);modalOn($('intro-modal'),false);try{render()}catch(e2){console.warn(e2)}}
+SAVE_OFF=false;if(SAVE_DUE&&!BOOT_BAD){SAVE_DUE=false;save()}
+if(BOOT_BAD)bootShow();
 try{if(sessionStorage.getItem(KEY+'-wiped')){sessionStorage.removeItem(KEY+'-wiped');toastShow('Alles gelöscht.')}}catch(e){}
 // Mit Häkchen „Fehlende Kurse automatisch laden“ (ab 0.66 von Anfang an gesetzt): beim Öffnen fehlende oder vorläufige Kurse holen (ohne Häkchen nie ohne Klick)
-autoRates();
+if(!BOOT_BAD)autoRates();
 </script>
 </body>
 </html>
