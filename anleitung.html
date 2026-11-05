@@ -5,6 +5,20 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'sha256-uvgta/Fen9eNu1UzMjP1nmdHzZq3bgEFb62ErqAOBD4='; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anleitung zur Trading-Bilanz</title>
+<!-- Ab 0.90: Favicon, apple-touch-icon und Logo aus icons/ (img-src 'self' erlaubt Bilder vom eigenen Server), Angaben für die Link-Vorschau wie im Tool -->
+<meta name="description" content="Schritt für Schritt mit Bildern, in drei Stufen: erst die Auswertung, dann „Dein echtes Geld“, zuletzt die Krypto-Steuer.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Anleitung zur Trading-Bilanz">
+<meta property="og:description" content="Schritt für Schritt mit Bildern, in drei Stufen: erst die Auswertung, dann „Dein echtes Geld“, zuletzt die Krypto-Steuer.">
+<meta property="og:url" content="https://trading-bilanz.github.io/anleitung.html">
+<meta property="og:image" content="https://trading-bilanz.github.io/icons/vorschau-trading-bilanz.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Icon der Trading-Bilanz, darunter der Name und der Satz: Statistik und Steuerzahlen aus deinen MetaTrader-5-Reports. Deine Daten bleiben in diesem Browser.">
+<meta property="og:locale" content="de_AT">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-trading-bilanz-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-trading-bilanz-180.png">
 <!--
   Anleitung mit Bildern zur Trading-Bilanz. Farben wie im Tool (trading-bilanz.html, :root), hell und dunkel nach Systemeinstellung.
   Ab 0.70 in drei Stufen gegliedert (Auswertung, Dein echtes Geld, Krypto-Steuer): Inhalt nach Stufen (#inhalt), je Stufe ein Kopf (div.stufe, #stufe-1 … 3)
@@ -40,6 +54,10 @@ html.js{scroll-padding-top:60px}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
 .wrap{max-width:860px;margin:0 auto;padding:24px 16px 40px}
 header h1{font-size:28px;line-height:1.25;margin:0 0 6px;letter-spacing:-.01em}
+/* Ab 0.90: Logo links neben dem Titel, gleich groß wie im Tool (32 px, am Handy 24 px), alt="", weil der Name daneben steht */
+header h1{display:flex;align-items:center;gap:10px}
+.hlogo{width:32px;height:32px;flex:none;display:block}
+@media (max-width:560px){header h1{gap:6px}.hlogo{width:24px;height:24px}}
 .sub{color:var(--ink2);margin:0 0 12px}
 a{color:var(--accent)}
 a:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
@@ -174,7 +192,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </div></div>
 <div class="wrap" id="top">
 <header>
-  <h1>Anleitung zur Trading-Bilanz</h1>
+  <h1><img class="hlogo" src="icons/icon-trading-bilanz-64.png" alt="" width="32" height="32">Anleitung zur Trading-Bilanz</h1>
   <p class="sub">Schritt für Schritt mit Bildern, in drei Stufen: erst die Auswertung, dann „Dein echtes Geld“, zuletzt die Krypto-Steuer. Oben wählst du dein Gerät, dann siehst du nur, was dafür gilt.</p>
   <a class="tool" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">Zur Trading-Bilanz</a>
   <nav class="toc" id="inhalt" aria-label="Inhalt">
