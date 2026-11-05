@@ -57,7 +57,7 @@ VORSCHAU = [
 TITEL = 'Trading-Bilanz'
 UNTERTITEL = [  # je Eintrag eine Zeile
     'Statistik und Steuerzahlen aus deinen MetaTrader-5-Reports.',
-    'Deine Daten bleiben in diesem Browser.',
+    'Deine Daten bleiben bei dir in diesem Browser.',
 ]
 FARBE_GRUND = '#f6f5f2'   # --bg
 FARBE_TITEL = '#1a1a1a'   # --ink
