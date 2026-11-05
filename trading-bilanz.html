@@ -11478,17 +11478,19 @@ $('btn-backup').onclick=()=>{saveBackup();msg('datamsg','ok','Sicherung gespeich
 $('btn-restore').onclick=()=>$('restorefile').click();
 $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   // Ab 0.70: zuerst lesen und prüfen. Keine Sicherung: sofort die rote Meldung, ohne Rückfrage, nichts ändert sich
-  let j;try{j=JSON.parse(await readText(f));if(!j||!j.deals||!j.accounts)throw new Error(`„${f.name}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`)}
-  catch(err){msg('datamsg','bad','Datei konnte nicht geladen werden: '+esc(err.message));e.target.value='';return}
+  // Ab 0.84 (G-18): Kein JSON (oder nicht lesbar) zeigt denselben Satz wie eine JSON-Datei ohne Konten (G-17). G-19 (Aufbereiten scheitert, unten) hat einen
+  // eigenen Satz. In beiden Fällen steht die Meldung des Browsers nur in der Konsole
+  let j;try{j=JSON.parse(await readText(f))}catch(err){console.warn('Sicherung laden:',err);j=null}
+  if(!j||!j.deals||!j.accounts){msg('datamsg','bad',`Datei konnte nicht geladen werden: „${esc(f.name)}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`);e.target.value='';return}
   // Ab 0.50 Nachtrag 5 (S1): Rückfrage, sobald irgendetwas im Tool steht (vorher nur mit Konten aus Reports), mit „Sicherung speichern“
   if(stateHasData()&&!(await askBox({title:'Sicherung laden',text:`„${f.name}“ laden? Das ersetzt alle Konten, Buchungen und Krypto-Einträge, die jetzt im Tool stehen.`,ok:'Laden',danger:true,more:ASK_BK}))){e.target.value='';return}
-  try{S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';save();msg('datamsg','ok',`Sicherung geladen: ${Object.keys(S.accounts).length} Konten, ${Object.keys(S.deals).length} Buchungen.`);render()}catch(err){msg('datamsg','bad','Datei konnte nicht geladen werden: '+esc(err.message))}e.target.value=''};
+  try{S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';save();msg('datamsg','ok',`Sicherung geladen: ${Object.keys(S.accounts).length} Konten, ${Object.keys(S.deals).length} Buchungen.`);render()}catch(err){console.warn('Sicherung laden:',err);msg('datamsg','bad',`Die Sicherung „${esc(f.name)}“ ließ sich nicht laden. Sie ist vielleicht beschädigt.`)}e.target.value=''};
 // Ab 0.66 (Florians Wunsch): Nach dem Löschen lädt das Tool die Seite neu. So startet es wie beim ersten Öffnen, mit der Begrüßung
 // (Land, ab 0.77 mit „Erste Schritte“ und „Ohne Einführung starten“) und frisch aufbereitetem Zustand (fixState). Vorher blieb die Begrüßung bis zum nächsten Neuladen aus
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.83',VDATE='04.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.84',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
