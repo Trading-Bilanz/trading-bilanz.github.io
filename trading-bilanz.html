@@ -5470,7 +5470,8 @@ function wAskHTML(k,m,q){const K=esc(k),b=(a,t,id,cls)=>`<button type="button" c
     if(!q.diff.length)return sugBox({fq:1,frage:tagFr(t),name:'Zuordnung zu Tag',kurz:q1,warum:[ml,tg(t)],wenn:'ein Vorgang statt zwei.',btns:`<div class="row">${b('tagyes','Übernehmen',t.id,'primary')}${b('tagno','Nein',t.id)}</div>`});
     return sugBox({fq:1,frage:tagFr(t),name:'Zuordnung zu Tag mit Korrektur',kurz:q.diff.map(([f,a,c])=>`${f} ${esc(a)} → ${esc(c)}`).join(', '),warum:[ml,tg(t)],wenn:'ein Vorgang statt zwei, die Tag-Zeile bekommt die Werte aus der Wallet-Datei.',
       btns:`<div class="row">${b('tagyes','Übernehmen',t.id,'primary')}${b('tagkeep','Nur verknüpfen',t.id)}${b('tagno','Nein',t.id)}</div>`})}
-  if(q.ty==='tagmulti')return sugBox({fq:1,multi:q.l.length,frage:'Zu welcher Zeile bei Tag gehört dieser Betrag?',name:'Zuordnung zu Tag',kurz:`${q1}, ${numW(q.l.length)} Möglichkeiten`,warum:[ml,['','Bei Tag gibt es mehrere passende Zeilen.']],wenn:'ein Vorgang statt zwei.',
+  // Ab 0.91 (1): nur eine passende Tag-Zeile, die auch zu einer anderen Bewegung passt: „1 Möglichkeit“ (bis 0.90 „ein Möglichkeiten“)
+  if(q.ty==='tagmulti')return sugBox({fq:1,multi:q.l.length,frage:'Zu welcher Zeile bei Tag gehört dieser Betrag?',name:'Zuordnung zu Tag',kurz:`${q1}, ${q.l.length===1?'1 Möglichkeit':numW(q.l.length)+' Möglichkeiten'}`,warum:[ml,['',q.l.length===1?'Die Zeile bei Tag passt auch zu einer anderen Bewegung.':'Bei Tag gibt es mehrere passende Zeilen.']],wenn:'ein Vorgang statt zwei.',
     btns:pick(tagOrd(m,q.l).map(t=>({id:t.id,t})),'tagpick',x=>tagRef(x.t),'tagnone',q.l.map(t=>t.id).join(','))});
   if(q.ty==='tagnear')return sugBox({fq:1,frage:tagFr(q.t),name:'Zuordnung zu Tag',kurz:q1,warum:[ml,tg(q.t)],wenn:'ein Vorgang statt zwei.',btns:`<div class="row">${b('tagpick','Übernehmen',q.t.id,'primary')}${b('tagno','Nein',q.t.id)}</div>`});
   const c=q.c,d=wFeeDiff(k,c);
@@ -7375,7 +7376,7 @@ function sugPI(c){const o=S.wtx[c.ko],i=S.wtx[c.ki];if(!o||!i)return null;const 
   const f=(c.ty==='brx'||c.ty==='br')&&rOwn(S,o.from)&&wCardTok(i)&&CA.has(i.to)&&!CA.has(o.from)?Object.entries(S.wtx).find(([k,m])=>k!==c.ko&&m.to===o.from&&m.coin===o.coin&&Math.abs(m.qty-o.qty)<=0.01+1e-9&&Math.abs(m.ts-o.ts)<=10800&&rAW(S,m.from)&&rAW(S,m.from)!==rAW(S,o.from)):null;
   if(f){const [fk,m0]=f,w0=rAW(S,m0.from);return {name:cc?'Aufladung mit Tausch':'Aufladung',kurz:`${fmtNum(m0.qty)} ${ct(m0)}${cc?` → ${fmtNum(i.qty)} ${ct(i)}`:''} (${esc(w0)} → ${esc(c.w)})`,ks:[fk,c.ko,c.ki],fee:Math.max(0,+(m0.qty-i.qty).toFixed(8)),dep:[o.from],
     src:m0,wa:w0,wb:c.w,ci:i.coin,na:wNet(m0.net),nb:wNet(i.net)}}
-  const nm=c.ty==='br'?'Brücke':c.ty==='brx'?'Tausch über Brücke':c.ty==='top'?(cc?'Aufladung mit Tausch':'Aufladung'):cc?'Tausch':'Übertrag';
+  const nm=c.ty==='br'?'Brücke':c.ty==='brx'?'Tausch über Brücke':c.ty==='top'?(cc?'Aufladung mit Tausch':'Aufladung'):'Übertrag';
   return {name:nm,kurz:`${fmtNum(o.qty)} ${ct(o)}${cc||Math.abs(o.qty-i.qty)>1e-9?` → ${fmtNum(i.qty)} ${ct(i)}`:''} (${esc(c.w)}${c.w2&&c.w2!==c.w?' → '+esc(c.w2):''})`,ks:[c.ko,c.ki],fee:cc?Math.max(0,+(o.qty-i.qty).toFixed(8)):c.dq||0,dep:c.ty==='top'?[o.to]:[],
     src:o,wa:c.w,wb:c.w2||c.w,ci:i.coin,na:wNet(o.net),nb:wNet(i.net)}}
 // Ab 0.50 Nachtrag 1 (4.1): großer Satz zu einem Paar. Die Frage nennt nur, was das Tool aus den Daten weiß, und unterstellt keine Absicht.
@@ -7385,8 +7386,9 @@ function sugPQ(p){const q=`${fmtNum(p.src.qty)} ${esc(p.src.coin)}`,ci=esc(p.ci)
   if(p.name==='Aufladung mit Tausch')return `Hast du deine Karte „${b}“ mit ${q} aufgeladen und dabei in ${ci} getauscht?`;
   if(p.name==='Brücke')return p.na!==p.nb?`Hast du diese ${q} über eine Brücke von ${esc(p.na)} nach ${esc(p.nb)} gebracht?`:`Gingen diese ${q} über eine Brücke?`;
   if(p.name==='Tausch über Brücke')return `Hast du ${q} über eine Brücke in ${ci} getauscht?`;
-  if(p.name==='Tausch')return `Hast du ${q} in ${ci} getauscht?`;
-  return a!==b?`Hast du diese ${q} von ${a} zu ${b} geschickt?`:`Hast du diese ${q} innerhalb von ${a} verschoben?`}
+  // Ab 0.91 (2): ohne die Fassungen „Hast du … in … getauscht?“ (Art „Tausch“) und „… innerhalb von … verschoben?“. Ein Paar zwischen zwei Wallets
+  // (wPairCands, ty 'xp') hat immer denselben Coin und zwei verschiedene Wallets, in derselben Wallet ist es eine Brücke ('br', 'brx').
+  return `Hast du diese ${q} von ${a} zu ${b} geschickt?`}
 // Teile eines Vorschlags: {frage (großer Satz, ab 0.50 Nachtrag 1), name (Art), kurz (Mengen, Von → Nach), warum [[Uhrzeit, Text]], wenn, pre, ch (Möglichkeiten,
 // wenn es mehrere gibt), k (Bewegung für „in der Liste zeigen“), tid (Tag-Zeile), d/t (Datum, Uhrzeit), btns (eigene Knöpfe), cls}
 function sugInfo(s){
@@ -7455,10 +7457,11 @@ function sugInfo(s){
         one?rows(L[0]):[tg,['',ein?'Kurz davor kamen passende Beträge in diesen Wallets an.':L.every(x=>x.gap!=null)?'Danach fehlt in diesen Wallets Geld, das die Auszahlung decken kann.':'Kurz danach kamen passende Beträge in diesen Wallets an.']],
       wenn:one?`die Tag-Zeile bekommt die Wallet „${w0}“${L[0].key[0]==='m'?', die Bewegung gehört dann zu Tag':gg?`, dann fehlen dort am ${dm(g0.d)} noch ${fmtNum(g0.gap-Math.abs(t.qty))} ${cn}. Dafür schlägt das Tool ${gg.length===1?'die Auszahlung':'die Auszahlungen'} ${gg.map(x=>'vom '+dm(x.d)).join(' und ')} vor`:g0?`, dann fehlt dort am ${dm(g0.d)} nichts mehr`:''}.`:'die Tag-Zeile bekommt die gewählte Wallet.',
       ch:one?null:L.map(x=>{const r=ln(x);return `${ein?'Aus':'Nach'} „${esc(x.w)}“: ${r[1]}, ${r[0]}`}),d:a.date,t:a.time||''}}
+  // Ab 0.91 (3): Der Vorschlag kommt immer von einem Zugang (Kauf, Geschenk, wTagWSug): „Am selben Tag kamen … in „…“ an.“ (bis 0.90 „gingen … weg“)
   if(s.ty==='tw'){const t=S.tag[s.tid];if(!t)return null;const L=s.l,one=L.length===1,a=tagAT(t);
     return {frage:one?`Kam deine Einzahlung bei Tag vom ${dm(a.date)} aus ${esc(L[0])}?`:`Aus welcher Wallet kam deine Einzahlung bei Tag vom ${dm(a.date)}?`,
       name:`Einzahlung zu Tag aus ${one?'„'+esc(L[0])+'“':'einer Wallet'}`,kurz:`${fmtNum(t.qty)} ${esc(t.coin)}`,
-      warum:[[(a.time||'').slice(0,5),tagRef(t)],['',`Am selben Tag gingen ${fmtNum(t.qty)} ${esc(t.coin)} aus ${L.map(w=>'„'+esc(w)+'“').join(' oder ')} weg.`]],
+      warum:[[(a.time||'').slice(0,5),tagRef(t)],['',`Am selben Tag kamen ${fmtNum(t.qty)} ${esc(t.coin)} in ${L.map(w=>'„'+esc(w)+'“').join(' oder ')} an.`]],
       wenn:one?`die Tag-Zeile bekommt die Wallet „${esc(L[0])}“.`:'',ch:one?null:L.map(w=>`Aus „${esc(w)}“`),tid:s.tid,d:a.date,t:a.time||''}}
   if(s.ty==='wusd'){const x=s.x;
     return {frage:`Ist ${esc(x.sym)} das Guthaben deiner Karte?`,name:sugGl('Kartenguthaben'),kurz:`${esc(x.sym)} zählt als USDC`,warum:[['',`${x.n===1?'1 Bewegung':fI.format(x.n)+' Bewegungen'} mit ${esc(x.sym)}.`]],wenn:`${x.n===1?'sie zählt':'sie zählen'} als USDC.`,d:'',t:''}}
@@ -11670,7 +11673,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.90',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.91',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
