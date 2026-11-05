@@ -4,22 +4,35 @@
 #   Einmal vorher:                      pip install pillow
 #
 # Neues Motiv: icons/quelle/icon-trading-bilanz-original.png ersetzen (quadratisch, PNG mit
-# transparenten Ecken) und den Befehl starten. Alle Dateien in icons/ werden neu geschrieben.
-# Danach die eingebetteten Bilder im Tool (trading-bilanz.html: Favicon 32, apple-touch-icon 180,
-# Logo im Kopf 64, Logo in der Begrüßung 128) neu einsetzen, die stehen dort als data:-Adresse.
+# transparenten Ecken) und den Befehl starten. Alle Dateien in icons/ werden neu geschrieben, und das
+# Skript setzt die eingebetteten Bilder im Tool neu ein (trading-bilanz.html bzw. index.html: Favicon 32,
+# apple-touch-icon 180, Logo im Kopf 64, Logo in der Begrüßung 128, dort als data:-Adresse, weil die
+# Content-Security-Policy des Tools Bilder nur als data: erlaubt). Die Anleitung verweist auf die Dateien.
 #
 # Schrift der Vorschaubilder: Inter (SIL Open Font License 1.1, icons/quelle/schrift/OFL.txt),
 # auf westeuropäische Zeichen gekürzt. Sie liegt hier bei, damit jeder Rechner dieselben Bilder macht.
 
+import base64
+import io
 import os
+import re
 import sys
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageCms, ImageColor, ImageDraw, ImageFont
 
 ORDNER = os.path.dirname(os.path.abspath(__file__))
 ORIGINAL = os.path.join(ORDNER, 'quelle', 'icon-trading-bilanz-original.png')
 SCHRIFT_TITEL = os.path.join(ORDNER, 'quelle', 'schrift', 'Inter-SemiBold.otf')
 SCHRIFT_TEXT = os.path.join(ORDNER, 'quelle', 'schrift', 'Inter-Regular.otf')
+TOOL = [os.path.join(ORDNER, '..', n) for n in ('trading-bilanz.html', 'index.html')]
+
+# Eingebettete Bilder im Tool: Stelle (Anfang des Tags bis vor die Adresse) und Größe
+EINGEBETTET = [
+    ('<link rel="icon" type="image/png" sizes="32x32" href="', 32),
+    ('<link rel="apple-touch-icon" sizes="180x180" href="', 180),
+    ('<img class="hlogo" src="', 64),
+    ('<img class="ilogo" src="', 128),
+]
 
 # Icon-Größen in Pixeln (quadratisch). Datei: icon-trading-bilanz-<Größe>.png
 #   32 Favicon · 64 Logo im Kopf · 128 Logo in der Begrüßung · 180 Startbildschirm iPhone
@@ -72,7 +85,11 @@ def kachel_farbe(im):
     return tuple(sorted(k)[len(k) // 2] for k in kanaele)
 
 
-def speichern(bild, pfad, palette):
+def speichern(bild, pfad, palette, profil=None):
+    if profil:  # Farbprofil nur behalten, wenn es nicht sRGB ist (sRGB nimmt jeder Browser ohnehin an)
+        bild.info['icc_profile'] = profil
+    else:
+        bild.info.pop('icc_profile', None)
     if palette:
         bild = bild.quantize(256, method=Image.Quantize.FASTOCTREE)
     bild.save(pfad, 'PNG', optimize=True)
@@ -123,10 +140,48 @@ def vorschau(orig, breite, hoehe):
     return bild
 
 
+def farbprofil(orig):
+    """Farbprofil des Originals, außer es ist sRGB (dann None, spart Bytes in jeder Datei)."""
+    icc = orig.info.get('icc_profile')
+    if not icc:
+        return None
+    try:
+        if 'srgb' in ImageCms.getProfileDescription(ImageCms.ImageCmsProfile(io.BytesIO(icc))).lower():
+            return None
+    except Exception:
+        pass
+    return icc
+
+
+def tool_einsetzen():
+    """Setzt die Icons als data:-Adresse in die Fassungen des Tools ein, die es gibt."""
+    for pfad in TOOL:
+        if not os.path.exists(pfad):
+            continue
+        with open(pfad, encoding='utf-8', newline='') as f:
+            text = f.read()
+        neu = text
+        for anfang, g in EINGEBETTET:
+            with open(os.path.join(ORDNER, 'icon-trading-bilanz-%d.png' % g), 'rb') as f:
+                daten = 'data:image/png;base64,' + base64.b64encode(f.read()).decode('ascii')
+            muster = re.escape(anfang) + r'data:image/png;base64,[A-Za-z0-9+/=]*'
+            neu, n = re.subn(muster, lambda m: anfang + daten, neu)
+            if n != 1:
+                sys.exit('%s: Stelle %s gibt es %d-mal statt einmal.' % (os.path.basename(pfad), anfang, n))
+        if neu != text:
+            with open(pfad, 'w', encoding='utf-8', newline='') as f:
+                f.write(neu)
+            print('%s: eingebettete Bilder erneuert (%+d Bytes)' % (os.path.basename(pfad), len(neu.encode()) - len(text.encode())))
+        else:
+            print('%s: eingebettete Bilder unverändert' % os.path.basename(pfad))
+
+
 def main():
     if not os.path.exists(ORIGINAL):
         sys.exit('Original fehlt: ' + ORIGINAL)
-    orig = Image.open(ORIGINAL).convert('RGBA')
+    roh = Image.open(ORIGINAL)
+    profil = farbprofil(roh)
+    orig = roh.convert('RGBA')
     if orig.width != orig.height:
         sys.exit('Das Original muss quadratisch sein, ist aber %d x %d px.' % orig.size)
     kachel = None
@@ -137,22 +192,18 @@ def main():
             kachel = kachel or kachel_farbe(orig)
             f = kachel
         elif f:
-            f = ImageColorRGB(f)
+            f = ImageColor.getrgb(f)[:3]
         name = 'icon-trading-bilanz-%d.png' % g
-        speichern(icon(orig, g, f), os.path.join(ORDNER, name), g not in VOLLFARBE)
+        speichern(icon(orig, g, f), os.path.join(ORDNER, name), g not in VOLLFARBE, profil)
         erzeugt.append(name)
     for name, b, h in VORSCHAU:
-        speichern(vorschau(orig, b, h), os.path.join(ORDNER, name), name not in VOLLFARBE)
+        speichern(vorschau(orig, b, h), os.path.join(ORDNER, name), name not in VOLLFARBE, profil)
         erzeugt.append(name)
     for name in erzeugt:
         print('%-30s %7d Bytes' % (name, os.path.getsize(os.path.join(ORDNER, name))))
     if kachel:
         print('Farbe der Kachel für die Ecken: #%02x%02x%02x' % kachel)
-
-
-def ImageColorRGB(farbe):
-    from PIL import ImageColor
-    return ImageColor.getrgb(farbe)[:3]
+    tool_einsetzen()
 
 
 if __name__ == '__main__':
