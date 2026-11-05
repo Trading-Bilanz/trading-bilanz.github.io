@@ -144,6 +144,19 @@ section.on{display:block}
 #map-table tr.mapr>td:first-child{box-shadow:inset 3px 0 0 var(--sig-r)}
 #map-table tr.mapy>td:first-child{box-shadow:inset 3px 0 0 var(--sig-y)}
 #map-table select{max-width:100%}
+/* Ab 0.86 (AU-19): Liste „Zahlungsmethoden“ in „＋ Daten“ → „Tag-Daten“, wie „Buchungsarten“: am PC Tabelle, am Handy ein Block je Methode */
+#tm-table td.tml{white-space:normal}
+#tm-table .tmm{display:none}
+#tm-table select{max-width:100%}
+@media(max-width:700px){
+  #tm-table,#tm-table tbody,#tm-table tr,#tm-table td{display:block;width:auto}
+  #tm-table thead{display:none}
+  #tm-table tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  #tm-table td{border:0;padding:0;text-align:left;white-space:normal}
+  #tm-table .tmm{display:inline}
+  #tm-table td.tmc{margin-top:8px}
+  #tm-table select{width:100%}
+}
 @media(max-width:700px){
   #map-table,#map-table tbody,#map-table tr,#map-table td{display:block;width:auto}
   #map-table thead{display:none}
@@ -1660,7 +1673,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <!-- Ab 0.85 (G-54): Hinweis beim Start, wenn sich der gespeicherte Stand nicht laden oder zeichnen lässt (bootShow, Text vom Skript). Wie #taxack-modal
      über modalOn: kein ×, Esc und Klick daneben schließen es nicht, nur die beiden Knöpfe. Bis dahin speichert das Tool nichts (BOOT_BAD). -->
 <div class="modal noprint" id="boot-modal"><div class="box" role="alertdialog" aria-modal="true" aria-labelledby="boot-t" aria-describedby="boot-b">
-  <h2 id="boot-t">Gespeicherter Stand</h2>
+  <h2 id="boot-t">Gespeicherter Stand ließ sich nicht laden</h2>
   <div id="boot-b"></div><div id="boot-msg"></div>
   <div class="row" style="justify-content:flex-end"><button type="button" class="btn danger" id="btn-boot-wipe">Alles löschen</button><button type="button" class="btn primary" id="btn-boot-load">Sicherung laden</button></div>
 </div></div>
@@ -1892,6 +1905,9 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <div id="tagmsg"></div>
     <!-- Vorschau vor dem Speichern (renderTagPrev) -->
     <div id="tagprev"></div>
+    <!-- Ab 0.86 (AU-19): gemerkte Zahlungsmethoden (S.tagMeth) mit „per Bank“ · „mit Krypto“ zum Umstellen, Aufbau wie die Karte „Buchungsarten“ (renderTagMeth) -->
+    <div id="tm-box" hidden><h3>Zahlungsmethoden <button type="button" class="ib" data-gl="k-tagmeth" aria-expanded="false" aria-controls="glpop" aria-label="Erklärung: Zahlungsmethoden">i</button></h3>
+      <table id="tm-table"></table><div id="tmmsg"></div></div>
   </div>
   <!-- Ab 0.44: Börsen (Börsen-Datei, sonst von Hand). Ab 0.51 (1): Namen der Börsen aus BX_FMT (#bx-fmts setzt das Skript) -->
   <div class="wpan" id="bx-load" hidden>
@@ -2114,7 +2130,7 @@ let S=blank();
 // bleibt, bis die Person „Sicherung laden“ oder „Alles löschen“ wählt. BOOT_RAW = der gespeicherte Text (für „Sicherung speichern“ in der Rückfrage).
 // SAVE_OFF: Bis der Start fertig gezeichnet ist und während „Sicherung laden“ eine Datei ausprobiert, merkt sich save() nur, dass gespeichert werden
 // soll (SAVE_DUE). Nach einem guten Start speichert das Tool dann einmal.
-let BOOT_BAD=false,BOOT_RAW='',SAVE_OFF=true,SAVE_DUE=false;
+let BOOT_BAD=false,BOOT_RAW='',SAVE_OFF=true,SAVE_DUE=false,RATE_GONE=0;
 try{const raw=localStorage.getItem(KEY); if(raw){try{S=Object.assign(blank(),JSON.parse(raw))}catch(e){console.warn('Gespeicherter Stand:',e);BOOT_BAD=true;BOOT_RAW=raw}}}catch(e){}
 function fixState(){const b=blank();RV=null;
   // Ab 0.80 (2, 3): gespeicherte Zuordnungen auf Schlüssel ohne Beträge umstellen, „ignorieren“ wird „unklar“. Treffen zwei alte Schlüssel auf einen neuen:
@@ -2210,10 +2226,14 @@ for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','t
   if((old.rAutoV||0)<66&&!old.rAutoMan)S.ui.rAuto=true;S.ui.rAutoV=66;
   S.ui.rAuto=S.ui.rAuto!==false;S.ui.rtUsed=S.ui.rtUsed!==false;S.rcov=Object.assign({load:'',file:''},S.rcov);
   for(const [d,q] of Object.entries(S.rsrc))if(q==='von Hand eingefügt'){if(S.rates[d]!=null)S.rown[d]=S.rates[d];delete S.rates[d];delete S.rsrc[d]}
-  for(const d of Object.keys(S.rown))if(S.rates[d]!=null||RBM[d]!=null)delete S.rown[d];
+  // Ab 0.86 (AU-02): Ein eigener Kurs fällt weiter weg, sobald es für den Tag einen EZB-Kurs gibt. Wie viele es waren, merkt sich RATE_GONE,
+  // der Start und „Sicherung laden“ sagen es einmal als Toast (rateGoneToast). Danach ist der Kurs aus dem Stand, der Hinweis kommt nicht wieder.
+  RATE_GONE=0;for(const d of Object.keys(S.rown))if(S.rates[d]!=null||RBM[d]!=null){delete S.rown[d];RATE_GONE++}
   for(const A of Object.values(S.accounts))delete A.pfOk; // 0.32 vor dem Nachtrag: Ausblenden je Konto, jetzt gemeinsam in S.pfOk
   if(!S.rcov.load){const ds=Object.keys(S.rates).filter(d=>!/Datei/.test(S.rsrc[d]||'')).sort();if(ds.length)S.rcov.load=ds[ds.length-1]}}
 // Ab 0.85: Scheitert der Start mit dem gespeicherten Stand, gilt BOOT_BAD, das Tool arbeitet mit einem leeren Stand weiter (siehe oben)
+function rateGoneToast(){const n=RATE_GONE;RATE_GONE=0;if(!n)return;save();
+  toastShow(n===1?'Für 1 Tag gibt es jetzt einen EZB-Kurs. Das Tool rechnet dort damit statt mit deinem eigenen Kurs.':`Für ${fI.format(n)} Tage gibt es jetzt EZB-Kurse. Das Tool rechnet dort damit statt mit deinen eigenen Kursen.`)}
 function bootFail(e){console.warn('Gespeicherter Stand:',e);if(!BOOT_BAD){BOOT_BAD=true;try{BOOT_RAW=localStorage.getItem(KEY)||''}catch(x){BOOT_RAW=''}}S=blank();fixState()}
 try{fixState()}catch(e){bootFail(e)}
 // Ab 0.46 (Regel 7): Eingaben in einem Fenster, die noch nicht gespeichert sind. Jedes Speichern setzt es zurück.
@@ -2421,12 +2441,16 @@ async function loadFiles(files){
       const fresh=whole&&(!A.repDate||!r.repDate||r.repDate>=A.repDate),dif=(p,q)=>Math.abs(p-q)>0.005;
       A.cur=r.cur;A.holder=r.holder||A.holder;A.company=r.company||A.company;if(r.check&&whole)A.check=r.check;
       if(!A.repDate||r.repDate>A.repDate)A.repDate=r.repDate;
-      let a=0,d=0,u=0;
+      // Ab 0.86 (AU-08): je aktualisierter Buchung Datum, Konto und was sich geändert hat (alt → neu), aufklappbar unter der Meldung (UL)
+      let a=0,d=0,u=0;const UL=[];
       for(const x of r.deals){const k=r.acc+':'+x.id,o=S.deals[k];
-        if(o){d++;if(fresh&&(dif(o.bal,x.bal)||dif(o.prof,x.prof)||dif(o.cost,x.cost))){S.deals[k]=Object.assign({a:r.acc},x);u++}continue}
+        if(o){d++;if(fresh&&(dif(o.bal,x.bal)||dif(o.prof,x.prof)||dif(o.cost,x.cost))){
+          const ch=[['Betrag','prof'],['Kosten (Kommission, Gebühr, Swap)','cost'],['Kontostand','bal']].filter(([,f])=>dif(o[f],x[f])).map(([l,f])=>`${l} ${usd(o[f])} → ${usd(x[f])}`);
+          UL.push(`<li>${fD(dOf(x.t))} ${esc(String(x.t).slice(11,16))}, Konto ${esc(r.acc)}: ${ch.join(', ')}</li>`);S.deals[k]=Object.assign({a:r.acc},x);u++}continue}
         S.deals[k]=Object.assign({a:r.acc},x);a++}
       added+=a;dup+=d;upd+=u;nOk++;
-      out.push(r.deals.length?`<b>${esc(f.name)}</b>: Konto ${r.acc}, ${a} ${a===1?'neue Buchung':'neue Buchungen'}${d?`, ${d} schon vorhanden`:''}${u?`, davon ${u} aktualisiert (Kontostand oder Betrag aus diesem Report übernommen)`:''}.`:
+      out.push(r.deals.length?`<b>${esc(f.name)}</b>: Konto ${r.acc}, ${a} ${a===1?'neue Buchung':'neue Buchungen'}${d?`, ${d} schon vorhanden`:''}${u?`, davon ${u} aktualisiert (Kontostand oder Betrag aus diesem Report übernommen)`:''}.`+
+        (u?`<details class="wfd"><summary>${u===1?'Aktualisierte Buchung':'Aktualisierte Buchungen'} ansehen</summary><ul>${UL.join('')}</ul></details>`:''):
         `<b>${esc(f.name)}</b>: Konto ${r.acc}, keine Buchungen in diesem Report.`);
     }catch(e){out.push(`<b>${esc(f.name)}</b>: konnte nicht gelesen werden (${esc(e.message)}).`)}
   }
@@ -2814,7 +2838,7 @@ function addAnalysis(rows){
       put(per,U.out,E.out,false);
       if(U.warn||E.warn)console.warn(`Performance Fee ${fee.x.t} (Konto ${a}): Netto der Periode ≤ 0, PF nur auf die Gewinn-Trades verteilt.`);
       const nu=per.reduce((s,r)=>s+r.amt,0);
-      if(nu>0)share[a]={u:pf.u/nu,t:fee.x.t};
+      if(nu>0)share[a]={u:pf.u/nu,t:fee.x.t,a};
       per=[];
     };
     for(const r of byAcc[a]){
@@ -2831,9 +2855,11 @@ function addAnalysis(rows){
   // Laufende Periode: geschätzte Fee = Gebührenanteil × Ergebnis, wenn das Ergebnis positiv ist, sonst 0.
   // Gerechnet in Kontowährung wie bei Tag, in Euro zum Kurs des letzten Trades (ein Anteil in Euro schwankt mit dem Kurs innerhalb der Woche).
   // Ohne eigene abgeschlossene Periode gilt der zuletzt gebuchte Anteil eines anderen Kontos; gibt es keinen, wird nicht geschätzt.
-  const latest=Object.values(share).reduce((b,x)=>!b||x.t>b.t?x:b,null);
+  // Ab 0.86 (AU-11): PF_SRC[a] = Konto, dessen Anteil die laufende Periode von a nimmt ('' = keins, nicht geschätzt). „Pro Woche“ nennt es (pfSrcTxt).
+  const latest=Object.values(share).reduce((b,x)=>!b||x.t>b.t?x:b,null);PF_SRC={};
   for(const a of Object.keys(open)){
     const per=open[a];if(!per.length)continue;
+    if(!share[a])PF_SRC[a]=latest?latest.a:'';
     const sh=share[a]||latest;
     if(!sh){put(per,per.map(r=>r.amt),per.map(r=>r.eur),true);continue}
     const nu=per.reduce((s,r)=>s+r.amt,0),pfU=nu>0?sh.u*nu:0,rate=per[per.length-1].rate;
@@ -2875,7 +2901,13 @@ function addAnalysis(rows){
      (Tag liegt bei einem großen Konto teils 2 Cent über A, deshalb nicht 1 Cent.)
    - Außerdem: Fee in einer Woche mit Verlust ('loss').
    Ein Hinweis für alle Konten gemeinsam (renderChain); „Ausblenden“ merkt sich die Deal-Nummern der Fees in S.pfOk. */
-let PFCHK={rate:null,tests:[],iss:[]};
+let PFCHK={rate:null,tests:[],iss:[]},PF_SRC={};
+// Ab 0.86 (AU-11): Satz zur geschätzten PF der laufenden Woche, wenn ein Konto darin keinen eigenen Anteil hat (PF_SRC), sonst ''.
+// accs = Konten mit Trades in der laufenden Woche. Ein Konto: „Anteil von Konto …, weil dieses Konto …“, mehrere: mit „Für Konto …“ davor.
+function pfSrcTxt(accs){const L=accs.filter(a=>a in PF_SRC).sort(),m=accs.length>1;
+  return L.map(a=>{const q=PF_SRC[a],dies=m?`Konto ${a}`:'dieses Konto';
+    return q?`${m?`Für Konto ${a}: `:''}Anteil von Konto ${q}, weil ${dies} noch keine abgeschlossene Woche hat.`:
+      `${m?`Für Konto ${a}: `:''}Noch kein Anteil, weil ${dies} noch keine abgeschlossene Woche hat und auch kein anderes Konto. Bis Tag die Performance Fee abbucht, zählt sie hier mit 0.`}).join('\n')}
 const pfFloor=v=>Math.floor(v*100+1e-6)/100,PF_TOL=0.03,PF_NONE=0.05;
 function pfCheck(ck){
   const base=ck.filter(c=>c.nu>0&&!(c.loss<0)),su=base.reduce((s,c)=>s+c.u,0),sn=base.reduce((s,c)=>s+c.nu,0),rate=sn>0?su/sn:null;
@@ -6135,6 +6167,39 @@ function pasteTag(){
 // Ab 0.46 (2.3): Methode als Bank? Entscheidung in der Vorschau (D.meth), sonst gemerkt (S.tagMeth), sonst Bank (alles außer Crypto)
 const tagMethBank=(D,m)=>(D&&D.meth&&D.meth[m]||S.tagMeth[m]||'bank')==='bank';
 const tagMethNew=D=>[...new Set(D.P.rows.filter(r=>r.meth&&!/crypto|krypto/i.test(r.meth)).map(r=>r.meth))].filter(m=>!S.tagMeth[m]);
+// Ab 0.86 (AU-19): Liste „Zahlungsmethoden“. Umstellen wirkt auf alle eingefügten Tag-Zeilen der Methode (tagMethRows), außer auf Zeilen mit eigener
+// Wahl bei Woher/Wohin (tagMethOwn: man.w, man.b, auch „Geschenk“ aus der Vorschau). Vorher eine Rückfrage mit Zahl und Folgen, danach Toast mit „Rückgängig“.
+// Krypto → Bank: Coin EUR, keine Wallet, keine Frage; eine Verknüpfung mit einer Wallet-Datei wird gelöst wie bei „Bank wählen“ (naRec, wUnlink).
+// Bank → Krypto: Coin S.defCoin, Woher/Wohin „weiß ich noch nicht“ (wq 'q'), steht in „Noch offen“. Die Menge bleibt. „Euro laut Kontoauszug“ bleibt gespeichert.
+// Die Wahl des Tools bei einer Zeile ohne eigene Wahl wird nicht als eigene Wahl gemerkt (man bleibt), damit ein späteres Umstellen sie wieder erfasst.
+const tagMethRows=m=>Object.values(S.tag).filter(t=>t&&!t.hand&&t.meth===m);
+const tagMethOwn=t=>!!(t.man&&(t.man.w||t.man.b))||t.wq==='g';
+const tagMethLk=t=>{const m=!t.fiat&&t.wk&&S.wtx[t.wk];return !!(m&&m.st==='tag'&&m.ref===t.id)};
+function tagMethPlan(m,v){const bank=v==='bank',L=tagMethRows(m),own=L.filter(t=>tagMethOwn(t)&&!!t.fiat!==bank),ch=L.filter(t=>!tagMethOwn(t)&&!!t.fiat!==bank);
+  return {ch,own,lk:bank?ch.filter(tagMethLk):[],eb:bank?[]:ch.filter(t=>t.eurBank>0)}}
+function tagMethTxt(m,v,P){const pl=(n,a,b)=>`${fI.format(n)} ${n===1?a:b}`,n=P.ch.length,bank=v==='bank';
+  return [`„${m}“ ab jetzt ${bank?'per Bank':'mit Krypto'}?`,
+    [bank?`${pl(n,'Zeile wird','Zeilen werden')} damit Bank-${n===1?'Zahlung':'Zahlungen'}: keine Wallet, keine Krypto-Steuer, ${n===1?'zählt':'zählen'} für „Dein echtes Geld“.`:
+      `${pl(n,'Zeile wird','Zeilen werden')} damit Krypto-${n===1?'Zahlung':'Zahlungen'} mit ${S.defCoin||'USDC'}. Woher/Wohin ist dann „weiß ich noch nicht“, ${n===1?'die Zeile steht':'die Zeilen stehen'} in „Noch offen“.${Object.keys(S.wtx).length?` Findet das Tool ${n===1?'die Bewegung':'Bewegungen'} in einer Wallet-Datei, verknüpft es sie selbst.`:''}`,
+     P.lk.length?(P.lk.length===1?(n===1?'Sie':'1 davon')+' ist mit einer Bewegung aus einer Wallet-Datei verknüpft. Die Verknüpfung wird gelöst, die Bewegung ist danach wieder offen.':
+       `${fI.format(P.lk.length)} davon sind mit Bewegungen aus Wallet-Dateien verknüpft. Die Verknüpfungen werden gelöst, die Bewegungen sind danach wieder offen.`):'',
+     P.eb.length?`„Euro laut Kontoauszug“ bei ${pl(P.eb.length,'Zeile','Zeilen')} bleibt gespeichert, zählt aber nur bei einer Bank-Zahlung.`:'',
+     P.own.length?`${pl(P.own.length,'Zeile','Zeilen')}, bei ${P.own.length===1?'der':'denen'} du Woher/Wohin selbst gewählt hast, ${P.own.length===1?'bleibt':'bleiben'}, wie ${P.own.length===1?'sie ist':'sie sind'}.`:'',
+     `Auch Zeilen mit „${m}“, die du später einfügst, gelten dann als ${bank?'per Bank':'mit Krypto'}.`].filter(Boolean).join(' ')].join('\n\n')}
+function tagMethDo(m,v){const P=tagMethPlan(m,v),bank=v==='bank';S.tagMeth[m]=v;
+  for(const t of P.ch){if(bank){if(tagMethLk(t)){const k=t.wk;naRec(S,'unl','',()=>wUnlink(k))}t.fiat=true;t.coin='EUR';t.wallet='';delete t.wq}
+    else{t.fiat=false;t.coin=S.defCoin||'USDC';t.wallet='';t.wq='q'}}
+  return P.ch.length}
+function tagMethSet(m,v){if(!S.tagMeth[m]||S.tagMeth[m]===v)return Promise.resolve(false);const P=tagMethPlan(m,v),snap=JSON.stringify(S);
+  const go=()=>{const n=tagMethDo(m,v),wn=wSync();save();render();
+    toastUndo(`„${m}“ ist jetzt ${v==='bank'?'per Bank':'mit Krypto'}.${n?` ${fI.format(n)} ${n===1?'Zeile':'Zeilen'} umgestellt.`:''}${wn?` ${wn===1?'Ein Vorgang wurde':fI.format(wn)+' Vorgänge wurden'} mit der Wallet-Datei verknüpft.`:''}`,snap);return true};
+  if(!P.ch.length)return Promise.resolve(go());
+  return askBox({title:'Zahlungsmethode umstellen',text:tagMethTxt(m,v,P),ok:'Umstellen'}).then(ok=>{if(!ok){renderTagMeth();return false}return go()})}
+function renderTagMeth(){const box=$('tm-box'),M=Object.keys(S.tagMeth||{}).sort((a,b)=>a.localeCompare(b,'de'));box.hidden=!M.length;if(!M.length){$('tm-table').innerHTML='';return}
+  $('tm-table').innerHTML=`<thead><tr><th class="l">Methode bei Tag</th><th>Zeilen</th><th>Art</th></tr></thead><tbody>${M.map(m=>{const n=tagMethRows(m).length,b=S.tagMeth[m]==='bank';
+    return `<tr><td class="l tml"><b>${esc(m)}</b></td><td class="tmn">${fI.format(n)}<span class="tmm"> ${n===1?'Zeile':'Zeilen'}</span></td>`+
+      `<td class="tmc"><select data-tmeth="${esc(m)}" aria-label="Art von ${esc(m)}"><option value="bank"${b?' selected':''}>per Bank</option><option value="crypto"${b?'':' selected'}>mit Krypto</option></select></td></tr>`}).join('')}</tbody>`}
+$('tm-table').addEventListener('change',e=>{const s=e.target.closest&&e.target.closest('[data-tmeth]');if(s)tagMethSet(s.dataset.tmeth,s.value)});
 function tagPRows(){const D=TAGP,src=D.P.page==='wd'?'wd':'hist';
   return [...D.P.rows.map(r=>r.meth&&!/crypto|krypto/i.test(r.meth)?Object.assign({},r,{fiat:tagMethBank(D,r.meth)}):r),...D.unk.map((u,i)=>D.dec[i]==='ein'||D.dec[i]==='aus'?{id:u.id,date:u.date,time:u.time,kind:D.dec[i],usd:u.usd,status:'ok',src,fiat:false}:null).filter(Boolean)]}
 const TAG_PAGE={ein:'Transaction History',aus:'Withdrawals'};
@@ -6200,6 +6265,9 @@ for(const ev of ['input','change'])$('tagprev').addEventListener(ev,e=>{const P=
 $('tagprev').addEventListener('click',e=>{
   if(e.target.closest('#btn-tagcancel')){TAGP=null;needReset($('tagprev'));renderTagPrev();msg('tagmsg','','');return}
   if(e.target.closest('#btn-tagsave'))saveTag()});
+// Ab 0.86 (AU-20): Satz für die Meldung nach dem Speichern: gespeicherte Zeilen, die durch die andere Tag-Seite zur Bank-Zahlung wurden (L = ihre Methoden)
+function tagBankTxt(L){if(!L.length)return '';const M=[...new Set(L.filter(Boolean))],q=M.map(m=>`„${esc(m)}“`).join(', ');
+  return ` ${L.length===1?'1 Zeile ist':fI.format(L.length)+' Zeilen sind'} jetzt per Bank${M.length?` (${M.length===1?'Methode':'Methoden'} ${q} auf der anderen Seite)`:''}.`}
 function saveTag(){
   // Ab 0.51 (2): „Speichern“ nie gesperrt; nicht erkannte Zeilen ohne Entscheidung: die Gruppe der Auswahl wird markiert
   const D=TAGP;if(!D)return;if(D.dec.some(x=>!x))return needMark($('tagprev'),D.dec.map((x,i)=>x?null:[`[data-tug="${i}"]`,'Entscheide, was diese Zeile ist.']).filter(Boolean));
@@ -6210,7 +6278,8 @@ function saveTag(){
     if(L.length)return needMark($('tagprev'),L.flatMap(([els,txt])=>els.map((e,i)=>[e,i?'':txt])))}
   // Ab 0.46: Ist die Zeile der anderen Tag-Seite eine Bank-Zahlung, gilt das auch für die gespeicherte
   // Ab 0.51 (3): nicht bei einer Zeile, deren Woher/Wohin du selbst gewählt hast (man.w, man.b), die eigene Wahl bleibt
-  for(const [a,b] of M.pair)if(S.tag[a]){S.tag[a].pair=b;const r=rows.find(x=>x.id===b),o=S.tag[a],own=o.man&&(o.man.w||o.man.b);if(r&&r.fiat&&!o.fiat&&!own){o.fiat=true;o.coin='EUR';if(r.meth)o.meth=r.meth}}
+  // Ab 0.86 (AU-20): Die Meldung unten nennt, wie viele gespeicherte Zeilen so zur Bank-Zahlung wurden und mit welcher Methode (bkM)
+  const bkM=[];for(const [a,b] of M.pair)if(S.tag[a]){S.tag[a].pair=b;const r=rows.find(x=>x.id===b),o=S.tag[a],own=o.man&&(o.man.w||o.man.b);if(r&&r.fiat&&!o.fiat&&!own){o.fiat=true;o.coin='EUR';if(r.meth)o.meth=r.meth;bkM.push(r.meth||'')}}
   for(const [a,t] of M.times)if(S.tag[a]&&!S.tag[a].time){S.tag[a].time=t;S.tag[a].tz='tag'}
   for(const m of tagMethNew(D))S.tagMeth[m]=tagMethBank(D,m)?'bank':'crypto';
   const coin=$('tagcoin').value==='USDT'?'USDT':'USDC';S.defCoin=coin;
@@ -6234,7 +6303,7 @@ function saveTag(){
   const a=M.add.length;if(a)S.ui.lastLoad=new Date().toISOString();
   const ign=D.P.skip.prop+D.P.skip.other+D.dec.filter(x=>x==='skip').length;
   const wn=wSync();nwMark(n0);TAGP=null;save();$('tagpaste').value='';
-  msg('tagmsg','ok',`${a-nRep} ${(a-nRep)===1?'neuer Vorgang':'neue Vorgänge'} übernommen${nRep?`, ${nRep} ${nRep===1?'Eintrag':'Einträge'} von Hand ersetzt`:''}${M.dup?`, ${M.dup} ${M.dup===1?'war':'waren'} schon da`:''}${M.times.length?`, bei ${M.times.length===1?'einer Auszahlung':M.times.length+' Auszahlungen'} die Uhrzeit ergänzt`:''}${ign?`, ${ign} ${ign===1?'Zeile':'Zeilen'} weggelassen`:''}.${a?a===1?' Der neue Vorgang ist mit ● markiert.':' Neue Vorgänge sind mit ● markiert.':''}${wn?` ${wn===1?'Ein Vorgang wurde':fI.format(wn)+' Vorgänge wurden'} mit der Wallet-Datei verknüpft.`:''} Prüfe unten Art, Coin und „Mein Geld“.`);
+  msg('tagmsg','ok',`${a-nRep} ${(a-nRep)===1?'neuer Vorgang':'neue Vorgänge'} übernommen${nRep?`, ${nRep} ${nRep===1?'Eintrag':'Einträge'} von Hand ersetzt`:''}${M.dup?`, ${M.dup} ${M.dup===1?'war':'waren'} schon da`:''}${M.times.length?`, bei ${M.times.length===1?'einer Auszahlung':M.times.length+' Auszahlungen'} die Uhrzeit ergänzt`:''}${ign?`, ${ign} ${ign===1?'Zeile':'Zeilen'} weggelassen`:''}.${a?a===1?' Der neue Vorgang ist mit ● markiert.':' Neue Vorgänge sind mit ● markiert.':''}${wn?` ${wn===1?'Ein Vorgang wurde':fI.format(wn)+' Vorgänge wurden'} mit der Wallet-Datei verknüpft.`:''}${tagBankTxt(bkM)} Prüfe unten Art, Coin und „Mein Geld“.`);
   render();if(a)autoRates();
 }
 // Nicht unterstützte Coins (ⓘ „Woher kamen deine Coins?“ und Krypto-Karte der Steuer)
@@ -10002,6 +10071,8 @@ const GL={
   wabgl:{t:'Abgleich',h:'✓: Der Bestand laut deinen Einträgen passt zur Wallet-Datei bzw. zu dem Stand, den du aus deiner App eingetragen hast. Ein Unterschied unter 0,01 zählt nicht.\n✗: Es gibt einen Unterschied. Fahre mit der Maus über das ✗, dann siehst du ihn mit Richtung. Ein Klick öffnet „Kontostände prüfen“ bei dieser Zeile.\n„–“: Es gibt nichts zum Vergleichen.'},
   'k-real':{t:'Dein echtes Geld',h:'Was du bei Tag eingezahlt und ausgezahlt hast und was dein Geld seit Start gebracht hat.'},
   // Ab 0.80 (4): (i) der Karte „Buchungsarten“, Wortlaut von Florian
+  // Ab 0.86 (AU-19)
+  'k-tagmeth':{t:'Zahlungsmethoden',h:'Tag nennt bei jeder Ein- und Auszahlung eine Methode. Kennt das Tool eine Methode nicht, fragt es beim Einfügen einmal, ob sie per Bank oder mit Krypto ist, und merkt sich die Antwort für jedes spätere Einfügen.\nHier kannst du die Antwort ändern. Das gilt dann für alle eingefügten Zeilen mit dieser Methode, außer für Zeilen, bei denen du Woher/Wohin selbst gewählt hast. Vorher fragt das Tool nach.\n<b>Per Bank</b> heißt: keine Krypto-Steuer, keine Wallet, zählt für „Dein echtes Geld“.'},
   'k-buchungsarten':{t:'Buchungsarten',h:'Jede Buchung im MT5-Report, die kein Trade ist, braucht eine Bedeutung. Danach rechnet das Tool:\n• Einzahlung von Kapital (z. B. Deposit, Reinvestition): Geld, das auf dein MT5-Konto kommt, mit Trading Benefit. Die Investition steigt um Betrag ÷ Trading Benefit. Das ist kein Gewinn.\n• Kapitalabzug: Du nimmst eingesetztes Geld wieder vom Konto, zum Beispiel wenn du ein Konto verkleinerst oder auflöst. Die Investition sinkt. Das ist kein Verlust.\n• Gewinnauszahlung (Profit Withdrawal): Du hebst Gewinn vom MT5-Konto ab. Ergebnis und Investition bleiben gleich. Versteuert werden die Trades, nicht die Auszahlung.\n• Performance Fee / Gebühr (z. B. PF Deduction): Sie mindert deinen Gewinn. Ob sie auch die Steuer mindert, hängt vom Land ab. Das steht im Reiter Steuer.\n• Noch unklar: Die Buchung zählt vorerst nirgends, und das Tool zeigt einen Hinweis. Ordne sie zu, sobald du weißt, was sie ist.'},
   'k-konten':{t:'Deine Konten',h:'Alle Konten aus deinen Reports. Wähle bei jedem den Trading Benefit und, wenn du möchtest, einen Namen.'},
   'k-kurse':{t:'Wechselkurse',h:`Ohne Kurse funktioniert die Auswertung in USD vollständig. Für Euro und für die Steuer braucht das Tool den Kurs jedes Tages, an dem du eine Buchung hast. Es rechnet jede Buchung mit dem Referenzkurs der Europäischen Zentralbank (EZB) vom Tag der Buchung um. An Wochenenden und Feiertagen gilt der letzte Kurs davor.
@@ -10721,7 +10792,15 @@ function weekTree(R0,cx){
     // Wochenzeile: aufgeklappt nur „KW 35“, das volle Label bleibt unsichtbar stehen und hält die Breite der ersten Spalte
     // Angeschnittene Woche (der Zeitraum beginnt oder endet in ihr): Beschriftung als Begriff
     const RW=s!==w||e!==addDays(w,6)?t=>gl('rand',t):t=>t;
-    h+=`<tr class="wk" data-w="${w}"><td><span class="wo"><span class="tw">▸</span> ${RW(`<b>${kw}</b>`)}</span><span class="wl"><span class="tw">▸</span> ${RW(`<b>${kw}</b> · ${dm(s)}${DS}${dm(e)}${yy}`)}</span>${nk?`<span class="sm">${gl('nichtkz','nicht in den Kennzahlen')}</span>`:''}</td><td>${np}</td><td><b>${sw(mon(z.nV),mon(z.nN),gN)}</b></td><td>${mon(z.res)}</td><td>${sw(w===cx.cw?gl('offen','offen'):mon(z.fV),mon(z.fN),gF)}</td><td>${invU(invStart(rw,cx.sel,s),cx.sel)}</td><td>${rtSw(rw,'sel','–')}</td><td>${ddSw(rw,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`+dh;
+    // Ab 0.86 (AU-11): Performance Fee der laufenden Woche. Nimmt ein Konto den Anteil eines anderen (oder gibt es keinen), nennen es der Begriff „offen“
+    // (PF laut MT5) und der Wert bei „PF verteilt“ als Begriff (pfcw). Sonst wie bisher. Kein neuer Platz in der Tabelle.
+    // Ohne Anteil für alle Konten der Woche (est falsch) fehlt der Satz „… rechnet das Tool sie bis dahin aus“.
+    const cwPf=(rw,z,gF)=>{const A=[...new Set(rw.filter(r=>isTrade(r)&&r.opn).map(r=>r.a))],t=pfSrcTxt(A);if(!t)return sw(gl('offen','offen'),mon(z.fN),gF);
+      const est=A.some(a=>!(a in PF_SRC)||PF_SRC[a]),sa='Tag hat die Performance Fee für diese Woche noch nicht abgebucht, das passiert am Samstag.';
+      GL.offencw={t:'offen',h:(est?GL.offen.h:sa)+'\n'+t};
+      GL.pfcw={t:'Performance Fee der laufenden Woche',h:'Tag bucht die Performance Fee dieser Woche erst am Samstag ab.'+(est?' Bis dahin rechnet das Tool sie aus: Anteil der letzten Abrechnung × Ergebnis der Woche, wenn es positiv ist.':'')+'\n'+t};
+      return sw(gl('offencw','offen'),gl('pfcw',mon(z.fN)),gF)};
+    h+=`<tr class="wk" data-w="${w}"><td><span class="wo"><span class="tw">▸</span> ${RW(`<b>${kw}</b>`)}</span><span class="wl"><span class="tw">▸</span> ${RW(`<b>${kw}</b> · ${dm(s)}${DS}${dm(e)}${yy}`)}</span>${nk?`<span class="sm">${gl('nichtkz','nicht in den Kennzahlen')}</span>`:''}</td><td>${np}</td><td><b>${sw(mon(z.nV),mon(z.nN),gN)}</b></td><td>${mon(z.res)}</td><td>${w===cx.cw?cwPf(rw,z,gF):sw(mon(z.fV),mon(z.fN),gF)}</td><td>${invU(invStart(rw,cx.sel,s),cx.sel)}</td><td>${rtSw(rw,'sel','–')}</td><td>${ddSw(rw,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`+dh;
   }
   h+=`<tr class="sum"><td>Summe</td><td>${positions(R0).length}</td><td>${sw(mon(T.nV),mon(T.nN))}</td><td>${mon(T.res)}</td><td>${sw(mon(T.fV),mon(T.fN))}</td><td></td><td>${rtSw(R0,'sel','–')}</td><td>${ddSw(R0,'sel','–')}</td><td></td></tr>`;
   if(cwr.length){const T2=pfz(R);h+=`<tr class="sum2"><td>Summe mit laufender Woche</td><td>${positions(R).length}</td><td>${sw(mon(T2.nV),mon(T2.nN))}</td><td>${mon(T2.res)}</td><td>${sw(mon(T2.fV),mon(T2.fN))}</td><td></td><td>${rtSw(R,'sel','–')}</td><td>${ddSw(R,'sel','–')}</td><td></td></tr>`}
@@ -11520,7 +11599,7 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   try{S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';render()}
   catch(err){console.warn('Sicherung laden:',err);S=old;SAVE_OFF=false;SAVE_DUE=false;RV=null;try{render()}catch(e2){console.warn(e2)}
     msg(mid,'bad',`Die Sicherung „${esc(f.name)}“ ließ sich nicht laden. Sie ist vielleicht beschädigt.`);e.target.value='';return}
-  SAVE_OFF=false;SAVE_DUE=false;if(BOOT_BAD){BOOT_BAD=false;BOOT_RAW='';modalOn($('boot-modal'),false)}save();
+  SAVE_OFF=false;SAVE_DUE=false;if(BOOT_BAD){BOOT_BAD=false;BOOT_RAW='';modalOn($('boot-modal'),false)}save();rateGoneToast();
   const nA=Object.keys(S.accounts).length,nD=Object.keys(S.deals).length;
   msg('datamsg','ok',`Sicherung geladen: ${nA} ${nA===1?'Konto':'Konten'}, ${nD} ${nD===1?'Buchung':'Buchungen'}.`);e.target.value=''};
 // Ab 0.85 (G-54): Hinweis beim Start, wenn sich der gespeicherte Stand nicht laden ließ. Die Knöpfe gehen dieselben Wege wie im Reiter „Sicherung“.
@@ -11533,7 +11612,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.85',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.86',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -11768,7 +11847,7 @@ function dtRender(){dtWaitClean();
     return `<button type="button" class="dtt dtk${on?' on':''}" data-dtp="${x.p}" aria-pressed="${on}"><span class="dtth"><span class="dttt">${x.t}</span>${x.sub?`<span class="small dtsub">${x.sub}</span>`:''}</span><span class="dtfo">${dot}<span class="small dtts">${wt?`${fI.format(wt)} ${wt===1?'Datei wartet':'Dateien warten'}`:st||'noch keine'}</span></span></button>`}).join('');
   for(const [p,id] of [['tag','tw-paste'],['bx','bx-load'],['wf','wf-load'],['files','df-pane'],['hand','dh-pane']])$(id).hidden=DT.pane!==p;
   $('dt-files').setAttribute('aria-expanded',String(DT.pane==='files'));
-  if(DT.pane==='files')renderFiles();if(DT.pane==='bx')renderBxPrev();if(DT.pane==='wf')wfAdv();
+  if(DT.pane==='files')renderFiles();if(DT.pane==='bx')renderBxPrev();if(DT.pane==='wf')wfAdv();if(DT.pane==='tag')renderTagMeth();
   dtFoot()}
 // Ab 0.46 (3.2): Vor dem ersten Einlesen einer Wallet-Datei der Hinweis „Für Fortgeschrittene“ mit „Verstanden“ (S.ui.wfOk)
 function wfAdv(){const ok=!!S.ui.wfOk;$('wf-adv').hidden=ok;for(const id of ['wf-guide-btns','wdrop','wdrop-h'])$(id).hidden=!ok}
@@ -12029,7 +12108,7 @@ try{
 if(!BOOT_BAD&&!S.ui.ack){introLand('');modalOn($('intro-modal'),true)}
 render()}catch(e){bootFail(e);modalOn($('intro-modal'),false);try{render()}catch(e2){console.warn(e2)}}
 SAVE_OFF=false;if(SAVE_DUE&&!BOOT_BAD){SAVE_DUE=false;save()}
-if(BOOT_BAD)bootShow();
+if(BOOT_BAD)bootShow();else rateGoneToast();
 try{if(sessionStorage.getItem(KEY+'-wiped')){sessionStorage.removeItem(KEY+'-wiped');toastShow('Alles gelöscht.')}}catch(e){}
 // Mit Häkchen „Fehlende Kurse automatisch laden“ (ab 0.66 von Anfang an gesetzt): beim Öffnen fehlende oder vorläufige Kurse holen (ohne Häkchen nie ohne Klick)
 if(!BOOT_BAD)autoRates();
