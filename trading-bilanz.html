@@ -2768,6 +2768,15 @@ function enrich(){
   rows.sort((p,q)=>p.x.t<q.x.t?-1:p.x.t>q.x.t?1:0);
   return rows;
 }
+// Ab 0.95 (AT14): Zeilen des Steuerjahrs y in Österreich. Der Anteil einer Fee aus dem Jänner für Trades des Vorjahrs (pfPrev) zählt zum Vorjahr
+// (§ 19 Abs. 2 EStG): im Jahr der Abbuchung ohne ihn, im Vorjahr als eigene Zeile (Monat Dezember, Woche der Trades). x.prof passt zum Betrag (Excel-Formel).
+function taxYR(rows,y){const o=[];for(const r of rows){const p=r.cat==='fee'&&r.pfPrev;
+    if(p&&r.y===y){if(Math.abs(r.amt-p.u)>0.004)o.push(Object.assign({},r,{eur:r.eur-p.e,amt:r.amt-p.u,x:Object.assign({},r.x,{prof:r.x.prof-p.u}),janRest:1}));continue}
+    if(p&&+r.y===+y+1){o.push(Object.assign({},r,{y,eur:p.e,amt:p.u,ym:`${y}-12`,wk:p.wk||r.wk,x:Object.assign({},r.x,{prof:p.u}),janPrev:1}));continue}
+    if(r.y===y)o.push(r)}
+  return o}
+// Summe der Jänner-Anteile: in = aus y+1 nach y gezählt, out = aus y ins Vorjahr gezählt (negativ wie die Fee)
+const janPF=(rows,y,dir)=>rows.filter(r=>r.cat==='fee'&&r.pfPrev&&(dir==='in'?+r.y===+y+1:r.y===y)).reduce((s,r)=>s+r.pfPrev.e,0);
 function years(rows){return [...new Set(rows.map(r=>r.y))].sort()}
 function agg(rows){
   const z={res:0,fee:0,tax:0,pw:0,ein:0,kab:0,n:0,win:0,best:null,worst:null,gain:0,loss:0,costs:0,resUsd:0,feeUsd:0,pwUsd:0};
@@ -2882,6 +2891,12 @@ function addAnalysis(rows){
       {const nu=per.reduce((s,r)=>s+r.amt,0);if(!per.length&&ck.length)ck[ck.length-1].u+=pf.u;else{ck.push({a,id:fee.x.id,d:fee.d,u:pf.u,nu,wk:per.length?per[per.length-1].wk:fee.wk,loss:carry,lwk:cwk});carry=0;cwk=''}}
       const U=distPF(per.map(r=>r.amt),pf.u),E=distPF(per.map(r=>r.eur),pf.e);
       put(per,U.out,E.out,false);
+      // Ab 0.95 (AT14): Fee, die vom 01.01. bis 15.01. abgebucht wurde: ihr Anteil für Trades aus dem Vorjahr (verteilt wie bei „PF verteilt“, in
+      // Kontowährung, in Euro zum Kurs der Fee-Buchung, damit Betrag und Euro-Wert in der Steuer-Excel zusammenpassen). Nur die Steuer in Österreich
+      // nutzt ihn (taxYR, § 19 Abs. 2 EStG), Auswertung und Deutschland bleiben beim Tag der Abbuchung.
+      fee.pfPrev=null;
+      if(fee.d.slice(5)<='01-15'){let pu=0,wk='';per.forEach((r,i)=>{if(r.y<fee.y){pu+=r.amt-U.out[i];wk=r.wk}});
+        if(pu>0.004&&isFinite(pu))fee.pfPrev={u:-pu,e:fee.rate?-pu/fee.rate:NaN,wk}}
       if(U.warn||E.warn)console.warn(`Performance Fee ${fee.x.t} (Konto ${a}): Netto der Periode ≤ 0, PF nur auf die Gewinn-Trades verteilt.`);
       const nu=per.reduce((s,r)=>s+r.amt,0);
       if(nu>0)share[a]={u:pf.u/nu,t:fee.x.t,a};
@@ -6435,7 +6450,7 @@ function cxMissing(c){
 // DE mit ihrem Kaufdatum), v = Verkauf (Erlös minus Gebühr minus Einkaufswert), w = weg ohne Gewinn, u = Übertrag (Einkaufswert und Kaufdatum
 // wandern mit), t0 = Tausch steuerneutral (Einkaufswert geht über), tv = Tausch als Verkauf und neuer Kauf zum Marktwert,
 // x = in anderen Coin getauscht, steuerneutral, der Einkaufswert geht auf den neuen Coin über (AT; mit NFT-Häkchen ein Verkauf).
-// Gebühr in Coins: in beiden Ländern ein Verkauf zum Marktwert am Tag (AT: EStR Rz 6178, Tausch gegen eine Transaktionsdienstleistung).
+// Gebühr in Coins: in beiden Ländern ein Verkauf zum Marktwert am Tag (AT: EStR Rz 6178v, Tausch gegen eine Transaktionsdienstleistung; Gebühren beim Tausch Krypto gegen Krypto zählen nicht, Rz 6178ad, ab 0.95 mit einem node-Test bestätigt).
 const KX_ART={tagaus:{AT:'k',DE:'k'},tagein:{AT:'v',DE:'v'},kauf:{AT:'k',DE:'k'},hatte:{AT:'k',DE:'k'},tauschein:{AT:'k',DE:'k'},
   eingang:{AT:'g',DE:'g'},verkauf:{AT:'v',DE:'v'},bezahlung:{AT:'v',DE:'v'},gebuehr:{AT:'v',DE:'v'},weg:{AT:'w',DE:'w'},verloren:{AT:'w',DE:'w'},
   uebertrag:{AT:'u',DE:'u'},tausch:{AT:'t0',DE:'tv'},tauschaus:{AT:'x',DE:'v'},
@@ -8509,7 +8524,7 @@ const CX_HELP={
   // Ab 0.45 (1.11)
   tagein:{b:'<b>Einzahlung zu Tag</b>: Coins, die du aus einer Wallet zu Tag geschickt hast. <b>Menge</b> = Betrag, wie Tag ihn zeigt. <b>Gebühr</b> = was zusätzlich aus deiner Wallet weg ist (z. B. Netzwerkgebühr). Das Tool rechnet die Zeile genau wie eine Zeile aus den Tag-Daten. Fügst du die Tag-Daten später ein, bietet es „ersetzen“ an. Deine Notiz bleibt.'},
   tagaus:{b:'<b>Auszahlung von Tag</b>: Coins, die Tag dir in eine Wallet geschickt hat. <b>Menge</b> = Betrag, wie Tag ihn zeigt. <b>Gebühr</b> = was unterwegs abgezogen wurde (in der Wallet kam weniger an). Das Tool rechnet die Zeile genau wie eine Zeile aus den Tag-Daten. Fügst du die Tag-Daten später ein, bietet es „ersetzen“ an. Deine Notiz bleibt.'},
-  gebuehr:{AT:'<b>Gebühr</b>: Coins, die als Gebühr weggehen (z. B. Netzwerkgebühr bei einem Übertrag), Menge siehst du im Verlauf deiner Wallet. Steuerlich bezahlst du damit eine Leistung (EStR Rz 6178): Das Tool rechnet sie als Verkauf zum Tageswert (Menge ÷ EZB-Kurs). Meist geht es um Cents.',
+  gebuehr:{AT:'<b>Gebühr</b>: Coins, die als Gebühr weggehen (z. B. Netzwerkgebühr bei einem Übertrag), Menge siehst du im Verlauf deiner Wallet. Steuerlich bezahlst du damit eine Leistung (EStR Rz 6178v): Das Tool rechnet sie als Verkauf zum Tageswert (Menge ÷ EZB-Kurs). Meist geht es um Cents.',
     DE:'<b>Gebühr</b>: Coins, die als Gebühr weggehen (z. B. Netzwerkgebühr bei einem Übertrag), Menge siehst du im Verlauf deiner Wallet. Das Tool rechnet sie als Verkauf zum Tageswert (Menge ÷ EZB-Kurs). Meist geht es um Cents. Deine Steuerberatung bekommt dazu eine Frage in der Zusammenfassung.'}
 };
 // Altvermögen (AT): Kauf vor dem 01.03.2021 (Hatte ich schon, Geschenk mit Kaufdatum der schenkenden Person)
@@ -9266,7 +9281,7 @@ function taxBlocks(c){const DE=c.L==='DE',f=c.f,y=c.y,ann=[],est=[],q=[],not=[],
       :'Eine Auszahlung vom Broker in Coins gilt als Kauf. Der Einkaufswert ist der abgebuchte USD-Betrag samt Gebühren.');
     if(c.feeSale>0||c.feeBuy)A('a-fee',DE?'Gebühren beim Verkauf sind Werbungskosten, anteilig verteilt (Rn. 57). Gebühren beim Kauf erhöhen die Anschaffungskosten.'
       :`Gebühren beim Kauf erhöhen den Einkaufswert. Gebühren beim Verkauf mindern den Erlös${c.feeSale>0?`, ${y} zusammen ${f.E(c.feeSale)}`:''}.`);
-    if(c.coinFee&&!DE)A('a-coinfee','Gebühren, die in Coins bezahlt wurden (z. B. für Überträge), gelten als Verkauf zum Tageswert (EStR Rz 6178).');
+    if(c.coinFee&&!DE)A('a-coinfee','Gebühren, die in Coins bezahlt wurden (z. B. für Überträge), gelten als Verkauf zum Tageswert (EStR Rz 6178v).');
     if(c.swap)A('a-swap',DE?'Ein Tausch von Kryptowerten ist eine Veräußerung des einen und eine Anschaffung des anderen, jeweils zum Tageswert.'
       :'Ein Tausch von Krypto gegen Krypto ist steuerneutral. Der Einkaufswert geht auf den neuen Coin über.');
     if(c.xfer.length)A('a-xfer',`Ein Tausch in Coins, die diese Aufstellung nicht rechnet, ist ${DE?'ohne Gewinn oder Verlust angesetzt':'steuerneutral'}. Der Einkaufswert geht auf den neuen Coin über. Betroffen: `+und(c.xfer.map(x=>`${f.N(x.q)} ${x.coin} in ${x.other} am ${f.D(x.d)} (${f.E(x.ak)})`))+'.');
@@ -9288,7 +9303,7 @@ function taxBlocks(c){const DE=c.L==='DE',f=c.f,y=c.y,ann=[],est=[],q=[],not=[],
     (s.mv==='x'?`Die Coins wurden in ${s.other||'einen anderen Coin'} getauscht. Der fehlende Einkauf geht auf den neuen Coin über, den diese Aufstellung nicht rechnet.`:
      s.mv==='o'?'Die Coins wurden ausgezahlt, das Ziel ist offen. Der fehlende Einkauf zeigt sich erst beim Verkauf am Ziel.':'Angesetzt: Einkaufswert gleich Erlös, also weder Gewinn noch Verlust.')});
   // Offene Fragen
-  if(!DE&&c.janFee!=null)Q('q-janfee',`Die Performance Fee für Trades aus ${y}, abgebucht Anfang ${+y+1} (${f.E(c.janFee)}), ist ${+y+1} abgezogen. Gehört sie zu ${y}?`);
+  if(!DE&&c.janFee!=null)Q('q-janfee',`Die Performance Fee für Trades aus ${y}, abgebucht Anfang ${+y+1} (${f.E(c.janFee)}), ist nach § 19 Abs. 2 EStG ${y} abgezogen. Gehört sie zu ${y}?`);
   if(DE&&c.cfd)Q('q-kosten','Sind Kommission und Swap als Kosten der Trades abziehbar?');
   if(c.cx){
     if(c.tok.length)Q('q-tok',`${c.tok.length===1?'Dieser Token ist':'Diese Token sind'} als USDC eingestuft und wie USDC gerechnet: ${c.tok.join(', ')}. Passt das?${DE?` Der Wechsel in ${c.tok.length===1?'diesen Token':'diese Token'} ist nicht als Veräußerung gerechnet.`:''}`);
@@ -9309,11 +9324,11 @@ function taxBlocks(c){const DE=c.L==='DE',f=c.f,y=c.y,ann=[],est=[],q=[],not=[],
 /*BAUSTEINE-ENDE*/
 // Ab 0.72 (3.1): alle Fälle des Steuerjahres y für die Bausteine (taxBlocks) und die Zahlen von Zusammenfassung und Steuer-Excel.
 // Nur zählende Konten (2.1), Datenstand nach 2.3. Krypto wie bisher (der Ausschluss wirkt dort nicht).
-function taxCtx(y){const L=S.ui.country==='DE'?'DE':'AT',DE=L==='DE',rows=(window.__rows||[]).filter(r=>taxIn(r.a)),R=rows.filter(r=>r.y===y),T=agg(R);
+function taxCtx(y){const L=S.ui.country==='DE'?'DE':'AT',DE=L==='DE',rows=(window.__rows||[]).filter(r=>taxIn(r.a)),R=DE?rows.filter(r=>r.y===y):taxYR(rows,y),T=agg(R);
   const C=cryptoCalc(L),cx=C.n>0&&S.ui.cxIncl!==false,cy=Object.assign({gain:0,loss:0,n:0,gainK:0,lossK:0,nK:0,kest:0,fee:0,vp:0,ak:0,wk:0,free:0,nT:0},C.byY[y]);
   const yr=d=>String(d||'').slice(0,4),inY=x=>yr(x.d)===y,fl=C.flow.filter(inY);
   const fac=[...new Set(taxAccs().filter(a=>R.some(r=>r.a===a)).map(a=>S.accounts[a].factor).filter(v=>v>1))];
-  const jf=rows.filter(r=>r.cat==='fee'&&r.y===String(+y+1)&&r.d<=`${+y+1}-01-15`);
+  const jf=DE?0:janPF(rows,y,'in');
   // Geschätzte Werte: Einträge von Hand (bis zum Jahr, wie bis 0.71) und Geschenke über den Broker; fehlender Einkauf (offen und mit „So lassen“)
   const est=[],short=[];
   if(cx){for(const c of S.cx.filter(c=>c.date&&yr(c.date)<=y)){const gift=c.kind==='eingang',p=cxEst(c),dd=gift&&!!(c.estD||(DE&&!c.gd));if(!p&&!dd)continue;
@@ -9336,7 +9351,7 @@ function taxCtx(y){const L=S.ui.country==='DE'?'DE':'AT',DE=L==='DE',rows=(windo
     dep:fl.some(f=>f.k==='tagein'),wd:fl.some(f=>f.k==='tagaus'),feeSale:DE?cy.wk:cy.fee,feeBuy:S.cx.some(c=>c.kind==='kauf'&&c.fee>0&&yr(c.date)===y),
     coinFee:C.fees.some(inY),swap:fl.some(f=>f.k==='tausch'),xfer:fl.filter(f=>f.xfer!=null).map(f=>({d:f.d,q:-f.q,coin:f.coin,other:f.other,ak:f.xfer})),
     frei:DE?{g:cy.gain+cy.loss,o:os?parseDe(os):NaN,fg:freiGrenze(y)}:null,est,short,
-    janFee:!DE&&jf.length?jf.reduce((a,r)=>a+r.eur,0):null,tok:Object.values(tok),variants,payN:payN(C,y),refund:{n:rf.length,late:rf.some(c=>{const p=cxById(c.of);return p&&p.date&&yr(p.date)!==y})},
+    janFee:!DE&&jf?jf:null,tok:Object.values(tok),variants,payN:payN(C,y),refund:{n:rf.length,late:rf.some(c=>{const p=cxById(c.of);return p&&p.date&&yr(p.date)!==y})},
     kest:!DE&&cy.nK?cy.kest:null,lost:DE?fl.filter(f=>f.k==='verloren').map(f=>({d:f.d,q:-f.q,coin:f.coin,ak:f.ak})):[],
     usd:{on:Object.values(S.tag).some(t=>t.status==='ok'&&yr(tagD(t))===y),bank:Object.values(S.tag).some(t=>t.fiat&&t.kind==='ein'&&yr(tagD(t))<=y)},
     ny:nyData(rows,y),cxSaldo:cy.gain+cy.loss,not:taxNotItems(L),f:{E:v=>fE.format(v).replace(' €',' €'),D:fD,N:v=>fN.format(v),U:v=>usd(v).replace(' USD',' USD')}};
@@ -10291,7 +10306,7 @@ ${ECB_CITE}`},
   deother:{t:'Andere private Veräußerungsgewinne',h:'Zum Beispiel Gold, andere Kryptowerte wie BTC, eventuell Wechselkursgewinne. Nur Verkäufe innerhalb eines Jahres nach dem Kauf. Verluste als negative Zahl.'},
   // Ab 0.49 (5.2): Gewinn bei Stablecoins und „geschätzt“ (Zusammenfassung) stehen hier und im (i) der Karte in Österreich, nicht mehr im Reiter Wallet
   // Ab 0.72 (1.1 bis 1.3): Titel nur „Krypto“, die Angaben aus dem alten Titel und die Annahmen unter der Tabelle stehen hier; andere Coins in „Was das Tool nicht rechnet“
-  'k-atcx':{t:'Krypto',h:'Gewinne und Verluste aus USDC und USDT, ausländische Kryptowährungen ohne KESt-Abzug (Verkäufe mit KESt-Abzug einer österreichischen Börse stehen getrennt). Gerechnet mit dem gleitenden Durchschnittspreis je Wallet und Coin.\n<b>Krypto-Verluste</b> kannst du nur mit anderen Kapitalerträgen mit 27,5 % aus demselben Jahr verrechnen. Sparbuchzinsen zählen nicht dazu. Ein Vortrag ist nicht möglich.\n<b>Annahmen:</b> USDC und USDT sind Kryptowährungen im Sinn von § 27b EStG. Die Einzahlung bei Tag ist ein Verkauf, die Auszahlung in Coins ein Kauf. Gebühren beim Kauf erhöhen den Einkaufswert, Gebühren beim Verkauf mindern den Erlös (das Abzugsverbot für Werbungskosten gilt laut E1kv nicht für Kryptowährungen). Gebühren in Coins, z. B. für Überträge zwischen eigenen Wallets, sind ein Verkauf zum Tageswert (EStR Rz 6178). Tausch Krypto gegen Krypto ist steuerneutral, der Einkaufswert geht auf den neuen Coin über. Bekommst du etwas, das keine Kryptowährung ist (z. B. ein NFT), ist es ein Verkauf. Geschenk: Einkaufswert der schenkenden Person (§ 27a Abs. 4 Z 1 EStG). Diebstahl, Betrug, Hack oder ein verlorener Schlüssel sind keine Veräußerung, ein Verlust ist nicht absetzbar (EStR Rz 6178w).\n'+CX_1USD+'\n'+CX_KURS+'\n'+STABLE_EX+'\n'+EST_SUM+'\nTrag Gewinne aus Verkäufen ohne österreichischen KESt-Abzug in Kennzahl 174 ein und Verluste in Kennzahl 176. Kennzahl 173 und 175 gelten nur mit KESt-Abzug.'},
+  'k-atcx':{t:'Krypto',h:'Gewinne und Verluste aus USDC und USDT, ausländische Kryptowährungen ohne KESt-Abzug (Verkäufe mit KESt-Abzug einer österreichischen Börse stehen getrennt). Gerechnet mit dem gleitenden Durchschnittspreis je Wallet und Coin.\n<b>Krypto-Verluste</b> kannst du nur mit anderen Kapitalerträgen mit 27,5 % aus demselben Jahr verrechnen. Sparbuchzinsen zählen nicht dazu. Ein Vortrag ist nicht möglich.\n<b>Annahmen:</b> USDC und USDT sind Kryptowährungen im Sinn von § 27b EStG. Die Einzahlung bei Tag ist ein Verkauf, die Auszahlung in Coins ein Kauf. Gebühren beim Kauf gegen Euro erhöhen den Einkaufswert. Gebühren beim Verkauf gegen Euro oder USD mindern den Erlös. Gebühren bei einem Tausch Krypto gegen Krypto zählen steuerlich nicht (EStR Rz 6178ad). Zahlst du eine Transfergebühr in Coins, ist das ein Verkauf zum Tageswert (EStR Rz 6178v). Andere Kosten kannst du nicht absetzen. Tausch Krypto gegen Krypto ist steuerneutral, der Einkaufswert geht auf den neuen Coin über. Bekommst du etwas, das keine Kryptowährung ist (z. B. ein NFT), ist es ein Verkauf. Geschenk: Einkaufswert der schenkenden Person (§ 27a Abs. 4 Z 1 EStG). Diebstahl, Betrug, Hack oder ein verlorener Schlüssel sind keine Veräußerung, ein Verlust ist nicht absetzbar (EStR Rz 6178w).\n'+CX_1USD+'\n'+CX_KURS+'\n'+STABLE_EX+'\n'+EST_SUM+'\nTrag Gewinne aus Verkäufen ohne österreichischen KESt-Abzug in Kennzahl 174 ein und Verluste in Kennzahl 176. Kennzahl 173 und 175 gelten nur mit KESt-Abzug.'},
   'k-decx':{t:'Krypto',h:'Gewinne und Verluste aus USDC und USDT, die du höchstens ein Jahr gehalten hast, gerechnet nach FIFO je Wallet und Coin. Sie gehören in die Anlage SO, Abschnitt Kryptowerte.\n<b>Annahmen:</b> USDC und USDT sind andere Wirtschaftsgüter (BMF-Schreiben vom 06.03.2025, Rn. 53). Das Tool rechnet je Wallet und Coin nach FIFO (Rn. 61 und 62). Die Auszahlung bei Tag in Coins ist ein Kauf, die Einzahlung ein Verkauf. Wert zum EZB-Kurs vom Buchungstag, 1 Coin = 1 USD. Gebühren beim Kauf erhöhen den Einkaufswert, Gebühren beim Verkauf sind Werbungskosten und werden aufgeteilt (Rn. 57). Gebühren in Coins und der Tausch in einen anderen Coin sind Verkäufe zum Tageswert. Ein Tausch USDC gegen USDT ist ein Verkauf mit neuem Kauf. Ein Geschenk übernimmt Kaufdatum und Einkaufswert der schenkenden Person (§ 23 Abs. 1 Satz 3 EStG).\n'+CX_1USD+'\n'+CX_KURS+'\n'+STABLE_EX+'\n'+EST_SUM+'\n<b>Geplant:</b> Für Kryptowerte, die ab 2027 gekauft werden, soll die Haltefrist wegfallen und 25 % Steuer gelten. Das Gesetz ist noch nicht beschlossen, Stand November 2026. Das Tool wird angepasst, sobald es gilt.'},
   // Ab 0.72: (i) der übrigen Karten im Reiter Steuer (vorher lose Absätze und Aufklapper in den Karten)
   'k-taxat':{t:'Jahresabrechnung',h:'Deine CFD-Ergebnisse des Jahres in Euro, jede Buchung zum EZB-Referenzkurs ihres Tages umgerechnet (Datum laut Serverzeit des Brokers).\n<b>Annahmen:</b> CFDs sind nicht verbriefte Derivate. Bei einem ausländischen Broker ohne Kapitalertragsteuer-Abzug gilt der normale Tarif, nicht 27,5 %. Die Performance Fee, die Kommission, der Swap und die Gebühren mindern deinen CFD-Gewinn. Das Abzugsverbot für Werbungskosten gilt bei Einkünften zum Tarif nicht.\n<b>Jahreswechsel:</b> Das Tool ordnet CFD-Buchungen nach der Zeit des Brokers (Zypern) dem Jahr zu, Krypto-Vorgänge nach österreichischer Zeit. Eine feste Regel dazu gibt es nicht. Kläre große Beträge am Jahreswechsel mit deiner Steuerberatung.'},
@@ -10325,7 +10340,7 @@ ${ECB_CITE}`},
   regopt:{t:'Regelbesteuerungsoption',h:'Mit der Regelbesteuerungsoption werden alle deine Kapitalerträge mit 27,5 % zum normalen Tarif versteuert, auch Zinsen und Dividenden. Das lohnt sich bei niedrigem Einkommen. Kreuz die Option im Formular E1 an. Das Finanzamt prüft nicht selbst, ob es günstiger ist. Probiere beides aus: Häkchen setzen und wieder wegnehmen und die Zeile „Zusätzliche Steuer“ unten vergleichen. Die kleinere Zahl ist günstiger.'},
   pbfrei:{t:'Sparer-Pauschbetrag noch frei',h:'Pro Person stehen 1.000 € im Jahr steuerfrei zur Verfügung (bei Zusammenveranlagung 2.000 €), abzüglich dem, was du schon per Freistellungsauftrag bei deiner Bank verbraucht hast. Du findest deinen verbrauchten Freistellungsauftrag im Online-Banking oder auf der Jahressteuerbescheinigung deiner Bank. <b>Beispiel:</b> 1.000 € minus 150 € schon verbrauchte Zinsen = 850 € noch frei. Weißt du es nicht genau, lass das Feld leer. Dann rechnet das Tool mit 1.000 €. Ist nichts mehr frei, trage 0 ein.'},
   kist:{t:'Kirchensteuer',h:'Nur wenn du Mitglied einer Kirche bist, die Kirchensteuer erhebt. Sonst „keine“ wählen.'},
-  janfee:{t:'§ 19 EStG',h:'Regelmäßig wiederkehrende Ausgaben, die bis 15 Tage nach Jahresende bezahlt werden, zählen nach § 19 EStG eventuell noch zum alten Jahr. Das Tool rechnet die Performance Fee im Jahr der Abbuchung. Vor der Abgabe klären.'},
+  janfee:{t:'§ 19 EStG',h:'Regelmäßig wiederkehrende Ausgaben, die bis 15 Tage nach Jahresende bezahlt werden, zählen nach § 19 Abs. 2 EStG zum Jahr, zu dem sie gehören. Das Tool zählt deshalb den Teil der Performance Fee, der auf Trades aus dem alten Jahr fällt, zum alten Jahr, wenn Tag ihn bis 15. Jänner abgebucht hat. Den Teil rechnet es wie bei „PF verteilt“. Nur in Österreich.'},
   bankeur:{t:'Einzahlungen in Euro per Bank',h:'Tag tauscht deine Euro sofort in USD. Das ist kein Krypto-Vorgang. Tauschst du das USD-Guthaben innerhalb eines Jahres zurück in Euro, kann ein Kursgewinn steuerpflichtig sein. In Österreich gilt dafür eine Freigrenze von 440 € im Jahr. Kläre das mit deiner Steuerberatung.',de:'Tag tauscht deine Euro sofort in USD. Das ist kein Krypto-Vorgang. Tauschst du das USD-Guthaben innerhalb eines Jahres zurück in Euro, kann ein Kursgewinn steuerpflichtig sein. Kläre das mit deiner Steuerberatung.'},
   kestverk:{t:'Verkäufe mit KESt-Abzug',h:'Hat die Börse ohne deinen Einkauf gerechnet (50 % des Erlöses als Einkaufswert), musst du diese Verkäufe in der Steuererklärung angeben: Kennzahl 173 bzw. 175, die abgezogene KESt in Kennzahl 899. Das Finanzamt rechnet dann mit dem richtigen Wert und rechnet die KESt an. Hat die Börse mit deinem Einkauf gerechnet, ist die Steuer abgegolten. Eintragen kannst du sie trotzdem, z. B. damit Verluste ausgeglichen werden. Kläre das mit deiner Steuerberatung.'},
   zahlen:{t:'Zahlen eingeben',h:'Komma für die Stellen nach dem Komma, Tausender ohne Punkt, z. B. 4000,02. Gibst du einen Punkt ein, fragt das Tool nach, was du meinst. Lass den Punkt einfach weg, dann fragt es nicht.'},
@@ -11216,14 +11231,15 @@ function renderTax(rows){
   for(const id of ['btn-printsum','btn-xlsxyear','btn-print','tax-give'])$(id).style.visibility=lock?'hidden':'';
   if(lock){$('tax-body').style.display='none';$('tax-de').style.display='none';return}
   if(DE)return renderTaxDE(rows,y);
-  const R=rows.filter(r=>r.y===y);const T=agg(R);
+  const R=taxYR(rows,y);const T=agg(R);
   $('tax-title').textContent=`Jahresabrechnung ${y} (Österreich)`;
   // Hinweise
   // Ab 0.72 (1.1): Hinweise je ein kurzer Satz, Erklärungen im (i) bzw. in Begriffen; die Annahmen stehen im (i) der Karte
   const notes=[];
-  const janFee=rows.filter(r=>r.cat==='fee'&&r.y===String(+y+1)&&r.d<=`${+y+1}-01-15`);
+  // Ab 0.95 (AT14): S-29 in beiden Jahren mit dem Betrag, der wandert (Text laut Steuer-Recherche)
+  const janIn=janPF(rows,y,'in'),janOut=janPF(rows,y,'out'),janT=s=>`Tag hat Anfang Jänner noch Performance Fee für Trades aus dem Dezember abgebucht (${eur(-s,false)}). Das Tool zählt diese Fee zum alten Jahr, wenn sie bis 15. Jänner abgebucht wurde. So sieht es ${gl('janfee','§ 19 EStG')} für regelmäßige Zahlungen vor.`;
   notes.push(...nyNotes(rows,y));
-  if(janFee.length){const s=janFee.reduce((a,r)=>a+r.eur,0);notes.push(`Anfang ${+y+1} wurde noch Performance Fee für Trades aus ${y} abgebucht (${eur(s)} bis 15. Jänner). Das Tool rechnet sie zu ${+y+1}, nach ${gl('janfee','§ 19 EStG')} gehört sie vielleicht zu ${y}.`)}
+  if(janIn)notes.push(janT(janIn));if(janOut)notes.push(janT(janOut));
   // Ab 0.72 (2.3): Datenstand der zählenden Konten statt der letzten Buchung über alle Konten
   const lastD=taxDs(y);notes.push(...taxDsNotes(y,lastD));
   // Ab 0.73 (2.6): „Der Saldo ist negativ“ steht im Begriff auf „Saldo CFD“, die grauen Zeilen (taxDsGone) in der Konten-Karte; Sätze mit schmalem Rand statt Fläche
