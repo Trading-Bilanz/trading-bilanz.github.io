@@ -5036,8 +5036,9 @@ function wImport(D){const st={neu:[],known:0,ign:{other:0,zero:0,fake:0},own:[]}
   // Ab 0.43: was das Einlesen neu erkannt hat (Brücken, Paare zwischen Wallets, Ketten), für die Vorschau mit „rückgängig“
   st.br=[];st.xp=[];st.ch=[];st.tx=[];
   for(const [k,m] of Object.entries(S.wtx)){if(pre.has(k))continue;
-    if(m.brg&&wSide(m)==='out')st.br.push({ko:k,ki:m.brg,o:m,i:S.wtx[m.brg],fee:S.cx.find(c=>c.brk&&c.brk[0]===k)});
-    else if(m.chain)st.ch.push({ko:k,o:m,c:cxById(m.chain)});
+    // Ab 0.93 (W-225): w = Wallet der Adresse, solange die Vorschau noch rechnet (eine Wallet aus „+ Neue Wallet …“ gibt es danach in S noch nicht)
+    if(m.brg&&wSide(m)==='out')st.br.push({ko:k,ki:m.brg,o:m,i:S.wtx[m.brg],fee:S.cx.find(c=>c.brk&&c.brk[0]===k),w:rAW(S,m.from)});
+    else if(m.chain)st.ch.push({ko:k,o:m,c:cxById(m.chain),w:rAW(S,m.from)});
     else if(m.xin){const c=cxById(m.ref);if(!c||!c.wk||!S.wtx[c.wk]||pre.has(c.wk)||wSide(S.wtx[c.wk])!=='out')continue;
       // Ab 0.44: Tausch (gleicher Hash), Tausch über Brücke, Aufladung mit Coin-Wechsel
       // o, i = die Bewegungen selbst (die Vorschau läuft in einer Kopie, danach gibt es die Schlüssel in S nicht mehr)
@@ -5114,9 +5115,9 @@ function wfPrevH(){
     const tl=st.tag.length?`<details class="wfd"><summary>Zuordnungen zu Tag ansehen</summary><ul>${st.tag.map(({m,t})=>`<li>${tagRef(t)} ↔ ${fmtNum(m.qty)} ${m.coin}, ${dS(m.date)} ${m.time.slice(0,5)}</li>`).join('')}</ul></details>`:'';
     // Ab 0.43: erkannte Brücken, Paare und Ketten, je mit „rückgängig“ (D.no). Rückgängig gemachte stehen darunter mit „doch übernehmen“.
     const mvT=m=>`${fmtNum(m.qty)} ${esc(wCoinT(m))} (${wNet(m.net)})`,rb=(v,t)=>`<button type="button" class="zlink" data-wfno="${esc(v)}">${t}</button>`;
-    const ER=[...st.br.map(x=>({v:`b|${x.ko}|${x.ki}`,t:`${gl('bruecke','Brücke')} in ${esc(rAW(S,x.o.from))}: ${mvT(x.o)} → ${mvT(x.i)}, ${dS(x.o.date)} ${x.o.time.slice(0,5)}${x.fee?`, Gebühr ${fmtNum(x.fee.qty)} ${x.fee.coin}`:', keine Gebühr'}`})),
+    const ER=[...st.br.map(x=>({v:`b|${x.ko}|${x.ki}`,t:`${gl('bruecke','Brücke')} in ${esc(x.w||rAW(S,x.o.from))}: ${mvT(x.o)} → ${mvT(x.i)}, ${dS(x.o.date)} ${x.o.time.slice(0,5)}${x.fee?`, Gebühr ${fmtNum(x.fee.qty)} ${x.fee.coin}`:', keine Gebühr'}`})),
       ...st.xp.map(x=>({v:`b|${x.ko}|${x.ki}`,t:`Übertrag ${esc(x.c.wallet)} → ${esc(x.c.to)}: ${mvT(x.o)} → ${mvT(x.i)}, ${dS(x.c.date)} ${(x.c.time||'').slice(0,5)}${x.c.qtyIn>0?`, Gebühr ${fmtNum(+(x.c.qty-x.c.qtyIn).toFixed(8))} ${x.c.coin}`:''}`})),
-      ...st.ch.map(x=>({v:`c|${x.ko}|${x.c?x.c.id:''}`,t:`${mvT(x.o)} von ${esc(rAW(S,x.o.from))} an eine ${gl('bruecke','Brücke')}, ${x.c&&x.c.how==='aufladung'?`gehört zur ${gl('aufladung','Aufladung')}`:'gehört zum Übertrag'} ${x.c?`${esc(x.c.wallet)} → ${esc(x.c.to)} vom ${dS(x.c.date)}`:''}${x.o.chs&&x.o.chs.length>1?` und ${fI.format(x.o.chs.length-1)} weiteren`:''}`})),
+      ...st.ch.map(x=>({v:`c|${x.ko}|${x.c?x.c.id:''}`,t:`${mvT(x.o)} von ${esc(x.w||rAW(S,x.o.from))} an eine ${gl('bruecke','Brücke')}, ${x.c&&x.c.how==='aufladung'?`gehört zur ${gl('aufladung','Aufladung')}`:'gehört zum Übertrag'} ${x.c?`${esc(x.c.wallet)} → ${esc(x.c.to)} vom ${dS(x.c.date)}`:''}${x.o.chs&&x.o.chs.length>1?` und ${fI.format(x.o.chs.length-1)} weiteren`:''}`})),
       // Ab 0.44: Tausch (gleicher Hash: t), Tausch über Brücke und Aufladung mit Coin-Wechsel (b)
       ...st.tx.map(x=>({v:`${x.same?'t':'b'}|${x.ko}|${x.ki}`,t:`${x.c.how==='aufladung'?`${gl('aufladung','Aufladung')} ${esc(x.c.wallet)} → ${esc(x.c.to)}`:x.c.how==='bruecke'?`${gl('tausch','Tausch')} über ${gl('bruecke','Brücke')} in ${esc(x.c.wallet)}`:`${gl('tausch','Tausch')} in ${esc(x.c.wallet)}`}: ${mvT(x.o)} → ${mvT(x.i)}, ${dS(x.c.date)} ${(x.c.time||'').slice(0,5)}`}))];
     const NO=D.no||[];
@@ -7100,7 +7101,8 @@ function vgAdrT(v){const M=v.mv.map(k=>S.wtx[k]).filter(Boolean).sort((a,b)=>a.t
   const c0=v.cx.length?cxById(v.cx[0]):null;if(c0&&c0.via){const x=S.addr[c0.via];return `über Weiterleitung <span class="nw">${esc(x&&x.name?x.name:wShort(c0.via))}</span>`}
   if(o.from===i.to&&o.net!==i.net)return vgAr(esc(wNet(o.net)),esc(wNet(i.net)));if(o.from===i.to)return `in <span class="nw">${wShort(o.from)}</span>`;return vgAr(`<span class="nw">${wShort(o.from)}</span>`,wShort(i.to))}
 // ✎ rechts: Haupteintrag, Tag-Fenster, bei offenen Bewegungen „Entscheiden“, sonst aufklappen. Rückgabe [Art, Wert, Text]
-function vgEdit(v){return v.cx.length?['c',v.cx[0],'Eintrag bearbeiten']:v.tag.length?['t',v.tag[0],'Tag-Zeile bearbeiten']:v.k==='open'?['d',v.mv[0],'Entscheiden']:v.bxo?['x',v.bxo,'Entscheiden']:['o',v.id,'Bewegung ansehen']}
+// Ab 0.93 (W-155): Die Gebühr einer Brücke (brk) zählt für ✎ nicht als Eintrag, die Brücke öffnet mit und ohne Gebühr das Fenster „Bewegung“
+function vgEdit(v){const cx=v.cx.filter(id=>{const c=cxById(id);return !(c&&c.brk)});return cx.length?['c',cx[0],'Eintrag bearbeiten']:v.tag.length?['t',v.tag[0],'Tag-Zeile bearbeiten']:v.k==='open'?['d',v.mv[0],'Entscheiden']:v.bxo?['x',v.bxo,'Entscheiden']:['o',v.id,'Bewegung ansehen']}
 // Ab 0.47 (3.3): offene Zeilen (offene Bewegung, offene Zeile der Börse, Tag-Zeile mit offener Wallet) haben statt ✎ den Knopf „Erledigen“: er
 // öffnet dieselbe Karte wie in „Noch offen“
 const vgEH=v=>{const T=VG_TD.get(v.id);if(T&&T.done)return `<button type="button" class="btn sm vgdo" data-vtd="${esc(T.it.id)}" aria-label="Erledigen: ${esc(vgWas(v))}${v.d?' vom '+fD(v.d):''}">Erledigen</button>`;
@@ -8075,7 +8077,7 @@ function renderTodo(C){
     `<details class="tdall"${TD_ALL?' open':''}><summary>Alle Punkte (${fI.format(V.length)})</summary>${allL()}${keepH()}</details>`:
     `<p>Im Moment ist nichts offen. <span class="ok" aria-hidden="true">✓</span></p>${keepH()}`)+cxt;
   $('td-t').firstChild.textContent=V.length?`Noch offen · Punkt ${fI.format(TD_POS+1)} von ${fI.format(V.length)} `:'Noch offen ';
-  const parts=[K.r?`${fI.format(K.r)} fehlt für die Steuer`:'',K.y?`${fI.format(K.y)} bitte prüfen`:'',K.g?`${fI.format(K.g)} gut zu wissen`:''].filter(Boolean);
+  const parts=[K.r?`${fI.format(K.r)} ${K.r===1?'fehlt':'fehlen'} für die Steuer`:'',K.y?`${fI.format(K.y)} bitte prüfen`:'',K.g?`${fI.format(K.g)} gut zu wissen`:''].filter(Boolean);
   $('wtodo-cnt').textContent='';for(const b of document.querySelectorAll('[data-tdnav]'))b.disabled=V.length<2;
   // Ab 0.46 (4.2): Formular gleich in der Karte einer offenen Bewegung (nur bei offenem Fenster und nicht, solange das Formular-Fenster darüber liegt).
   // Neu vorbelegt wird nur, wenn ein anderer Punkt dran ist; sonst bleiben deine Eingaben.
@@ -9868,7 +9870,7 @@ function fitWbar(){const fin=$('wbar').querySelector('.fin'),cs=getComputedStyle
   $('wbar').classList.add('meas');let st=1;for(;st<=4;st++){set(st);const w=ids.reduce((s,id)=>s+$(id).getBoundingClientRect().width,0)+gap*(ids.length-1);if(w<=avail+0.5)break}
   $('wbar').classList.remove('meas');WB_ST=Math.min(st,4);if(st>4)set(4);$('wbar').dataset.st=WB_ST;
   const T=LAST_TODO||{n:0,nW:0};$('wb-wl').setAttribute('aria-label','Adressen');{const n=dtWaitN();$('wb-dt').setAttribute('aria-label',`Daten hinzufügen${n?`, ${fI.format(n)} ${n===1?'Datei wartet':'Dateien warten'}`:''}`)}
-  $('wb-td').setAttribute('aria-label',`Noch offen: ${T.n?fI.format(T.n)+(T.nW?`, davon ${fI.format(T.nW)} fehlt für die Steuer`:''):'nichts offen'}`)}
+  $('wb-td').setAttribute('aria-label',`Noch offen: ${T.n?fI.format(T.n)+(T.nW?`, davon ${fI.format(T.nW)} ${T.nW===1?'fehlt':'fehlen'} für die Steuer`:''):'nichts offen'}`)}
 function renderWbar(show){
   $('wbar').classList.toggle('on',show);
   if(!show){if(FP_OPEN==='wr')closeFpanel();return}
@@ -11673,7 +11675,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.91',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.93',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
