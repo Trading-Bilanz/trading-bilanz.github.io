@@ -1349,7 +1349,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
          schaltet das Häkchen nicht um, er klappt nur die Erklärung unter der Zeile auf -->
     <div class="row rrow"><button class="btn primary" id="btn-rates">Kurse laden</button><span id="ratestatus" class="small"></span>
       <label class="fopt rauto"><input type="checkbox" id="r-auto"><span>Fehlende Kurse automatisch laden <button type="button" class="zlink small" id="r-awhy" aria-expanded="false" aria-controls="r-atxt">Wozu?</button></span></label></div>
-    <p class="small" id="r-atxt" hidden style="margin:6px 0 0">Mit dem Häkchen holt das Tool fehlende Kurse von selbst, sobald du es öffnest, neue Reports lädst oder Tag-Daten einfügst. Du musst nicht daran denken. Das Häkchen ist von Anfang an gesetzt. Nimmst du es weg, geht das Tool nur ins Internet, wenn du auf „Kurse laden“ klickst. Bei jedem Abruf sieht die EZB deine IP-Adresse. Antwortet sie nicht, fragt das Tool beim Dienst Frankfurter, und der sieht sie.</p>
+    <p class="small" id="r-atxt" hidden style="margin:6px 0 0">Mit dem Häkchen holt das Tool fehlende Kurse von selbst, sobald du es öffnest, neue Reports lädst oder Tag-Daten einfügst. Du musst nicht daran denken. Das Häkchen ist von Anfang an gesetzt. Nimmst du es weg, geht das Tool nur ins Internet, wenn du auf „Kurse laden“ klickst. Bei jedem Abruf sieht die EZB deine IP-Adresse. Antwortet sie nicht, fragt das Tool beim Dienst Frankfurter. Dann sieht dieser Dienst deine IP-Adresse.</p>
     <div id="ratemsg"></div>
     </div>
     <!-- Ohne Internet: Beschrieben ist nur die XML-Datei (usd.xml) von der Seite der EZB, Knopf „Download XML (SDMX)“. Still eingelesen werden
@@ -1376,7 +1376,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <!-- 3 TAG WALLET -->
 <section id="s-wallet">
   <!-- Ab 0.46 (2.3): Ein- und Auszahlungen per Bank oder mit Krypto; der Hinweis zur Bank steht als Satz im Überblick (Regel 3) -->
-  <p class="hint">Hier trägst du deine Ein- und Auszahlungen bei Tag ein, per Bank oder mit Krypto. Das braucht „Dein echtes Geld“. Hast du mit USDC oder USDT ein- oder ausgezahlt, rechnet das Tool hier auch die Krypto-Steuer. <button type="button" class="ib" data-wiopen aria-label="Was du hier machst: So gehst du vor">i</button></p>
+  <p class="hint">Hier trägst du deine Ein- und Auszahlungen bei Tag ein, per Bank oder mit Krypto. Daraus rechnet das Tool „Dein echtes Geld“ in der Auswertung. Hast du mit USDC oder USDT ein- oder ausgezahlt, rechnet das Tool hier auch die Krypto-Steuer. <button type="button" class="ib" data-wiopen aria-label="Was du hier machst: So gehst du vor">i</button></p>
   <!-- Ab 0.40: oben Überblick und „Noch offen“, dann „Daten einlesen“, darunter „Details“ (die bisherigen Karten, beim ersten Öffnen zu) -->
   <div class="card fold stk" data-fold="cxres-card" id="cxres-card" style="display:none">
     <!-- Ab 0.45 (4.1): Titel und Spaltenköpfe des Bestands stehen (Kopie der Kopfzeile wie in der Auswertung).
@@ -1415,7 +1415,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <div class="vgl" id="vg-list" data-wbox="d"></div>
     <!-- Ab 0.45 (4.6): Summe dessen, was der Filter zeigt -->
     <p class="vgsum" id="vg-sum"></p>
-    <p class="small" id="vg-legend">Klick auf eine Zeile zeigt die einzelnen Bewegungen, den Rechenweg und die Knöpfe (✎ bearbeiten, × löschen). Uhrzeiten in österreichischer Zeit.</p>
+    <p class="small" id="vg-legend">Klick auf eine Zeile zeigt die einzelnen Bewegungen, den Rechenweg und die Knöpfe (✎ bearbeiten, × löschen). Uhrzeiten in mitteleuropäischer Zeit (wie in Wien und Berlin).</p>
   </div>
   <!-- Ab 0.45 (4.9): Rechenwege in eigener Karte, zugeklappt, immer vom ältesten zum neuesten -->
   <!-- Ab 0.54 (4): stehender Titel wie die anderen Karten (stk, .sthd), Klick klappt zu, auch von unten -->
@@ -1567,7 +1567,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
         <li>Die MT5-Reports aller Konten für das ganze Jahr (HTML-Dateien).</li>
         <li>Die Zusammenfassung als PDF und die Excel-Datei.</li>
         <li>Nachweise zu Ein- und Auszahlungen (Tag Wallet, Börse, Wallet).</li>
-        <li>Aufbewahrung: 7 Jahre.</li>
+        <li>Aufbewahrung: mindestens 7 Jahre. Das empfiehlt das Finanzministerium, und du musst deine Einkaufswerte beweisen können.</li>
       </ul>
       <p class="small">Abgabe der Steuererklärung über FinanzOnline in der Regel bis 30. Juni des Folgejahres. Keine Steuerberatung: Die Einordnung beruht auf öffentlich zugänglichen Informationen (Stand 2026). Kläre deine Situation vor der Abgabe mit deiner Steuerberatung oder dem Finanzamt.</p>
     </div>
@@ -1614,7 +1614,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <div class="card">
     <h2>💚 Danke, dass du die Trading-Bilanz nutzt</h2>
     <p>Ich habe dieses Tool mit viel Zeit und Herz für die Community gebaut und schenke es dir. Ohne Abo, ohne Werbung. Und deine Daten bleiben bei dir.</p>
-    <p>Wenn du damit schon deinen besten Trade gefeiert hast, dich über die neue Übersicht freust, oder es dir sogar schon Kopfzerbrechen erspart hat, freue ich mich sehr über eine Wertschätzung. Jeder Beitrag hilft mir, das Tool weiter zu pflegen und für uns alle besser zu machen.</p>
+    <p>Wenn du damit schon deinen besten Trade gefeiert hast, dich über die neue Übersicht freust oder es dir sogar schon Kopfzerbrechen erspart hat, freue ich mich sehr über eine Wertschätzung. Jeder Beitrag hilft mir, das Tool weiter zu pflegen und für uns alle besser zu machen.</p>
     <p><strong>Auf dass die Fülle immer weiter fließt.</strong></p>
     <p>Am liebsten in USDC oder USDT. Aber ganz ehrlich: Ich freue mich über alles, was gerade so herumliegt und ein neues Zuhause sucht. 🙂</p>
     <p>Und wenn gerade nichts übrig ist: Erzähle anderen in der Community davon. Auch das trägt uns alle.</p>
@@ -1626,7 +1626,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
         <div class="row" style="margin-top:8px"><button class="btn primary" id="btn-copyaddr">Adresse kopieren</button><span id="copymsg" class="small"></span></div>
         <p class="small" style="margin-top:8px">Du kannst die Spendenadresse auf der GitHub-Seite der Trading-Bilanz vergleichen. <a href="https://github.com/Trading-Bilanz/trading-bilanz.github.io#readme" target="_blank" rel="noopener">Adresse vergleichen&nbsp;↗</a></p>
         <p class="small" style="margin-top:12px">Funktioniert auf allen <strong>EVM-Netzwerken</strong>, z. B. Ethereum, Arbitrum, Base, Optimism, Polygon, BNB Smart Chain, Avalanche, Linea.</p>
-        <div class="msg warn"><b>Bitte nicht über TRON (TRC20), Solana oder Bitcoin senden.</b> Diese Netzwerke haben andere Adressen, die Spende käme nicht an. Wenn du von einer Börse aus sendest, wähle als Netzwerk z. B. „Ethereum (ERC20)“, „BNB Smart Chain (BEP20)“, „Arbitrum One“, „Base“, oder „Polygon“.</div>
+        <div class="msg warn"><b>Bitte nicht über TRON (TRC20), Solana oder Bitcoin senden.</b> Diese Netzwerke haben andere Adressen, die Spende käme nicht an. Wenn du von einer Börse aus sendest, wähle als Netzwerk z. B. „Ethereum (ERC20)“, „BNB Smart Chain (BEP20)“, „Arbitrum One“, „Base“ oder „Polygon“.</div>
       </div>
     </div>
     <h3 style="margin-top:18px">Lieber per PayPal?</h3>
@@ -1651,21 +1651,21 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <!-- Nur sichtbar, wenn das Tool über http(s) läuft (Online-Version), nicht bei einer heruntergeladenen Datei (file://) -->
   <div class="card" id="offline-card" style="display:none">
     <h2>Ohne Internet nutzen</h2>
-    <p class="hint">Lade die Trading-Bilanz herunter und nutze sie ganz ohne Internet. Die heruntergeladene Datei hat ihren eigenen Speicher. Nimm deine Daten mit einer Sicherung mit.</p>
+    <p class="hint">Lade das Tool herunter und nutze es ganz ohne Internet. Die heruntergeladene Datei startet ohne deine Daten von hier. Mitnehmen kannst du sie mit einer Sicherung.</p>
     <div class="row"><button class="btn primary" id="btn-offline" data-offdl>Für offline herunterladen</button></div>
   </div>
   <div class="card">
     <h2>Export</h2>
     <!-- Ab 0.77 (Teil 3): Die Excel mit allen Daten hat keinen Steuerbezug mehr, die Zahlen für die Steuer stehen in der Steuer-Excel -->
-    <p class="hint">Die Excel-Datei enthält alles, was jemand nachprüfen möchte: Übersicht mit Summen und Annahmen, Durchschnitt, Monate, Wochen, Tage, Konten, alle Trades mit Haltedauer, deine Investition, alle MT5-Buchungen mit Wechselkurs und Kurs-Datum, deine Coins mit Gewinn und Verlust je Vorgang, die Tag-Wallet-Vorgänge, deine eigenen Einträge und alle verwendeten EZB-Kurse mit Quelle. Die Zahlen für die Steuer findest du in der Steuer-Excel im Reiter „Steuer“.</p>
-    <p class="hint"><b>Für alle, die tiefer blicken wollen:</b> In der Excel-Datei steckt alles, was das Tool weiß. Jeder Trade, jeder Handelstag, jede Woche und jeder Monat mit Betrag, Performance Fee, Investition und Rendite, dazu alle Buchungen mit Wechselkurs. Damit kannst du dir jede Auswertung selbst bauen, die das Tool nicht zeigt: eigene Durchschnitte, Filter, Diagramme, Vergleiche.</p>
+    <p class="hint"><b>Für alle, die tiefer blicken wollen:</b> In der Excel-Datei steckt alles, was das Tool weiß: Übersicht mit Summen und Annahmen, Durchschnitt, Monate, Wochen, Tage, Konten, alle Trades mit Haltedauer, deine Investition, alle MT5-Buchungen mit Wechselkurs und Kurs-Datum, deine Coins mit Gewinn und Verlust je Vorgang, die Tag-Wallet-Vorgänge, deine eigenen Einträge und alle verwendeten EZB-Kurse mit Quelle. Damit kannst du dir jede Auswertung selbst bauen, die das Tool nicht zeigt: eigene Durchschnitte, Filter, Diagramme, Vergleiche.</p>
+    <p class="hint">Die Zahlen für die Steuer findest du in der Steuer-Excel im Reiter „Steuer“.</p>
     <!-- Ab 0.67 (Florians Wunsch): auch die CSV beschreiben -->
     <p class="hint">Die CSV-Datei enthält nur deine MT5-Buchungen als einfache Liste: eine Zeile je Buchung mit Konto, Zeitpunkt, Art, Betrag, Kosten, Wechselkurs und Betrag in Euro. Krypto, Wallet und Auswertungen sind nicht dabei. Sie passt für Programme, die eine einfache Tabelle brauchen. Zurück ins Tool lädst du weder Excel noch CSV, dafür gibt es die Sicherung.</p>
     <div class="row"><button class="btn primary" id="btn-xlsxall">Excel mit allen Daten</button><button class="btn" id="btn-csvall">Alle Buchungen als CSV</button></div>
   </div>
   <div class="card">
     <h2>Alles löschen</h2>
-    <p class="hint">Entfernt alle Konten, Buchungen und Kurse aus diesem Browser.</p>
+    <p class="hint">Löscht alle deine Daten aus diesem Browser.</p>
     <button class="btn danger" id="btn-wipe">Alles löschen</button>
   </div>
 </section>
@@ -1691,14 +1691,14 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <!-- Ab 0.78: Überschrift im Kästchen, Knöpfe gleich breit (am Handy untereinander), Haftung als roter Streifen (.dstr) -->
   <div class="ibox" id="intro-tax">
     <h3 id="intro-tax-t">Wo zahlst du Steuern?</h3>
-    <p>Die Trading-Bilanz kann dir auch zeigen, was du für die Steuer brauchst. Dafür muss sie wissen, wo du steuerpflichtig bist. Bisher kennt sie Österreich und Deutschland.</p>
+    <p>Das Tool kann dir auch zeigen, was du für die Steuer brauchst. Dafür muss es wissen, wo du steuerpflichtig bist. Bisher kennt es Österreich und Deutschland.</p>
     <p>Wenn du woanders steuerpflichtig bist oder nur deine Ergebnisse sehen willst, wähle „Ohne Steuer“.</p>
     <div id="intro-land" role="group" aria-labelledby="intro-tax-t"><button type="button" class="btn" data-icountry="AT" aria-pressed="false">Österreich</button><button type="button" class="btn" data-icountry="DE" aria-pressed="false">Deutschland</button><button type="button" class="btn" data-icountry="none" aria-pressed="false">Ohne Steuer</button></div>
     <div class="dstr"><p>⚠️ Die Steuerangaben sind mit KI recherchiert und ohne Gewähr. <b>Dieses Tool ist keine Steuerberatung.</b></p></div>
     <p class="small">Du kannst das jederzeit im Reiter „Steuer“ ändern.</p>
   </div>
   <!-- Nur online: früh herunterladen, weil Online-Version und Datei getrennt speichern. Ab 0.77 steht der Satz zum Original im Kästchen, ab 0.78 mit fettem Anfang -->
-  <div class="msg info onl" id="intro-dl"><p>Du kannst die Trading-Bilanz auch herunterladen und ganz ohne Internet nutzen. Später findest du den Knopf dazu im Reiter „Sicherung“. Wichtig dabei: Die Online-Version und die heruntergeladene Datei speichern getrennt. Willst du deine Daten mitnehmen, geht das ganz einfach mit einer Sicherung, im selben Reiter.</p>
+  <div class="msg info onl" id="intro-dl"><p>Du kannst das Tool auch herunterladen und ganz ohne Internet nutzen. Später findest du den Knopf dazu im Reiter „Sicherung“. Wichtig: Die heruntergeladene Datei startet ohne deine Daten aus der Online-Version. Mitnehmen kannst du sie mit einer Sicherung, im selben Reiter.</p>
     <p><b>Lade die Datei nur hier herunter,</b> von <span class="nw">trading-bilanz.github.io</span>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p>
     <div class="row"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>
   <!-- Nur in der heruntergeladenen Datei (.offl), ab 0.78 als gelber Streifen (.ystr) -->
@@ -1723,7 +1723,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 </div></div>
 <div class="modal" id="don-modal"><div class="box">
   <h2>💚 Deine Zahlen sind fertig.</h2>
-  <p>Ich hoffe, sie machen dir Freude! Wenn dir die Trading-Bilanz geholfen hat, freue ich mich sehr über eine Wertschätzung.</p>
+  <p>Ich hoffe, sie machen dir Freude! Wenn dir das Tool geholfen hat, freue ich mich sehr über eine Wertschätzung.</p>
   <p></p>
   <div class="row" style="justify-content:flex-end"><button class="btn primary" id="btn-don-go" style="background:#1f7a4d;border-color:#1f7a4d;color:#fff">❤️ Zur Spende</button><button class="btn" id="btn-don-no">Jetzt nicht</button><button class="btn" id="btn-don-done">Schon gespendet</button></div>
 </div></div>
@@ -1734,12 +1734,12 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 </div></div>
 <div class="modal noprint" id="privacy-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="privacy-t"><button type="button" class="mx" aria-label="Schließen">×</button>
   <h2 id="privacy-t">Datenschutz</h2>
-  <p>Die Trading-Bilanz speichert deine Daten nur in deinem Browser, auf deinem Gerät. Das Tool schickt nichts an mich, und ich sehe nichts davon.</p>
+  <p>Das Tool speichert deine Daten nur in deinem Browser, auf deinem Gerät. Das Tool schickt nichts an mich, und ich sehe nichts davon.</p>
   <p>Auch die Wallet-Datei aus dem Block-Explorer liest das Tool nur in deinem Browser. Sie geht nirgendwohin.</p>
   <p>Übers Internet geht nur:</p>
   <ul>
     <li>Der Aufruf der Online-Version und „Für offline herunterladen“. Dabei speichert GitHub deine IP-Adresse aus Sicherheitsgründen (<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub&nbsp;↗</a>).</li>
-    <li>Das Laden der Wechselkurse: von selbst, sobald Kurse fehlen, und wenn du auf „Kurse laden“ klickst. Das Laden von selbst schaltest du im Reiter „Kurse“ aus (Häkchen „Fehlende Kurse automatisch laden“). Dabei sieht die EZB deine IP-Adresse. Antwortet sie nicht, fragt das Tool beim Dienst Frankfurter, und der sieht sie. Liest du stattdessen die Datei der EZB ein, geht das Tool nicht ins Internet.</li>
+    <li>Das Laden der Wechselkurse: von selbst, sobald Kurse fehlen, und wenn du auf „Kurse laden“ klickst. Das Laden von selbst schaltest du im Reiter „Kurse“ aus (Häkchen „Fehlende Kurse automatisch laden“). Dabei sieht die EZB deine IP-Adresse. Antwortet sie nicht, fragt das Tool beim Dienst Frankfurter. Dann sieht dieser Dienst deine IP-Adresse. Liest du stattdessen die Datei der EZB ein, geht das Tool nicht ins Internet.</li>
     <li>Links, die du anklickst (Anleitung, Tentary, PayPal), öffnen andere Seiten mit ihren eigenen Regeln.</li>
   </ul>
   <p>Technisch abgesichert: Eine Regel am Anfang der Datei erlaubt dem Tool nur die Verbindung zu den Wechselkurs-Diensten und zur eigenen Adresse (für „Für offline herunterladen“). Dein Browser verhindert jede andere Verbindung. Lade das Tool nur von trading-bilanz.github.io, damit diese Regel nicht verändert ist.</p>
@@ -1753,7 +1753,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <!-- Eigene Kurse (pasteRates): gelten nur für Tage ohne EZB-Kurs. ✎ in „Alle Kurse anzeigen“ öffnet es mit der Zeile vorausgefüllt -->
 <div class="modal noprint" id="rm-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="rm-t"><button type="button" class="mx" aria-label="Schließen">×</button>
   <h2 id="rm-t">Kurse von Hand eintragen</h2>
-  <p class="hint">Eine Zeile pro Tag: Datum und Kurs (USD je 1 EUR), z. B. <code>2026-07-15;1,1406</code> oder <code>15.07.2026 1.1406</code>. Die Kurse findest du auf der Website der EZB unter „Euro foreign exchange reference rates“, US-Dollar.</p>
+  <p class="hint">Eine Zeile pro Tag: Datum und Kurs, z. B. <code>2026-07-15;1,1406</code> oder <code>15.07.2026 1.1406</code>. Kurs heißt: wie viele US-Dollar du für 1 Euro bekommst, so wie bei der EZB. Die Kurse findest du auf der Website der EZB unter „Euro foreign exchange reference rates“, US-Dollar.</p>
   <p class="small">Eigene Kurse gelten nur für Tage, für die es keinen EZB-Kurs gibt. Kommt später ein EZB-Kurs für diesen Tag, ersetzt er deinen.</p>
   <textarea id="ratepaste" placeholder="2026-07-15;1,1406"></textarea>
   <div class="row" style="margin-top:8px"><button class="btn primary" id="btn-ratepaste">Übernehmen</button></div>
@@ -1958,7 +1958,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <h3>Börsen</h3>
     <!-- Ab 0.53: wie man die Datei bei Bitvavo bekommt, steht in der Anleitung (Abschnitt „Börsen-Datei laden“). Ab 0.64 direkt unter dem Titel -->
     <p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#boerse-datei" target="_blank" rel="noopener">So bekommst du die Datei bei Bitvavo: Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
-    <p class="small">Lade die Datei mit deinen Transaktionen von deiner Börse (CSV). Das Tool übernimmt Käufe, Verkäufe und Überträge zu deinen Wallets und erkennt, was schon da ist.</p>
+    <p class="small">Lade bei deiner Börse die Datei mit deinen Transaktionen herunter (CSV) und ziehe sie hierher. Das Tool übernimmt Käufe, Verkäufe und Überträge zu deinen Wallets und erkennt, was schon da ist.</p>
     <p class="small" id="bx-fmts"></p>
     <div class="drop" id="bxdrop" role="button" tabindex="0"><b id="bxdrop-t">Börsen-Datei (.csv) hierher ziehen</b><span class="small" id="bxdrop-s">oder klicken, um sie auszuwählen</span></div>
     <input type="file" id="bxfile" accept=".csv,text/csv" multiple hidden>
@@ -2285,7 +2285,9 @@ try{fixState()}catch(e){bootFail(e)}
 // der noch nicht übernommen ist.
 const modalDirty=M=>M.id==='dt-modal'?!!$('tagpaste').value.trim():M.dataset.dirty==='1';
 // Ab 0.47 (4.3): Speichern setzt nur das „geändert“ des obersten Fensters zurück (jedes Fenster merkt sich seins in data-dirty)
-function save(){RV=null;if(BOOT_BAD)return;if(SAVE_OFF){SAVE_DUE=true;return}try{if(MODAL)delete MODAL.dataset.dirty}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){msg('datamsg','bad','Speichern im Browser nicht möglich. Speichere regelmäßig eine Sicherung.');}}
+function save(){RV=null;if(BOOT_BAD)return;if(SAVE_OFF){SAVE_DUE=true;return}try{if(MODAL)delete MODAL.dataset.dirty}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){msg('datamsg','bad',SAVE_FAIL_TXT);if(!SAVE_FAIL_T){SAVE_FAIL_T=1;try{toast(SAVE_FAIL_TXT)}catch(x){}}}}
+// Ab 0.95 (S7): Meldung auch als Toast, dort, wo man gerade ist (einmal je Sitzung), dazu wie bisher im Reiter „Sicherung“
+const SAVE_FAIL_TXT='Der Browser speichert gerade nichts. Was du einträgst, ist beim Schließen weg. Speichere eine Sicherung, bevor du das Tool schließt.';let SAVE_FAIL_T=0;
 
 /* ---------------- Hilfen ---------------- */
 const $=id=>document.getElementById(id);
@@ -2471,7 +2473,7 @@ async function loadFiles(files){
     try{
       const txt=await readText(f);
       const r=parseReport(txt);
-      if(!r.acc||!(r.deals.length||r.dealHd)){out.push(`<b>${esc(f.name)}</b>: kein MT5-Kontoreport erkannt. Lade die Datei aus MT5 („Kontohistorie“ → rechte Maustaste → „Bericht“ → „HTML (Internet Explorer)“). Das Tool kann eine PDF- oder Excel-Datei nicht lesen.`);continue;}
+      if(!r.acc||!(r.deals.length||r.dealHd)){out.push(`<b>${esc(f.name)}</b>: kein MT5-Kontoreport erkannt. Speichere den Report in MT5 als HTML: „Kontohistorie“ → rechte Maustaste → „Bericht“ → „HTML (Internet Explorer)“. Das Tool kann eine PDF- oder Excel-Datei nicht lesen.`);continue;}
       // Ab 0.61: neu angelegte Konten merken (nw, ohne Trading Benefit: dropFiles springt dorthin)
       if(!S.accounts[r.acc]&&!nw.includes(r.acc))nw.push(r.acc);
       const A=S.accounts[r.acc]||(S.accounts[r.acc]={name:'',factor:null,cur:r.cur,holder:r.holder,company:r.company,repDate:''});
@@ -2496,7 +2498,7 @@ async function loadFiles(files){
       out.push(r.deals.length?`<b>${esc(f.name)}</b>: Konto ${r.acc}, ${a} ${a===1?'neue Buchung':'neue Buchungen'}${d?`, ${d} schon vorhanden`:''}${u?`, davon ${u} aktualisiert (Kontostand oder Betrag aus diesem Report übernommen)`:''}.`+
         (u?`<details class="wfd"><summary>${u===1?'Aktualisierte Buchung':'Aktualisierte Buchungen'} ansehen</summary><ul>${UL.join('')}</ul></details>`:''):
         `<b>${esc(f.name)}</b>: Konto ${r.acc}, keine Buchungen in diesem Report.`);
-    }catch(e){out.push(`<b>${esc(f.name)}</b>: konnte nicht gelesen werden (${esc(e.message)}).`)}
+    }catch(e){out.push(`<b>${esc(f.name)}</b>: konnte nicht gelesen werden (${esc(e.message)}). Speichere den Report neu aus MT5 und lade ihn noch einmal.`)}
   }
   if(added||upd)S.ui.lastLoad=new Date().toISOString();
   save();
@@ -2526,7 +2528,7 @@ const MAP_SIGN={einzahlung:1,kapitalabzug:-1,gewinnauszahlung:-1};
 function mapSign(e){const want=MAP_SIGN[e.cat];if(!want||S.map[e.k]!==e.cat)return '';
   const L=e.deals.filter(x=>x.prof*want<0);if(!L.length)return '';
   const sum=L.reduce((a,x)=>a+x.prof,0),v=(sum>0?'+':'')+usd(sum),art=CATS[e.cat].replace(/ \(.*\)$/,'');
-  return `Prüfe die Art: ${art}, aber ${L.length===1?v:`${fI.format(L.length)} Buchungen mit zusammen ${v}`}.`}
+  return `Prüfe die Art: Bei „${art}“ erwartet das Tool ein ${want>0?'Plus':'Minus'}, ${L.length===1?`hier steht aber ${v}`:`hier stehen aber ${fI.format(L.length)} Buchungen mit zusammen ${v}`}.`}
 function mapKinds(){const m={},R=rvScan();
   for(const [dk,x] of Object.entries(S.deals)){if(x.type==='buy'||x.type==='sell'||R.ok[dk])continue;const k=mapKey(x);
     if(S.map[k]==null&&DEFAULT_MAP[k])continue;
@@ -2665,20 +2667,20 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-rl],[data-
    (eurofxref-hist.zip, entpackt im Browser), die entpackte eurofxref-hist.csv oder eine CSV aus dem EZB-Datenportal bzw. der Daten-API
    (TIME_PERIOD, OBS_VALUE), gelesen von parseRateCsv. Nur USD je EUR. */
 const RATEFILE_MSG='In dieser Datei hat das Tool keine USD-Kurse gefunden. Gemeint ist die Datei, die du auf der Seite der EZB mit „Download XML (SDMX)“ herunterlädst.';
-const UNZIP_MSG='Entpacke die ZIP-Datei und lies die CSV-Datei ein.';
+const UNZIP_MSG='Diese ZIP-Datei kann der Browser nicht öffnen. Entpacke sie und lies die CSV-Datei daraus ein.';
 async function unzipCsv(b){
   const dv=new DataView(b.buffer,b.byteOffset,b.byteLength),td=new TextDecoder();let e=b.length-22;
-  while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;if(e<0)throw new Error('Die ZIP-Datei ist beschädigt. '+UNZIP_MSG);
+  while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;if(e<0)throw new Error('Die ZIP-Datei ist beschädigt. Lade sie auf der Seite der EZB neu herunter.');
   const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);
   for(let i=0;i<n;i++){
-    if(dv.getUint32(p,true)!==0x02014b50)throw new Error('Die ZIP-Datei ist beschädigt. '+UNZIP_MSG);
+    if(dv.getUint32(p,true)!==0x02014b50)throw new Error('Die ZIP-Datei ist beschädigt. Lade sie auf der Seite der EZB neu herunter.');
     const meth=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),xl=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lh=dv.getUint32(p+42,true);
     if(/\.csv$/i.test(td.decode(b.subarray(p+46,p+46+nl)))){const s=lh+30+dv.getUint16(lh+26,true)+dv.getUint16(lh+28,true),d=b.subarray(s,s+cs);
       if(meth===0)return td.decode(d);
       if(meth!==8||typeof DecompressionStream==='undefined')throw new Error(UNZIP_MSG);
       try{return await new Response(new Blob([d]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text()}catch(x){throw new Error(UNZIP_MSG)}}
     p+=46+nl+xl+cl}
-  throw new Error('In der ZIP-Datei ist keine CSV-Datei. '+UNZIP_MSG)}
+  throw new Error('In der ZIP-Datei ist keine CSV-Datei. Nimm die Datei, die du auf der Seite der EZB mit „Download XML (SDMX)“ herunterlädst.')}
 // Eine CSV-Zeile mit Anführungszeichen teilen
 function csvCells(l,sep){const o=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(q){if(ch==='"'){if(l[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}else if(ch==='"')q=true;else if(ch===sep){o.push(c.trim());c=''}else c+=ch}o.push(c.trim());return o}
 // Liefert {R: Datum → Kurs, first, last} oder wirft einen Fehler mit verständlichem Text
@@ -2731,7 +2733,7 @@ async function importRates(f){let res;
       if(RM[d]==null||own)nw++;S.rates[d]=v;S.rsrc[d]='Datei (EZB)'}
     if(!S.rcov.file||last>S.rcov.file)S.rcov.file=last;
     RD=null;save();
-    msg('ratefmsg',nw||rep?'ok':'info',`<b>${esc(f.name)}</b>: Kurse vom ${fD(first)} bis ${fD(last)}. ${nw?`${fI.format(nw)} ${nw===1?'neuer Kurs':'neue Kurse'} übernommen`:'Keine neuen Kurse, das Tool hatte die übrigen schon'}${ownRep(rep)}.`);
+    msg('ratefmsg',nw||rep?'ok':'info',`<b>${esc(f.name)}</b>: Kurse vom ${fD(first)} bis ${fD(last)}. ${nw?`${fI.format(nw)} ${nw===1?'neuer Kurs':'neue Kurse'} übernommen`:'Keine neuen Kurse, das Tool hatte sie schon alle'}${ownRep(rep)}.`);
     res={nw,first,last};
   }catch(e){msg('ratefmsg','bad',`<b>${esc(f.name)}</b>: ${esc(e.message)}`);res={err:e.message}}
   render();return res;
@@ -2974,7 +2976,7 @@ function pfHint(iss,rate){
   for(const x of iss.filter(x=>x.type==='loss'))t.push(`Konto ${x.a}: Die Performance Fee vom ${dS(x.d)} wurde in einer Woche mit Verlust abgebucht (Ergebnis ${usd(x.nu)}).`);
   const tail=iss.some(x=>x.type==='carry')?'„PF verteilt“ rechnet anders und ist für diese Wochen nicht genau.':'Dann ist „PF verteilt“ für diese Wochen vielleicht nicht genau.';
   const mail=`mailto:florian@weltenwandel.at?subject=${encodeURIComponent('Trading-Bilanz: Performance Fee')}&body=${encodeURIComponent(t.join(' ')+' '+tail+'\n\n(Trading-Bilanz '+VERSION+')')}`;
-  return `<b>Performance Fee:</b> ${t.join(' ')} ${tail} Bitte schick mir das an <a href="${mail}">florian@weltenwandel.at</a>.`;
+  return `<b>Performance Fee:</b> ${t.join(' ')} ${tail} Schick mir bitte diesen Hinweis an <a href="${mail}">florian@weltenwandel.at</a>, ein Bildschirmfoto reicht.`;
 }
 // Silvester: Die Zeit im MT5-Report ist die des Brokers (Zypern), ganzjährig 1 Stunde vor Österreich und Deutschland. Steuerlich relevante
 // Buchungen am 01.01. zwischen 00:00 und 00:59 Uhr waren hier noch am 31.12. Das Tool rechnet sie nicht um, es gibt nur Hinweise (Steuer-Seite
@@ -3295,7 +3297,9 @@ const W_CONTRACTS={
   '0xb4bb2032a73a53c0aa7dc9ee2d9658a978fa7bc2':{net:'base',coin:'USDC',iss:'Kartenanbieter',card:{sym:'WUSD',name:'Unified USD'}}};
 // Ab 0.44: Karten-Token (Kartenguthaben) an der Vertragsadresse
 const wCardTok=m=>!!(m&&W_CONTRACTS[m.contract]&&W_CONTRACTS[m.contract].card);
-const W_BAD='Das Tool kennt diese Datei nicht. Gemeint ist die Liste „Token Transfers“ aus dem Block-Explorer (siehe Anleitung).';
+// Ab 0.95 (W16): ohne „(siehe Anleitung)“, darunter in der Meldung der Link zum Fenster „So lädst du die Datei aus dem Block-Explorer“ (W_GUIDE)
+const W_BAD='Gemeint ist die Liste „Token Transfers“ aus dem Block-Explorer.';
+const W_GUIDE='<br><button type="button" class="zlink" data-wfguide>So lädst du die Datei aus dem Block-Explorer</button>';
 // Zeitpunkt (Sekunden seit 1970, UTC) in österreichischer Zeit (gilt auch für Deutschland, mit Sommerzeit), unabhängig vom Computer
 let W_FMT=null;
 function wTime(ts){
@@ -3509,8 +3513,8 @@ function cpmItems(S,m){const i=!!(S.addr[m.to]&&S.addr[m.to].own),o=!!(S.addr[m.
 // Ab 0.56 (1): cxLearn („✎ lernt mit“, Frage nach dem Speichern) entfällt, das Formular schreibt jede Seite mit Adresse selbst ins Adressbuch (cxAddrPlan)
 // Zahlung ohne Beleg (≈): abgebuchter Betrag minus Gebühr, beides in USD. warn = ohne Gebühr (Wert dann zu hoch), bad = Gebühr nicht kleiner als Menge.
 function payEst(q,fee){const f=fee>0?fee:0;if(f>=q)return {bad:true};return {usd:+(q-f).toFixed(2),fee:f,warn:!f}}
-// Zahlung, deren Wert bis 0.40 mit dem Tageswert der Coins geschätzt wurde (in Euro, est oder Notiz „Tageswert der Coins“), noch nicht geprüft
-const payOld=c=>c.kind==='bezahlung'&&!c.estOk&&c.cur!=='USD'&&(!!c.est||String(c.note||'').trim()==='Tageswert der Coins');
+// Ab 0.95 (W11): Der Punkt „alte Zahlung“ (W-51, payOld mit der Abfrage der Notiz „Tageswert der Coins“) ist entfernt. Die aktuelle Version
+// erzeugt solche Einträge nicht mehr (Prüfung in Werkstatt-Runde 5). Ein gespeichertes estOk bleibt ohne Wirkung stehen.
 // Fragen zu Gebühren und Zahlungen in der Zusammenfassung (fee = Verkaufsgebühren AT, wk = Werbungskosten DE, nPay = Zahlungen im Jahr,
 // fmt = Euro-Format). Ohne Zahlungen wie bis 0.40.
 function taxPayQ(DE,fee,wk,nPay,fmt){
@@ -5001,21 +5005,21 @@ document.addEventListener('animationend',e=>{const r=e.target.closest&&e.target.
 // WFP = {files:[{name, P (parseWallet), addr, wallet ('' = noch wählen, '+' = neue), newName}]}
 let WFP=null;
 async function wfLoad(files){
-  const fs=[],errs=[];needReset($('wfprev'));
+  const fs=[],errs=[];let wBadLink=0;needReset($('wfprev'));
   for(const f of files){
-    if(!/\.csv$/i.test(f.name)&&!/csv|text/i.test(f.type||'')){errs.push(`<b>${esc(f.name)}</b>: Das ist keine CSV-Datei. ${W_BAD}`);continue}
+    if(!/\.csv$/i.test(f.name)&&!/csv|text/i.test(f.type||'')){errs.push(`<b>${esc(f.name)}</b>: Das ist keine CSV-Datei. ${W_BAD}`);wBadLink=1;continue}
     // Ab 0.44: Datei einer Börse (Bitvavo) geht in den Bereich „Börsen“. Datei ohne bekanntes USDC/USDT: Vorauswahl „Nicht verwenden“ (skip).
     try{const t=await readText(f);if(bxFmt(t)){bxQueue([{name:f.name,text:t}]);continue}
-      const P=parseWallet(t,f.name);if(P.err){errs.push(`<b>${esc(f.name)}</b>: ${P.err}`);continue}
+      const P=parseWallet(t,f.name);if(P.err){errs.push(`<b>${esc(f.name)}</b>: ${P.err}`);if(P.err===W_BAD)wBadLink=1;continue}
       // Ab 0.56 (2): cur = Wallet der Adresse laut Adressbuch beim Einlesen (auch eine vorläufige); die Vorschau bietet die Wahl, vorbelegt mit ihr
       const A=S.addr[P.addr],cur=A&&!A.tag&&!A.pay&&S.wallets.includes(A.wallet)?A.wallet:'';fs.push({name:f.name,text:t,P,addr:P.addr,wallet:cur,cur,newName:'',net:'',skip:P.rows.length?0:1})}
-    catch(e){errs.push(`<b>${esc(f.name)}</b>: Die Datei ließ sich nicht lesen.`)}}
+    catch(e){errs.push(`<b>${esc(f.name)}</b>: Die Datei ließ sich nicht lesen. Lade sie neu herunter und versuche es noch einmal.`)}}
   // Ab 0.61: Wartet noch eine Vorschau (nichts davon übernommen), kommen ihre Dateien dazu (ohne die gleichnamigen neuen), statt verloren zu gehen
   if(fs.length&&WFP&&!WFP.stored&&!WFP.re&&!(WFP.done||[]).length){const nm=new Set(fs.map(f=>f.name));fs.push(...WFP.files.filter(f=>!nm.has(f.name)))}
   // Ab 0.43: die Datei mit den meisten Bewegungen zuerst; mehrere Dateien: erst je Datei die Wallet (ask), dann die Wahl (mode)
   fs.sort((a,b)=>(b.P.rows.length+b.P.unk.length)-(a.P.rows.length+a.P.unk.length));
   WFP=fs.length?{files:fs,tok:{},ask:fs.length>1?0:null,mode:fs.length>1?null:'all',done:[]}:null;
-  msg('wfmsg',errs.length?'bad':'',errs.join('<br>'));renderWfPrev();
+  msg('wfmsg',errs.length?'bad':'',errs.join('<br>')+(wBadLink?W_GUIDE:''));renderWfPrev();
   const b=$('wfprev').querySelector('.tprev');if(b&&b.getBoundingClientRect().bottom>window.innerHeight)b.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 const wfWallet=f=>W_NEWV(f.wallet)?f.newName.trim():f.wallet;
@@ -5159,7 +5163,7 @@ function wfPrevH(){
     res=`${own}${tk}<p><b>${pl(st.neu.length,'neue Bewegung','neue Bewegungen')}</b>${st.known?` · ${fI.format(st.known)} schon bekannt`:''}</p>
       ${st.neu.length?`<ul class="wfl"><li>${pl(st.tag.length,'zu Tag zugeordnet','zu Tag zugeordnet')}</li><li>${pl(st.tr,'Übertrag zwischen deinen Wallets','Überträge zwischen deinen Wallets')}</li>${st.xin.length?`<li>${pl(st.xin.length,'Eingang zu einem Übertrag zugeordnet','Eingänge zu Überträgen zugeordnet')} (zweite Seite)</li>`:''}${st.swap?`<li>${fI.format(st.swap)} ${gl('umtausch','Umtausch')} im selben Konto</li>`:''}${st.int?`<li>${fI.format(st.int)} ${gl('intern','intern')} (beide Seiten in derselben Wallet)</li>`:''}${st.br.length||st.xp.length||st.ch.length||st.tx.length?`<li>${pl(st.br.length+st.xp.length+st.ch.length+st.tx.length,'Vorgang über eine Brücke','Vorgänge über eine Brücke')} (Liste unten)</li>`:''}${st.pay?`<li>${pl(st.pay,'Kartenzahlung','Kartenzahlungen')} (Vorschlag: Zahlung)</li>`:''}<li>${pl(st.sug,'Vorschlag zu einem Eintrag von Hand','Vorschläge zu Einträgen von Hand')}</li><li>${fI.format(st.open-st.sug)} offen${st.ask?`, davon ${fI.format(st.ask)} mit Frage`:''}</li>${st.sus?`<li>${pl(st.sus,'verdächtige','verdächtige')} (${gl('verdaechtig','unter 0,01')})</li>`:''}</ul>`:''}${bl}${xl}${tl}
       ${ig.other?`<p class="small">${pl(ig.other,'Bewegung anderer Token','Bewegungen anderer Token')} ignoriert. Das Tool rechnet nur USDC und USDT.</p>`:''}
-      ${bad?`<div class="msg warn">Ignoriert: ${[ig.zero?pl(ig.zero,'Bewegung über 0','Bewegungen über 0'):'',fake].filter(Boolean).join(', ')}. Das ist meist ${gl('poisoning','Address Poisoning')}. ${W_POISON}</div>`:''}
+      ${bad?`<div class="msg warn">Ignoriert: ${[ig.zero?pl(ig.zero,'Bewegung über 0','Bewegungen über 0'):'',fake].filter(Boolean).join(', ')}. Das ist meist ein Betrugsversuch mit ${gl('lockadr','Lockadressen')}. ${W_POISON}</div>`:''}
       ${(()=>{const nl=Dx.files.filter(f=>f.later&&wfUse(f)).length;return nl?`<p class="small">${pl(nl,'Datei','Dateien')} später zuordnen. Bis dahin zählen ${nl===1?'ihre':'deren'} Bewegungen vorläufig unter „Noch nicht zugeordnet“.</p>`:''})()}
       ${st.neu.length?'<p class="small">Unklares steht danach in „Noch offen“. Du musst nichts sofort entscheiden.</p>':''}`}
   else res=`<p class="small">Wähle zuerst die Wallet zu jeder Adresse${Dx.files.some(f=>f.P.unk.length&&!wfNet(f))?' und das Netzwerk':''}. Dann zeigt die Vorschau, was das Tool zuordnet.</p>`;
@@ -5347,7 +5351,7 @@ function bxLoadText(name,t,pre){const M=pre?[pre]:[];let bad=0;BXP=null;needRese
 // Ab 0.61: Börsen-Dateien in die Warteschlange. Ist keine Vorschau offen, kommt die erste gleich, sonst bleibt die offene Vorschau stehen.
 function bxQueue(L){if(!L.length)return;BX_Q.push(...L);if(!BXP){const x=BX_Q.shift();bxLoadText(x.name,x.text);return}
   const q=BX_Q.length;msg('bxmsg','info',`Zuerst diese Vorschau. Danach ${q===1?`kommt die Börsen-Datei „${esc(BX_Q[0].name)}“`:`kommen ${fI.format(q)} Börsen-Dateien`}.`);dtPane('bx')}
-async function bxLoad(files){const L=[];for(const f of files){try{L.push({name:f.name,text:await readText(f)})}catch(e){msg('bxmsg','bad',`<b>${esc(f.name)}</b>: Die Datei ließ sich nicht lesen.`)}}bxQueue(L)}
+async function bxLoad(files){const L=[];for(const f of files){try{L.push({name:f.name,text:await readText(f)})}catch(e){msg('bxmsg','bad',`<b>${esc(f.name)}</b>: Die Datei ließ sich nicht lesen. Lade sie neu herunter und versuche es noch einmal.`)}}bxQueue(L)}
 const bxW=()=>BXP?(BXP.w==='+'?BXP.nn.trim():BXP.w):'';
 // Ab 0.46 (3.3): Vorschau als kleine Tabellen (Käufe und Verkäufe: Datum · Art · Menge · Euro; darunter Überträge und Einzahlungen), Fragen abgesetzt.
 // Je unbekannter Empfangsadresse eine Frage (freiwillig, jederzeit änderbar, auch zurück auf „weiß ich nicht“). Ohne Wahl wird die Auszahlung ein
@@ -5442,7 +5446,7 @@ $('bxdrop').addEventListener('drop',e=>zoneFiles(e.dataTransfer.files,'bx',bxLoa
 // Coin als Text (ohne HTML): bestätigter Token „USDC (WUSD)“
 const wCoinT=m=>m.tok?`${m.coin} (${m.tok.sym})`:m.coin+(m.bridged?` (${m.bridged})`:W_CONTRACTS[m.contract]&&W_CONTRACTS[m.contract].sym?` (${W_CONTRACTS[m.contract].sym})`:'');
 // Text zum Tausch im selben Konto: „Tausch WUSD → USDC im selben Konto“ (raus → rein)
-function wSwapTxt(m){const p=S.wtx[m.swap];if(!p)return '';const out=wSide(m)==='out',o=out?m:p,i=out?p:m;return `Umtausch im selben Konto: ${tokSym(o)} → ${tokSym(i)}`}
+function wSwapTxt(m){const p=S.wtx[m.swap];if(!p)return '';const out=wSide(m)==='out',o=out?m:p,i=out?p:m;return `Umtausch in derselben Wallet: ${tokSym(o)} → ${tokSym(i)}`}
 // Ab 0.43: Text zu Brücke (brg) und Kette (chain), ohne HTML (Status, Excel)
 // Ab 0.47 (Nachtrag 2, 1): Weiterleitung einer Aufladung mit Coin-Wechsel (Tausch mit how 'aufladung')
 function wBrTxt(m){if(m.chain){const c=cxById(m.chain);
@@ -5458,6 +5462,8 @@ $('wfile').addEventListener('change',e=>{zoneFiles(e.target.files,'wf',wfLoad);e
 ['dragleave','drop'].forEach(ev=>$('wdrop').addEventListener(ev,e=>{e.preventDefault();$('wdrop').classList.remove('over')}));
 $('wdrop').addEventListener('drop',e=>zoneFiles(e.dataTransfer.files,'wf',wfLoad));
 $('btn-wfguide').addEventListener('click',()=>openModal('wg-modal'));
+// Ab 0.95 (W16): Link in der Fehlermeldung einer Wallet-Datei öffnet dasselbe Fenster
+$('wfmsg').addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-wfguide]'))openModal('wg-modal')});
 // Ab 0.47 (Nachtrag 2, 9): Was Address Poisoning ist, steht im Begriff; hier nur noch der Rat
 const W_POISON='Kopiere Adressen nie aus dem Verlauf, immer aus der Quelle.';
 // Ab 0.55 (3): ein Text zu Lockadressen, wortgleich im (i) der Gruppe „Betrugsverdacht“, im Hinweis in „Noch offen“ und im Begriff „Lockadresse“
@@ -5491,7 +5497,7 @@ function wAskHTML(k,m,q){const K=esc(k),b=(a,t,id,cls)=>`<button type="button" c
   const ml=mvLine(m),q1=`${fmtNum(m.qty)} ${esc(wCoinT(m))}`,tg=t=>['',`Bei Tag: ${tagRef(t)}.`];
   // Ab 0.50 Nachtrag 1 (4.3): mehrere Möglichkeiten als „Vorschlag 1 von 2: …“
   const pick=(L,a,f,none,ids)=>L.length>1?sugChH(L.map(f),i=>b(a,'Übernehmen',L[i].id,'primary'),b(none,'Keiner davon',ids)):`<ul class="sgc">${L.map(x=>`<li>${b(a,'Übernehmen',x.id,'primary')} <span>${f(x)}</span></li>`).join('')}</ul><div class="row">${b(none,'Nein',ids)}</div>`;
-  if(q.ty==='sus')return sugBox({fq:1,frage:`Soll das Tool diese ${q1} ignorieren?`,name:'Ignorieren',kurz:'sehr kleiner Betrag',cls:'warn',warum:[[ml[0],`${ml[1]}. Das ist unter 0,01 ${esc(m.coin)} und kann ${gl('poisoning','Address Poisoning')} sein.`]],wenn:'die Bewegung zählt nicht.',btns:`<div class="row">${b('ign','Ignorieren',null,'primary')}</div>`});
+  if(q.ty==='sus')return sugBox({fq:1,frage:`Soll das Tool diese ${q1} ignorieren?`,name:'Ignorieren',kurz:'sehr kleiner Betrag',cls:'warn',warum:[[ml[0],`${ml[1]}. Das ist unter 0,01 ${esc(m.coin)} und kann ein Betrugsversuch mit einer ${gl('lockadr','Lockadresse')} sein.`]],wenn:'die Bewegung zählt nicht.',btns:`<div class="row">${b('ign','Ignorieren',null,'primary')}</div>`});
   // Ab 0.42: Kartenzahlung (Vorschlag Zahlung), mehrere Überträge für die Eingangsseite
   // Ab 0.46 (5.5, Regel 3): eine Zeile mit Knopf statt Kasten
   if(q.ty==='pay')return `<div class="row wpq">${b('payone','Als Zahlung anlegen',null,'primary')}<span class="small">Kartenzahlung. Trage danach den Kaufpreis laut Beleg ein.</span></div>`;
@@ -5594,8 +5600,8 @@ function addrGroups(){const G={own:[],card:[],ex:[],pay:[],br:[],tag:[],fr:[],un
 // Adresse ⧉, Netzwerke, Bewegungen; die Knöpfe (zeigen, ändern, entfernen) stecken hinter ✎. Die Adressen der eigenen Wallets stehen bei der Wallet.
 // Ab 0.52 (2): sechs Gruppen in dieser Reihenfolge, je eine Karte mit Titel, (i) (Text hier) und Spaltenkopf
 const ADDR_O=[['pay','Kartenzahlungen','Die Adresse, an die deine Krypto-Karte deine Zahlungen abrechnet. Was von deinem Kartenkonto dorthin geht, zählt das Tool als Zahlung mit der Karte. Sie hat keinen Bestand.'],
-  ['br','Dienste','Adressen, die Coins nur weiterleiten, z. B. Brücken oder Auszahlungsstellen von Anbietern. Sie haben keinen Bestand. Den Namen eines Diensts kannst du ändern, ein leeres Feld gibt ihm wieder den Namen des Tools.'],
-  ['tag','Tag','Die Adresse, von der Tag auszahlt. Das Tool merkt sich Einzahlungsadressen nicht, Tag erstellt für jede Einzahlung eine neue.'],
+  ['br','Dienste','Adressen, die Coins nur weiterleiten, z. B. Brücken oder Auszahlungsstellen von Anbietern. Sie haben keinen Bestand. Den Namen eines Diensts kannst du ändern. Leerst du das Feld, bekommt er wieder den Namen, den das Tool vergeben hat.'],
+  ['tag','Tag','Die Adresse, von der Tag auszahlt. Einzahlungsadressen merkt sich das Tool nicht, weil Tag sie oft nur einmal verwendet.'],
   ['fr','Fremd (Personen und Händler)','Adressen anderer Personen oder Händler, an die du bezahlt oder etwas geschenkt hast oder von denen du ein Geschenk oder eine Rückerstattung bekommen hast. Gib einer Adresse einen Namen, dann steht er in „Alle Vorgänge“. Zeilen ohne Namen kommen aus deinen Einträgen (Zahlung, Geschenk, Rückerstattung). Tippst du einen Namen ein, merkt sich das Tool die Adresse als fremde mit diesem Namen.'],
   ['unk','Unbekannt','Adressen, die das Tool nicht zuordnen kann. Mit „zuordnen“ sagst du, wem eine Adresse gehört. Bei einem Kauf oder Verkauf ist die Gegenseite meist die Einzahlungs- oder Auszahlungsadresse einer Börse. Steht klein „Bewegungen verknüpft“ darunter, sind ihre Bewegungen schon mit einem Vorgang verbunden, nur die Adresse selbst kennt das Tool nicht. Eine Adresse, die du entfernt hast, erkennt das Tool nicht mehr von selbst, bis du sie wieder zuordnest.'],
   ['sus','Betrugsverdacht',LOOK_TXT+' Mit „Keine Lockadresse“ sagst du dem Tool, dass eine Adresse echt ist, dann steht sie unter „Unbekannt“.']];
@@ -5645,7 +5651,7 @@ $('t-tok').addEventListener('click',e=>{
   // Ab 0.44: Karten-Token abschalten (Bewegungen nach S.wign, Rückfrage bei Verknüpfungen) oder wieder zählen
   const f=e.target.closest('[data-tokf]');if(f){const k=f.dataset.tokf,[net,c]=k.split('|'),K=W_CONTRACTS[c],x=S.tok[k],info={sym:K.card.sym,name:K.card.name,net,contract:c};
     if(x&&x.c==='ign'){delete S.tok[k];tokConfirm(S,k,info);msg('tokmsg','ok',`${esc(info.sym)} zählt wieder als USDC.`)}
-    else{const r=tokRemove(S,k,askCb('tokf:'+k,reclick(f)));if(r===false)return;S.tok[k]=Object.assign(info,{c:'ign'});msg('tokmsg','ok',`${esc(info.sym)} zählt nicht mehr. Mit „wieder zählen“ holst du ihn zurück.`)}
+    else{const r=tokRemove(S,k,askCb('tokf:'+k,reclick(f)));if(r===false)return;S.tok[k]=Object.assign(info,{c:'ign'});msg('tokmsg','ok',`${esc(info.sym)} zählt nicht mehr. Mit „Wieder einschalten“ holst du ihn zurück.`)}
     wSync();save();render();return}
   const b=e.target.closest('[data-tokd]');if(!b)return;const k=b.dataset.tokd,x=S.tok[k];if(!x)return;
   // Ab 0.50 Nachtrag 5 (W20): immer eine Rückfrage mit den Folgen und „Sicherung speichern“
@@ -5701,7 +5707,7 @@ function apEditH(a){const n=wNMoves(a),A=esc(a);
 // die Rückfrage nennt vorher (auf einer Kopie gezählt) die Zahl der Vorgänge. Eigene Adressen verlieren nur ihre Wallet (wie bisher).
 // Danach Toast mit „Rückgängig“ (vorher eine Meldung unter „Andere Adressen“, oft weit weg von der Zeile).
 function addrDelTxt(a){const x=S.addr[a],n=wNMoves(a),s=wShort(a),unm=wUserName(x);
-  if(x.own)return n?`Zu dieser Adresse gehören ${fI.format(n)} ${n===1?'Bewegung':'Bewegungen'} aus der Datei. Sie ${n===1?'verliert':'verlieren'} dann ihre Wallet. Trotzdem löschen?`:`Adresse ${s} (${x.wallet}) aus dem Adressbuch entfernen?`;
+  if(x.own)return n?`Zu dieser Adresse ${n===1?'gehört':'gehören'} ${fI.format(n)} ${n===1?'Bewegung':'Bewegungen'} aus der Datei. Sie ${n===1?'verliert':'verlieren'} dann ihre Wallet. Trotzdem entfernen?`:`Adresse ${s} (${x.wallet}) aus dem Adressbuch entfernen?`;
   const P=JSON.parse(JSON.stringify(S)),r=addrDel(P,a),k=x.tag?'Tag':x.pay?'Abrechnung der Kartenzahlungen':x.fr?'Fremd':x.br?'Brücke / Dienst':x.load?'Ladeadresse von '+x.load:`${x.wallet}, Adresse der Börse`;
   return (unm?`Adresse ${s} „${unm}“ aus dem Adressbuch entfernen? Der Name „${unm}“ geht dabei verloren.`:x.auto?`Das Tool hat die Adresse ${s} selbst erkannt (${k}). Aus dem Adressbuch entfernen?`:`Adresse ${s} (${k}) aus dem Adressbuch entfernen?`)+
     (r.v?`\n\n${r.v===1?'1 Vorgang über diese Adresse wird':fI.format(r.v)+' Vorgänge über diese Adresse werden'} wieder offen. Das Tool schlägt ${r.v===1?'ihn':'sie'} danach neu vor.`:'')+
@@ -5754,7 +5760,7 @@ function renderWalletList(){const C=cryptoCalc(),nc=WL_MOB.matches?4:5;
     if(i===WL_EDIT)return `<tr class="wled" data-wlr="${esc(w)}"><td colspan="${nc}" class="l"><div class="row"><label>Name <input type="text" data-wln value="${esc(w)}" aria-label="Name der Wallet"></label><label>Art <select data-wlk aria-label="Art der Wallet">${Object.entries(WK_TXT).map(([v,t])=>`<option value="${v}" ${v===k?'selected':''}>${t}</option>`).join('')}</select></label></div>
       <p class="small" style="margin:8px 0 2px"><b>Adressen</b></p>${A.length?`<ul class="wlal">${A.map(([a,x])=>`<li>${wAdr(a)}${cpBtn(a)} <span class="small">${wlAT(x)} · ${fI.format(wNMoves(a))} ${wNMoves(a)===1?'Bewegung':'Bewegungen'}</span> <button type="button" class="btn sm danger" data-ad="${esc(a)}" aria-label="Adresse ${wShort(a)} entfernen">×</button></li>`).join('')}</ul>`:'<p class="small">Noch keine Adresse.</p>'}
       <div class="row"><input type="text" data-wla placeholder="0x…" aria-label="Adresse hinzufügen" style="width:26ch"><button type="button" class="btn sm" data-waa="${i}">Adresse hinzufügen</button></div>
-      <div class="row" style="margin-top:8px"><button type="button" class="btn primary" data-wls="${i}">Speichern</button><button type="button" class="btn" data-wlc>Abbrechen</button><button type="button" class="btn danger" data-wd="${i}">Wallet entfernen</button></div></td></tr>`;
+      <div class="row" style="margin-top:8px"><button type="button" class="btn primary" data-wls="${i}">Speichern</button><button type="button" class="btn" data-wlc>Abbrechen</button><button type="button" class="btn danger" data-wd="${i}">Wallet löschen</button></div></td></tr>`;
     const open=WL_OPEN.has(w)||(!!ADDR_Q&&A.some(([a])=>a.includes(ADDR_Q)));
     return `<tr data-wlr="${esc(w)}"><td class="l"><b>${esc(w)}</b><span class="small wkm">${WK_TXT[k]}</span></td><td class="wkc">${WK_TXT[k]}</td><td>${A.length?`<button type="button" class="zlink" data-wlx="${esc(w)}" aria-expanded="${open}">${A.length===1?'1 Adresse':fI.format(A.length)+' Adressen'} ${open?'▴':'▾'}</button>`:'<span class="small">keine</span>'}</td><td>${bal(w)}<br><button type="button" class="zlink small" data-wlkb="${esc(w)}">Kontostand</button></td><td class="abt"><button type="button" class="btn sm" data-wle="${i}" aria-label="Wallet ${esc(w)} bearbeiten">✎</button></td></tr>`+
       (open?A.map(([a,x])=>`<tr class="wlsub"><td class="l"><span class="small">${wlAT(x)}</span></td><td colspan="3"><span class="nw">${wAdr(a)}${cpBtn(a)}</span><span class="small">${esc(apNets(a).map(wNet).join(', '))} · ${fI.format(wNMoves(a))} ${wNMoves(a)===1?'Bewegung':'Bewegungen'}</span>${addrNaH(a)}</td><td class="wkc"></td></tr>`).join(''):'')}).join('');
@@ -5802,9 +5808,9 @@ function wlDel(i){const w=S.wallets[i],nt=Object.values(S.tag).filter(t=>t.walle
   if(nt||nc){msg('walletmsg','warn',`„${esc(w)}“ wird noch verwendet: ${[nt?pl(nt,'Tag-Zeile','Tag-Zeilen'):'',nc?pl(nc,'Eintrag','Einträge'):'',ad.length?pl(ad.length,'Adresse','Adressen'):''].filter(Boolean).join(', ')}. Ändere zuerst dort die Wallet oder lösche die Einträge.`);return}
   {const bx=wlBxMsg(w);if(bx){msg('walletmsg','warn',bx);return}}
   if(ad.length){const others=S.wallets.filter(x=>x!==w);
-    $('walletmsg').innerHTML=`<div class="msg warn">„${esc(w)}“ steht nur noch im Adressbuch (${pl(ad.length,'Adresse','Adressen')}).<div class="row"><button type="button" class="btn" data-wdx="${i}">${ad.length===1?'Adresse':'Adressen'} mitlöschen</button><span>oder zuordnen zu</span><select data-wdt aria-label="Andere Wallet">${others.map(x=>`<option>${esc(x)}</option>`).join('')}</select><button type="button" class="btn" data-wdm="${i}">Zuordnen und Wallet löschen</button></div></div>`;return}
+    $('walletmsg').innerHTML=`<div class="msg warn">„${esc(w)}“ steht nur noch im Adressbuch (${pl(ad.length,'Adresse','Adressen')}).<div class="row"><button type="button" class="btn" data-wdx="${i}">${ad.length===1?'Adresse auch entfernen':'Adressen auch entfernen'}</button><span>oder zuordnen zu</span><select data-wdt aria-label="Andere Wallet">${others.map(x=>`<option>${esc(x)}</option>`).join('')}</select><button type="button" class="btn" data-wdm="${i}">Zuordnen und Wallet löschen</button></div></div>`;return}
   // Ab 0.50 Nachtrag 5 (W16): Rückfrage mit „Sicherung speichern“
-  askBox({title:'Wallet entfernen',text:`Wallet „${w}“ entfernen?\n\nSie hat keine Vorgänge und keine Adressen.${wbalTxt(w)?' '+wbalTxt(w):''}`,ok:'Entfernen',danger:true,more:ASK_BK}).then(v=>{if(!v||S.wallets[i]!==w)return;
+  askBox({title:'Wallet löschen',text:`Wallet „${w}“ löschen?\n\nSie hat keine Vorgänge und keine Adressen.${wbalTxt(w)?' '+wbalTxt(w):''}`,ok:'Löschen',danger:true,more:ASK_BK}).then(v=>{if(!v||S.wallets[i]!==w)return;
     for(const t of Object.values(S.tag))if(t.wallet===w&&(t.wq||t.fiat))t.wallet='';if(S.w0===w)S.w0='';
     {const act=keepActive();S.wallets.splice(i,1);naAfterDrop({w},act)}wlDrop(w);msg('walletmsg','','');save();render()})}
 // Ab 0.46: Klicks in „Deine Wallets“: Adressen auf- und zuklappen, ✎, Speichern (Name und Art), Adresse hinzufügen, Abbrechen, Wallet entfernen
@@ -5830,16 +5836,16 @@ $('walletmsg').addEventListener('click',e=>{
   const own=ad.filter(a=>S.addr[a].own&&wNMoves(a)),n=own.reduce((s,a)=>s+wNMoves(a),0),to=x?'':$('walletmsg').querySelector('[data-wdt]').value;if(m&&!S.wallets.includes(to))return;
   // Ab 0.50 Nachtrag 5 (W17, W18): immer eine Rückfrage mit „Sicherung speichern“. Die Bewegungen eigener Adressen behalten ihren Stand und stehen
   // weiter in „Alle Vorgänge“, gehören danach aber zu keiner Wallet (auf einer Kopie geprüft).
-  askBox({title:'Wallet entfernen',text:wlDelTxt(w,ad,own,n,to),ok:'Entfernen',danger:true,more:ASK_BK}).then(v=>{if(!v||S.wallets[i]!==w)return;
+  askBox({title:'Wallet löschen',text:wlDelTxt(w,ad,own,n,to),ok:'Löschen',danger:true,more:ASK_BK}).then(v=>{if(!v||S.wallets[i]!==w)return;
     if(x){for(const a of ad)delete S.addr[a]}else{if(!S.wallets.includes(to))return;for(const a of ad){const y=S.addr[a];if(!y)continue;if(y.load===w)y.load=to;else y.wallet=to}}
-    {const act=keepActive();S.wallets.splice(i,1);naAfterDrop({w,addr:x?ad:[]},act)}wlDrop(w);msg('walletmsg','ok',`„${esc(w)}“ ist entfernt.`);wSync();save();render()})});
+    {const act=keepActive();S.wallets.splice(i,1);naAfterDrop({w,addr:x?ad:[]},act)}wlDrop(w);msg('walletmsg','ok',`„${esc(w)}“ ist gelöscht.`);wSync();save();render()})});
 // Ab 0.50 Nachtrag 6: dazu der eingetragene Kontostand, der wegfällt, und wie viele der Bewegungen danach offen in „Noch offen“ stehen (Stand „offen“,
 // der Stand ändert sich beim Entfernen nicht)
 // Ab 0.50 Nachtrag 6 Zusatz: die Sätze zu den Bewegungen aus mvGoneTxt (wie bei „Als fremd merken“), n wird dort gezählt (jede Bewegung einmal)
 function wlDelTxt(w,ad,own,n,to){const na=ad.length,kt=wbalTxt(w);
-  if(to)return `Wallet „${w}“ entfernen?\n\n${na===1?'Ihre Adresse gehört':`Ihre ${fI.format(na)} Adressen gehören`} danach zu „${to}“.${kt?' '+kt:''}`;
+  if(to)return `Wallet „${w}“ löschen?\n\n${na===1?'Ihre Adresse gehört':`Ihre ${fI.format(na)} Adressen gehören`} danach zu „${to}“.${kt?' '+kt:''}`;
   const b=[mvGoneTxt(S,own,ad,own.length===1),kt].filter(Boolean).join(' ');
-  return `Wallet „${w}“ und ${na===1?'ihre Adresse':`ihre ${fI.format(na)} Adressen`} entfernen?`+(b?'\n\n'+b:'')}
+  return `Wallet „${w}“ löschen und ${na===1?'ihre Adresse':`ihre ${fI.format(na)} Adressen`} entfernen?`+(b?'\n\n'+b:'')}
 // Kurze Meldung unten (ab 0.41 auch nach einer Änderung im Menü der Gegenseite). ms gilt ab 0.54 nicht mehr (Dauer aus toastMs).
 // Ab 0.54 (7): Jeder Toast steht mindestens 6 s, längere Texte länger (bis 10 s). Solange die Maus darüber ist oder er den Fokus hat, bleibt er stehen,
 // danach läuft die Restzeit (mindestens 2 s). Ein × schließt ihn. Vorlesen wie bisher (role="status", aria-live="polite").
@@ -6173,8 +6179,6 @@ $('wtodo').addEventListener('click',e=>{
   if(e.target.closest('[data-bxwf]')){tdOver();dtOpen('wf');return}
   const kp=e.target.closest('[data-keep]');if(kp){if(!S.cxKeep.includes(kp.dataset.keep))S.cxKeep.push(kp.dataset.keep);save();render();return}
   const ce=e.target.closest('[data-cxe2]');if(ce){openCx(+ce.dataset.cxe2);return}
-  // Ab 0.41: alte geschätzte Zahlung „Passt so“
-  const eo=e.target.closest('[data-estok]');if(eo){const c=cxById(+eo.dataset.estok);if(c){c.estOk=1;save();render()}return}
   // Ab 0.72 Nachtrag 2 (2): Bitvavo-Gebühr in fremder Währung „Menge stimmt“
   const bf=e.target.closest('[data-bvfeeok]');if(bf){const c=cxById(+bf.dataset.bvfeeok);if(c){c.bvFeeOk=1;save();render()}return}
   // Ab 0.74 (2.4), Name ab 0.75: „Ersatzwert bestätigen“
@@ -6258,9 +6262,9 @@ function tagMethSet(m,v){if(!S.tagMeth[m]||S.tagMeth[m]===v)return Promise.resol
   if(!P.ch.length)return Promise.resolve(go());
   return askBox({title:'Zahlungsmethode umstellen',text:tagMethTxt(m,v,P),ok:'Umstellen'}).then(ok=>{if(!ok){renderTagMeth();return false}return go()})}
 function renderTagMeth(){const box=$('tm-box'),M=Object.keys(S.tagMeth||{}).sort((a,b)=>a.localeCompare(b,'de'));box.hidden=!M.length;if(!M.length){$('tm-table').innerHTML='';return}
-  $('tm-table').innerHTML=`<thead><tr><th class="l">Methode bei Tag</th><th>Zeilen</th><th>Art</th></tr></thead><tbody>${M.map(m=>{const n=tagMethRows(m).length,b=S.tagMeth[m]==='bank';
+  $('tm-table').innerHTML=`<thead><tr><th class="l">Methode bei Tag</th><th>Zeilen</th><th>Per Bank?</th></tr></thead><tbody>${M.map(m=>{const n=tagMethRows(m).length,b=S.tagMeth[m]==='bank';
     return `<tr><td class="l tml"><b>${esc(m)}</b></td><td class="tmn">${fI.format(n)}<span class="tmm"> ${n===1?'Zeile':'Zeilen'}</span></td>`+
-      `<td class="tmc"><select data-tmeth="${esc(m)}" aria-label="Art von ${esc(m)}"><option value="bank"${b?' selected':''}>per Bank</option><option value="crypto"${b?'':' selected'}>mit Krypto</option></select></td></tr>`}).join('')}</tbody>`}
+      `<td class="tmc"><select data-tmeth="${esc(m)}" aria-label="Lief „${esc(m)}“ per Bank?"><option value="bank"${b?' selected':''}>Ja, per Bank</option><option value="crypto"${b?'':' selected'}>Nein, mit Krypto</option></select></td></tr>`}).join('')}</tbody>`}
 $('tm-table').addEventListener('change',e=>{const s=e.target.closest&&e.target.closest('[data-tmeth]');if(s)tagMethSet(s.dataset.tmeth,s.value)});
 function tagPRows(){const D=TAGP,src=D.P.page==='wd'?'wd':'hist';
   return [...D.P.rows.map(r=>r.meth&&!/crypto|krypto/i.test(r.meth)?Object.assign({},r,{fiat:tagMethBank(D,r.meth)}):r),...D.unk.map((u,i)=>D.dec[i]==='ein'||D.dec[i]==='aus'?{id:u.id,date:u.date,time:u.time,kind:D.dec[i],usd:u.usd,status:'ok',src,fiat:false}:null).filter(Boolean)]}
@@ -6332,7 +6336,7 @@ $('tagprev').addEventListener('click',e=>{
 function tagBankTxt(L,lk){if(!L.length)return '';const M=[...new Set(L.filter(Boolean))],q=M.map(m=>`„${esc(m)}“`).join(', '),n=L.length;
   const lt=!lk?'':n===1?' Die Verknüpfung mit der Wallet-Datei ist gelöst, die Bewegung ist wieder offen.':
     lk===1?' Bei 1 davon ist die Verknüpfung mit der Wallet-Datei gelöst, die Bewegung ist wieder offen.':` Bei ${fI.format(lk)} davon sind die Verknüpfungen mit der Wallet-Datei gelöst, die Bewegungen sind wieder offen.`;
-  return ` ${n===1?'1 Zeile ist':fI.format(n)+' Zeilen sind'} jetzt per Bank${M.length?` (${M.length===1?'Methode':'Methoden'} ${q} auf der anderen Seite)`:''}.${lt}`}
+  return ` ${n===1?'1 schon gespeicherte Zeile ist':fI.format(n)+' schon gespeicherte Zeilen sind'} jetzt per Bank.${M.length?` Auf der eben eingefügten Seite ${M.length===1?'steht':'stehen'} bei ${n===1?'ihr':'ihnen'} ${M.length===1?'die Methode':'die Methoden'} ${q}.`:''}${lt}`}
 function saveTag(){
   // Ab 0.51 (2): „Speichern“ nie gesperrt; nicht erkannte Zeilen ohne Entscheidung: die Gruppe der Auswahl wird markiert
   const D=TAGP;if(!D)return;if(D.dec.some(x=>!x))return needMark($('tagprev'),D.dec.map((x,i)=>x?null:[`[data-tug="${i}"]`,'Entscheide, was diese Zeile ist.']).filter(Boolean));
@@ -7239,7 +7243,7 @@ function renderVg(C,DEw,rg){VG_R=[C,DEw,rg];const card=$('vg-card');
   {let ek=0,ev=0,g=0,nk=0,nv=0,ng=0;for(const v of L){const fl=vgFl(v,F);if(VG_EB.has(v.k))for(const f of fl)if(f.move!=='in'&&!f.aux&&f.eur!=null&&isFinite(f.eur)){if(v.k==='kauf'){ek+=f.eur;nk++}else{ev+=f.eur;nv++}}for(const f of fl)if(f.gain!=null&&isFinite(f.gain)){g+=f.gain;ng++}}
    $('vg-sum').innerHTML=L.length?[`<b>${fI.format(L.length)} ${L.length===1?'Vorgang':'Vorgänge'}</b>`,nk?`Käufe <b>${fE.format(ek)}</b>`:'',nv?`Verkäufe, Zahlungen, Tausch <b>${fE.format(ev)}</b>`:'',ng?`${gl('gewinnverlust','Gewinn/Verlust')} ${eur(g)}`:''].filter(Boolean).map(x=>`<span class="nw">${x}</span>`).join(' · '):''}
   // Ab 0.46 (5.3): Legende mit den Zeichen je Art in ihrer Farbe
-  $('vg-legend').innerHTML=`<span class="vglg">${VG_LEG.map(([c,a,t])=>`<span class="k-${c}">${vgIcoK(a)} ${t}</span>`).join('')}<span class="k-open"><span class="vglb"></span> offen</span></span> <span class="small">Klick auf eine Zeile zeigt die einzelnen Bewegungen und die Knöpfe. Uhrzeiten in österreichischer Zeit.</span>`;
+  $('vg-legend').innerHTML=`<span class="vglg">${VG_LEG.map(([c,a,t])=>`<span class="k-${c}">${vgIcoK(a)} ${t}</span>`).join('')}<span class="k-open"><span class="vglb"></span> offen</span></span> <span class="small">Klick auf eine Zeile zeigt die einzelnen Bewegungen und die Knöpfe. Uhrzeiten in mitteleuropäischer Zeit (wie in Wien und Berlin).</span>`;
   // Ab 0.47 (3.5): die Legende steht im Begriff „Was“ (Spaltenkopf), unter der Liste nicht mehr
   $('vg-legend').style.display='none';
   if(MV_ID&&$('mv-modal').classList.contains('on'))mvRender()}
@@ -7294,7 +7298,7 @@ function openTg(id){const t=S.tag[id];if(!t)return;if(t.hand){openCxTag(id);retu
   $('tg-wf').innerHTML=tagWFields(t,'tg',t.kind,tagWCur(t));tagWFill($('tg-wf'),t);
   $('tg-own').checked=!!t.own;$('tg-own-l').style.display=t.kind==='ein'?'':'none';tgUI();
   // Ab 0.45 (4.10): was Löschen bei einer Tag-Zeile bewirkt
-  if($('tg-delhint'))$('tg-delhint').textContent='Kommt aus den Tag-Daten. Löschen geht, aber fügst du die Tag-Daten später wieder ein, ist die Zeile wieder da. War eine Einzahlung nicht dein Geld, nimm lieber das Häkchen bei „Mein Geld“ weg.';
+  if($('tg-delhint'))$('tg-delhint').textContent='Kommt aus den Tag-Daten. Entfernen geht, aber fügst du die Tag-Daten später wieder ein, ist die Zeile wieder da. War eine Einzahlung nicht dein Geld, nimm lieber das Häkchen bei „Mein Geld“ weg.';
   $('tg-na').innerHTML=tagNaH(t);
   msg('tgmsg','','');openModal('tg-modal')}
 // Ab 0.48 (1.4): Felder zum Geschenk nur bei einer Einzahlung „Geschenk von jemandem“; „unbekannt“ sperrt das Feld daneben.
@@ -7335,9 +7339,9 @@ $('btn-tgcancel').onclick=()=>{msg('tgmsg','','');closeModal()};
 // Ab 0.50 Nachtrag 4: „Diese Tag-Zeile entfernen?“ mit den Angaben, die verloren gehen (ohne Anzahl), und der verknüpften Bewegung.
 // Der Satz zu „Mein Geld“ nur bei einer Einzahlung.
 function tagDelTxt(t){const m=t.wk&&S.wtx[t.wk];
-  return ['Diese Tag-Zeile löschen?',[tagLossTxt(tagLoss([t]),false),m&&m.st==='tag'&&m.ref===t.id?'Die verknüpfte Bewegung aus der Wallet-Datei ist danach wieder offen.':'',
+  return ['Diese Tag-Zeile entfernen?',[tagLossTxt(tagLoss([t]),false),m&&m.st==='tag'&&m.ref===t.id?'Die verknüpfte Bewegung aus der Wallet-Datei ist danach wieder offen.':'',
     'Fügst du die Tag-Daten später nochmal ein, taucht die Zeile wieder auf.',t.kind==='ein'?'Wenn eine Einzahlung nicht dein Geld war, nimm lieber das Häkchen bei „Mein Geld“ weg.':''].filter(Boolean).join('\n')].join('\n\n')}
-$('btn-tgdel').onclick=()=>{const id=TG_ID;if(!S.tag[id]||!askOk('tgdel:'+id,tagDelTxt(S.tag[id]),reclick($('btn-tgdel')),{title:'Tag-Zeile löschen',ok:'Löschen',danger:true,more:ASK_BK}))return;
+$('btn-tgdel').onclick=()=>{const id=TG_ID;if(!S.tag[id]||!askOk('tgdel:'+id,tagDelTxt(S.tag[id]),reclick($('btn-tgdel')),{title:'Tag-Zeile entfernen',ok:'Entfernen',danger:true,more:ASK_BK}))return;
   {const act=keepActive();delete S.tag[id];naAfterDrop({},act)}wSync();save();closeModal();render()};
 // Ab 0.55 (1, 2): Woher/Wohin neu für die andere Art, Wahl, „Euro laut Kontoauszug“ und Angaben zum Geschenk bleiben (auch der gemerkte Stand v0)
 $('tg-kind').addEventListener('change',()=>{const k=$('tg-kind').value,R=$('tg-wf'),t=S.tag[TG_ID];if(!t)return;$('tg-own-l').style.display=k==='ein'?'':'none';
@@ -7457,7 +7461,7 @@ function sugInfo(s){
     return {frage:`Ging dieser Betrag über eine Weiterleitung von ${esc(f.wo)} zu ${esc(f.wi)}?`,name:'Weiterleitung über einen Dienst',kurz:`${fmtNum(o.qty)} ${esc(o.coin)} (${esc(f.wo)} → ${esc(f.wi)})`,
       warum:[['',`Die Adresse ${wAdr(f.a)}${cpBtn(f.a)} gehört laut Adressbuch zu ${esc(f.w)}.`],[o.time.slice(0,5),`${fmtNum(o.qty)} ${esc(o.coin)} gehen aus ${esc(f.wo)} an diese Adresse`],[i.time.slice(0,5),`${agoLong(f.dt)} später kommen ${fmtNum(i.qty)} ${esc(i.coin)} von ihr in ${esc(f.wi)} an`]],
       wenn:sugWenn([f.ko,f.ki],f.dq,`ein Übertrag ${esc(f.wo)} → ${esc(f.wi)} über diese Adresse, sie gilt dann als Dienst`),k:f.ko,d:o.date,t:o.time,
-      btns:(ja,no)=>`<div class="row">${ja('Übernehmen',0,1)}${no()}</div><p class="small">Bei „Nein“ bleibt die Adresse intern, und das Tool fragt nicht wieder.</p>`}}
+      btns:(ja,no)=>`<div class="row">${ja('Übernehmen',0,1)}${no()}</div><p class="small">Bei „Nein“ bleibt die Adresse bei „${esc(f.w)}“, so wie im Adressbuch. Dann sind es zwei Überträge, und das Tool fragt nicht wieder.</p>`}}
   if(s.ty==='tx'){const o=S.wtx[s.p[0]],i=S.wtx[s.p[1]],w=rAW(S,o.from);
     return {frage:`Hast du hier ${fmtNum(o.qty)} ${esc(o.coin)} in ${esc(i.coin)} getauscht?`,name:sugGl('Tausch'),kurz:`${fmtNum(o.qty)} ${esc(o.coin)} → ${fmtNum(i.qty)} ${esc(i.coin)} (${esc(w)})`,warum:[mvLine(o),[i.time.slice(0,5),`In derselben Transaktion kommen ${fmtNum(i.qty)} ${esc(wCoinT(i))} an (${wNet(i.net)})`]],
       wenn:sugWenn(s.p,0),k:s.p[0],d:o.date,t:o.time}}
@@ -7760,7 +7764,7 @@ function tdSameH(k){const m=S.wtx[k];if(!m||m.sus||m.st!=='open')return '';const
   // Ab 0.48 (Nachtrag 1, 3.1): mit früherer Antwort steht die Liste im Vorschlag, der Satz entfällt
   if(L.length&&!tdPrevAns(S,k))h+=`<p class="small tdsame">${s==='out'?'An':'Von'} ${a} ${L.length===1?(s==='out'?'ging':'kam'):(s==='out'?'gingen':'kamen')} noch ${L.length===1?'1 weiterer Betrag':fI.format(L.length)+' weitere Beträge'} (${L.map(x=>dm(S.wtx[x].date)).join(', ')}).</p>`;
   const T=Object.values(S.wtx).filter(x=>x!==m&&!x.sus&&x.qty>0&&wSide(x)===s&&(s==='in'?x.from:x.to)===cp&&Math.abs(x.ts-m.ts)<=21600);
-  if(T.some(x=>(x.ts<m.ts&&x.qty<=0.1*m.qty)||(x.ts>m.ts&&m.qty<=0.1*x.qty)))h+='<p class="small tdwhy">Sieht aus wie Testbetrag und eigentliche Zahlung.</p>';
+  if(T.some(x=>(x.ts<m.ts&&x.qty<=0.1*m.qty)||(x.ts>m.ts&&m.qty<=0.1*x.qty)))h+='<p class="small tdwhy">Sieht aus wie ein Testbetrag und danach die eigentliche Zahlung.</p>';
   return h}
 // Ab 0.47 (1.6), ab 0.71 als eigene Funktion: Ursachen von außen für Folgefehler (kxFollow ext): offene Eingänge aus einer Datei (in ihrer Wallet),
 // offene Zugänge der Börse (bei der Börse), offene Abgänge der Börse und Tag-Auszahlungen mit offener Wallet (Ziel unbekannt: in jeder anderen Wallet)
@@ -7834,7 +7838,8 @@ function todoItems(C){
   const BXO=Object.entries(S.bxOpen||{}),V=kxVis(C),EXT=V.EXT,FO=V.FO,refOf=e=>e.src==='tag'?'t:'+e.id:e.cx!=null&&S.cx[e.cx]?'c:'+S.cx[e.cx].id:'';
   // Ab 0.71 (4.1): gemerkte Lücken gehen in kxFollow mit hinein (V.FO), erscheinen aber nicht, ebenso ihre Folgen (V.hid). SH = sichtbare Lücken.
   const SA=V.SH,SH=SA.filter(s=>!V.hid.has(s.key)),TQ=Object.values(S.tag).filter(t=>t.wq==='q'&&t.status==='ok'&&!t.fiat&&t.own);
-  const gapTxt=s=>{const e=s.e;return `Am ${fD(e.d)} gingen ${fN.format(-e.q)} ${e.coin} weg (${esc(e.label)}), laut deinen Einträgen lagen dort nur ${fN.format(s.have)} ${e.coin}.`};
+  // Ab 0.95 (W5): mit Wallet, Tag-Zeilen mit „Tag-ID“ statt Nummer in Klammern
+  const gapTxt=s=>{const e=s.e,lb=String(e.label||'').replace(/^((?:Einzahlung bei|Auszahlung von) Tag) \(([^()]+)\)$/,'$1, Tag-ID $2');return `Am ${fD(e.d)} gingen ${fN.format(-e.q)} ${e.coin} aus ${esc(wDispW(e.w))} weg (${esc(lb)}). Laut deinen Einträgen lagen dort nur ${fN.format(s.have)} ${e.coin}.`};
   // Ab 0.71 (4.5): Folge mit ihrem Teil („Bix: 100 USDC (von 130) …“), wenn sie nicht ganz von dieser Ursache kommt
   const folH=(f,q)=>`<div class="wtd tdf">${esc(f.e.w)}: ${fN.format(q)} ${f.e.coin}${q<f.miss-0.01?` (von ${fN.format(f.miss)})`:''}. ${gapTxt(f)} ${jE(f.e,'ansehen')}</div>`;
   const kidsOf=k=>(FO.fol.get(k)||[]).filter(y=>!V.hid.has(y.key)).map(y=>[SA.find(z=>z.key===y.key),y.q]).filter(a=>a[0]).map(([f,q])=>folH(f,q));
@@ -7855,7 +7860,7 @@ function todoItems(C){
   for(const s of SH){if(!FO.own.has(s.key)||dupOf.has(s.key))continue;const e=s.e,od=kxOrder(C.flow,s),fo=kidsOf(s.key),own=FO.own.get(s.key);
     const li={d:e.d,w:e.w,q:fN.format(s.miss)+' '+e.coin};
     if(od){const lb=f=>f.k==='tagaus'?'Auszahlung von Tag':f.k==='tagein'?'Einzahlung bei Tag':esc(f.label),nt=od.ins.filter(f=>!f.tm);
-      const txt=nt.length?`Am ${dm(e.d)} um ${e.tm.slice(0,5)} gingen ${fN.format(-e.q)} ${e.coin} aus „${esc(e.w)}“ weg. ${nt.map(f=>`${lb(f)} (${fN.format(f.q)} ${f.coin})`).join(', ')} am selben Tag ${nt.length===1?'hat':'haben'} keine Uhrzeit, und an keiner Stelle des Tages geht es auf. Trage ${nt.length===1?'beim '+lb(nt[0]):'dort'} die Uhrzeit ein.`:
+      const txt=nt.length?`Am ${dm(e.d)} um ${e.tm.slice(0,5)} gingen ${fN.format(-e.q)} ${e.coin} aus „${esc(e.w)}“ weg. ${nt.length===1?`${lb(nt[0])} (${fN.format(nt[0].q)} ${nt[0].coin}) am selben Tag hat keine Uhrzeit. Deshalb weiß das Tool nicht, was zuerst war. Trage beim ${lb(nt[0])} die Uhrzeit ein.`:`Die ${fI.format(nt.length)} Einträge am selben Tag haben keine Uhrzeit. Deshalb weiß das Tool nicht, was zuerst war. Trage bei ihnen die Uhrzeit ein.`}`:
         `Am ${dm(e.d)} um ${e.tm.slice(0,5)} gingen ${fN.format(-e.q)} ${e.coin} weg, ${od.ins.map(f=>`um ${f.tm.slice(0,5)} kamen ${fN.format(f.q)} ${f.coin} an (${lb(f)})`).join(', ')}. Prüfe die Uhrzeiten.`;
       I.push({id:'o:'+s.key,lv:'y',kind:'order',t:wSec(e.d,e.tm),eur:0,ref:refOf(nt[0]||e),kids:fo,fp:fp(s),hdS:tdHdL(e.d,e.tm),big:'Vermutlich nur die Reihenfolge.',why:txt,
         body:`<div class="row">${(nt.length?nt:od.ins).map(f=>jE(f,'Zugang in der Liste zeigen')).join('')}${jE(e,'Abgang in der Liste zeigen')}</div>`,li:Object.assign(li,{what:'Reihenfolge'})});continue}
@@ -7893,9 +7898,6 @@ function todoItems(C){
     I.push({id:'i:'+c.id,lv:'r',kind:'inc',valOnly:ms.every(m=>/^(Wert in Euro|Betrag in USD)$/.test(m)),t:c.date?wSec(c.date,c.time||''):0,eur:tdEur(c.qty,c.date),ref:'c:'+c.id,
       hdS:tdHdL(c.date,c.time),big:`Eintrag „${esc(KIND[c.kind]||c.kind)}“${c.qty>0?`, ${fmtNum(c.qty)} ${c.coin}`:''}: Es fehlt ${esc(ms.join(', '))}.`,why:'Ohne diese Angabe zählt der Eintrag nicht in der Rechnung.',form:{id:c.id},
       li:{d:c.date,w:c.wallet,what:'Angabe fehlt',q:c.qty>0?fmtNum(c.qty)+' '+c.coin:''}})}
-  for(const c of S.cx.filter(payOld))I.push({id:'b:'+c.id,lv:'y',kind:'payold',t:wSec(c.date,c.time||''),eur:0,ref:'c:'+c.id,hdS:tdHdL(c.date,c.time),
-    big:`Zahlung, ${fmtNum(c.qty)} ${c.coin}: Der Wert ist mit dem Tageswert der Coins geschätzt.`,why:'Neu gilt der Kaufpreis bzw. der abgebuchte Betrag minus Gebühr. Prüfe den Wert.',form:{id:c.id},
-    alt:`<button type="button" class="btn sm" data-estok="${c.id}">Passt so</button>`,li:{d:c.date,w:c.wallet,what:'Wert prüfen',q:fmtNum(c.qty)+' '+c.coin}});
   // Ab 0.72 Nachtrag 2 (2): Bitvavo-Kaufgebühr in einer anderen Währung als Euro steht nur in der Notiz und zählt nicht. Gelber Punkt, bis „Menge stimmt“ (c.bvFeeOk). Ab Nachtrag 3 zurücknehmbar (keepItems).
   for(const c of S.cx){const m=!c.bvFeeOk&&bvFeeM(c);if(!m)continue;
     I.push({id:'bf:'+c.id,lv:'y',kind:'bvfee',t:c.date?wSec(c.date,c.time||''):0,eur:0,ref:'c:'+c.id,hdS:tdHdL(c.date,c.time),
@@ -7953,7 +7955,7 @@ function todoItems(C){
   for(const it of I){const ks=it.mv?[it.mv]:it.sug?it.sug.ks:[];for(const k of ks)if(EXK['m:'+k])it.kids=(it.kids||[]).concat(EXK['m:'+k])}
 
   // Ab 0.46 (2.7, 2.7a): Ohne Steuer oder Krypto-Steuer aus: nur die Punkte zum Bestand, alle gelb
-  let J=I;if(taxOff()){const TX=new Set(['gap','typo','order','payold','bxein','bxaus','tagq','tagw','cfee','swapest','swapland']);J=I.filter(x=>!TX.has(x.kind)&&!(x.kind==='inc'&&x.valOnly)).map(x=>x.lv==='r'?Object.assign(x,{lv:'y',eur:0}):x)}
+  let J=I;if(taxOff()){const TX=new Set(['gap','typo','order','bxein','bxaus','tagq','tagw','cfee','swapest','swapland']);J=I.filter(x=>!TX.has(x.kind)&&!(x.kind==='inc'&&x.valOnly)).map(x=>x.lv==='r'?Object.assign(x,{lv:'y',eur:0}):x)}
   // Ab 0.50 Nachtrag 2 (4.2): Datei „später zuordnen“: gelber Punkt mit „Datei zuordnen“. Bestand der vorläufigen Wallet und offene Bewegungen zwischen
   // ihr und einer echten Wallet sind Folgefehler, sie stehen darunter und zählen nicht
   for(const [w,x] of Object.entries(S.wlater||{})){if(!S.wallets.includes(w))continue;
@@ -8067,7 +8069,7 @@ function tdCard(x){const P=x.mv&&S.wtx[x.mv]?tdMvParts(x,x.sug2):null;
   const ar=P?P.ar:x.ar?tdAround(x.ar):'',body=x.body!=null?x.body:!x.big&&!P?(x.h||''):'';
   // Ab 0.50 (3.1): ein späterer Punkt hat einen Vorschlag zur selben Bewegung oder zum selben Vorgang (sugAt aus renderTodo)
   const sga=x.sugAt>=0?`<p class="small tdsga">Dazu gibt es einen Vorschlag bei <button type="button" class="zlink" data-tdsg="${x.sugAt}">Punkt ${fI.format(x.sugAt+1)}</button>.</p>`:'';
-  return `<div class="tdc tdi-${x.lv}" data-tdi="${esc(x.id)}">${head}${naCardH(tdKs(x))}${sga}${why}${sug?`<div class="tdsug">${sug}</div>`:''}${ar}${show}${body}${slot}${alt?`<div class="row tdalt">${alt}</div>`:''}${P?P.adr:''}${eurT}${x.kids&&x.kids.length?`<details class="wfold"><summary>Vermutlich Folge davon (zählt nicht, verschwindet, wenn du das behebst): ${fI.format(x.kids.length)}</summary>${x.kids.join('')}</details>`:''}</div>`}
+  return `<div class="tdc tdi-${x.lv}" data-tdi="${esc(x.id)}">${head}${naCardH(tdKs(x))}${sga}${why}${sug?`<div class="tdsug">${sug}</div>`:''}${ar}${show}${body}${slot}${alt?`<div class="row tdalt">${alt}</div>`:''}${P?P.adr:''}${eurT}${x.kids&&x.kids.length?`<details class="wfold"><summary>${x.kids.length===1?'Vermutlich eine Folge davon. Sie zählt nicht und verschwindet, wenn du das behebst.':`Vermutlich Folgen davon: ${fI.format(x.kids.length)}. Sie zählen nicht und verschwinden, wenn du das behebst.`}</summary>${x.kids.join('')}</details>`:''}</div>`}
 // Ab 0.55 (5): Punkt einer vorläufigen Wallet („Einkauf fehlt“, offene Bewegung usw.): ganz oben „Diese Wallet-Datei gehört zu:“ mit dem Menü
 // (nur eigene Wallets, Karten, Börsen). Die Wahl ordnet die Adresse der Datei zu (apAssign), wSync löst die vorläufige Wallet dann auf.
 function tdProvH(x){if(x.kind==='later')return '';const m=x.mv&&S.wtx[x.mv];
@@ -8156,7 +8158,7 @@ async function tdSaveCur(){
 // Jeder Weg aus der Karte läuft hierüber: mit ungespeicherten Eingaben erst die Rückfrage. go(gespeichert) führt den Weg aus.
 // Esc und Klick daneben auf die Rückfrage: auf der Karte bleiben.
 function tdLeave(go){if(!tdDirty()){go(false);return}
-  askBox({title:'Nicht gespeichert',text:'Deine Eingaben sind noch nicht gespeichert.',ok:'Speichern',no:'Verwerfen',stay:true}).then(async v=>{if(v==null)return;
+  askBox({title:'Nicht gespeichert',text:'Du hast in diesem Fenster etwas eingegeben und noch nicht gespeichert.',ok:'Speichern',no:'Verwerfen',stay:true}).then(async v=>{if(v==null)return;
     if(v){if(!(await tdSaveCur()))return}TD_DIRTY='';delete $('td-modal').dataset.dirty;go(!!v)})}
 // „Nächster“/„Zurück“: Nach dem Speichern ist der Punkt erledigt und weg; „Nächster“ zeigt dann den, der an seine Stelle gerückt ist
 function tdNav(dir){const cur=TD_CUR;tdLeave(s=>{const n=TD_ITEMS.length;if(!n)return;if(s&&dir>0&&!TD_ITEMS.some(x=>x.id===cur)){tdGo(TD_POS);return}tdGo((TD_POS+dir+n)%n)})}
@@ -8323,7 +8325,7 @@ function bvFeeM(c){return c.bv&&c.kind==='kauf'&&/^Gebühr ([\d.,]+) (\S+) \(Bit
 async function cxTaxSet(on,keep){if(!on&&!(await askBox({title:'Krypto-Steuer ausschalten',text:'Krypto-Steuer ausschalten? Dann fehlt Krypto in Abrechnung, Zusammenfassung, Excel und Steuerschätzung, und „Noch offen“ zeigt nur noch Punkte zu deinen Beständen. Du kannst sie jederzeit wieder einschalten.',ok:'Ausschalten'})))return false;
   S.ui.cxIncl=on;save();if(keep)renderKeepFocus();else render();toast(on?'Krypto-Steuer ist an.':'Krypto-Steuer ist aus.');return true}
 function cxTaxToggle(){return cxTaxSet(S.ui.cxIncl===false)}
-function wiCxFill(){$('wi-cx').innerHTML=S.ui.country==='none'?'':S.ui.cxIncl===false?'<p>Die Krypto-Steuer ist aus.</p><div class="row"><button type="button" class="btn" data-tdcx>Krypto-Steuer einschalten</button></div>':'<p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#anderes-tool" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p><p><b>Rechnest du deine Kryptos schon mit einem anderen Tool</b>, z. B. Blockpit? Dann bleib dort und schalte die Krypto-Steuer hier aus. Sonst zählen deine USDC und USDT doppelt. Die Trading-Bilanz rechnet dann nur den CFD-Teil der Steuer.</p><p>Wichtig für das andere Tool: Eine Einzahlung bei Tag zählt als Verkauf deiner USDC oder USDT, eine Auszahlung von Tag als Kauf. So rechnet die Trading-Bilanz. Markiere sie im anderen Tool genauso und kläre das mit deiner Steuerberatung.</p><div class="row"><button type="button" class="btn" data-tdcx>Krypto-Steuer hier ausschalten</button></div>'}
+function wiCxFill(){$('wi-cx').innerHTML=S.ui.country==='none'?'':S.ui.cxIncl===false?'<p>Die Krypto-Steuer ist aus.</p><div class="row"><button type="button" class="btn" data-tdcx>Krypto-Steuer einschalten</button></div>':'<p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#anderes-tool" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p><p><b>Rechnest du deine Kryptos schon mit einem anderen Tool</b>, z. B. Blockpit? Dann bleib dort und schalte die Krypto-Steuer hier aus. Sonst zählen deine USDC und USDT doppelt. Das Tool rechnet dann nur den CFD-Teil der Steuer.</p><p>Wichtig für das andere Tool: Eine Einzahlung bei Tag zählt als Verkauf deiner USDC oder USDT, eine Auszahlung von Tag als Kauf. So rechnet dieses Tool. Markiere sie im anderen Tool genauso und kläre das mit deiner Steuerberatung.</p><div class="row"><button type="button" class="btn" data-tdcx>Krypto-Steuer hier ausschalten</button></div>'}
 $('wi-cx').addEventListener('click',e=>{const b=e.target.closest('[data-tdcx]');if(b)cxTaxToggle(b)});
 // Ab 0.74 (2.4): „Aus anderem Coin getauscht“ in Österreich mit Ersatzwert, noch nicht bestätigt
 const cxSwOpen=c=>c.kind==='tauschein'&&!!c.est&&!c.eOk&&cxLand()!=='DE';
@@ -8334,7 +8336,7 @@ const cxSwLand=c=>cxSwOwn(c)&&!!c.evL&&c.evL!==cxLand();
 function landTx(von,nach,coins,n){const cs=[...new Set(coins)],c=cs.length>1?'USDC oder USDT':cs[0]||'USDC',DE=nach==='DE',LN=x=>x==='DE'?'Deutschland':'Österreich',eine=n===1,E=eine?'diesem Eintrag':'diesen Einträgen';
   const tw=`der Wert der ${c} am Tausch-Tag`,ek='der Einkaufswert der Coins, die du hergegeben hast';
   return {war:`In ${LN(von)} ist das ${DE?ek:tw}.`,statt:`In ${LN(nach)} zählt stattdessen ${DE?tw:ek}.`,lies:`Das Tool ändert deine Zahlen nicht. In ${LN(nach)} liest es sie aber als ${DE?'Wert am Tausch-Tag':'Einkaufswert'}. Dann ${eine?'stimmt dieser Eintrag':'stimmen diese Einträge'} nicht mehr:`,
-    zurueck:`<b>Nur ausprobieren?</b> Stellst du zurück auf ${LN(von)}, stimmt wieder alles.`,dauer:DE?`<b>Dauerhaft wechseln?</b> Leere bei ${E} das Feld „Wert in Euro (Marktwert)“. Dann nimmt das Tool den Tageswert.`:`<b>Dauerhaft wechseln?</b> Trag bei ${E} den Einkaufswert ein oder setze „Weiß ich nicht“.`}}
+    zurueck:`<b>Nur ausprobieren?</b> Stellst du zurück auf ${LN(von)}, stimmt wieder alles.`,dauer:DE?`<b>Dauerhaft wechseln?</b> Leere bei ${E} das Feld „Wert in Euro“. Dann nimmt das Tool den Tageswert.`:`<b>Dauerhaft wechseln?</b> Trag bei ${E} den Einkaufswert ein oder setze „Weiß ich nicht“.`}}
 // Text der Warnung (HTML) oder '' ohne betroffene Einträge. Nur zwischen Österreich und Deutschland, bei „Ohne Steuer“ hin oder zurück keine.
 function landWarn(alt,neu){if(alt===neu||!['AT','DE'].includes(alt)||!['AT','DE'].includes(neu))return '';
   const L=S.cx.filter(c=>cxSwOwn(c)&&!!c.evL&&c.evL!==neu&&!cxMissing(c).length).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);if(!L.length)return '';
@@ -8535,7 +8537,7 @@ function cxHelp(){
   sh('cx-kest-l',f.kest&&!DE);sh('cx-kestv-l',$('cx-kest').checked);
   sh('cx-nft-l',f.recv&&!DE);sh('cx-recv-l',f.recv&&(DE||$('cx-nft').checked));
   // Ab 0.49 (3): bei einer Zahlung ist „Wert“ ein Begriff (Beleg oder abgebuchter Betrag minus Gebühr)
-  {const t=k==='tauschein'?(DE?'Wert in Euro (Marktwert)':'Einkaufswert in Euro'):f.cur?'Wert':'Wert in Euro';$('cx-eur-t').innerHTML=k==='bezahlung'?gl('geschpay',esc(t)):esc(t)}
+  {const t=k==='tauschein'?(DE?'Wert in Euro':'Einkaufswert in Euro'):f.cur?'Wert':'Wert in Euro';$('cx-eur-t').innerHTML=k==='bezahlung'?gl('geschpay',esc(t)):esc(t)}
   // Ab 0.74 (2.1 bis 2.3, 2.5): Österreich Einkaufswert mit „Weiß ich nicht“ und Rechenhilfe; Deutschland Feld freiwillig, leer = Tageswert. „Menge hergegeben“ in beiden Ländern.
   sh('cx-swlink',k==='tauschein'||k==='tauschaus');
   {const sw=k==='tauschein',unk=sw&&!DE&&$('cx-unk').checked;sh('cx-otherq-l',!!f.otherQ);sh('cx-unk-l',sw&&!DE);sh('cx-rh',sw&&!DE&&!unk);if(unk)unkPair($('cx-unk'),$('cx-eur'));$('cx-eur').placeholder=sw&&DE?'leer = Tageswert':f.cur&&$('cx-cur').value==='USD'?'in USD':'Betrag in €';$('cx-eur').classList.toggle('phl',sw&&DE)}
@@ -8792,8 +8794,6 @@ async function addCx(){
     if(qin>eq+1e-9){msg('cxmsg','bad','Menge angekommen ist größer als Menge. Prüfe die beiden Zahlen.');return nd('#cx-qin','#cx-qty')}
     if(QF){if(!askOk('qf:'+(old?old.id:'neu'),`Zu diesem Übertrag gibt es schon ${QF.fees.length===1?'einen Gebühr-Eintrag':QF.fees.length+' Gebühr-Einträge'} (${fmtNum(QF.sum)} ${QF.coin}). Durch „Menge angekommen“ ersetzen?${Math.abs(QF.qty-q)>1e-9?` Die Menge wird dann ${fmtNum(QF.qty)} ${c}.`:''}`,()=>addCx(),{title:'Gebühr-Einträge ersetzen',ok:'Ersetzen',danger:true,more:ASK_BK}))return;entry.qty=QF.qty}
     if(Math.abs(entry.qtyIn-entry.qty)<1e-9)delete entry.qtyIn}
-  // Ab 0.41: alte Zahlung mit Tageswert der Coins (payOld) ist mit dem Speichern geprüft
-  if(old&&payOld(old))entry.estOk=1;
   // Ab 0.39: feste id; beim Bearbeiten bleiben Herkunft, Verknüpfung, Uhrzeit und Gebühr-Bezug. Neu zu einer Bewegung: Herkunft „aus Datei“.
   let idx=wasEdit?S.cx.findIndex(x=>x.id===EDIT):-1;const tmIn=cxTimeIn();
   if(idx>=0){const o=S.cx[idx];entry.id=o.id;for(const f of ['src','wk','time','feeOf','wkIn','brk','rest','how','xk','via','bv','dupOk','ld','ldf'])if(o[f]!=null)entry[f]=o[f];
@@ -9258,7 +9258,7 @@ function taxBlocks(c){const DE=c.L==='DE',f=c.f,y=c.y,ann=[],est=[],q=[],not=[],
   if(c.tbF)A('a-tb',`Der Broker stockt jede Einzahlung um ein Vielfaches auf (Trading Benefit, ${c.tbF==='mix'?'Faktor je Konto in der Excel, Blatt Konten':'hier ×'+c.tbF}). Der Zusatzbetrag gehört dem Broker, ist nicht auszahlbar und wird beim Kapitalabzug wieder abgezogen. Er ist daher kein Ertrag. Die Einzahlungen im MT5-Report enthalten ihn. Die Gewinne aus dem Handel auf dem ganzen Kontostand sind voll angesetzt.`);
   A('a-ezb','Jede Buchung ist zum EZB-Referenzkurs (USD je EUR) vom Buchungstag umgerechnet. An Wochenenden und Feiertagen gilt der letzte Kurs davor.');
   if(c.cx){
-    A('a-cx',DE?'USDC und USDT sind Kryptowerte. Die Anschaffungskosten sind nach FIFO zugeordnet, getrennt je Wallet und Coin (BMF-Schreiben vom 06.03.2025, Rn. 61). 1 Coin = 1 USD.'
+    A('a-cx',DE?'USDC und USDT sind Kryptowerte. Die Anschaffungskosten sind nach FIFO zugeordnet, getrennt je Wallet und Coin (BMF-Schreiben vom 06.03.2025, Rn. 61 und 62). 1 Coin = 1 USD.'
       :'USDC und USDT sind Kryptowährungen nach § 27b EStG. 1 Coin = 1 USD. Der Einkaufswert ist der gleitende Durchschnittspreis, getrennt je Wallet und Coin.');
     if(c.dep)A('a-dep',DE?'Coins beim Broker einzahlen gilt als Veräußerung. Der Veräußerungspreis ist der Wert der eingezahlten Coins. Der Unterschied zum gutgeschriebenen USD-Betrag zählt als Werbungskosten.'
       :'Coins beim Broker einzahlen gilt als Verkauf. Der Erlös ist der Wert der eingezahlten Coins. Der Unterschied zum gutgeschriebenen USD-Betrag ist eine Verkaufsgebühr.');
@@ -9555,20 +9555,20 @@ const and2=L=>L.length>1?L.slice(0,-1).join(', ')+' und '+L[L.length-1]:L[0]||''
 const accNo=a=>{const A=S.accounts[a]||{};return `Konto ${a}${A.name?` „${A.name}“`:''}`};
 const accDealN=a=>Object.values(S.deals).filter(x=>x.a===a).length;
 async function accX(a){const n=accDealN(a);
-  const t=n?`${accNo(a)}: Was möchtest du tun?\n\n„Buchungen neu einlesen“ löscht nur die Buchungen. Das Konto bleibt mit Name, Trading Benefit und Invested stehen, danach lädst du den Report noch einmal. „Konto entfernen“ löscht das ganze Konto.\n\n`+accDelTxt(a).split('\n\n').slice(1).join('\n\n').replace(/^Dabei /,'Beim Entfernen '):accDelTxt(a);
+  const t=n?`${accNo(a)}: Was möchtest du tun?\n\n„Buchungen neu einlesen“ entfernt nur die Buchungen. Das Konto bleibt mit Name, Trading Benefit und Invested stehen, danach lädst du den Report noch einmal. „Konto entfernen“ entfernt das ganze Konto.\n\n`+accDelTxt(a).split('\n\n').slice(1).join('\n\n').replace(/^Dabei /,'Beim Entfernen '):accDelTxt(a);
   const v=await askBox({title:n?'Konto entfernen oder neu einlesen':'Konto entfernen',text:t,ok:'Konto entfernen',danger:true,more:ASK_BK,alt:n?'Buchungen neu einlesen':''});
   if(v==='alt')return accReload(a);
   if(!v)return;delete S.accounts[a];for(const k of Object.keys(S.deals))if(S.deals[k].a===a)delete S.deals[k];S.ui.flt.off=S.ui.flt.off.filter(x=>x!==a);save();render()}
 // Ab 0.58 (6): „Buchungen neu einlesen“: löscht nur die Buchungen des Kontos. Name, Trading Benefit, Invested (invNow) und „Absichtlich so“ bleiben,
 // Abgleich, Report-Datum und ausgeblendete Lücken (gapOk) fallen weg. Danach die Bitte, den Report zu laden, und Toast mit „Rückgängig“.
 async function accReload(a){const n=accDealN(a);if(!S.accounts[a]||!n)return;
-  if(!(await askBox({title:'Buchungen neu einlesen',text:`${n===1?'Die Buchung':`Alle ${fI.format(n)} Buchungen`} von ${accNo(a)} löschen?\n\nName, Trading Benefit und Invested bleiben. Danach lädst du den Report von Konto ${a} noch einmal.`,ok:n===1?'Buchung löschen':'Buchungen löschen',danger:true,more:ASK_BK})))return;
+  if(!(await askBox({title:'Buchungen neu einlesen',text:`${n===1?'Die Buchung':`Alle ${fI.format(n)} Buchungen`} von ${accNo(a)} entfernen?\n\nName, Trading Benefit und Invested bleiben. Danach lädst du den Report von Konto ${a} noch einmal.`,ok:n===1?'Buchung entfernen':'Buchungen entfernen',danger:true,more:ASK_BK})))return;
   const A=S.accounts[a];if(!A)return;const snap=JSON.stringify(S);
   for(const k of Object.keys(S.deals))if(S.deals[k].a===a)delete S.deals[k];
   delete A.check;delete A.gapOk;A.repDate='';save();render();
   unfold(document.querySelector('[data-fold="rp-load"]'));msg('loadmsg','info',`Lade jetzt den Report von Konto ${a}.`);
   {const m=$('loadmsg'),r=m.getBoundingClientRect(),top=document.querySelector('nav').getBoundingClientRect().bottom;if(r.top<top||r.bottom>innerHeight)scrollUnder(m)}
-  toastUndo(n===1?`1 Buchung von Konto ${a} gelöscht.`:`${fI.format(n)} Buchungen von Konto ${a} gelöscht.`,snap,()=>msg('loadmsg','',''))}
+  toastUndo(n===1?`1 Buchung von Konto ${a} entfernt.`:`${fI.format(n)} Buchungen von Konto ${a} entfernt.`,snap,()=>msg('loadmsg','',''))}
 // Ab 0.58 (5): Trading Benefit als Text mit Komma („×12,5“), überall wo er steht (auch Excel)
 const facT=f=>'×'+String(+f).replace('.',',');
 const FAC_STD=[1,12,24];
@@ -9689,7 +9689,7 @@ function renderChain(){
     const ok=A.gapOk||[],gs=c.gaps.filter(g=>!ok.includes(g.id));
     if(gs.length){const wo=g=>g.d1===g.d2?`am ${fD(g.d1)}`:`zwischen ${fD(g.d1)} und ${fD(g.d2)}`,w1=wo(gs[0]);
       const txt=gs.length===1?`${w1[0].toUpperCase()+w1.slice(1)} passt der Kontostand nicht zusammen.`:`An ${gs.length} Stellen passt der Kontostand nicht zusammen: ${gs.map(wo).join('; ')}.`;
-      h+=`<div class="msg info" data-chgap="${a}"><b>Konto ${a}: Fehlt etwas dazwischen?</b> ${txt} Vermutlich fehlt dort ein Report. Lade einen Report, der diesen Zeitraum enthält, am einfachsten mit „Ganze Historie“. Bis dahin zeigt das Tool für dieses Konto keine Investition und keine Rendite, weil sonst eine fehlende Einzahlung die Rendite zu hoch machen würde. Tage ohne Buchung sind keine Lücke, nur fehlende Buchungen.
+      h+=`<div class="msg info" data-chgap="${a}"><b>Konto ${a}: Fehlt etwas dazwischen?</b> ${txt} Vermutlich fehlen dort Buchungen. Tage ohne Handel sind kein Problem. Lade einen Report, der diesen Zeitraum enthält, am einfachsten mit „Ganze Historie“. Bis dahin zeigt das Tool für dieses Konto keine Investition und keine Rendite. Sonst könnte eine fehlende Einzahlung die Rendite zu hoch machen.
         <div class="row">${hb}<button type="button" class="btn" data-chg="${a}|${gs.map(g=>esc(g.id)).join(',')}">Ausblenden</button></div>
         <details data-chr="${a}"${CHR_OPEN.has(a)?' open':''}><summary>Du bist sicher, dass nichts fehlt?</summary>
           <ol class="chro"><li>Speichere den Report in MetaTrader 5 neu („Ganze Historie“) und ziehe ihn ins Tool, oder wähle ihn oben bei „MT5-Reports laden“ aus.</li><li>Hilft das nicht: Klicke auf „Buchungen neu einlesen“ und lade den Report danach noch einmal. Name, Trading Benefit und Invested bleiben.</li></ol>
@@ -9757,9 +9757,11 @@ const nTage=n=>`${fI.format(n)} ${n===1?'Tag':'Tage'}`;
 // Knöpfe in Hinweisen: Kurse laden (data-rl = id des Meldungsfelds) und zum Abschnitt „Datei einlesen“. Ab 0.50 Nachtrag 8: main = „Kurse laden“ blau (Reiter Steuer)
 const rlBtns=(id,file,main)=>`<div class="row"><button type="button" class="btn${main?' primary':''}" data-rl="${id||''}">Kurse laden</button>${file?'<button type="button" class="btn" data-rf>Datei einlesen</button>':''}</div>`;
 // Karte „Alle Kurse anzeigen“: neueste zuerst, eigene Kurse mit ✎ und ×. Nur im Reiter Kurse neu gezeichnet (bis zu 1.000 Zeilen).
+// Ab 0.95 (K7): Tage, deren Kurs eine Buchung, Tag-Zeile oder ein Eintrag in USD verwendet (auch für „Alles vorhanden (mit … eigenen Kursen)“)
+function ratesUsed(){const used=new Set();for(const r of (window.__rows||[]))if(r.rd)used.add(r.rd);for(const t of Object.values(S.tag)){const d=rateDateFor(tagD(t),'USD',tagT(t));if(d)used.add(d)}for(const c of S.cx)if(c.cur==='USD'&&c.date){const d=rateDateFor(c.date,'USD','');if(d)used.add(d)}return used}
 function renderRateList(){
   if(S.ui.tab!=='rates')return;
-  const used=new Set();for(const r of (window.__rows||[]))if(r.rd)used.add(r.rd);for(const t of Object.values(S.tag)){const d=rateDateFor(tagD(t),'USD',tagT(t));if(d)used.add(d)}for(const c of S.cx)if(c.cur==='USD'&&c.date){const d=rateDateFor(c.date,'USD','');if(d)used.add(d)}
+  const used=ratesUsed();
   $('r-used').checked=S.ui.rtUsed;
   let ds=rateDates().slice().reverse();if(S.ui.rtUsed)ds=ds.filter(d=>used.has(d));
   const f4=v=>fmtDec(v,4),f6=v=>fmtDec(v,6),own=ds.some(d=>rateSrc(d)==='own');
@@ -9775,7 +9777,7 @@ function renderRates(){
   // Ein Kasten: Stand-Satz wie bisher, darunter fehlende Kurse (mit Knöpfen) bzw. der Hinweis auf vorläufige Kurse. Farbe nach dem wichtigsten Zustand.
   const cov=rateCov(),gone=mr.days.filter(d=>d<=cov),late=mr.days.filter(d=>d>cov),all=mn&&!mr.n&&!mr.prov.length;
   const cls=gone.length||late.length?'warn':mr.prov.length?'info':mn?'ok':'none';
-  let h=`<div class="msg rst ${cls}"><p>${all?'<b aria-hidden="true">✓</b> ':''}${mn?`Deine Buchungen: ${dS(mn)}${DS}${dS(mx)}. `:''}Kurse vorhanden bis ${dS(last)}.${all?' Alles vorhanden.':''}</p>`;
+  let h=`<div class="msg rst ${cls}"><p>${all?'<b aria-hidden="true">✓</b> ':''}${mn?`Deine Buchungen: ${dS(mn)}${DS}${dS(mx)}. `:''}Kurse vorhanden bis ${dS(last)}.${all?(n=>n?` Alles vorhanden (mit ${n===1?'1 eigenen Kurs':fI.format(n)+' eigenen Kursen'}).`:' Alles vorhanden.')([...ratesUsed()].filter(d=>rateSrc(d)==='own').length):''}</p>`;
   // Fehlende Tage bis „abgedeckt bis“: Die EZB hat für sie einen Kurs veröffentlicht (kein EZB-Feiertag), er kam nur nicht an
   if(gone.length)h+=`<p>${gone.length===1?`Für den ${dS(gone[0])} fehlt der Kurs, obwohl die EZB an diesem Tag einen veröffentlicht hat.`:`Für ${nTage(gone.length)} fehlt der Kurs, obwohl die EZB an diesen Tagen einen veröffentlicht hat (z. B. ${dS(gone[gone.length-1])}).`} Lade die Kurse neu oder lies die EZB-Datei ein.</p>`;
   if(late.length)h+=`<p>Es fehlen Kurse für ${nTage(late.length)} (z. B. ${dS(late[late.length-1])}).</p>`;
@@ -10159,6 +10161,9 @@ function closeFpanel(){
 const STABLE_EX='<b>Gewinn bei Stablecoins:</b> 1 USDC bleibt etwa 1 USD, aber der Euro-Wert schwankt. Beispiel: Du kaufst 1.000 USDC für 901 € (Kurs 1,11) und zahlst sie bei Kurs 1,16 bei Tag ein. Dann sind sie 862 € wert, 39 € Verlust.';
 // Ab 0.72 (1.3): Satz im (i) der Krypto-Karte, AT und DE
 const CX_1USD='<b>Warum 1 USDC = 1 USD hier keinen Unterschied macht:</b> Bei einer Einzahlung zum Broker ist der Erlös der Wert der Coins und die Gebühr der Unterschied zum USD-Betrag beim Broker. Zieht man beides ab, bleibt der USD-Betrag beim Broker zum EZB-Kurs. Der Marktkurs von USDC spielt dafür keine Rolle.';
+// Ab 0.95 (B2): neben CX_1USD, AT und DE
+const BANKFX_KA='Den Euro-Betrag trägst du bei der Zeile mit ✎ ein („Euro laut Kontoauszug“). Ohne Angabe rechnet das Tool mit dem EZB-Kurs und markiert den Wert als geschätzt.';
+const CX_KURS='Das Tool setzt 1 USDC und 1 USDT mit 1 USD an. Das passt, solange der Coin nahe 1 USD notiert. Weicht der Kurs am Buchungstag deutlich ab, rechne mit dem Marktkurs.';
 const EST_SUM='<b>Geschätzte Werte</b> (z. B. ein Tageswert statt des Kaufpreises) stehen als Frage in der Zusammenfassung für die Steuerberatung.';
 const GL={
   'k-ov':{t:'Überblick',h:'Die wichtigsten Zahlen für den gewählten Zeitraum und die gewählten Konten. Mit „Rendite ▾“ oder „Betrag ▾“ wechselst du, ob die Kacheln Prozent oder Beträge zeigen.'},
@@ -10169,7 +10174,7 @@ const GL={
   'k-month':{t:'Pro Monat',h:'Jeder Monat im gewählten Zeitraum.'},
   'k-week':{t:'Pro Woche',h:'Jede Woche mit ihren Tagen und Trades. Ein Klick auf eine Woche zeigt ihre Tage, ein Klick auf einen Tag seine Trades.'},
   'k-matrix':{t:'Netto pro Konto und Monat',h:'Der Netto-Gewinn jedes Kontos in jedem Monat. Bei „PF laut MT5“ zählt die PF im Monat der Abbuchung, bei „PF verteilt“ im Monat des Gewinns. Deshalb ändern sich die Monate beim Umschalten.'},
-  bankfx:{t:'Ein- und Auszahlungen per Bank',h:'Tag tauscht Euro sofort in USD. Dieser Tausch selbst ist kein Krypto-Vorgang.\nUngeklärt ist, ob ein Kursgewinn auf das USD-Guthaben steuerpflichtig ist, wenn es später wieder in Euro zurückgetauscht wird. Das Tool berechnet das nicht. Wenn du per Bank einzahlst, kläre das mit deiner Steuerberatung.\nDen Euro-Betrag trägst du bei der Zeile mit ✎ ein („Euro laut Kontoauszug“). Ohne Angabe rechnet das Tool mit dem EZB-Kurs und markiert den Wert als geschätzt.'},
+  bankfx:{t:'Ein- und Auszahlungen per Bank',de:'Tag tauscht deine Euro sofort in USD. Das ist kein Krypto-Vorgang. Tauschst du das USD-Guthaben innerhalb eines Jahres zurück in Euro, kann ein Kursgewinn steuerpflichtig sein. Kläre das mit deiner Steuerberatung.\n'+BANKFX_KA,h:'Tag tauscht deine Euro sofort in USD. Das ist kein Krypto-Vorgang. Tauschst du das USD-Guthaben innerhalb eines Jahres zurück in Euro, kann ein Kursgewinn steuerpflichtig sein. In Österreich gilt dafür eine Freigrenze von 440 € im Jahr. Kläre das mit deiner Steuerberatung.\nDen Euro-Betrag trägst du bei der Zeile mit ✎ ein („Euro laut Kontoauszug“). Ohne Angabe rechnet das Tool mit dem EZB-Kurs und markiert den Wert als geschätzt.'},
   wabgl:{t:'Abgleich',h:'✓: Der Bestand laut deinen Einträgen passt zur Wallet-Datei bzw. zu dem Stand, den du aus deiner App eingetragen hast. Ein Unterschied unter 0,01 zählt nicht.\n✗: Es gibt einen Unterschied. Fahre mit der Maus über das ✗, dann siehst du ihn mit Richtung. Ein Klick öffnet „Kontostände prüfen“ bei dieser Zeile.\n„–“: Es gibt nichts zum Vergleichen.'},
   'k-real':{t:'Dein echtes Geld',h:'Was du bei Tag eingezahlt und ausgezahlt hast und was dein Geld seit Start gebracht hat.'},
   // Ab 0.80 (4): (i) der Karte „Buchungsarten“, Wortlaut von Florian
@@ -10179,7 +10184,7 @@ const GL={
   'k-konten':{t:'Deine Konten',h:'Alle Konten aus deinen Reports. Wähle bei jedem den Trading Benefit und, wenn du möchtest, einen Namen.'},
   'k-kurse':{t:'Wechselkurse',h:`Ohne Kurse funktioniert die Auswertung in USD vollständig. Für Euro und für die Steuer braucht das Tool den Kurs jedes Tages, an dem du eine Buchung hast. Es rechnet jede Buchung mit dem Referenzkurs der Europäischen Zentralbank (EZB) vom Tag der Buchung um. An Wochenenden und Feiertagen gilt der letzte Kurs davor.
 <b>Woher die Kurse kommen:</b> Eingebaut sind die EZB-Kurse ab 2023 bis zum Stand dieser Version (${fD(RB.stand)}). Neuere holt das Tool von selbst aus dem Internet, sobald sie fehlen (Häkchen „Fehlende Kurse automatisch laden“), oder mit „Kurse laden“: direkt von der EZB, und wenn sie nicht antwortet, vom Dienst Frankfurter, der die EZB-Kurse unverändert weitergibt. Wenn du nicht willst, dass das Tool ins Internet geht, nimmst du dort das Häkchen weg und liest die Datei der EZB ein. Fehlt ein Kurs trotzdem, trägst du ihn von Hand ein.
-<b>Wann fehlt ein Kurs?</b> Die EZB veröffentlicht an jedem Werktag einen Kurs, außer am 1. Januar, Karfreitag, Ostermontag, 1. Mai, 25. und 26. Dezember. An diesen Tagen und am Wochenende gilt der letzte Kurs davor. Hat ein anderer Werktag keinen Kurs, meldet das Tool ihn als fehlend. Die EZB veröffentlicht den Kurs eines Tages erst am Nachmittag, meist gegen 16 Uhr. Bei manchen Diensten kommt er etwas später an. Ist eine Buchung jünger als 24 Stunden, nutzt das Tool vorläufig den letzten Kurs und rechnet neu, sobald der richtige da ist.
+<b>Wann fehlt ein Kurs?</b> Die EZB veröffentlicht an jedem Werktag einen Kurs, außer am 1. Januar, Karfreitag, Ostermontag, 1. Mai, 25. und 26. Dezember. An diesen Tagen und am Wochenende gilt der letzte Kurs davor. Hat ein anderer Werktag keinen Kurs, meldet das Tool ihn als fehlend. Die EZB veröffentlicht den Kurs eines Tages erst am Nachmittag, meist gegen 16 Uhr. Bei manchen Diensten kommt er etwas später an. Für eine Buchung von heute nutzt das Tool vorläufig den letzten Kurs und rechnet neu, sobald der Kurs des Tages da ist.
 <b>Quellenangabe:</b> ${ECB_CITE}`},
   'k-kurstab':{t:'Alle Kurse',h:`Alle Kurse, die das Tool kennt, neueste zuerst. Mit „nur verwendete Kurse zeigen“ siehst du nur die, mit denen Buchungen umgerechnet wurden. Eigene Kurse kannst du mit ✎ ändern und mit × löschen.
 ${ECB_CITE}`},
@@ -10206,10 +10211,10 @@ ${ECB_CITE}`},
   unbtoken:{t:'unbekannter Token',h:'Ein Token, dessen Vertrag das Tool nicht kennt, mit „USD“ im Namen. Das Tool zählt ihn nur als USDC, wenn du es bestätigst. Mache das nur, wenn du weißt, woher er kommt, z. B. das Guthaben deiner Krypto-Karte. Betrüger verschicken gefälschte Token mit ähnlichen Namen.\nIn der Steuer zählt er wie USDC. Der Tausch von USDC in diesen Token ist dann kein Verkauf. Deine Entscheidung siehst und änderst du im Fenster „Adressen“ unter „Token“.'},
   // Ab 0.39: Wallet-Datei aus dem Block-Explorer
   'k-wfload':{t:'Wallet-Datei einlesen',h:'Im Block-Explorer deines Netzwerks (z. B. etherscan.io) lädst du die Liste aller Token-Bewegungen deiner Wallet als Datei. Das Tool liest daraus nur die echten USDC und USDT und sortiert jede Bewegung ein:\n<b>Zu Tag:</b> Passt sie zu einer Ein- oder Auszahlung bei Tag, setzt das Tool dort genaue Menge, Coin, Wallet und Uhrzeit.\n<b>Übertrag:</b> Geht sie zwischen zwei deiner Wallets, entsteht ein Übertrag.\n<b>Vorschlag:</b> Passt sie zu einem Eintrag, den du selbst gemacht hast, fragt das Tool nach.\n<b>Offen:</b> Den Rest entscheidest du, wann du willst.\n<b>Wozu?</b> Genaue Mengen und Gebühren, der richtige Coin (Tag zeigt ihn nicht), Uhrzeiten für die Reihenfolge und genaue Daten für die Haltefrist in Deutschland. Vergessene Abgänge fallen auf, sie sind steuerlich wichtig.\n<b>Netzwerke:</b> Für jedes Netzwerk lädst du eine eigene Datei. Möglich sind Ethereum, BNB Chain, Polygon, Arbitrum, Base, Optimism, Linea. Noch nicht möglich: Tron (kommt später), Solana, Bitcoin, Avalanche.\n<b>Nur USDC und USDT</b> zählen. Das Tool ignoriert alle anderen Token. Es erkennt echte USDC und USDT an der Vertragsadresse, nicht am Namen.\n<b>Gebühren des Netzwerks</b> (in ETH, BNB usw.) stehen nicht in der Datei. Das Tool rechnet sie nicht.\nDie Datei bleibt in deinem Browser.'},
-  'k-wf':{t:'Bewegungen aus der Wallet-Datei',h:'Alle echten USDC und USDT aus deinen Wallet-Dateien. Gerechnet werden nur Tag-Zeilen und Einträge. Eine Bewegung zählt erst, wenn sie zugeordnet ist.\n<b>Tag ↔</b> gehört zu einer Ein- oder Auszahlung bei Tag. Ein Klick springt hin.\n<b>Eintrag ↔</b> gehört zu einem Eintrag in „Woher kamen deine Coins?“.\n<b>offen</b> ist noch nicht entschieden. Mit „Entscheiden“ wählst du, was es ist, oder verknüpfst sie mit „gehört zu …“ von Hand.\n<b>ignoriert</b> zählt nicht. Mit „wieder öffnen“ holst du sie zurück.\n<b>intern</b> heißt: Beide Seiten gehören zur selben Wallet, die Bewegung zählt nicht.\n<b>verdächtig</b> ist ein sehr kleiner Betrag, oft Address Poisoning.\nDu kannst jederzeit später entscheiden, auch einzeln. Ist eine Zuordnung falsch, löst du sie mit „Verknüpfung lösen“.\n<b>Zuordnung zu Tag:</b> Eine Auszahlung bei Tag passt zu einem Eingang in deiner Wallet, eine Einzahlung zu einem Ausgang. Höchstens 3 Tage auseinander und höchstens 2 USD Unterschied, das nächste Datum zuerst. Ist das eindeutig, ordnet das Tool automatisch zu. Sonst fragt es nach.'},
+  'k-wf':{t:'Bewegungen aus der Wallet-Datei',h:'Alle echten USDC und USDT aus deinen Wallet-Dateien. Gerechnet werden nur Tag-Zeilen und Einträge. Eine Bewegung zählt erst, wenn sie zugeordnet ist.\n<b>Tag ↔</b> gehört zu einer Ein- oder Auszahlung bei Tag. Ein Klick springt hin.\n<b>Eintrag ↔</b> gehört zu einem Eintrag in „Woher kamen deine Coins?“.\n<b>offen</b> ist noch nicht entschieden. Mit „Entscheiden“ wählst du, was es ist, oder verknüpfst sie mit „gehört zu …“ von Hand.\n<b>ignoriert</b> zählt nicht. Mit „wieder öffnen“ holst du sie zurück.\n<b>intern</b> heißt: Beide Seiten gehören zur selben Wallet, die Bewegung zählt nicht.\n<b>verdächtig</b> ist ein sehr kleiner Betrag, oft ein Betrugsversuch mit einer Lockadresse.\nDu kannst jederzeit später entscheiden, auch einzeln. Ist eine Zuordnung falsch, löst du sie mit „Verknüpfung lösen“.\n<b>Zuordnung zu Tag:</b> Eine Auszahlung bei Tag passt zu einem Eingang in deiner Wallet, eine Einzahlung zu einem Ausgang. Höchstens 3 Tage auseinander und höchstens 2 USD Unterschied, das nächste Datum zuerst. Ist das eindeutig, ordnet das Tool automatisch zu. Sonst fragt es nach.'},
   netzwerk:{t:'Netzwerk',h:'Die Blockchain, auf der deine Coins liegen, z. B. Ethereum oder BNB Chain. Dieselbe Adresse kann auf mehreren Netzwerken Coins haben. Im Tool ist sie dieselbe Wallet.'},
   ueberbrueckt:{t:'überbrückt',h:'USDC.e (auf Base USDbC) sind USDC, die über eine ältere Brücke auf ein anderes Netzwerk gebracht wurden. Circle hat sie nicht selbst ausgegeben. Sie sind praktisch 1 zu 1 USDC wert. Das Tool zählt sie als USDC. Deine Steuerberatung bekommt dazu eine Frage in der Zusammenfassung.'},
-  verdaechtig:{t:'verdächtig',h:'Echte USDC oder USDT unter 0,01. Solche winzigen Beträge sind oft Address Poisoning. Ignoriere sie, außer du weißt, woher sie kommen.\n'+'Address Poisoning: Betrüger schicken winzige Beträge oder gefälschte Token von Adressen, die deinen echten zum Verwechseln ähnlich sehen. Sie hoffen, dass du die Adresse später aus deinem Verlauf kopierst und dein Geld an sie schickst. Kopiere Adressen nie aus dem Verlauf, immer aus der Quelle.'},
+  verdaechtig:{t:'verdächtig',h:'Echte USDC oder USDT unter 0,01. Solche winzigen Beträge sind oft ein Betrugsversuch mit Lockadressen. Ignoriere sie, außer du weißt, woher sie kommen.\n'+'Lockadressen: Betrüger schicken winzige Beträge oder gefälschte Token von Adressen, die deinen echten zum Verwechseln ähnlich sehen. Sie hoffen, dass du die Adresse später aus deinem Verlauf kopierst und dein Geld an sie schickst. Kopiere Adressen nie aus dem Verlauf, immer aus der Quelle.'},
   gegenseite:{t:'Gegenseite',h:'Die andere Adresse einer Bewegung: woher die Coins kamen oder wohin sie gingen. <button type="button" class="zlink" data-addrguide>Wem gehört diese Adresse?</button> Zum Zuordnen klickst du direkt auf die Gegenseite.'},
   poisoning:{t:'Address Poisoning',h:LOOK_TXT},
   psp:{t:'PSP',h:'Filter bei Tag: zeigt nur Einzahlungen von außen, nicht die Überträge zwischen Tag Wallet und deinen Trading-Konten.'},
@@ -10236,7 +10241,7 @@ ${ECB_CITE}`},
   vaoffen:{t:'Noch nicht zugeordnet',h:'Bewegungen, die noch keinem Vorgang zugeordnet sind: Ausgang, Eingang und offene Zeilen einer Börse.'},
   // Ab 0.49 (3): Erklärungen am Ort, an dem man sie braucht
   'k-kb':{t:'Kontostände prüfen',h:'<b>Kontrolle:</b> Weicht der Stand aus deiner App vom Bestand laut deinen Einträgen ab, fehlt meist ein Eintrag, z. B. eine Gebühr, ein Übertrag oder die genaue Menge bei Tag. Die Kontrolle gibt es, wenn der Zeitraum bis heute reicht.\n<b>Bestand laut Datei:</b> Hast du eine Wallet-Datei eingelesen, zeigt das Tool, was laut Datei in der Wallet liegt. Stimmt es, steht ✓ dabei.'},
-  'k-wl':{t:'Adressen',h:'Im Adressbuch steht zu jeder Adresse, wem sie gehört. Kennt das Tool eine Adresse, zeigt es überall ihren Namen. Änderst du das Adressbuch, ändert sich die Anzeige sofort. Ordnest du eine Adresse deiner Börse oder deiner anderen Wallet zu, erkennt das Tool Überträge selbst.\n<b>Tag:</b> Gehört eine Bewegung zu einer Zeile bei Tag, merkt sich das Tool die Adresse als Tag. Tag nutzt für Einzahlungen wechselnde Adressen, die musst du nicht selbst merken.\n<b>Brücken und Dienste:</b> Ein Ausgang an eine fremde Adresse und kurz danach ein Eingang von einer fremden Adresse, fast gleich viel, ist meist eine Brücke. Das Tool merkt sich ihre Adressen („automatisch erkannt“). Mit ✎ und „Entfernen“ machst du die Zuordnung rückgängig.'},
+  'k-wl':{t:'Adressen',h:'Im Adressbuch steht zu jeder Adresse, wem sie gehört. Kennt das Tool eine Adresse, zeigt es überall ihren Namen. Änderst du das Adressbuch, ändert sich die Anzeige sofort. Ordnest du eine Adresse deiner Börse oder deiner anderen Wallet zu, erkennt das Tool Überträge selbst.\n<b>Tag:</b> Die Adresse, von der Tag auszahlt, merkt sich das Tool, weil Tag sie immer wieder verwendet. Einzahlungsadressen merkt es sich nicht, weil Tag sie oft nur einmal verwendet. Gehört eine Bewegung zu einer Zeile bei Tag, ordnet das Tool sie trotzdem selbst zu.\n<b>Brücken und Dienste:</b> Ein Ausgang an eine fremde Adresse und kurz danach ein Eingang von einer fremden Adresse, fast gleich viel, ist meist eine Brücke. Das Tool merkt sich ihre Adressen („automatisch erkannt“). Mit ✎ und „Entfernen“ machst du die Zuordnung rückgängig.'},
   lockadr:{t:'Lockadresse',h:LOOK_TXT},
   vorschlag:{t:'Vorschlag',h:'Das Tool hat Bewegungen gefunden, die zusammenpassen. Prüfe sie. Mit „Übernehmen“ trägt es den Vorgang für dich ein. Mit „Nein“ fragt es nicht wieder.'},
  herkunft:{t:'Herkunft',h:'<b>Datei Bix</b> = aus der Wallet-Datei von Bix. <b>Datei Bitvavo</b> = aus der Datei deiner Börse. <b>Tag-Daten</b> = aus den eingefügten Tag-Daten. <b>von Hand</b> = selbst eingetragen. Zwei Quellen stehen mit „+“ da.\nBeispiel: „Datei Bix + Datei Bix-Card“ heißt: Ausgang und Eingang stehen beide in deinen Dateien und passen zusammen.'},
@@ -10254,10 +10259,10 @@ ${ECB_CITE}`},
   'k-cxres':{t:'Bestand jetzt',h:'Wie viele Coins laut deinen Einträgen am Ende des gewählten Zeitraums in jeder Wallet liegen (bei einem Jahr zum 31.12.) und was sie zusammen gekostet haben (Einkaufswert). Rechnest du deine Kryptos mit einem anderen Tool, schalte die Krypto-Steuer im Reiter Steuer aus.',
     de:'Wie viele Coins laut deinen Einträgen am Ende des gewählten Zeitraums in jeder Wallet liegen (bei einem Jahr zum 31.12.) und was sie zusammen gekostet haben (Einkaufswert). Darunter die offenen Posten mit Kaufdatum, Menge, Einkaufswert und dem Tag, ab dem ein Verkauf steuerfrei ist. Rechnest du deine Kryptos mit einem anderen Tool, schalte die Krypto-Steuer im Reiter Steuer aus.'},
   // Ab 0.74 (5.2)
-  ocstatus:{t:'Status',h:'<b>fertig:</b> Der Wert steht fest.\n<b>offen:</b> Ersatzwert, du hast noch nicht entschieden. Trag den echten Wert ein oder bestätige den Ersatzwert. Dazu steht ein gelber Punkt in „Noch offen“.\n<b>Ersatzwert bestätigt:</b> Du hast entschieden, den Ersatzwert zu behalten.\n<b>mit Ersatzwert:</b> Der Wert selbst ist richtig gerechnet. In seine Rechnung fließt aber ein Ersatzwert aus einem anderen Eintrag ein. Klärst du diesen Eintrag, wird er von selbst „fertig“. Ist der Ersatzwert bestätigt, bleibt er „mit Ersatzwert“.\n<b>Kurs fehlt:</b> Für diesen Tag ist noch kein Kurs geladen.'},
+  ocstatus:{t:'Status',de:'<b>fertig:</b> Der Wert steht fest.\n<b>offen:</b> Es fehlt noch etwas, z. B. der Einkauf deiner USDC oder USDT, oder der Wert stammt aus Österreich. Dazu steht ein gelber Punkt in „Noch offen“.\n<b>Kurs fehlt:</b> Für diesen Tag ist noch kein Kurs geladen.',h:'<b>fertig:</b> Der Wert steht fest.\n<b>offen:</b> Ersatzwert, du hast noch nicht entschieden. Trag den echten Wert ein oder bestätige den Ersatzwert. Dazu steht ein gelber Punkt in „Noch offen“.\n<b>Ersatzwert bestätigt:</b> Du hast entschieden, den Ersatzwert zu behalten.\n<b>mit Ersatzwert:</b> Der Wert selbst ist richtig gerechnet. In seine Rechnung fließt aber ein Ersatzwert aus einem anderen Eintrag ein. Klärst du diesen Eintrag, wird er von selbst „fertig“. Ist der Ersatzwert bestätigt, bleibt er „mit Ersatzwert“.\n<b>Kurs fehlt:</b> Für diesen Tag ist noch kein Kurs geladen.'},
   ersatzwert:{t:'Ersatzwert',h:'Den Wert nimmt das Tool, wenn du den echten nicht kennst. Bei „Aus anderem Coin getauscht“ ist das der Wert deiner USDC oder USDT am Tausch-Tag. In Österreich zählt eigentlich, was dich die hergegebenen Coins damals gekostet haben. Der Ersatzwert kann deshalb zu hoch oder zu niedrig sein. In „Alle Vorgänge“ steht dafür „geschätzt“.'},
   'k-oc':{t:'Andere Coins',h:'<b>In anderen Coin getauscht:</b> Den Einkaufswert deiner USDC oder USDT übernehmen die neuen Coins. Du brauchst ihn, wenn du sie später verkaufst.<br><b>Aus anderem Coin getauscht:</b> Der Einkaufswert der hergegebenen Coins geht auf deine USDC oder USDT über. Fehlt er, rechnet das Tool mit einem Ersatzwert: dem Wert deiner USDC oder USDT am Tausch-Tag. Er kann zu hoch oder zu niedrig sein, denn in Österreich zählt, was dich die hergegebenen Coins damals gekostet haben.\n<a href="https://trading-bilanz.github.io/anleitung.html#tausch" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a>',
-    de:'<b>In anderen Coin getauscht:</b> Das ist der Verkaufspreis deiner USDC oder USDT und der Einkaufswert der neuen Coins. Der Tausch-Tag ist ihr Kaufdatum.<br><b>Aus anderem Coin getauscht:</b> Das ist der Verkaufspreis deiner anderen Coins, denselben Wert haben deine USDC oder USDT als Einkaufswert. Den Gewinn der anderen Coins rechnest du woanders.\n<a href="https://trading-bilanz.github.io/anleitung.html#tausch" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a>'},
+    de:'<b>In anderen Coin getauscht:</b> steuerlich ein Verkauf deiner USDC oder USDT zum Wert am Tausch-Tag.<br><b>Aus anderem Coin getauscht:</b> steuerlich ein Kauf. Der Einkaufswert deiner USDC oder USDT ist ihr Wert am Tausch-Tag.\n<a href="https://trading-bilanz.github.io/anleitung.html#tausch" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a>'},
   cxmiss:{t:'Was heißt das?',h:'<b>Einkauf eintragen:</b> Du weißt, wo und wann du die Coins gekauft hast.\n<b>Hatte ich schon:</b> Die Coins waren schon vorher da, rechnerisch ein Kauf.\n<b>So lassen:</b> Das Tool rechnet diesen Teil ohne Gewinn oder Verlust. Deine Krypto-Zahlen können dann abweichen.'},
   wbal:{t:'Laut deiner Wallet',h:'Trage die Menge dieses Coins ein, wie sie in deiner Wallet steht, nicht den Gesamtwert deiner Wallet in Dollar.\n<b>laut Datei</b>: Summe aller USDC oder USDT dieser Wallet aus deinen Wallet-Dateien, rein minus raus, über alle Netzwerke. Das stimmt nur, wenn die Datei die ganze Geschichte der Wallet enthält.'},
   einkaufswert:{t:'Einkaufswert',h:'Was die Coins in diesem Topf zusammen gekostet haben, inklusive Kaufgebühren.',de:'Was die Coins gekostet haben, inklusive Kaufgebühren. Bei einem Geschenk: was die schenkende Person bezahlt hat.'},
@@ -10277,25 +10282,25 @@ ${ECB_CITE}`},
   kaufdatum:{t:'Kaufdatum',h:'Der Tag, an dem die Coins gekauft wurden. Bei einem Geschenk der Tag, an dem die schenkende Person gekauft hat. Bei einem Übertrag bleibt es gleich. Ab dem Kaufdatum läuft die Haltefrist.'},
   freiab:{t:'steuerfrei ab',h:'Ab diesem Tag ist ein Verkauf dieser Coins steuerfrei: der Tag nach dem Jahrestag des Kaufs. Beispiel: Kauf am 01.03.2025, steuerfrei ab 02.03.2026.'},
   haltefrist:{t:'Haltefrist',h:'Verkaufst du Coins innerhalb eines Jahres nach dem Kauf, ist der Gewinn steuerpflichtig (§ 23 EStG). Danach ist er steuerfrei.'},
-  fifo:{t:'FIFO',h:'„First in, first out“: Die zuerst gekauften Coins gelten als zuerst verkauft, je Wallet (BMF-Schreiben vom 06.03.2025, Rn. 61).'},
+  fifo:{t:'FIFO',h:'„First in, first out“: Die zuerst gekauften Coins gelten als zuerst verkauft, je Wallet (BMF-Schreiben vom 06.03.2025, Rn. 61 und 62).'},
   vpreis:{t:'Veräußerungspreis',h:'Was du beim Verkauf bekommen hast, in Euro, inklusive der Gebühr, die davon abging. Bei Tag der Wert der Coins, die weggegangen sind.'},
   wkosten:{t:'Werbungskosten',h:'Gebühren beim Verkauf, z. B. der Unterschied zwischen weggegangener Menge und gebuchtem Betrag bei Tag. Sie mindern den Gewinn und werden anteilig auf steuerpflichtige und steuerfreie Teile verteilt.'},
-  freigrenze:{t:'Freigrenze',h:'Gewinne aus allen privaten Veräußerungsgeschäften eines Jahres bleiben steuerfrei, wenn sie zusammen unter 1.000 € liegen (bis 2023: 600 €). Liegen sie darüber, ist alles steuerpflichtig, nicht nur der Teil über der Grenze.'},
+  freigrenze:{t:'Freigrenze',h:'Liegt dein Gesamtgewinn aus allen privaten Verkäufen im Jahr unter 1.000 €, ist er steuerfrei. Ab 1.000,00 € ist der ganze Gewinn steuerpflichtig. Bei Zusammenveranlagung gilt die Grenze für jede Person extra. Bis 2023 lag die Grenze bei 600 €.'},
   steuerpfl:{t:'steuerpflichtig',h:'Der Teil des Gewinns oder Verlusts aus Posten, die du höchstens ein Jahr gehalten hast. Nur er kommt in die Anlage SO.'},
   kestab:{t:'KESt abgezogen',h:'Österreichische Börsen wie Bitpanda ziehen beim Verkauf gegen Euro die Steuer selbst ab. Kennt die Börse deinen Einkauf nicht, rechnet sie mit 50 % des Erlöses als Einkaufswert und zieht zu viel ab. Das Tool zeigt dir den richtigen Wert. Trage die abgezogene KESt aus der Abrechnung der Börse ein.'},
   deother:{t:'Andere private Veräußerungsgewinne',h:'Zum Beispiel Gold, andere Kryptowerte wie BTC, eventuell Wechselkursgewinne. Nur Verkäufe innerhalb eines Jahres nach dem Kauf. Verluste als negative Zahl.'},
   // Ab 0.49 (5.2): Gewinn bei Stablecoins und „geschätzt“ (Zusammenfassung) stehen hier und im (i) der Karte in Österreich, nicht mehr im Reiter Wallet
   // Ab 0.72 (1.1 bis 1.3): Titel nur „Krypto“, die Angaben aus dem alten Titel und die Annahmen unter der Tabelle stehen hier; andere Coins in „Was das Tool nicht rechnet“
-  'k-atcx':{t:'Krypto',h:'Gewinne und Verluste aus USDC und USDT, ausländische Kryptowährungen ohne KESt-Abzug (Verkäufe mit KESt-Abzug einer österreichischen Börse stehen getrennt). Gerechnet mit dem gleitenden Durchschnittspreis je Wallet und Coin.\n<b>Verluste</b> sind nur mit anderen 27,5-%-Erträgen desselben Jahres verrechenbar, ein Vortrag ins nächste Jahr ist nicht möglich.\n<b>Annahmen:</b> USDC und USDT sind Kryptowährungen im Sinn von § 27b EStG. Die Einzahlung bei Tag ist ein Verkauf, die Auszahlung in Coins ein Kauf. Gebühren beim Kauf erhöhen den Einkaufswert, Gebühren beim Verkauf mindern den Erlös (das Abzugsverbot für Werbungskosten gilt laut E1kv nicht für Kryptowährungen). Gebühren in Coins, z. B. für Überträge zwischen eigenen Wallets, sind ein Verkauf zum Tageswert (EStR Rz 6178). Tausch Krypto gegen Krypto ist steuerneutral, der Einkaufswert geht auf den neuen Coin über. Bekommst du etwas, das keine Kryptowährung ist (z. B. ein NFT), ist es ein Verkauf. Geschenk: Einkaufswert der schenkenden Person (§ 27a Abs. 4 Z 1 EStG). Diebstahl, Betrug, Hack oder ein verlorener Schlüssel sind keine Veräußerung, ein Verlust ist nicht absetzbar (EStR Rz 6178w).\n'+CX_1USD+'\n'+STABLE_EX+'\n'+EST_SUM+'\nKennzahlen laut gängigen Ausfüll-Anleitungen (Stand 2026), bitte im aktuellen Formular E1kv prüfen.'},
-  'k-decx':{t:'Krypto',h:'Gewinne und Verluste aus USDC und USDT, die du höchstens ein Jahr gehalten hast, gerechnet nach FIFO je Wallet und Coin. Sie gehören in die Anlage SO, Abschnitt Kryptowerte.\n<b>Annahmen:</b> USDC und USDT sind „andere Wirtschaftsgüter“ (§ 23 Abs. 1 Satz 1 Nr. 2 EStG, BMF-Schreiben vom 06.03.2025). Haltefrist und Einkaufswert nach FIFO je Wallet und Coin (Rn. 61). Die Auszahlung bei Tag in Coins ist ein Kauf, die Einzahlung ein Verkauf. Wert zum EZB-Kurs vom Buchungstag, 1 Coin = 1 USD. Gebühren beim Kauf erhöhen den Einkaufswert, Gebühren beim Verkauf sind Werbungskosten und werden anteilig auf steuerpflichtige und steuerfreie Teile verteilt (Rn. 57). Gebühren in Coins und der Tausch in einen anderen Coin sind Verkäufe zum Tageswert, der Tausch USDC ↔ USDT ist ein Verkauf mit neuem Kauf. Ein Geschenk übernimmt Kaufdatum und Einkaufswert der schenkenden Person (§ 23 Abs. 1 Satz 3 EStG).\n'+CX_1USD+'\n'+STABLE_EX+'\n'+EST_SUM+'\n<b>Geplant:</b> Für Kryptowerte, die ab 2027 gekauft werden, soll die Haltefrist wegfallen. Das Gesetz ist noch nicht beschlossen. Die Trading-Bilanz wird angepasst, sobald es gilt.'},
+  'k-atcx':{t:'Krypto',h:'Gewinne und Verluste aus USDC und USDT, ausländische Kryptowährungen ohne KESt-Abzug (Verkäufe mit KESt-Abzug einer österreichischen Börse stehen getrennt). Gerechnet mit dem gleitenden Durchschnittspreis je Wallet und Coin.\n<b>Krypto-Verluste</b> kannst du nur mit anderen Kapitalerträgen mit 27,5 % aus demselben Jahr verrechnen. Sparbuchzinsen zählen nicht dazu. Ein Vortrag ist nicht möglich.\n<b>Annahmen:</b> USDC und USDT sind Kryptowährungen im Sinn von § 27b EStG. Die Einzahlung bei Tag ist ein Verkauf, die Auszahlung in Coins ein Kauf. Gebühren beim Kauf erhöhen den Einkaufswert, Gebühren beim Verkauf mindern den Erlös (das Abzugsverbot für Werbungskosten gilt laut E1kv nicht für Kryptowährungen). Gebühren in Coins, z. B. für Überträge zwischen eigenen Wallets, sind ein Verkauf zum Tageswert (EStR Rz 6178). Tausch Krypto gegen Krypto ist steuerneutral, der Einkaufswert geht auf den neuen Coin über. Bekommst du etwas, das keine Kryptowährung ist (z. B. ein NFT), ist es ein Verkauf. Geschenk: Einkaufswert der schenkenden Person (§ 27a Abs. 4 Z 1 EStG). Diebstahl, Betrug, Hack oder ein verlorener Schlüssel sind keine Veräußerung, ein Verlust ist nicht absetzbar (EStR Rz 6178w).\n'+CX_1USD+'\n'+CX_KURS+'\n'+STABLE_EX+'\n'+EST_SUM+'\nTrag Gewinne aus Verkäufen ohne österreichischen KESt-Abzug in Kennzahl 174 ein und Verluste in Kennzahl 176. Kennzahl 173 und 175 gelten nur mit KESt-Abzug.'},
+  'k-decx':{t:'Krypto',h:'Gewinne und Verluste aus USDC und USDT, die du höchstens ein Jahr gehalten hast, gerechnet nach FIFO je Wallet und Coin. Sie gehören in die Anlage SO, Abschnitt Kryptowerte.\n<b>Annahmen:</b> USDC und USDT sind andere Wirtschaftsgüter (BMF-Schreiben vom 06.03.2025, Rn. 53). Das Tool rechnet je Wallet und Coin nach FIFO (Rn. 61 und 62). Die Auszahlung bei Tag in Coins ist ein Kauf, die Einzahlung ein Verkauf. Wert zum EZB-Kurs vom Buchungstag, 1 Coin = 1 USD. Gebühren beim Kauf erhöhen den Einkaufswert, Gebühren beim Verkauf sind Werbungskosten und werden aufgeteilt (Rn. 57). Gebühren in Coins und der Tausch in einen anderen Coin sind Verkäufe zum Tageswert. Ein Tausch USDC gegen USDT ist ein Verkauf mit neuem Kauf. Ein Geschenk übernimmt Kaufdatum und Einkaufswert der schenkenden Person (§ 23 Abs. 1 Satz 3 EStG).\n'+CX_1USD+'\n'+CX_KURS+'\n'+STABLE_EX+'\n'+EST_SUM+'\n<b>Geplant:</b> Für Kryptowerte, die ab 2027 gekauft werden, soll die Haltefrist wegfallen und 25 % Steuer gelten. Das Gesetz ist noch nicht beschlossen, Stand November 2026. Das Tool wird angepasst, sobald es gilt.'},
   // Ab 0.72: (i) der übrigen Karten im Reiter Steuer (vorher lose Absätze und Aufklapper in den Karten)
-  'k-taxat':{t:'Jahresabrechnung',h:'Deine CFD-Ergebnisse des Jahres in Euro, jede Buchung zum EZB-Referenzkurs ihres Tages umgerechnet (Datum laut Serverzeit des Brokers).\n<b>Annahmen:</b> CFDs sind nicht verbriefte Derivate. Bei einem ausländischen Broker ohne Kapitalertragsteuer-Abzug gilt der normale Tarif, nicht 27,5 %. Die Performance Fee mindert den Gewinn. Kennzahl 857 nach Recherche Stand 2026, die Bezeichnung im aktuellen Formular E1kv bitte prüfen.'},
-  'k-taxde':{t:'Jahresabrechnung',h:'Deine CFD-Ergebnisse des Jahres in Euro, jede Buchung zum EZB-Referenzkurs ihres Tages umgerechnet. Die Finanzverwaltung akzeptiert laut Ratgebern auch die monatlichen Umsatzsteuer-Umrechnungskurse.\n<b>Annahmen (Recherche Stand 2026):</b> CFDs sind Termingeschäfte. Gewinne und Verluste über einen ausländischen Broker ohne Steuerabzug gehören ab dem Steuerjahr 2025 saldiert in Zeile 19 der Anlage KAP. Die frühere Grenze von 20.000 € für Verluste aus Termingeschäften ist abgeschafft. Kommission und Swap mindern den Gewinn, die Performance Fee nicht (Sicherheit ca. 60 bis 75 %).\n<b>Steuererklärung:</b> Kapitalerträge ohne Steuerabzug müssen erklärt werden. Frist ohne Steuerberatung: 31. Juli des Folgejahres, mit Steuerberatung Ende Februar des übernächsten Jahres. Ist dein persönlicher Steuersatz unter 25 %, kannst du in der Anlage KAP die Günstigerprüfung beantragen (die Zeilennummer ändert sich je nach Formularjahr).'},
+  'k-taxat':{t:'Jahresabrechnung',h:'Deine CFD-Ergebnisse des Jahres in Euro, jede Buchung zum EZB-Referenzkurs ihres Tages umgerechnet (Datum laut Serverzeit des Brokers).\n<b>Annahmen:</b> CFDs sind nicht verbriefte Derivate. Bei einem ausländischen Broker ohne Kapitalertragsteuer-Abzug gilt der normale Tarif, nicht 27,5 %. Die Performance Fee, die Kommission, der Swap und die Gebühren mindern deinen CFD-Gewinn. Das Abzugsverbot für Werbungskosten gilt bei Einkünften zum Tarif nicht.\n<b>Jahreswechsel:</b> Das Tool ordnet CFD-Buchungen nach der Zeit des Brokers (Zypern) dem Jahr zu, Krypto-Vorgänge nach österreichischer Zeit. Eine feste Regel dazu gibt es nicht. Kläre große Beträge am Jahreswechsel mit deiner Steuerberatung.'},
+  'k-taxde':{t:'Jahresabrechnung',h:'Deine CFD-Ergebnisse des Jahres in Euro, jede Buchung zum EZB-Referenzkurs ihres Tages umgerechnet. Das passt zur gesetzlichen Regel.\n<b>Annahmen (Recherche Stand 2026):</b> CFDs sind Termingeschäfte. Gewinne und Verluste über einen ausländischen Broker ohne Steuerabzug gehören ab dem Steuerjahr 2025 saldiert in Zeile 19 der Anlage KAP. Die frühere Grenze von 20.000 € für Verluste aus Termingeschäften gilt in allen offenen Fällen nicht mehr. Einen nicht verrechneten Verlust trägt das Finanzamt ins nächste Jahr vor, wenn er in deiner Erklärung steht. Kommission und Swap mindern den Gewinn, die Performance Fee nicht (Sicherheit ca. 60 bis 75 %).\n<b>Steuererklärung:</b> Kapitalerträge ohne Steuerabzug musst du erklären. Frist ohne Steuerberatung: 31. Juli des Folgejahres. Fällt er auf ein Wochenende oder einen Feiertag, gilt der nächste Werktag. Mit Steuerberatung: Ende Februar des übernächsten Jahres. Liegt dein Steuersatz unter 25 %, beantrage die Günstigerprüfung in Zeile 4 der Anlage KAP.'},
   // Ab 0.73 (2.1): Begriffe auf den Posten der Jahresabrechnung (vorher Spalten „Erklärung“ und „Wo eintragen“). Mit Zusatz aus den Daten: tx-salcfd, tx-salcx, tx-gv (glSet)
   'tx-gain':{t:'Gewinne aus Trades',h:'Summe aller Trades mit Gewinn (vor Kosten).',de:'Summe aller Trades mit Gewinn.'},
   'tx-loss':{t:'Verluste aus Trades',h:'Summe aller Trades mit Verlust (vor Kosten).',de:'Summe aller Trades mit Verlust.'},
   'tx-costs':{t:'Kommission, Swap, Gebühren',h:'Direkt bei den Trades abgebucht.',de:'Abgezogen (Annahme: Aufwendungen in unmittelbarem Zusammenhang mit dem Termingeschäft).'},
-  'tx-fee':{t:'Performance Fee',h:'Abziehbar als Werbungskosten (Annahme, siehe (i) der Karte).'},
+  'tx-fee':{t:'Performance Fee',h:'Abziehbar als Werbungskosten (siehe (i) der Karte).'},
   'tx-salcfd':{t:'Saldo CFD',h:''},
   'tx-l22':{t:'darin enthaltene Verluste',h:'Summe der Trades mit Verlust (nach Kommission und Swap), als positiver Betrag. Annahme, Sicherheit ca. 65 %.'},
   'tx-pfde':{t:'Performance Fee',h:'Nicht abgezogen (Werbungskostenabzugsverbot, Annahme).'},
@@ -10307,21 +10312,21 @@ ${ECB_CITE}`},
   'tx-gv':{t:'Gewinn/Verlust',h:''},
   'tx-free':{t:'steuerfrei',h:'Über ein Jahr gehalten, nicht eintragen.'},
   // Ab 0.73 (2.2): vorher in der Zeile „Steuer mit 27,5 %“
-  'tx-kxs':{t:'Krypto-Saldo (27,5 %)',h:'Verlust: nur mit anderen 27,5 %-Erträgen desselben Jahres verrechenbar.'},
+  'tx-kxs':{t:'Krypto-Saldo (27,5 %)',h:'Krypto-Verluste kannst du nur mit anderen Kapitalerträgen mit 27,5 % aus demselben Jahr verrechnen. Sparbuchzinsen zählen nicht dazu. Ein Vortrag ist nicht möglich.'},
   'k-taxest':{t:'Steuer geschätzt',h:'Gewinne aus CFDs bei einem ausländischen Broker ohne Kapitalertragsteuer-Abzug werden in Österreich zum normalen Einkommensteuertarif versteuert, gemeinsam mit deinem übrigen Einkommen. Trage dein übriges zu versteuerndes Einkommen im Jahr ein (Lohn, Gewinn aus Selbständigkeit usw., nach Abzug der Sozialversicherung). Krypto-Gewinne kosten 27,5 %, mit der Regelbesteuerungsoption den Tarif.\nReicht der Datenstand nicht bis zum Jahresende, rechnet das Tool zusätzlich hoch: Bis 31.12. läuft jede Woche wie der Schnitt der letzten abgeschlossenen Wochen.'},
   // Ab 0.73 (2.6): die Sätze unter der Karte stehen im (i), die Tarifstufen in AT setzt renderTax je Jahr dazu (glSet)
   'k-taxestde':{t:'Steuer geschätzt',h:'In Deutschland gilt für Kapitalerträge die Abgeltungsteuer: 25 % plus Solidaritätszuschlag, eventuell Kirchensteuer. Der Sparer-Pauschbetrag (1.000 € pro Person, 2.000 € bei Zusammenveranlagung) bleibt steuerfrei, sofern er nicht schon für andere Kapitalerträge verbraucht ist.\nReicht der Datenstand nicht bis zum Jahresende, rechnet das Tool zusätzlich hoch: Bis 31.12. läuft jede Woche wie der Schnitt der letzten abgeschlossenen Wochen.\nGrobe Schätzung. Ist dein persönlicher Steuersatz niedriger als 25 %, kann die Günstigerprüfung die Steuer senken. Verluste aus anderen Kapitalerträgen können verrechnet werden.\nKrypto-Gewinne (Anlage SO) sind hier nicht enthalten. Sie kommen zu deinem übrigen Einkommen und werden mit deinem persönlichen Steuersatz besteuert.'},
   'k-taxdocs':{t:'Unterlagen aufheben',h:'Was du für die Steuererklärung und eine spätere Prüfung aufheben solltest.'},
   'k-taxnot':{t:'Was das Tool nicht rechnet',h:'Diese Dinge fehlen in Steuer, Zusammenfassung und Excel. Rechne sie mit einem eigenen Werkzeug oder mit deiner Steuerberatung. In der Zusammenfassung steht dieselbe Liste unter „Was nicht enthalten ist“.'},
   // Ab 0.73 (1.7): Florians Text; die Erklärung zum Datenstand steht im Begriff taxds am Spaltenkopf
-  'k-taxacc':{t:'Konten für die Steuer',h:'Hier legst du fest, welche Konten für die Steuer zählen. Ein Konto ohne Häkchen fehlt im Reiter Steuer, in der Zusammenfassung und in der Excel. In der Auswertung und in der Sicherung bleibt es. Den Grund siehst nur du, er steht nicht in Zusammenfassung und Excel.\nDer Name für Zusammenfassung und Excel kommt aus deinen MT5-Reports. Du kannst ihn ändern. Leerst du das Feld, gilt wieder der Name aus den Reports.\nLaufen deine Konten auf verschiedene Namen, stehen sie in Gruppen, je Name eine. Die Gruppe mit dem Namen aus dem Feld steht oben, die anderen folgen alphabetisch. Groß- und Kleinschreibung spielt keine Rolle.\nEin Beispiel: Du willst die Steuer für Anna ansehen oder drucken. Trag ihren Namen so ein, wie er in ihren Reports steht. Ihre Gruppe rutscht nach oben. Nimm das Häkchen bei deiner eigenen Gruppe weg. Danach stellst du beides wieder zurück.'},
+  'k-taxacc':{t:'Konten für die Steuer',h:'Hier legst du fest, welche Konten für die Steuer zählen. Ein Konto ohne Häkchen fehlt im Reiter Steuer, in der Zusammenfassung und in der Excel. In der Auswertung und in der Sicherung bleibt es. Nimmst du das Häkchen weg, kannst du einen Grund eintragen. Den siehst nur du, er steht nicht in Zusammenfassung und Excel.\nDer Name für Zusammenfassung und Excel kommt aus deinen MT5-Reports. Du kannst ihn ändern. Leerst du das Feld, gilt wieder der Name aus den Reports.\nLaufen deine Konten auf verschiedene Namen, stehen sie in Gruppen, je Name eine. Die Gruppe mit dem Namen aus dem Feld steht oben, die anderen folgen alphabetisch. Groß- und Kleinschreibung spielt keine Rolle.\nEin Beispiel: Du willst die Steuer für Anna ansehen oder drucken. Trag ihren Namen so ein, wie er in ihren Reports steht. Ihre Gruppe rutscht nach oben. Nimm das Häkchen bei deiner eigenen Gruppe weg. Danach stellst du beides wieder zurück.'},
   taxds:{t:'Datenstand',h:'Bis wann die Daten eines Kontos reichen. Ein MT5-Report nennt nur, wann er erstellt wurde, nicht seinen Zeitraum. Liegt die letzte Buchung höchstens 7 Tage vor dem Erstellungsdatum, gilt das Erstellungsdatum. Sonst fragt das Tool nach, ob der Zeitraum bis dahin reicht. Das Jahr ist vollständig, wenn alle zählenden Konten bis 31.12. reichen.'},
-  other:{t:'Übriges Einkommen',h:'<b>Zählt dazu:</b> Lohn oder Gehalt nach Abzug der Sozialversicherung (am Jahreslohnzettel L16 die „steuerpflichtigen Bezüge“, Kennzahl 245), Gewinn aus Selbständigkeit, Pension, Vermietung nach Kosten.\n<b>Zählt nicht dazu:</b> Trading- und Krypto-Gewinne (die rechnet das Tool schon mit ein), Zinsen und Dividenden mit 27,5 % Kapitalertragsteuer, Familienbeihilfe.\n<b>Beispiel:</b> 2.000 € Monatsbrutto × 12 = 24.000 €, minus ca. 18 % Sozialversicherung ≈ 19.700 €. Als Faustregel: Monatsbrutto × 12 × 0,82.\nArbeitslosengeld und Notstandshilfe sind steuerfrei, können aber den Steuersatz auf dein übriges Einkommen erhöhen (Hochrechnung). Wenn du sie bekommst, kläre das mit deiner Steuerberatung.'},
-  regopt:{t:'Regelbesteuerungsoption',h:'Mit der Regelbesteuerungsoption werden Kapitalerträge, die sonst 27,5 % kosten (hier: Krypto-Gewinne), zum normalen Tarif versteuert. Das lohnt sich bei niedrigem Einkommen. Die Option gilt dann für <b>alle</b> deine 27,5 %-Erträge im Jahr (auch Zinsen, Dividenden). Sie wird in der Steuererklärung (E1kv) angekreuzt. Probiere beides aus: Häkchen setzen und wieder wegnehmen und die Zeile „Zusätzliche Steuer“ unten vergleichen. Die kleinere Zahl ist günstiger.'},
+  other:{t:'Übriges Einkommen',h:'<b>Zählt dazu:</b> Lohn oder Gehalt nach Abzug der Sozialversicherung (am Jahreslohnzettel L16 die „steuerpflichtigen Bezüge“, Kennzahl 245), Gewinn aus Selbständigkeit, Pension, Vermietung nach Kosten.\n<b>Zählt nicht dazu:</b> Trading- und Krypto-Gewinne (die rechnet das Tool schon mit ein), Zinsen und Dividenden mit 27,5 % Kapitalertragsteuer, Familienbeihilfe.\nNimm vom Jahreslohnzettel L16 die steuerpflichtigen Bezüge aus Kennzahl 245. Ohne Lohnzettel rechne Monatsbrutto × 12 × 0,82. Rechne das 13. und 14. Gehalt nicht dazu. Hattest du nur einen Teil des Jahres Arbeitslosengeld oder Notstandshilfe, kann das Finanzamt dein übriges Einkommen hochrechnen.\nBeziehst du Lohn oder Pension, bleiben andere Einkünfte bis 730 € im Jahr steuerfrei (Veranlagungsfreibetrag). Das Tool rechnet das nicht.'},
+  regopt:{t:'Regelbesteuerungsoption',h:'Mit der Regelbesteuerungsoption werden alle deine Kapitalerträge mit 27,5 % zum normalen Tarif versteuert, auch Zinsen und Dividenden. Das lohnt sich bei niedrigem Einkommen. Kreuz die Option im Formular E1 an. Das Finanzamt prüft nicht selbst, ob es günstiger ist. Probiere beides aus: Häkchen setzen und wieder wegnehmen und die Zeile „Zusätzliche Steuer“ unten vergleichen. Die kleinere Zahl ist günstiger.'},
   pbfrei:{t:'Sparer-Pauschbetrag noch frei',h:'Pro Person stehen 1.000 € im Jahr steuerfrei zur Verfügung (bei Zusammenveranlagung 2.000 €), abzüglich dem, was du schon per Freistellungsauftrag bei deiner Bank verbraucht hast. Du findest deinen verbrauchten Freistellungsauftrag im Online-Banking oder auf der Jahressteuerbescheinigung deiner Bank. <b>Beispiel:</b> 1.000 € minus 150 € schon verbrauchte Zinsen = 850 € noch frei. Weißt du es nicht genau, lass das Feld leer. Dann rechnet das Tool mit 1.000 €. Ist nichts mehr frei, trage 0 ein.'},
   kist:{t:'Kirchensteuer',h:'Nur wenn du Mitglied einer Kirche bist, die Kirchensteuer erhebt. Sonst „keine“ wählen.'},
   janfee:{t:'§ 19 EStG',h:'Regelmäßig wiederkehrende Ausgaben, die bis 15 Tage nach Jahresende bezahlt werden, zählen nach § 19 EStG eventuell noch zum alten Jahr. Das Tool rechnet die Performance Fee im Jahr der Abbuchung. Vor der Abgabe klären.'},
-  bankeur:{t:'Einzahlungen in Euro per Bank',h:'Tag tauscht Euro sofort in USD. Dieser Tausch selbst ist kein Krypto-Vorgang. Ungeklärt ist, ob ein Kursgewinn auf das USD-Guthaben steuerpflichtig ist, wenn es später wieder in Euro zurückgetauscht wird. Das Tool berechnet das nicht. Wenn du per Bank einzahlst, kläre das mit deiner Steuerberatung.'},
+  bankeur:{t:'Einzahlungen in Euro per Bank',h:'Tag tauscht deine Euro sofort in USD. Das ist kein Krypto-Vorgang. Tauschst du das USD-Guthaben innerhalb eines Jahres zurück in Euro, kann ein Kursgewinn steuerpflichtig sein. In Österreich gilt dafür eine Freigrenze von 440 € im Jahr. Kläre das mit deiner Steuerberatung.',de:'Tag tauscht deine Euro sofort in USD. Das ist kein Krypto-Vorgang. Tauschst du das USD-Guthaben innerhalb eines Jahres zurück in Euro, kann ein Kursgewinn steuerpflichtig sein. Kläre das mit deiner Steuerberatung.'},
   kestverk:{t:'Verkäufe mit KESt-Abzug',h:'Hat die Börse ohne deinen Einkauf gerechnet (50 % des Erlöses als Einkaufswert), musst du diese Verkäufe in der Steuererklärung angeben: Kennzahl 173 bzw. 175, die abgezogene KESt in Kennzahl 899. Das Finanzamt rechnet dann mit dem richtigen Wert und rechnet die KESt an. Hat die Börse mit deinem Einkauf gerechnet, ist die Steuer abgegolten. Eintragen kannst du sie trotzdem, z. B. damit Verluste ausgeglichen werden. Kläre das mit deiner Steuerberatung.'},
   zahlen:{t:'Zahlen eingeben',h:'Komma für die Stellen nach dem Komma, Tausender ohne Punkt, z. B. 4000,02. Gibst du einen Punkt ein, fragt das Tool nach, was du meinst. Lass den Punkt einfach weg, dann fragt es nicht.'},
   usdje:{t:'USD je 1 EUR',h:'So veröffentlicht die EZB den Kurs: wie viele US-Dollar ein Euro kostet. Ein Betrag in USD geteilt durch diesen Kurs ergibt Euro.'},
@@ -10333,7 +10338,7 @@ ${ECB_CITE}`},
 <b>Datei:</b> aus der Datei der EZB, die du eingelesen hast.
 <b>Von Hand:</b> von dir eingetragen.
 <b>Rangfolge:</b> Geladene Kurse und Kurse aus der Datei gehen vor eingebauten. Eigene Kurse gelten nur für Tage ohne EZB-Kurs. Kommt für so einen Tag später ein EZB-Kurs, ersetzt er deinen.`},
-  tb:{t:'Trading Benefit',h:'Bei Tag auch „Amplifier“ genannt. Tag vervielfacht dein eingezahltes Geld im MT5: Bei ×24 stehen 100 USD als 2.400 USD da. Gewinne und Performance Fee sind nicht vervielfacht.\n<b>So findest du ihn:</b> Im Tag-Portal CopyX → Follower Hub → Strategies, dort „Balance“ geteilt durch „Invested“. Nicht verwechseln mit der Spalte „Multiplier“, die ist etwas anderes.\n×1 heißt: kein Trading Benefit. Die Steuerzahlen hängen nicht davon ab, nur Investition und Rendite.\n<b>Anderer Wert:</b> Wähle „andere Zahl …“ und gib ihn ein, z. B. 12,5. Mit „für alle ▾“ im Spaltenkopf trägst du einen Wert für mehrere Konten ein.'},
+  tb:{t:'Trading Benefit',h:'Bei Tag auch „Amplifier“ genannt. Tag vervielfacht dein eingezahltes Geld im MT5: Bei ×24 stehen 100 USD als 2.400 USD da. Gewinne und Performance Fee sind nicht vervielfacht.\n<b>So findest du ihn:</b> Im Tag-Portal CopyX → Follower Hub → Strategies, dort „Balance“ geteilt durch „Invested“. Das ergibt ungefähr den Wert. Nicht verwechseln mit der Spalte „Multiplier“, die ist etwas anderes.\n×1 heißt: kein Trading Benefit. Die Steuerzahlen hängen nicht davon ab, nur Investition und Rendite.\n<b>Anderer Wert:</b> Wähle „andere Zahl …“ und gib ihn ein, z. B. 12,5. Mit „für alle ▾“ im Spaltenkopf trägst du einen Wert für mehrere Konten ein.'},
   invk:{t:'Investition',h:'Das Geld, das du selbst in dieses Konto eingesetzt hast, in USD: Einzahlungen geteilt durch den Trading Benefit. Es sollte genau mit „Invested“ im Tag-Portal übereinstimmen (CopyX → Follower Hub → Strategies). Weicht es ab, stimmt wahrscheinlich der Trading Benefit nicht.'},
   repvom:{t:'Report vom',h:'Das Datum, an dem du den Report in MT5 gespeichert hast. Das Tool kennt die Buchungen nach diesem Datum noch nicht. Für aktuelle Zahlen speichere den Report neu und lade ihn hier.'},
   abgl:{t:'Abgleich',h:'Das Tool zählt alle Buchungen zusammen, die es aus dem Report gelesen hat, und vergleicht sie mit den Summen am Ende des Reports: Kommission, Gebühr, Swap und Gewinn aus der Summenzeile der Buchungen, deinen letzten Kontostand mit dem Kontostand dort, dazu „Nettogewinn gesamt“ (bis auf Rundung) und die Zahl der Trades. Geprüft wird der zuletzt geladene Report.\n<b>✓ stimmt:</b> Alles wurde vollständig gelesen.\n<b>⚠ Abweichung:</b> Darunter steht die Zeile, die nicht passt, mit dem gelesenen Wert und dem Wert im Report. Das Tool hat den Report vielleicht nicht ganz richtig gelesen. Speichere ihn frisch aus MT5 und lade ihn hier noch einmal. Bleibt die Warnung, stimmen die Zahlen dieses Kontos vielleicht nicht. Schreibe mir dann bitte an florian@weltenwandel.at.'},
@@ -10344,7 +10349,7 @@ ${ECB_CITE}`},
   pfplus:{t:'Positive Performance Fee',h:'In einer Gewinnwoche senkt ein Verlust die Performance Fee, er kostet dich deshalb nur 70 %. In einer Verlustwoche gibt es keine PF, dann kostet er 100 %. Annahme: Tag nimmt Verluste nicht in die nächste Woche mit.'},
   rendite:{t:'Rendite',h:'Jeder Trade wird mit deiner Investition zu Beginn des Trades verglichen, die Renditen aller Trades werden zusammengezählt. Gemeint ist dein eingesetztes Geld, nicht der vervielfachte Kontostand im MT5. Bei Trading Benefit (×12, ×24) ist die Rendite deshalb viel höher als im MT5 oder bei Myfxbook.\nOhne Trading Benefit kennt das Tool deine Investition nicht. Die Rendite steht dann als „–“.'},
   // Ab 0.58 (1): kleine Zusätze „vor PF“ / „nach PF“ und „laut MT5“ / „verteilt“ in den Spaltenköpfen (SMH, SMF) und in „Hochs und Tiefs“
-  pfst:{t:'PF-Schalter',h:'Zeigt die Stellung oben bei „PF“. „vor PF“ und „laut MT5“ gehören zu „PF laut MT5“, „nach PF“ und „verteilt“ zu „PF verteilt“. Umschalten oben in der Leiste.'},
+  pfst:{t:'PF-Schalter',h:'Die kleinen Hinweise zeigen, wie gerade gerechnet wird. „vor PF“ oder „laut MT5“ heißt: Oben steht „PF laut MT5“. „nach PF“ oder „verteilt“ heißt: Oben steht „PF verteilt“. Umschalten kannst du oben in der Leiste.'},
   inv:{t:'Investition',h:'Das Geld, das du selbst eingesetzt hast, immer in USD. Es enthält auch Gewinne, die du wieder eingezahlt hast.'},
   anfang:{t:'am Anfang',h:'Die Investition beim ersten Trade der Periode. Bei einzelnen Trade-Zeilen: die Investition zum Zeitpunkt des Trades.'},
   ende:{t:'am Ende',h:'Die Investition am Ende des gewählten Zeitraums.'},
@@ -10382,7 +10387,7 @@ for(const [k,t,h] of ADDR_O)GL['k-ag-'+k]={t,h};
 // Ab 0.47 (3.5): Begriff „Was“ in „Alle Vorgänge“ mit der Legende der Zeichen und Farben (bisher unter der Liste)
 GL.vgwas={t:'Was',h:'Die Farbe zeigt die Familie, das Zeichen die genaue Art.\n'+VG_LEG.map(([c,a,t])=>`<span class="k-${c} nw">${vgIcoK(a)}${t}</span>`).join(' · ')+' · <span class="k-open nw"><span class="vglb"></span>offen</span>'};
 // Ab 0.48 (Nachtrag 1, 4.2): Jeder Begriff erklärt nur sich selbst: Uhrzeiten am Spaltenkopf „Datum“, „geschätzt“ bei einer Uhrzeit als eigener Begriff
-GL.vgdatum={t:'Datum',h:'Uhrzeiten in österreichischer Zeit.'};
+GL.vgdatum={t:'Datum',h:'Uhrzeiten in mitteleuropäischer Zeit (wie in Wien und Berlin).'};
 GL.tmgesch={t:'geschätzt',h:'Ohne Uhrzeit eingetragen. Das Tool hat die Stelle im Tag bestimmt.'};
 // Begriff ausgeben: k = Schlüssel in GL, html = sichtbarer Text
 // Ab 0.58 (1): als Funktion (gehoben), weil SMH und SMF ihn schon beim Laden brauchen
@@ -11222,8 +11227,8 @@ function renderTax(rows){
   // Ab 0.72 (2.3): Datenstand der zählenden Konten statt der letzten Buchung über alle Konten
   const lastD=taxDs(y);notes.push(...taxDsNotes(y,lastD));
   // Ab 0.73 (2.6): „Der Saldo ist negativ“ steht im Begriff auf „Saldo CFD“, die grauen Zeilen (taxDsGone) in der Konten-Karte; Sätze mit schmalem Rand statt Fläche
-  glSet('tx-salcfd','Beilage E1kv, Kennzahl 857: sonstige Einkünfte aus Kapitalvermögen zum Tarif. Jede Buchung ist zum EZB-Kurs ihres Tages umgerechnet.'+(T.tax<0?'\nDer Saldo ist negativ. Ob und wie ein Verlust mit anderen Einkünften ausgeglichen werden darf, ist eingeschränkt. Kläre das mit deiner Steuerberatung.':''));
-  $('taxnotes').innerHTML=notes.map(n=>`<p class="sigl y">${n}</p>`).join('')+(hasFiat()?`<p class="sigl">${gl('bankeur','Einzahlungen in Euro per Bank')}: Ob ein Kursgewinn auf das USD-Guthaben steuerpflichtig ist, rechnet das Tool nicht.</p>`:'');
+  glSet('tx-salcfd','Trag den Saldo aus allen CFD-Gewinnen und CFD-Verlusten in Kennzahl 857 ein. Die Kennzahl heißt „Sonstige tarifsteuerpflichtige Einkünfte aus Kapitalvermögen“. Jede Buchung ist zum EZB-Kurs ihres Tages umgerechnet.'+(T.tax<0?'\nDein CFD-Saldo ist negativ. Diesen Verlust kannst du nur mit anderen Kapitaleinkünften zum Tarif aus demselben Jahr ausgleichen. Mit Krypto-Gewinnen, Aktien-Gewinnen oder Lohn geht das nicht. Ein Vortrag ins nächste Jahr ist nicht möglich.':''));
+  $('taxnotes').innerHTML=notes.map(n=>`<p class="sigl y">${n}</p>`).join('')+(hasFiat()?`<p class="sigl">${gl('bankeur','Einzahlungen in Euro per Bank')}: Einen möglichen Kursgewinn auf das USD-Guthaben rechnet das Tool nicht.</p>`:'');
   // Krypto
   const C=cryptoCalc('AT');const CY=Object.assign({gain:0,loss:0,n:0,gainK:0,lossK:0,nK:0,kest:0,fee:0},C.byY[y]);const hasCxData=C.n>0;const cxIncl=S.ui.cxIncl!==false;const hasCx=hasCxData&&cxIncl;const cxs=hasCx?CY.gain+CY.loss:0;
   // Ab 0.38: Verkäufe mit KESt-Abzug einer österreichischen Börse getrennt (Kennzahl 173/175, abgezogene KESt 899)
@@ -11257,8 +11262,8 @@ function renderTax(rows){
    <tr class="sum"><td>Zusätzliche Steuer (zurücklegen)</td><td>${eur(t1-t0)}</td>${proj!=null?`<td>${eur(est(other+Math.max(0,proj)+cxAdd,+y)+cxFlat-kestPaid-t0)}</td>`:''}</tr>`;
   $('t-est').innerHTML=eh;
   // Ab 0.73 (2.6): Tarifstufen und Absetzbeträge im (i), die Fußnote zur Hochrechnung bleibt als Fußzeile
-  glSet('k-taxest',`Grobe Schätzung mit den Tarifstufen ${TARIF[y]?y:'2026 (für '+y+' noch nicht hinterlegt)'}: bis 13.539 € 0 %, bis 21.992 € 20 %, bis 36.458 € 30 %, bis 70.365 € 40 %, bis 104.859 € 48 %, bis 1 Mio. € 50 %, darüber 55 %. Absetzbeträge, Sonderausgaben und Sozialversicherung sind nicht berücksichtigt.`);
-  $('tarifnote').innerHTML=proj!=null?`<sup>1</sup> Annahme: Bis Jahresende läuft jede Woche wie der Schnitt der letzten ${S.ui._projW} abgeschlossenen Wochen (${fE.format(S.ui._projAvg)} pro Woche). Das ist eine Fortschreibung, keine Prognose.`:'';
+  glSet('k-taxest',`Grobe Schätzung mit den Tarifstufen ${TARIF[y]?y:'2026 (für '+y+' noch nicht hinterlegt)'}: bis 13.539 € 0 %, bis 21.992 € 20 %, bis 36.458 € 30 %, bis 70.365 € 40 %, bis 104.859 € 48 %, bis 1 Mio. € 50 %, darüber 55 %. Absetzbeträge und Sonderausgaben sind nicht berücksichtigt.`);
+  $('tarifnote').innerHTML=proj!=null?`<sup>1</sup> Annahme: Bis Jahresende läuft jede Woche wie der Schnitt der letzten ${S.ui._projW} abgeschlossenen Wochen (${fE.format(S.ui._projAvg)} pro Woche). Das ist nur eine Hochrechnung, keine Vorhersage.`:'';
 }
 // Ab 0.72 (2.1): Zählt das Konto in Steuer, Zusammenfassung und Steuer-Excel? (S.accounts[a].taxEx = {why} heißt ausgeschlossen)
 function taxIn(a){return !((S.accounts[a]||{}).taxEx)}
@@ -11348,7 +11353,7 @@ function taxCxNote(C,y){const L=S.ui.country==='DE'?'DE':'AT',fx=s=>s.e.t==='v'|
 // Ab 0.72 (1.6, 3.10): Punkte von „Was das Tool nicht rechnet“ (Karte im Reiter; ohne tab die Liste für Zusammenfassung und Excel, ohne „Steuer geschätzt“)
 function taxNotItems(L,tab){const o=[{id:'n-coins',t:'andere Kryptowährungen als USDC und USDT (z. B. BTC, ETH)'},{id:'n-netfee',t:'Netzwerkgebühren, die in anderen Coins bezahlt wurden (z. B. ETH, BNB)'},
     {id:'n-kap',t:'andere Kapitalerträge (z. B. Zinsen, Dividenden) und der Verlustausgleich mit ihnen'}];
-  if(tab)o.push({id:'n-est',t:'bei „Steuer geschätzt“: Absetzbeträge und Sozialversicherung'});
+  if(tab)o.push({id:'n-est',t:L==='DE'?'bei „Steuer geschätzt“: die Günstigerprüfung':'bei „Steuer geschätzt“: Absetzbeträge und Sonderausgaben'});
   if(L==='DE'&&!String(S.ui.deOther||'').trim())o.push({id:'n-so',t:'andere private Veräußerungsgeschäfte, solange keine eingetragen sind'});
   return o}
 const taxNotList=L=>taxNotItems(L,1).map(x=>`<li>${x.t[0].toUpperCase()+x.t.slice(1)}.</li>`).join('');
@@ -11374,7 +11379,7 @@ function renderTaxDE(rows,y){
   const notes=[...nyNotes(rows,y)];const lastD=taxDs(y);notes.push(...taxDsNotes(y,lastD));   // ab 0.72 Datenstand (2.3), ab Nachtrag 1 je Jahr
   // Ab 0.73 (2.6): wie in Österreich; Fristen und Annahmen im (i) der Karte (k-taxde)
   glSet('tx-salcfd','Anlage KAP, Zeile 19: ausländische Kapitalerträge ohne Steuerabzug, Gewinne und Verluste aus CFDs saldiert. Jede Buchung ist zum EZB-Kurs ihres Tages umgerechnet.'+(T.res<0?'\nDer Saldo ist negativ. In Deutschland wird ein Verlust aus Kapitalvermögen, der nicht verrechnet werden kann, ins nächste Jahr vorgetragen. Dafür muss er in der Steuererklärung stehen.':''));
-  $('de-notes').innerHTML=notes.map(n=>`<p class="sigl y">${n}</p>`).join('')+(hasFiat()?`<p class="sigl">${gl('bankeur','Einzahlungen in Euro per Bank')}: Ob ein Kursgewinn auf das USD-Guthaben steuerpflichtig ist, rechnet das Tool nicht.</p>`:'');
+  $('de-notes').innerHTML=notes.map(n=>`<p class="sigl y">${n}</p>`).join('')+(hasFiat()?`<p class="sigl">${gl('bankeur','Einzahlungen in Euro per Bank')}: Einen möglichen Kursgewinn auf das USD-Guthaben rechnet das Tool nicht.</p>`:'');
   $('de-not-l').innerHTML=taxNotList('DE');
   if(document.activeElement!==$('de-pb'))$('de-pb').value=S.ui.dePb!=null?S.ui.dePb:'';
   $('de-kist').value=String(S.ui.deKist||0);
@@ -11400,7 +11405,7 @@ function renderTaxDECx(y){
   $('de-cx-body').style.display=X.has&&inc?'':'none';
   $('de-cx-warn').innerHTML=!X.has?'':inc?taxCxNote(C,y):'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung und Excel). Gewinne aus Coins, die du höchstens ein Jahr gehalten hast, sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>';
   const form=FORM_SO[y]?`Eintragen: Anlage SO, Abschnitt „Kryptowerte“ (Formular ${y}): ${FORM_SO[y].ja} „Ja“, ${FORM_SO[y].bez} Bezeichnung (z. B. „USDC/USDT, siehe Aufstellung“), ${FORM_SO[y].zeit} Zeitpunkte laut Aufstellung, ${FORM_SO[y].vp} bis ${FORM_SO[y].wk} die Summen oben, ${FORM_SO[y].g} Gewinn/Verlust, Übertrag in ${FORM_SO[y].zur}. Als gesonderte Aufstellung dient das Excel-Blatt „Verkäufe nach FIFO“. Ob alle Verkäufe in einer Zeile stehen dürfen oder in ${FORM_SO[y].weitere}, klärst du mit deiner Steuerberatung.`:
-    `Eintragen: Anlage SO, Abschnitt „Kryptowerte“. Die Zeilennummern für ${y} sind im Tool noch nicht geprüft, schaue im Formular nach. Als gesonderte Aufstellung dient das Excel-Blatt „Verkäufe nach FIFO“.`;
+    `Trag Verkäufe von USDC und USDT im Abschnitt Kryptowerte der Anlage SO ein. Fass sie zusammen und leg eine Aufstellung bei. Prüf die Zeilennummern im aktuellen Formular. Als gesonderte Aufstellung dient das Excel-Blatt „Verkäufe nach FIFO“.`;
   glSet('k-taxde',X.has?'<b>Krypto:</b> '+GL['k-decx'].h+(payN(C,y)?'\n'+PAY_ANN.DE:'')+'\n'+form:'');
   // Ab 0.73 (2.2): Verlust-Satz und Zahl der Verkäufe im Begriff auf „Gewinn/Verlust“
   glSet('tx-gv',`Aus ${Y.n===1?'1 Verkauf':fI.format(Y.n)+' Verkäufen'}, davon ${fI.format(Y.nT)} mit steuerpflichtigem Teil (FIFO, Haltefrist).`+(X.g<0?'\nEin Verlust ist nur mit Gewinnen aus privaten Veräußerungsgeschäften verrechenbar, auch mit dem Vorjahr (Rücktrag) oder späteren Jahren (Vortrag). Damit er festgestellt wird, gib ihn in der Steuererklärung an.':''));
@@ -11410,7 +11415,7 @@ function renderTaxDECx(y){
   let t;
   if(oth!=null&&isNaN(oth))t=`<p class="sigl y">Bei „Andere private Veräußerungsgewinne“ steht keine gültige Zahl. Schreibe z. B. 250 oder lass das Feld leer.</p>`;
   else if(oth==null)t=X.g<=0?'':X.g<fg?`<p class="sigl">Steuerfrei, wenn du keine anderen privaten Veräußerungsgewinne hast. Die ${fgT} liegt bei ${fE.format(fg)} im Jahr, für alle privaten Verkäufe zusammen.</p>`:
-    `<p class="sigl y">Über der ${fgT} von ${fE.format(fg)}: Der ganze Gewinn ist steuerpflichtig, zu deinem persönlichen Steuersatz.</p>`;
+    `<p class="sigl y">Ab der ${fgT} von ${fE.format(fg)}: Der ganze Gewinn ist steuerpflichtig, zu deinem persönlichen Steuersatz.</p>`;
   else t=sum<fg?`<p class="sigl">Zusammen ${fE.format(sum)}: unter der ${fgT} von ${fE.format(fg)}, steuerfrei.</p>`:`<p class="sigl y">Zusammen ${fE.format(sum)}: nicht unter der ${fgT} von ${fE.format(fg)}. Alles ist steuerpflichtig, zu deinem persönlichen Steuersatz.</p>`;
   $('de-fg').innerHTML=t;
 }
@@ -11692,14 +11697,14 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   let j;try{j=JSON.parse(await readText(f))}catch(err){console.warn('Sicherung laden:',err);j=null}
   if(!j||!j.deals||!j.accounts){msg(mid,'bad',`Datei konnte nicht geladen werden: „${esc(f.name)}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`);e.target.value='';return}
   // Ab 0.50 Nachtrag 5 (S1): Rückfrage, sobald irgendetwas im Tool steht (vorher nur mit Konten aus Reports), mit „Sicherung speichern“
-  if(stateHasData()&&!(await askBox({title:'Sicherung laden',text:`„${f.name}“ laden? Das ersetzt alle Konten, Buchungen und Krypto-Einträge, die jetzt im Tool stehen.`,ok:'Laden',danger:true,more:ASK_BK}))){e.target.value='';return}
+  if(stateHasData()&&!(await askBox({title:'Sicherung laden',text:`„${f.name}“ laden? Das ersetzt alles, was jetzt im Tool steht.`,ok:'Laden',danger:true,more:ASK_BK}))){e.target.value='';return}
   // Ab 0.85 (Fund 2 aus 0.84): zuerst probeweise: einlesen, aufbereiten und zeichnen, ohne den alten Stand anzutasten und ohne zu speichern (SAVE_OFF).
   // Erst wenn alles geklappt hat, ersetzt die Sicherung den alten Stand und wird gespeichert. Scheitert ein Schritt, zeichnet das Tool den alten Stand
   // wieder, im Speicher hat sich nichts geändert (G-19).
   const old=S;SAVE_OFF=true;SAVE_DUE=false;
   try{S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';render()}
   catch(err){console.warn('Sicherung laden:',err);S=old;SAVE_OFF=false;SAVE_DUE=false;RV=null;try{render()}catch(e2){console.warn(e2)}
-    msg(mid,'bad',`Die Sicherung „${esc(f.name)}“ ließ sich nicht laden. Sie ist vielleicht beschädigt.`);e.target.value='';return}
+    msg(mid,'bad',`Die Sicherung „${esc(f.name)}“ ließ sich nicht laden. Sie ist vielleicht beschädigt. Deine bisherigen Daten sind unverändert. Probiere eine andere Sicherung.`);e.target.value='';return}
   SAVE_OFF=false;SAVE_DUE=false;if(BOOT_BAD){BOOT_BAD=false;BOOT_RAW='';modalOn($('boot-modal'),false)}save();rateGoneToast();
   const nA=Object.keys(S.accounts).length,nD=Object.keys(S.deals).length;
   msg('datamsg','ok',`Sicherung geladen: ${nA} ${nA===1?'Konto':'Konten'}, ${nD} ${nD===1?'Buchung':'Buchungen'}.`);e.target.value=''};
@@ -11714,7 +11719,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.94',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.95',VDATE='06.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -11804,7 +11809,7 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{FB_KEY=''
 /* ---------------- Erste Schritte, Nächster Schritt, Fenster ---------------- */
 // Texte zum Original und zu den getrennten Speichern, einmal hier (Begrüßung, Unterstützen, Erste Schritte, Sicherung)
 const ORIG_HTML='Das Original der Trading-Bilanz läuft nur unter genau dieser Adresse: <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>.<span class="odl"> Dort kannst du sie auch herunterladen und ohne Internet nutzen.</span> Kopien aus anderen Quellen können verändert sein, zum Beispiel mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.';
-const GTK='Deine Daten liegen nur in diesem Browser. Die Online-Version und eine heruntergeladene Datei haben getrennte Speicher. Nimm deine Daten mit einer Sicherung mit.';
+const GTK='Deine Daten liegen nur in diesem Browser. Online-Version und heruntergeladene Datei sehen nicht dieselben Daten. Mit einer Sicherung nimmst du sie mit.';
 document.querySelectorAll('[data-orig]').forEach(e=>{e.innerHTML=ORIG_HTML});
 document.querySelectorAll('[data-gtk]').forEach(e=>{e.textContent=GTK});
 // Ab 0.63: „Genieße die Auswertung“ vor Wallet, damit man zuerst die Zahlen sieht
@@ -11825,7 +11830,7 @@ function stepsHTML(){
     return `<li><button type="button" class="chki" data-step="${i+1}">${d}<span>${t}</span></button></li>`};
   // Ab 0.64: „Anleitung mit Bildern“ als Erstes
   return `<p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
-  <p>Du brauchst einmalig einen Computer mit MetaTrader 5, um deine Reports zu speichern. Danach kannst du das Tool auch am Handy nutzen.</p>
+  <p>Für die Reports brauchst du einen Computer mit MetaTrader 5. Alles andere geht auch am Handy.</p>
   <ol class="chk">${STEPS.map(li).join('')}</ol>
   <div class="chkm"><p><b>Jeden Monat (empfohlen)</b></p><ol class="steps"><li>Speichere in MetaTrader 5 für jedes Konto den Report neu.</li><li>Ziehe alle Reports in den Reiter <b>„Reports“</b>. Was schon da ist, erkennt das Tool.</li><li>Füge die neuen Tag-Daten ein und sieh in <b>„Noch offen“</b> nach.</li><li>Speichere eine Sicherung.</li></ol>
   <p><b>Gut zu wissen:</b> ${GTK}<span class="onl"> Du kannst das Tool auch herunterladen und ohne Internet nutzen.</span></p>
@@ -12173,14 +12178,14 @@ async function offlineDL(){try{const r=await fetch(location.href.split('#')[0],{
   catch(e){offShow(false,e.message)}}
 function offShow(ok,err){const has=hasData();
   $('off-t').textContent=ok?'Datei gespeichert':'Herunterladen hat nicht geklappt';
-  $('off-body').innerHTML=ok?`<p>Die Datei „trading-bilanz.html“ liegt meist im Ordner „Downloads“. Speichere sie dir am besten an einem Ort, wo du sie immer leicht wiederfindest.</p><p>Öffne die Datei per Doppelklick, sie läuft im Browser ohne Internet.${has?' Hast du hier schon Daten? Dann nimm sie mit: Sicherung speichern und in der Datei unter Sicherung laden.':''}</p>`+
+  $('off-body').innerHTML=ok?`<p>Die Datei „trading-bilanz.html“ liegt meist im Ordner „Downloads“. Lege sie am besten an einen Ort, wo du sie leicht wiederfindest. Öffne sie per Doppelklick, sie läuft im Browser ohne Internet.${has?' Hast du hier schon Daten? Speichere eine Sicherung und lade sie in der heruntergeladenen Datei im Reiter „Sicherung“.':''}</p>`+
     (has?'<div class="row"><button type="button" class="btn primary" id="off-bk">Sicherung speichern</button></div><div id="off-msg"></div>':'')
     :`<p>Das Herunterladen hat nicht geklappt (${esc(err)}). Prüfe die Internetverbindung und versuche es noch einmal.</p>`;
   openModal('off-modal');
   // Aus „Erste Schritte“ geöffnet: Das Fenster ist zu, der Fokus geht danach auf den Knopf „Erste Schritte“
   if(MODAL_FROM&&MODAL_FROM.closest('.modal:not(.on)'))MODAL_FROM=$('btn-steps')}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-offdl]');if(b){offlineDL();return}
-  if(e.target.closest('#off-bk')){saveBackup();msg('off-msg','ok','Sicherung gespeichert, meist im Ordner „Downloads“. Öffne die heruntergeladene Datei und lade sie dort im Reiter „Sicherung“ mit „Sicherung laden“.');render()}});
+  if(e.target.closest('#off-bk')){saveBackup();msg('off-msg','ok','Sicherung gespeichert, meist im Ordner „Downloads“. Öffne jetzt „trading-bilanz.html“ und lade die Sicherung dort im Reiter „Sicherung“ mit „Sicherung laden“.');render()}});
 initDeviceHelp();
 // Nur bei geänderter Breite neu zeichnen. Reine Höhenänderungen (z. B. Bildschirmtastatur am Handy) lösen nichts aus, damit Eingabefelder den Fokus behalten.
 {let lastW=window.innerWidth,rt=null;
