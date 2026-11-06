@@ -4,7 +4,7 @@
 #   Einmal vorher:                      pip install pillow
 #
 # Neues Motiv: icons/quelle/icon-trading-bilanz-original.png ersetzen (quadratisch, PNG mit
-# transparenten Ecken) und den Befehl starten. Alle Dateien in icons/ werden neu geschrieben, und das
+# durchsichtigem Hintergrund) und den Befehl starten. Alle Dateien in icons/ werden neu geschrieben, und das
 # Skript setzt die eingebetteten Bilder im Tool neu ein (trading-bilanz.html bzw. index.html: Favicon 32,
 # apple-touch-icon 180, Logo im Kopf 64, Logo in der Begrüßung 128, dort als data:-Adresse, weil die
 # Content-Security-Policy des Tools Bilder nur als data: erlaubt). Die Anleitung verweist auf die Dateien.
@@ -39,10 +39,11 @@ EINGEBETTET = [
 #   192 Startbildschirm Android · 512 README, später Web-App
 GROESSEN = [32, 64, 128, 180, 192, 512]
 
-# Größen ohne Transparenz: Die Ecken werden mit der Farbe der Kachel gefüllt.
+# Größen ohne Transparenz: Alles Durchsichtige wird mit dieser Farbe gefüllt.
 # iOS rundet das apple-touch-icon selbst ab und füllt Durchsichtiges schwarz.
-# 'auto' = mittlere Farbe am Rand der Kachel im Original, sonst eine Farbe wie '#fbf8f5'.
-OHNE_TRANSPARENZ = {180: 'auto'}
+# 'auto' = mittlere Farbe am Rand der Kachel im Original (nur für ein Motiv auf einer Kachel), sonst eine Farbe.
+# Ab dem Buch ohne Kachel (0.94): '#f6f5f2' = --bg des Tools ('auto' gäbe das Petrol des Einbands).
+OHNE_TRANSPARENZ = {180: '#f6f5f2'}
 
 # Größen ohne Farbreduktion (Palette). Hier eintragen, wenn eine Größe Streifen in den Verläufen zeigt.
 # Ab 128 px zeigten die Säulen mit Palette Streifen (Prüfung 0.89), 32 und 64 px nicht.
