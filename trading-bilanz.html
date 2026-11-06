@@ -7028,6 +7028,8 @@ function vgMvTr(k,PM,opt){const m=S.wtx[k];if(!m)return '';const M=wMv(k),K=esc(
 const glS=(k,t)=>`<span class="gl" data-gl="${k}" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">${t}</span>`;
 const VG_TH=`<tr><th>Zeit</th><th>Wallet</th><th>Adresse</th><th>${glS('netzwerk','Netzwerk')}</th><th>rein/raus</th><th>Menge</th><th>${glS('gegenseite','Gegenseite')}</th><th>Status</th><th aria-label="Im Block-Explorer">↗</th><th aria-label="Knöpfe"></th></tr>`;
 // Bewegungen eines Vorgangs als Tabelle, nach Zeit
+// Ab 0.94 Nachtrag: Bewegungen eines Vorgangs, deren Status nur „intern“ bzw. „Umtausch“ zeigt: Gegenstück der Brücke bzw. des Umtauschs im selben Vorgang
+const vgKurz=v=>{const H=new Set(v.mv);return new Set(v.mv.filter(k=>{const m=S.wtx[k];return m&&m.st==='int'&&((m.brg&&H.has(m.brg))||(m.swap&&H.has(m.swap)))}))};
 // Ab 0.94: o.kurz = Bewegungen, deren Status ohne den kleinen Satz steht (Fenster „Bewegung“: Brücke oder Umtausch, beide Seiten im Fenster)
 function vgMvTab(ks,PM,o){const L=ks.filter(k=>S.wtx[k]).sort((a,b)=>S.wtx[a].ts-S.wtx[b].ts||(a<b?-1:1));
   return L.length?`<div class="vgtw"><table class="vgtb"><thead>${VG_TH}</thead><tbody>${L.map(k=>vgMvTr(k,PM,o)).join('')}</tbody></table></div>`:''}
@@ -7115,12 +7117,13 @@ document.addEventListener('click',e=>{if(!e.target.closest)return;
   // Direkt zum Feld „Andere private Veräußerungsgewinne“, Steuerjahr des Tauschs
   const o=e.target.closest('[data-ocother]');if(o){e.preventDefault();S.ui.yTax=o.dataset.ocother;const f=$('de-other').closest('.card.fold');if(f)unfold(f);goTo('tax','de-other');$('de-other').focus({preventScroll:true})}});
 // Ab 0.48 (Nachtrag 1, 1.2): aufgeklappt stehen Wert und Gewinn/Verlust immer, auch ohne „Mit Euro“
-function vgDetH(v,fl,DEw,PM,F,rw){const eg=vgEG(v,fl),oc=vgOcH(v,fl,DEw),L=[oc&&!DEw?'':`<p class="vgn small vgwv">Wert ${eg.e} · ${gl('gewinnverlust','Gewinn/Verlust')} ${eg.g}${eg.x?' · '+esc(eg.x):''}</p>`,oc,vgTlH(v.art,v.mv,v.d,v.fee)],wd=VG_TERM[vgWas(v)]?vgWas(v):v.art,tk=VG_TERM[wd];
+function vgDetH(v,fl,DEw,PM,F,rw){const eg=vgEG(v,fl),oc=vgOcH(v,fl,DEw),tl=vgTlH(v.art,v.mv,v.d,v.fee),L=[oc&&!DEw?'':`<p class="vgn small vgwv">Wert ${eg.e} · ${gl('gewinnverlust','Gewinn/Verlust')} ${eg.g}${eg.x?' · '+esc(eg.x):''}</p>`,oc,tl],wd=VG_TERM[vgWas(v)]?vgWas(v):v.art,tk=VG_TERM[wd];
   // Ab 0.48 (3.8): Übertrag über eine Weiterleitung: die ganze Kette mit allen Adressen
   {const c0=v.cx.length?cxById(v.cx[0]):null;if(c0&&c0.via){const M=v.mv.map(k=>S.wtx[k]).filter(Boolean).sort((a,b)=>a.ts-b.ts);if(M.length){const A=[M[0].from,...M.map(m=>m.to)].filter((a,i,x)=>a&&x.indexOf(a)===i);
     L.push(`<p class="small vgchain">Weg: ${A.map(a=>`<span class="nw">${wAdr(a)}${cpBtn(a)}</span>`).join(' → ')} (über Weiterleitung ${esc((S.addr[c0.via]||{}).name||wShort(c0.via))})</p>`)}}}
   if(tk||(v.fee>0&&v.feeW))L.push(`<p class="vgn small">${tk?gl(tk,'Was heißt '+wd+'?'):''}${v.fee>0&&v.feeW?`${tk?' · ':''}Gebühr ${fmtNum(v.fee)} ${esc(v.coin)}, gebucht bei <b>${esc(v.feeW)}</b> (Verkauf zum Tageswert)`:''}</p>`);
-  L.push(vgMvTab(v.mv,PM));for(const id of v.tag)L.push(vgTagH(id));for(const id of v.cx)L.push(vgCxH(id,DEw,F));
+  // Ab 0.94 Nachtrag: beschreibt der Kasten darüber die Brücke bzw. Aufladung, zeigt „Status“ nur „intern“ bzw. „Umtausch“ (wie im Fenster „Bewegung“)
+  L.push(vgMvTab(v.mv,PM,tl?{kurz:vgKurz(v)}:null));for(const id of v.tag)L.push(vgTagH(id));for(const id of v.cx)L.push(vgCxH(id,DEw,F));
   // Ab 0.45 (4.9): Rechenweg steht in der Karte „Rechenwege“; hier nur der Link
   if(rw&&fl.length)L.push(`<p class="small vgrwl"><button type="button" class="zlink" data-rwgo="${esc(v.id)}">Rechenweg ansehen ↓</button></p>`);
   return `<div class="vgx">${L.join('')}</div>`}
@@ -11987,8 +11990,9 @@ let MV_ID=null;
 function mvRender(){const v=vgBuild(S).find(v=>v.id===MV_ID);if(!v){$('mv-body').innerHTML='<p>Diese Bewegung gibt es nicht mehr.</p>';return}const PM=wPairMap(),st=vgSt(v);
   $('mv-t').textContent=`${vgWas(v)}${v.d?' vom '+fD(v.d):''}`;
   // Ab 0.94: Kopf mit „ · “ vor „Gebühr“; Status nur als Begriff, wenn beide Seiten der Brücke bzw. des Umtauschs im Fenster stehen (der Kopf sagt es schon)
-  const mvS=new Set(v.mv),kurz=new Set(v.mv.filter(k=>{const m=S.wtx[k];return m&&m.st==='int'&&((m.brg&&mvS.has(m.brg))||(m.swap&&mvS.has(m.swap)))}));
-  $('mv-body').innerHTML=`<p>${vgFT(v)} · ${vgQ(v,{fenster:1})} · ${vgStH(v,st)}</p>${vgMvTab(v.mv,PM,{kurz})}${v.mv.length===1?mvDelH(v.mv[0]):`<div class="tddel"><p class="small">Kommt aus deinen Wallet-Dateien. Deshalb kannst du sie nicht löschen, beim nächsten Einlesen wären sie wieder da. Ist etwas falsch verbunden, nimm „Verknüpfung lösen“.</p><div class="row"><button type="button" class="btn" data-dtfiles>Ganze Datei entfernen …</button></div></div>`}`}
+  // Ab 0.94 Nachtrag: der Satz unter der Tabelle nennt den Knopf, der an den Bewegungen steht („keine Brücke“, „das war kein Umtausch“, sonst „Verknüpfung lösen“)
+  const kurz=vgKurz(v),MV=v.mv.map(k=>S.wtx[k]).filter(Boolean),kn=MV.length&&MV.every(m=>m.st==='int'&&!m.swap&&(m.brg||m.chain))?'klicke auf „keine Brücke“':MV.length&&MV.every(m=>m.st==='int'&&m.swap)?'klicke auf „das war kein Umtausch“':'nimm „Verknüpfung lösen“';
+  $('mv-body').innerHTML=`<p>${vgFT(v)} · ${vgQ(v,{fenster:1})} · ${vgStH(v,st)}</p>${vgMvTab(v.mv,PM,{kurz})}${v.mv.length===1?mvDelH(v.mv[0]):`<div class="tddel"><p class="small">Kommt aus deinen Wallet-Dateien. Deshalb kannst du sie nicht löschen, beim nächsten Einlesen wären sie wieder da. Ist etwas falsch verbunden, ${kn}.</p><div class="row"><button type="button" class="btn" data-dtfiles>Ganze Datei entfernen …</button></div></div>`}`}
 function mvOpen(id){MV_ID=id;{const v=vgBuild(S).find(x=>x.id===id);if(v&&vgSeen(v)){save();render()}}mvRender();openModal('mv-modal')}
 // „Ganze Datei entfernen …“: Bereich „Eingelesene Dateien“ in „＋ Daten“
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-dtfiles]');if(!b)return;const v=b.dataset.dtfiles||'',i=v.lastIndexOf('|');
