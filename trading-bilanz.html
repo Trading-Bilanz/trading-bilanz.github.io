@@ -742,6 +742,23 @@ td.wbc .small{display:block}
    Spaltenkopf jeder Karte (--wlh = Höhe der Kopfleiste, gemessen über einen ResizeObserver an #wl-t). Die Tabellen scrollen nie seitlich (.tscroll hier ohne overflow).
    Spalten „Andere Adressen“: Name · Adresse ⧉ (Netzwerke klein darunter) · Bewegungen · ✎. „Deine Wallets“ bis 700 px: Art klein unter dem Namen. */
 .modal .box.wlbox{max-width:960px}
+/* Ab 0.94: Fenster „Bewegung“ am PC 960 px, Tabelle nach Inhalt (keine festen Prozente), Umbruch nur an Leerzeichen;
+   von 701 bis 1023 px Blöcke wie am Handy (dort reicht die Breite nicht für zehn Spalten) */
+.modal .box.mvbox{max-width:960px}
+@media (min-width:1024px){#mv-body table.vgtb{table-layout:auto}#mv-body .vgtb th{width:auto!important}#mv-body .vgtb td,#mv-body .vgtb td.vgma .btn{overflow-wrap:normal}#mv-body .vgtb td.vgma .btn{white-space:nowrap}}
+@media (min-width:701px) and (max-width:1023px){
+  #mv-body .vgtb thead{display:none}
+  #mv-body .vgtb,#mv-body .vgtb tbody,#mv-body .vgtb tr,#mv-body .vgtb td{display:block;width:auto}
+  #mv-body .vgtb tr.vgm{border-top:1px dashed var(--line);padding:4px 0}
+  #mv-body .vgtb td{border:0;padding:1px 0;display:flex;gap:2px 8px;flex-wrap:wrap;overflow-wrap:normal}
+  #mv-body .vgtb td,#mv-body .vgtb td:first-child{text-align:left}
+  #mv-body .vgtb td>.small{flex:1 1 100%;margin-left:calc(7em + 8px)}
+  #mv-body .vgtb td .gl{white-space:nowrap}
+  #mv-body .vgtb td[data-l]:not([data-l=""])::before{content:attr(data-l);flex:none;width:7em;color:var(--muted)}
+  #mv-body .vgtb .r{text-align:left}
+  #mv-body .vgtb tr.vgq td{display:block}
+  #mv-body .vgtb .vgcpa{display:inline}
+}
 #wl-modal .box>h2.sah{position:sticky;top:-22px;z-index:7;background:var(--card);margin:-22px -26px 10px;padding:22px 60px 10px 26px;border-bottom:1px solid var(--line)}
 #wl-modal .card{padding:12px 14px 6px;margin:0 0 12px}
 #wl-modal .card.stk>.sthd{top:calc(var(--wlh,60px) - 22px)}
@@ -1885,7 +1902,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <div class="row mft"><button type="button" class="btn" data-mclose>Schließen</button></div>
 </div></div>
 <!-- Ab 0.45 (4.10): ✎ bei einer Bewegung ohne Eintrag (intern, ignoriert, Brücke): Bewegungen mit ihren Knöpfen und warum man sie nicht löscht -->
-<div class="modal noprint" id="mv-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="mv-t"><button type="button" class="mx" aria-label="Schließen">×</button>
+<div class="modal noprint" id="mv-modal"><div class="box hx mvbox" role="dialog" aria-modal="true" aria-labelledby="mv-t"><button type="button" class="mx" aria-label="Schließen">×</button>
   <h2 id="mv-t">Bewegung</h2>
   <div id="mv-body" data-wbox="m"></div>
   <div class="row mft"><button type="button" class="btn" data-mclose>Schließen</button></div>
@@ -3805,6 +3822,20 @@ function wLdLink(S,inO){let n=0;
 // vor o), i 0 bis 10 Min. danach mit 95 bis 100 % der Menge; die Brückengebühr (brk) unverändert aus der Datei; Eingangsseite nicht abgelehnt (x:id).
 // Die Gebühr steht danach wie bei jedem Übertrag als Unterschied „Menge angekommen“ bei der sendenden Wallet. Rückgabe: Zahl der Umstellungen.
 const BRK_NOTE='Brückengebühr (Unterschied laut Wallet-Datei)';
+// Ab 0.94: berechnete Gebühr = Gebühr, die das Tool aus dem Unterschied in einer Wallet-Datei angelegt hat und die niemand geändert hat
+// (Brücke brk, Dienst brk mit via, Aufladung ldf, bis 0.40 feeOf am Übertrag). Sie hat weder ✎ noch ×, der Weg ist das Lösen der Verbindung.
+// Geändert (andere Menge als der Unterschied laut Datei, andere Notiz, Wert, geschätzt) gilt sie als eigene Wahl und bleibt bearbeitbar.
+// Rückgabe: 'brk', 'via', 'ldf', 'feeOf' oder ''.
+const SVC_NOTE='Gebühr des Diensts (Unterschied laut Wallet-Datei)',FEEOF_NOTE='Abhebegebühr, Unterschied laut Wallet-Datei';
+const CALC_FEE_TXT={brk:'Die Gebühr ergibt sich aus der Wallet-Datei. Stimmt sie nicht, klicke bei der Brücke auf „keine Brücke“.',
+  via:'Die Gebühr ergibt sich aus der Wallet-Datei. Stimmt sie nicht, klicke beim Dienst auf „keine Brücke“.',
+  ldf:'Die Gebühr ergibt sich aus der Wallet-Datei. Stimmt sie nicht, klicke bei der Aufladung auf „Verknüpfung lösen“.',
+  feeOf:'Die Gebühr ergibt sich aus der Wallet-Datei. Stimmt sie nicht, ändere beim Übertrag „Menge angekommen“.'};
+function cxCalcFee(c){if(!c||c.kind!=='gebuehr'||c.src!=='datei'||c.eur>0||c.est)return '';const eq=(a,b)=>Math.abs(a-b)<=1e-6;
+  if(c.brk){const o=S.wtx[c.brk[0]],i=S.wtx[c.brk[1]];if(!o||!i||!eq(c.qty,o.qty-i.qty))return '';return c.via?(c.note===SVC_NOTE?'via':''):(c.note===BRK_NOTE?'brk':'')}
+  if(c.ldf!=null){const u=cxById(c.ldf),i=u&&u.wkIn&&S.wtx[u.wkIn];return i&&c.note===LDF_NOTE&&eq(c.qty,u.qty-i.qty)?'ldf':''}
+  if(c.feeOf!=null)return c.note===FEEOF_NOTE&&cxById(c.feeOf)?'feeOf':'';
+  return ''}
 function wLdMerge(S){let n=0;const W=S.wtx,CA=wCardSet(S),plain=c=>!!c&&c.src==='datei'&&!(c.eur>0)&&!(c.usd>0)&&!c.note&&!c.est;
   // Zwischenstand vom 27.10.2026: Gebühr als „Menge angekommen“ (qtyIn) bei der sendenden Wallet → Gebühr des Kartenanbieters in der Karte
   // Ab 0.62: ebenso eine Aufladung ohne eigene Ladeadresse (wPairApply 'top'): Kartenguthaben auf einem Kartenkonto der Karte
@@ -4152,7 +4183,7 @@ function wTypo(S,s){if(!(s.have>0.005))return null;const e=s.e,d0=Date.parse(e.d
   for(const c of S.cx){if(!near(c)||c.coin!==e.coin)continue;
     if(W_ZU.includes(c.kind)&&c.wallet===e.w)tr(c,c.qty,c.qty+s.miss,false);
     else if(c.kind==='uebertrag'&&c.to===e.w){const q=c.qtyIn>0?c.qtyIn:c.qty;tr(c,q,q+s.miss,false)}}
-  const ce=e.cx!=null?S.cx[e.cx]:null;if(ce&&ce.qty>0&&ce.qty-s.miss>0)tr(ce,ce.qty,ce.qty-s.miss,true);
+  const ce=e.cx!=null?S.cx[e.cx]:null;if(ce&&ce.qty>0&&ce.qty-s.miss>0&&!cxCalcFee(ce))tr(ce,ce.qty,ce.qty-s.miss,true);
   return b?{c:b.c,sug:b.sug,self:b.self,out:-e.q,same:b.c.date===e.d}:null}
 // Rest bei einer Wallet ohne eigene Datei (1.4): Endbestand über 0,01 und höchstens 2 je Übertrag hinaus. Kauf-Gruppe = Überträge zwischen einem
 // Kauf und dem nächsten; passt die Summe der Gruppen-Reste nicht zum Bestand, eine Gruppe mit allen Überträgen. pots = Bestände (kxRun).
@@ -6908,9 +6939,9 @@ function vgWas(v){if(v.mv.length===1&&(v.k==='open'||v.k==='ign')){const s=wSide
 // Ab 0.46 (5.4): Umbruch nur nach dem Komma (am Handy bei langen Mengen)
 const fmtW=x=>fmtNum(x).replace(',',',<wbr>');
 // Ab 0.48 (3.1): Zahl mit Coin bricht nie um; wird es eng, bricht die Zeile vor „→“ (dann steht der Coin auf beiden Seiten)
-function vgQ(v){const c=v.coin||'',N=(q,k)=>`<span class="nw"><b>${fmtNum(q)}</b>${k?' '+esc(k):''}</span>`;if(v.k==='tausch'){const x=cxById(v.cx[0]);return `${N(v.qOut,c)} <span class="nw vgqi">→ <b>${fmtNum(v.qIn)}</b> ${x?esc(x.coin2):''}</span>`}
+function vgQ(v,o){const c=v.coin||'',N=(q,k)=>`<span class="nw"><b>${fmtNum(q)}</b>${k?' '+esc(k):''}</span>`;if(v.k==='tausch'){const x=cxById(v.cx[0]);return `${N(v.qOut,c)} <span class="nw vgqi">→ <b>${fmtNum(v.qIn)}</b> ${x?esc(x.coin2):''}</span>`}
   const ar=(v.k==='uebertrag'||v.k==='bruecke'||v.art==='Brücke')&&(Math.abs(v.qOut-v.qIn)>1e-9||v.fee>0);
-  return ar?`${N(v.qOut,c)} <span class="nw vgqi">→ <b>${fmtNum(v.qIn)}</b> ${esc(c)}</span>${v.fee>0?`<span class="small">Gebühr <span class="nw">${fmtNum(v.fee)}</span></span>`:''}`:N(v.qOut,c)}
+  return ar?`${N(v.qOut,c)} <span class="nw vgqi">→ <b>${fmtNum(v.qIn)}</b> ${esc(c)}</span>${v.fee>0?`${o&&o.fenster?' · ':''}<span class="small">Gebühr <span class="nw">${fmtNum(v.fee)}</span></span>`:''}`:N(v.qOut,c)}
 // Euro (Wert des Vorgangs) und Gewinn/Verlust aus dem Rechenweg; bei Überträgen nur Gewinn/Verlust der Gebühr
 // Ab 0.48 (1.1): je Vorgang nur der Wert des Hauptschritts (Hilfsschritte aux, z. B. das Geschenk vor einer Tag-Einzahlung, zählen nicht).
 // Ab 0.48 (1.5): Brücke wie Übertrag und Aufladung ohne Tausch „–“, die Gebühr steht unter der Menge und wirkt in Gewinn/Verlust.
@@ -6967,9 +6998,9 @@ const apW=w=>w?`<button type="button" class="adb" data-apw="${esc(w)}" aria-expa
 // Ab 0.55 (6): Spalte „Wallet“ der aufgeklappten Tabelle: bei einer vorläufigen Wallet nur „nicht zugeordnet“ (die Adresse steht daneben), als Link wie der Name
 const apWT=w=>w&&wProv(w)?`<button type="button" class="adb" data-apw="${esc(w)}" aria-expanded="false" aria-label="Wallet ${esc(w)}: Adressen zeigen">nicht zugeordnet</button>`:apW(w);
 function wWlB(m){return m.st==='int'?apWT(m.wFrom||m.wTo):m.side==='zw'?`${apWT(m.wFrom)} → ${apWT(m.wTo)}`:apWT(wOwnW(m))}
-function vgMvSt(m){if(m.st==='tag')return 'zu Tag';if(m.st==='cx'){const c=cxById(m.ref);return c?`Eintrag „${esc(KIND[c.kind]||c.kind)}“${m.xin?' (Eingang)':''}`:'Eintrag'}
+function vgMvSt(m,kurz){if(m.st==='tag')return 'zu Tag';if(m.st==='cx'){const c=cxById(m.ref);return c?`Eintrag „${esc(KIND[c.kind]||c.kind)}“${m.xin?' (Eingang)':''}`:'Eintrag'}
   if(m.st==='ign')return gl('zurueckholen','ignoriert');
-  if(m.st==='int')return (m.swap?gl('umtausch','Umtausch'):gl('intern','intern'))+(m.swap?`<span class="small">${esc(wSwapTxt(m))}</span>`:m.brg||m.chain?`<span class="small">${esc(wBrTxt(m))}</span>`:m.idiff>0?`<span class="small">${fmtNum(m.idiff)} ${m.coin} Unterschied zwischen Aus- und Eingang</span>`:'');
+  if(m.st==='int')return (m.swap?gl('umtausch','Umtausch'):gl('intern','intern'))+(kurz?'':m.swap?`<span class="small">${esc(wSwapTxt(m))}</span>`:m.brg||m.chain?`<span class="small">${esc(wBrTxt(m))}</span>`:m.idiff>0?`<span class="small">${fmtNum(m.idiff)} ${m.coin} Unterschied zwischen Aus- und Eingang</span>`:'');
   return m.sus?gl('verdaechtig','verdächtig'):'offen'}
 function vgMvB(m){const K=esc(m.k),b=(a,t,x)=>`<button type="button" class="btn sm" data-wa="${a}" data-k="${K}"${x||''}>${t}</button>`;
   if(m.st==='tag'||m.st==='cx')return b('unlink','Verknüpfung lösen');if(m.st==='ign')return b('reopen','wieder öffnen');
@@ -6984,21 +7015,22 @@ function vgCpCell(M){const s=M.side,a=s==='in'?M.from:s==='out'?M.to:'';
   // Ab 0.54 (1): Name bzw. „zuordnen“ öffnet das kurze Feld mit dem Menü „Gehört zu:“ (data-apk = diese Bewegung)
   if(!a)return '–';const nm=M.st==='tag'||wIsTag(a)?'Tag':wIsPay(a)?'Kartenzahlungen':wIsBr(a)?cpNm(a):frName(a)||(s==='in'?M.wFrom:M.wTo);
   return `<button type="button" class="zlink cpnb" data-ap="${esc(a)}" data-apk="${esc(M.k)}" aria-expanded="false" aria-label="Gegenseite ${nm?esc(nm)+', ':''}Adresse ${wShort(a)}: zuordnen">${nm?esc(nm):'zuordnen'}</button> <span class="small vgcpa nw">${wAdr(a)}${cpBtn(a)}</span>`}
-function vgMvTr(k,PM){const m=S.wtx[k];if(!m)return '';const M=wMv(k),K=esc(k),s=M.side,own=s==='in'?m.to:m.from,q=m.st==='open'?wAsk(k,PM.get(k)):null,o=WF_OPEN.has('d:'+k),u=wTxUrl(m);
+function vgMvTr(k,PM,opt){const m=S.wtx[k];if(!m)return '';const M=wMv(k),K=esc(k),s=M.side,own=s==='in'?m.to:m.from,q=m.st==='open'?wAsk(k,PM.get(k)):null,o=WF_OPEN.has('d:'+k),u=wTxUrl(m);
   const td=(l,h,c)=>`<td data-l="${l}"${c?` class="${c}"`:''}>${h}</td>`;
   // Ab 0.47 (3.3): keine aufgeklappte Entscheiden-Zeile mehr; offene Bewegungen erledigt der Knopf „Erledigen“ in der Karte von „Noch offen“
   // Ab 0.50 (2.2 c): gespeicherte Antworten mit „Wieder einschalten“ (Regel 12)
   const sub=naH(k);
   return `<tr class="vgm${m.st==='ign'||m.st==='int'?' wfi':''}" data-wk="${K}">${td('Zeit',`${dm(m.date)} <span class="small">${m.time}</span>`)}${td('Wallet',wWlB(M)||'–')}${td('Adresse',own?`<span class="nw">${wAdr(own)}${cpBtn(own)}</span>`:'–')}${td('Netzwerk',wNet(m.net))}`+
     `${td('rein/raus',s==='in'?'rein':s==='out'?'raus':s==='zw'?'zwischen eigenen':'–')}${td('Menge',`<b>${fmtNum(m.qty)}</b> <span class="vgcn">${wCoinH(m)}</span>`,'r')}${td('Gegenseite',vgCpCell(M))}`+
-    `${td('Status',vgMvSt(M))}${td('Explorer',u?`<a class="zlink noprint" href="${esc(u)}" target="_blank" rel="noopener" aria-label="Im Block-Explorer ansehen (${wNet(m.net)}, Webseite außerhalb des Tools)">↗</a>`:'–')}${td('',vgMvB(M),'vgma')}</tr>`+
+    `${td('Status',vgMvSt(M,!!(opt&&opt.kurz&&opt.kurz.has(k))))}${td('Explorer',u?`<a class="zlink noprint" href="${esc(u)}" target="_blank" rel="noopener" aria-label="Im Block-Explorer ansehen (${wNet(m.net)}, Webseite außerhalb des Tools)">↗</a>`:'–')}${td('',vgMvB(M),'vgma')}</tr>`+
     (sub?`<tr class="vgq" data-wk="${K}"><td colspan="10">${sub}</td></tr>`:'')}
 // Ab 0.46 (1.2): Netzwerk und Gegenseite als Begriffe (gl() gibt es hier noch nicht, deshalb ausgeschrieben)
 const glS=(k,t)=>`<span class="gl" data-gl="${k}" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">${t}</span>`;
 const VG_TH=`<tr><th>Zeit</th><th>Wallet</th><th>Adresse</th><th>${glS('netzwerk','Netzwerk')}</th><th>rein/raus</th><th>Menge</th><th>${glS('gegenseite','Gegenseite')}</th><th>Status</th><th aria-label="Im Block-Explorer">↗</th><th aria-label="Knöpfe"></th></tr>`;
 // Bewegungen eines Vorgangs als Tabelle, nach Zeit
-function vgMvTab(ks,PM){const L=ks.filter(k=>S.wtx[k]).sort((a,b)=>S.wtx[a].ts-S.wtx[b].ts||(a<b?-1:1));
-  return L.length?`<div class="vgtw"><table class="vgtb"><thead>${VG_TH}</thead><tbody>${L.map(k=>vgMvTr(k,PM)).join('')}</tbody></table></div>`:''}
+// Ab 0.94: o.kurz = Bewegungen, deren Status ohne den kleinen Satz steht (Fenster „Bewegung“: Brücke oder Umtausch, beide Seiten im Fenster)
+function vgMvTab(ks,PM,o){const L=ks.filter(k=>S.wtx[k]).sort((a,b)=>S.wtx[a].ts-S.wtx[b].ts||(a<b?-1:1));
+  return L.length?`<div class="vgtw"><table class="vgtb"><thead>${VG_TH}</thead><tbody>${L.map(k=>vgMvTr(k,PM,o)).join('')}</tbody></table></div>`:''}
 function vgTagH(id){const t=S.tag[id];if(!t)return '';const a=tagAT(t),dis=t.status!=='ok';
   return `<div class="vgt" data-tid="${esc(id)}"><div class="row"><span>${tagDT(t,a)}</span><span>Tag-ID ${esc(t.id)}</span>
     <span>${t.kind==='ein'?'Einzahlung':'Auszahlung'} bei Tag${dis?' <span class="small">nicht durchgeführt</span>':''}</span><span>${gl('tagbetrag','Betrag')} ${usd(t.usd)}</span>
@@ -7013,7 +7045,7 @@ function vgCxEuro(c){const money=v=>c.cur==='USD'?usd(v):fE.format(v);
 function giveText(f,c,DEw){const g=f.give;if(!g)return '';
   if(!DEw)return `Zum Weitergeben an die beschenkte Person: ${fmtNum(g.q)} ${c.coin} mit Ø-Preis ${fmtDec(g.avg,4)} € je Coin, Einkaufswert ${fE.format(g.q*g.avg)}.`;
   return `Zum Weitergeben an die beschenkte Person: ${g.map(x=>`${fmtNum(x.q)} ${c.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join('; ')}.`}
-function vgCxH(id,DEw,F){const c=cxById(id);if(!c)return '';const f=(F['c:'+id]||[]).find(f=>f.move!=='in'),ms=cxMissing(c);
+function vgCxH(id,DEw,F){const c=cxById(id);if(!c)return '';const f=(F['c:'+id]||[]).find(f=>f.move!=='in'),ms=cxMissing(c),cf=cxCalcFee(c);
   // Ab 0.47 (1.2): Einträge aus der Börsen-Datei (bv) heißen überall so
   // Ab 0.48 (3.2): Herkunft mit Namen wie in der Liste
   const src=cxOrigL(c).map(srcH).join(' + ');
@@ -7023,7 +7055,8 @@ function vgCxH(id,DEw,F){const c=cxById(id);if(!c)return '';const f=(F['c:'+id]|
   return `<div class="vgc" data-cxid="${c.id}"><div class="row"><span>${c.date?fD(c.date):''}${c.time?' <span class="small">'+c.time.slice(0,5)+'</span>':''}</span><span>Eintrag „${was}“</span>
     <span>${esc(c.wallet)}${c.kind==='uebertrag'?' → '+esc(c.to):''}</span><span>${fmtNum(c.qty)} ${c.coin}${c.kind==='tausch'?' → '+fmtNum(c.qty2)+' '+c.coin2:''}${c.kind==='uebertrag'&&c.qtyIn>0?` <span class="small">angekommen ${fmtNum(c.qtyIn)}</span>`:''}</span>
     <span>${vgCxEuro(c)}</span><span class="small">${gl('herkunft','Herkunft')}: ${src}</span>${c.note?`<span class="small">${esc(c.note)}</span>`:''}
-    <span class="vgbtns"><button type="button" class="btn" data-cxe="${c.id}" title="Bearbeiten" aria-label="Eintrag bearbeiten">✎</button><button type="button" class="btn danger" data-cxd="${c.id}" title="Löschen" aria-label="Eintrag löschen">×</button></span></div>
+    ${cf?'':`<span class="vgbtns"><button type="button" class="btn" data-cxe="${c.id}" title="Bearbeiten" aria-label="Eintrag bearbeiten">✎</button><button type="button" class="btn danger" data-cxd="${c.id}" title="Löschen" aria-label="Eintrag löschen">×</button></span>`}</div>
+    ${cf?`<p class="small">${CALC_FEE_TXT[cf]}</p>`:''}
     ${ms.length?`<div class="msg bad">Eintrag unvollständig, bitte mit ✎ ergänzen. Es fehlt: ${esc(ms.join(', '))}.</div>`:''}${f&&f.xfer!=null?`<p class="small">${xferText(f.xfer,c.other)}${ocEstT(f.estV)}</p>`:''}${(c.kind==='tauschein'||c.kind==='tauschaus')&&!(c.nft&&!DEw)&&!taxOff()&&!ms.length?`<p class="small"><button type="button" class="zlink" data-ocgo="${c.id}">↑ Zu „Andere Coins“</button></p>`:''}${f&&f.give?`<p class="small">${giveText(f,c,DEw)}</p>`:''}
     ${c.kind==='eingang'&&cxEst(c)?info(giftHint(true)):''}${DEw&&c.kind==='eingang'&&!c.gd&&!c.estD?info('Kaufdatum der schenkenden Person fehlt, mit ✎ ergänzen. Bis dahin beginnt die Haltefrist am Geschenktag (geschätzt).'):''}
     ${!DEw&&((c.kind==='hatte'&&c.date&&c.date<AT_ALT)||(c.kind==='eingang'&&c.gd&&c.gd<AT_ALT))?info('Kaufdatum vor dem 01.03.2021: '+ALT_TXT):''}</div>`}
@@ -7102,7 +7135,7 @@ function vgAdrT(v){const M=v.mv.map(k=>S.wtx[k]).filter(Boolean).sort((a,b)=>a.t
   if(o.from===i.to&&o.net!==i.net)return vgAr(esc(wNet(o.net)),esc(wNet(i.net)));if(o.from===i.to)return `in <span class="nw">${wShort(o.from)}</span>`;return vgAr(`<span class="nw">${wShort(o.from)}</span>`,wShort(i.to))}
 // ✎ rechts: Haupteintrag, Tag-Fenster, bei offenen Bewegungen „Entscheiden“, sonst aufklappen. Rückgabe [Art, Wert, Text]
 // Ab 0.93 (W-155): Die Gebühr einer Brücke (brk) zählt für ✎ nicht als Eintrag, die Brücke öffnet mit und ohne Gebühr das Fenster „Bewegung“
-function vgEdit(v){const cx=v.cx.filter(id=>{const c=cxById(id);return !(c&&c.brk)});return cx.length?['c',cx[0],'Eintrag bearbeiten']:v.tag.length?['t',v.tag[0],'Tag-Zeile bearbeiten']:v.k==='open'?['d',v.mv[0],'Entscheiden']:v.bxo?['x',v.bxo,'Entscheiden']:['o',v.id,'Bewegung ansehen']}
+function vgEdit(v){const cx=v.cx.filter(id=>{const c=cxById(id);return !(c&&(c.brk||cxCalcFee(c)))});return cx.length?['c',cx[0],'Eintrag bearbeiten']:v.tag.length?['t',v.tag[0],'Tag-Zeile bearbeiten']:v.k==='open'?['d',v.mv[0],'Entscheiden']:v.bxo?['x',v.bxo,'Entscheiden']:['o',v.id,'Bewegung ansehen']}
 // Ab 0.47 (3.3): offene Zeilen (offene Bewegung, offene Zeile der Börse, Tag-Zeile mit offener Wallet) haben statt ✎ den Knopf „Erledigen“: er
 // öffnet dieselbe Karte wie in „Noch offen“
 const vgEH=v=>{const T=VG_TD.get(v.id);if(T&&T.done)return `<button type="button" class="btn sm vgdo" data-vtd="${esc(T.it.id)}" aria-label="Erledigen: ${esc(vgWas(v))}${v.d?' vom '+fD(v.d):''}">Erledigen</button>`;
@@ -7224,7 +7257,7 @@ $('vg-list').addEventListener('click',e=>{
   const ce=e.target.closest('[data-cxe]');if(ce){openCx(+ce.dataset.cxe);return}
   // Ab 0.39 über die feste id. Ist der Eintrag mit einer Bewegung verknüpft, ist sie danach ignoriert (wFix); hängt eine Gebühr aus der Datei daran: Frage.
   // Ab 0.47 (Regel 9): Rückfragen im eigenen Fenster
-  const cd=e.target.closest('[data-cxd]');if(cd){const id=+cd.dataset.cxd;const run=()=>{const c=cxById(id);if(!c)return;
+  const cd=e.target.closest('[data-cxd]');if(cd){const id=+cd.dataset.cxd;{const k=cxCalcFee(cxById(id));if(k){toast(CALC_FEE_TXT[k]);return}}const run=()=>{const c=cxById(id);if(!c)return;
       // Ab 0.50 Nachtrag 5: Die Gebühr aus der Wallet-Datei geht immer mit, die Rückfrage sagt das („Diesen Übertrag löschen?“)
       const fq=cxFeeTxt(id),q=[fq?'Diesen Übertrag löschen?':'Diesen Eintrag löschen?',[fq,c.wk?'Die Bewegung aus der Datei ist danach „ignoriert“. Mit „wieder öffnen“ holst du sie zurück.':''].filter(Boolean).join('\n')].filter(Boolean).join('\n\n');
       if(!askOk('del:'+id,q,run,{title:'Eintrag löschen',ok:'Löschen',danger:true,more:ASK_BK}))return;
@@ -8596,7 +8629,10 @@ const CX_PHO='<option value="" disabled data-ph>bitte wählen</option>',CX_PH=/<
 function cxKindMenu(dir){$('cx-kind').innerHTML='<option value="" disabled>bitte wählen</option>'+CX_MENU.filter(([d])=>!d||!dir||d===dir).map(([,g,L])=>`<optgroup label="${g}">${L.map(([v,t,dd])=>`<option value="${v}"${dd?` data-dir="${dd}"`:''}>${t}</option>`).join('')}</optgroup>`).join('')}
 cxKindMenu('');
 function openCx(id,pre){
-  const c=id!=null?cxById(id):null;if(id!=null&&!c)return;EDIT=c?id:null;needReset($('cx-form'));
+  const c=id!=null?cxById(id):null;if(id!=null&&!c)return;
+  // Ab 0.94: berechnete Gebühr nicht im Formular (kein ✎), falls ein alter Weg sie doch öffnet
+  {const k=cxCalcFee(c);if(k){toast(CALC_FEE_TXT[k]);return}}
+  EDIT=c?id:null;needReset($('cx-form'));
   CX_DIR=!c&&pre&&pre.dir||'';cxKindMenu(CX_DIR);CX_CTX=!c&&pre&&!pre.wk&&pre.dir&&pre.wallet?{dir:pre.dir,w:pre.wallet}:null;cxSugFill(CX_EMB?null:c);
   // Ab 0.46: bxo = Antwort auf einen offenen Zugang oder Abgang der Börse (S.bxOpen)
   CX_META=!c&&pre&&(pre.wk||pre.bxo)?Object.assign({wk:pre.wk||'',time:pre.time||''},pre.bxo?{bxo:pre.bxo}:{}):null;
@@ -11675,7 +11711,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.93',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.94',VDATE='05.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -11950,7 +11986,9 @@ function todoOpen(at){if(S.ui.tab!=='wallet'){S.ui.tab='wallet';save();render()}
 let MV_ID=null;
 function mvRender(){const v=vgBuild(S).find(v=>v.id===MV_ID);if(!v){$('mv-body').innerHTML='<p>Diese Bewegung gibt es nicht mehr.</p>';return}const PM=wPairMap(),st=vgSt(v);
   $('mv-t').textContent=`${vgWas(v)}${v.d?' vom '+fD(v.d):''}`;
-  $('mv-body').innerHTML=`<p>${vgFT(v)} · ${vgQ(v)} · ${vgStH(v,st)}</p>${vgMvTab(v.mv,PM)}${v.mv.length===1?mvDelH(v.mv[0]):`<div class="tddel"><p class="small">Kommt aus deinen Wallet-Dateien. Deshalb kannst du sie nicht löschen, beim nächsten Einlesen wären sie wieder da. Ist etwas falsch verbunden, nimm „Verknüpfung lösen“.</p><div class="row"><button type="button" class="btn" data-dtfiles>Ganze Datei entfernen …</button></div></div>`}`}
+  // Ab 0.94: Kopf mit „ · “ vor „Gebühr“; Status nur als Begriff, wenn beide Seiten der Brücke bzw. des Umtauschs im Fenster stehen (der Kopf sagt es schon)
+  const mvS=new Set(v.mv),kurz=new Set(v.mv.filter(k=>{const m=S.wtx[k];return m&&m.st==='int'&&((m.brg&&mvS.has(m.brg))||(m.swap&&mvS.has(m.swap)))}));
+  $('mv-body').innerHTML=`<p>${vgFT(v)} · ${vgQ(v,{fenster:1})} · ${vgStH(v,st)}</p>${vgMvTab(v.mv,PM,{kurz})}${v.mv.length===1?mvDelH(v.mv[0]):`<div class="tddel"><p class="small">Kommt aus deinen Wallet-Dateien. Deshalb kannst du sie nicht löschen, beim nächsten Einlesen wären sie wieder da. Ist etwas falsch verbunden, nimm „Verknüpfung lösen“.</p><div class="row"><button type="button" class="btn" data-dtfiles>Ganze Datei entfernen …</button></div></div>`}`}
 function mvOpen(id){MV_ID=id;{const v=vgBuild(S).find(x=>x.id===id);if(v&&vgSeen(v)){save();render()}}mvRender();openModal('mv-modal')}
 // „Ganze Datei entfernen …“: Bereich „Eingelesene Dateien“ in „＋ Daten“
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-dtfiles]');if(!b)return;const v=b.dataset.dtfiles||'',i=v.lastIndexOf('|');
