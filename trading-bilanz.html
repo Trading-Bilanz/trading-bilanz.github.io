@@ -31,8 +31,10 @@
      farbige Texte mindestens 4,5 zu 1. Werte und Prüfung im Bericht zu 0.33. */
   --bg:#f6f5f2; --card:#ffffff; --ink:#1a1a1a; --ink2:#373d43; --muted:#454b51;
   --line:#e2e0da; --accent:#2a63a6; --accent-soft:#e6eef8; --neg:#c2410c; --pos:#1f7a4d; --neg-gs:#b03a0b;
-  --warn-bg:#fff4dc; --warn-ink:#7a4f00; --ok-bg:#e5f4ec; --ok-ink:#1f6b44; --bad-bg:#fde8e1; --bad-ink:#9a3412;
-  /* Stand-Kasten im Reiter Kurse (0.35): Text mindestens 7 zu 1 auf --ok-bg bzw. --warn-bg (7,2 und 7,2) */
+  /* Ab 0.98 (Florians Auftrag): eine gelbe Fläche für alle (--warn-bg, Gelb des Kastens aus 0.97, vorher #fff4dc / dunkel #3a2f14). Sie gilt für
+     .msg.warn, den Stand-Kasten im Reiter Kurse und den gelben Kasten der Begrüßung (.ystr). Schrift: --warn-ink hell 6,6 : 1, dunkel 8,6 : 1 */
+  --warn-bg:#fff7cc; --warn-ink:#7a4f00; --ok-bg:#e5f4ec; --ok-ink:#1f6b44; --bad-bg:#fde8e1; --bad-ink:#9a3412;
+  /* Stand-Kasten im Reiter Kurse (0.35): Text mindestens 7 zu 1 auf --ok-bg bzw. --warn-bg (7,2 und ab 0.98 7,3) */
   --st-ok-ink:#1a5a39; --st-warn-ink:#714900;
   /* Ab 0.45: Signalfarben (GESTALTUNG.md Regel 4): rot = fehlt für die Steuer, gelb = bitte prüfen, grau = gut zu wissen */
   --sig-r:#c2410c; --sig-y:#d99a00; --sig-y-ink:#1a1a1a; --sig-g:#8a9097;
@@ -44,8 +46,9 @@
   /* Knöpfe (Blau, in hell und dunkel gleich) und Rahmen der Reiter (Gold) */
   --btn:#2f6db5; --btn-dk:#245891;
   --tab-line:#C49A55;
-  /* Ab 0.97: gelber Streifen der Begrüßung offline (.ystr), gelber als --sig-y/--warn-bg (Farbton 50° statt 42°), Text 16,1 : 1, Link 5,66 : 1 */
-  --ystr-line:#ccaa00; --ystr-bg:#fff7cc;
+  /* Ab 0.97: gelber Streifen der Begrüßung offline (.ystr), gelber als --sig-y (Farbton 50° statt 42°), Text 16,1 : 1, Link 5,66 : 1.
+     Ab 0.98 ist seine Fläche --warn-bg (dieselbe für alle gelben Flächen), hier nur noch der Rand */
+  --ystr-line:#ccaa00;
   /* Ab 0.57: Sand für „In der Liste zeigen“ (springt in „Alle Vorgänge“), keine Bedeutung wie OK, Warnung oder Art */
   --go-line:#a8946f; --go-bg:#f7f2e9; --go-dk:#8a7653;
   --radius:10px;
@@ -58,7 +61,7 @@
   :root{
     --bg:#15181b; --card:#1e2226; --ink:#f2f4f6; --ink2:#cfd5db; --muted:#bec5cc;
     --line:#30363c; --accent:#6ea3e0; --accent-soft:#22324a; --neg:#f08a5d; --pos:#5cc08d; --neg-gs:#f08a5d;
-    --warn-bg:#3a2f14; --warn-ink:#f2cf80; --ok-bg:#163326; --ok-ink:#8fdcb2; --bad-bg:#3d1f16; --bad-ink:#f5a88a;
+    --warn-bg:#37321a; --warn-ink:#f2cf80; --ok-bg:#163326; --ok-ink:#8fdcb2; --bad-bg:#3d1f16; --bad-ink:#f5a88a;
     --st-ok-ink:#8fdcb2; --st-warn-ink:#f2cf80;
     --sig-r:#f08a5d; --sig-y:#f2c14e; --sig-y-ink:#15181b; --sig-g:#8d959c; --sig-r-txt:#f5a07a;
     --k-in:#3cc4b4; --k-out:#f0846c; --k-sw:#b18cf0; --k-tag:#6ea3e0; --k-mu:#99a1a8; --sig-y-txt:#f2c14e;
@@ -66,7 +69,7 @@
     --on-mid:#15181b;
     --btn:#2f6db5; --btn-dk:#245891;
     --tab-line:#D4B27A;
-    --ystr-line:#e8cf4a; --ystr-bg:#37321a;
+    --ystr-line:#e8cf4a;
     --go-line:#9c8a6a; --go-bg:#2a251e; --go-dk:#b8a582;
     color-scheme:dark;
   }
@@ -93,7 +96,7 @@ h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
 /* Herunterladen-Hinweise (0.35): nur in der Online-Version (html.online, gesetzt bei http/https), in der heruntergeladenen Datei nie */
 html:not(.online) .onl{display:none!important}
 /* Ab 0.68 (Florians Regel): kein „Herunterladen“ im Kopf, „Erste Schritte“ steht auch online am Handy neben dem Titel. Herunterladen nur im Reiter „Sicherung“ und im Kästchen der Begrüßung */
-#intro-dl{margin:0 0 16px}
+#intro-dl{margin:14px 0}
 /* Begrüßung online: Den Satz „Dort kannst du sie auch herunterladen …“ sagt schon der Kasten #intro-dl darüber */
 /* Ab 0.77 (Teil 1): Begrüßung. Zeile nur in der heruntergeladenen Datei (.offl); Kästchen zur Steuer hebt sich ab, ohne Signalfarbe;
    der gewählte Knopf ist gefüllt und hat ✓; „Ohne Einführung starten“ lässt „Erste Schritte“ dreimal sanft aufleuchten (box-shadow, nichts verschiebt sich) */
@@ -114,8 +117,8 @@ p.idat{margin:6px 0 0}
 #intro-tax>.dstr{margin:8px 0 10px}
 .dstr,.ystr{border-radius:8px;padding:6px 12px;font-size:var(--fs-s);color:var(--ink);margin:12px 0}
 .dstr{border:2px solid var(--neg);background:var(--bad-bg)}
-/* Ab 0.97 (Florians Wunsch): gelber als --sig-y und --warn-bg (die gehen ins Orange), eigene Farben nur für diesen Streifen, hell und dunkel */
-.ystr{border:2px solid var(--ystr-line);background:var(--ystr-bg)}
+/* Ab 0.97 (Florians Wunsch): gelber als --sig-y (geht ins Orange), eigener Rand. Ab 0.98 Fläche --warn-bg wie alle gelben Flächen */
+.ystr{border:2px solid var(--ystr-line);background:var(--warn-bg)}
 .dstr p,.ystr p{margin:0}
 /* Drei Knöpfe gleich breit nebeneinander; passen sie nicht in eine Zeile (Handy), stehen sie untereinander in voller Breite. Kein Knopf bricht um. */
 #intro-land{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 12px}
@@ -127,7 +130,7 @@ p.idat{margin:6px 0 0}
 #btn-steps.pulse{animation:stpulse 1.1s ease-out 3}
 @media (prefers-reduced-motion:reduce){#btn-steps.pulse{animation:none;box-shadow:0 0 0 3px var(--accent)}}
 #intro-dl p{margin:0}
-/* Ab 0.97 (Florians Auftrag): Hinweis zum Weiterscrollen in der Begrüßung. Steht in der festen Knopfleiste (.mft, sticky) und ragt darüber in den
+/* Ab 0.97 (Florians Auftrag): Hinweis zum Weiterscrollen in der Begrüßung, ab 0.98 in allen Fenstern mit fester Knopfleiste. Steht in der festen Knopfleiste (.mft, sticky) und ragt darüber in den
    scrollbaren Bereich: Verlauf in die Farbe des Fensters (--card, hell und dunkel) und ein kleiner Pfeil. Sichtbar nur, solange unten noch Inhalt kommt
    (scrollHint). Der Pfeil scrollt ein Stück nach unten. Ohne Mausklick unsichtbar für Vorleseprogramme (aria-hidden), weil das Fenster ohnehin scrollt. */
 .shint{position:absolute;left:0;right:0;bottom:calc(100% + 1px);height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;
@@ -819,6 +822,8 @@ button.dtt.on{border-color:var(--accent);background:var(--accent-soft)}
 /* Ab 0.54 (3): Kopfleiste (h2.sah, ×) und Knopfleiste unten liegen über den stehenden Titeln und Spaltenköpfen der Karten (.sthd 4, mit offenem Menü 5) */
 .modal .box>.mft{position:sticky;bottom:-22px;z-index:7;background:var(--card);margin:12px -26px -22px;padding:10px 26px 14px;border-top:1px solid var(--line);border-radius:0 0 14px 14px;gap:8px;flex-wrap:wrap}
 .modal .box>.mft:empty{display:none}
+/* Ab 0.98: eine Leiste nur mit dem Hinweis zum Weiterscrollen gilt als leer */
+.modal .box>.mft:not(:has(>:not(.shint))){display:none}
 .actin{display:none!important}
 .tprev.hl{animation:hl 2.2s ease-out}
 /* Ab 0.43: Zähler im Titel nur bei zugeklappter Karte, Folgefehler und Kleinkram eingeklappt, Rest bei Börsen dezent */
@@ -1704,6 +1709,13 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <li><b>Grafiken zu deinen Zahlen:</b> Verlauf, nach Wochentag, Verteilung deiner Trades und mehr</li>
   </ul>
   <p class="idat"><b>Deine Daten bleiben bei dir</b> in diesem Browser.</p>
+  <!-- Nur online: früh herunterladen, weil Online-Version und Datei getrennt speichern. Ab 0.98 (Florians Wortlaut) kürzer und direkt unter
+       „Deine Daten bleiben bei dir“, vor der Steuer-Box; die Adresse ist ein Link -->
+  <div class="msg info onl" id="intro-dl"><p>Lieber ganz ohne Internet? Lade dir das Tool herunter. Deine Daten nimmst du mit einer Sicherung mit, im Reiter „Sicherung“.</p>
+    <p><b>Lade die Datei nur hier herunter</b>, von <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p>
+    <div class="row"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>
+  <!-- Nur in der heruntergeladenen Datei (.offl), ab 0.78 als gelber Streifen (.ystr), ab 0.97 ohne 🛡️, ab 0.98 an derselben Stelle wie online das blaue Kästchen -->
+  <div class="ystr offl"><p><b>Neue Versionen und das Original:</b> <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p></div>
   <!-- Ab 0.78: Überschrift im Kästchen, Knöpfe gleich breit (am Handy untereinander), Haftung als roter Streifen (.dstr) -->
   <div class="ibox" id="intro-tax">
     <h3 id="intro-tax-t">Wo zahlst du Steuern?</h3>
@@ -1714,12 +1726,6 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <p class="small">Du kannst das jederzeit im Reiter „Steuer“ ändern.</p>
     <div class="dstr"><p>Die Steuerangaben sind mit KI recherchiert und ohne Gewähr. <b>Dieses Tool ist keine Steuerberatung.</b></p></div>
   </div>
-  <!-- Nur online: früh herunterladen, weil Online-Version und Datei getrennt speichern. Ab 0.77 steht der Satz zum Original im Kästchen, ab 0.78 mit fettem Anfang -->
-  <div class="msg info onl" id="intro-dl"><p>Du kannst das Tool auch herunterladen und ganz ohne Internet nutzen. Später findest du den Knopf dazu im Reiter „Sicherung“. Wichtig: Die heruntergeladene Datei startet ohne deine Daten aus der Online-Version. Mitnehmen kannst du sie mit einer Sicherung, im selben Reiter.</p>
-    <p><b>Lade die Datei nur hier herunter,</b> von <span class="nw">trading-bilanz.github.io</span>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p>
-    <div class="row"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>
-  <!-- Nur in der heruntergeladenen Datei (.offl), ab 0.78 als gelber Streifen (.ystr), ab 0.97 ohne 🛡️ -->
-  <div class="ystr offl"><p><b>Neue Versionen und das Original:</b> <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p></div>
   <!-- Ab 0.97: Hinweis zum Weiterscrollen (.shint, scrollHint): Verlauf und ↓ über der Knopfleiste, nur solange unten noch Inhalt kommt -->
   <div class="row" style="justify-content:flex-end"><div class="shint" aria-hidden="true"><button type="button" class="shint-a" tabindex="-1" title="Weiter nach unten">↓</button></div><button type="button" class="btn" id="btn-intro-skip">Ohne Einführung starten</button><button type="button" class="btn primary" id="btn-intro-steps">Erste Schritte</button></div>
 </div></div>
@@ -11755,7 +11761,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.97',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.98',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -11884,23 +11890,38 @@ function goTo(tab,id){
 // Nach jedem Öffnen und Schließen aufrufen (modalOn, openModal, closeModal).
 function modalLock(){const on=!!document.querySelector('.modal.on'),r=document.documentElement;if(on===r.classList.contains('mlock'))return;
   if(on){r.style.setProperty('--sbw',Math.max(0,window.innerWidth-r.clientWidth)+'px');r.classList.add('mlock')}else{r.classList.remove('mlock');r.style.removeProperty('--sbw')}}
-function modalOn(el,on){el.classList.toggle('on',on);modalLock()}
+function modalOn(el,on){el.classList.toggle('on',on);modalLock();
+  // Ab 0.98: Hinweis zum Weiterscrollen beim Öffnen prüfen (scrollHint)
+  const b=on&&el.querySelector('.box');if(b&&b._shint)b._shint()}
 // Ab 0.97: Hinweis zum Weiterscrollen (.shint in der Knopfleiste). Sichtbar, solange unter dem sichtbaren Bereich noch mehr als 4 px Inhalt kommen.
-// Prüft beim Scrollen, bei jeder Größenänderung des Fensters und seines Inhalts (ResizeObserver, auch beim Öffnen und bei Hinweisen an Pflichtfeldern).
-// Der Pfeil scrollt um gut die Hälfte der sichtbaren Höhe. Gibt die Prüffunktion zurück. Bisher nur in der Begrüßung.
-function scrollHint(box){const h=box&&box.querySelector('.shint');if(!h)return()=>{};
-  const upd=()=>h.classList.toggle('on',box.clientHeight>0&&box.scrollHeight-box.clientHeight-box.scrollTop>4);
-  box.addEventListener('scroll',upd,{passive:true});window.addEventListener('resize',upd);
-  if(window.ResizeObserver){const ro=new ResizeObserver(upd);ro.observe(box);[...box.children].forEach(c=>ro.observe(c))}
-  h.querySelector('button').addEventListener('click',()=>box.scrollBy({top:Math.max(80,Math.round(box.clientHeight*.6)),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}));
-  upd();return upd}
+// Ab 0.98 (Florians Auftrag) in allen Fenstern mit fester Knopfleiste (.mft, sticky), ein Mechanismus für alle: scrollHint setzt .shint als erstes Kind
+// in die Knopfleiste (die Begrüßung hat ihn schon im HTML). Schreibt das Tool die Leiste neu („＋ Daten“, dtFoot), setzt ihn upd wieder hinein.
+// Scrollt ein Bereich im Fenster selbst (SHINT_IN, „Kontostände prüfen“), zählt er mit; der Pfeil scrollt zuerst das Fenster, dann diesen Bereich.
+// Prüft beim Scrollen (auch innen), bei jeder Größenänderung von Fenster und Inhalt (ResizeObserver), bei neuem Inhalt (MutationObserver) und beim
+// Öffnen (modalOn). Der Pfeil scrollt um gut die Hälfte der sichtbaren Höhe. Nicht in der Rückfrage (#ask-box): Dort scrollt die Knopfleiste mit.
+const SHINT_HTML='<div class="shint" aria-hidden="true"><button type="button" class="shint-a" tabindex="-1" title="Weiter nach unten">↓</button></div>',SHINT_IN='.kbw';
+function scrollHint(box){const mft=box&&box.querySelector(':scope>.mft');if(!mft)return()=>{};
+  let h=mft.querySelector(':scope>.shint');if(!h){mft.insertAdjacentHTML('afterbegin',SHINT_HTML);h=mft.firstElementChild}
+  const rest=el=>el.clientHeight>0?el.scrollHeight-el.clientHeight-el.scrollTop:0,
+    areas=()=>[box,...[...box.querySelectorAll(SHINT_IN)].filter(el=>el.getClientRects().length)];
+  let raf=0;const upd=()=>{if(raf){cancelAnimationFrame(raf);raf=0}if(h.parentNode!==mft)mft.prepend(h);h.classList.toggle('on',areas().some(el=>rest(el)>4))},
+    later=()=>{if(!raf)raf=requestAnimationFrame(upd)};
+  box.addEventListener('scroll',upd,{passive:true,capture:true});window.addEventListener('resize',later);
+  const seen=new WeakSet(),ro=window.ResizeObserver?new ResizeObserver(later):null,
+    obs=()=>{if(ro)for(const c of [box,...box.children])if(!seen.has(c)){seen.add(c);ro.observe(c)}};obs();
+  if(window.MutationObserver)new MutationObserver(()=>{obs();later()}).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['open','hidden']});
+  h.querySelector('button').addEventListener('click',()=>{const el=areas().find(x=>rest(x)>4);
+    if(el)el.scrollBy({top:Math.max(80,Math.round(el.clientHeight*.6)),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});
+  box._shint=upd;upd();return upd}
 document.querySelectorAll('.modal .box').forEach(b=>wheelContain(b));
 // Ab 0.44: feste Knopfleiste unten in jedem Fenster. Fenster ohne eigene (.mft): Ist das letzte Element eine Zeile mit Knöpfen, wird sie zur
 // Leiste, sonst kommt „Schließen“ dazu.
 document.querySelectorAll('.modal .box').forEach(b=>{if(b.querySelector(':scope>.mft'))return;const l=b.lastElementChild;
   if(l&&l.classList.contains('row')&&l.querySelector('button')&&!l.querySelector('input,select,textarea')){l.classList.add('mft');l.style.marginTop='';return}
   b.insertAdjacentHTML('beforeend','<div class="row mft"><button type="button" class="btn" data-mclose>Schließen</button></div>')});
-const INTRO_HINT=scrollHint($('intro-modal').querySelector('.box'));
+// Ab 0.98: Hinweis zum Weiterscrollen in allen Fenstern außer der Rückfrage (siehe scrollHint)
+document.querySelectorAll('.modal .box').forEach(b=>{if(b.parentNode.id!=='ask-box')scrollHint(b)});
+const INTRO_HINT=$('intro-modal').querySelector('.box')._shint||(()=>{});
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-mclose]')){if(MODAL&&MODAL.id==='td-modal')tdLeave(closeModal);else closeModal()}});
 // Fenster mit × („Erste Schritte“, „Datenschutz“, Anleitungen): schließen mit ×, Esc oder Klick daneben, danach Fokus zurück auf den Knopf.
 // Es ist immer nur ein Fenster offen (openModal schließt das vorige).
