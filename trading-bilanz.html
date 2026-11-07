@@ -1295,7 +1295,7 @@ tr.cxx td{font-size:var(--fs-s);color:var(--ink2);padding-top:0}
 input.wbin{width:19ch;text-align:right}
 #btn-estval{padding:6px 11px;font-size:17px;line-height:1.1}
 /* Ab 0.74 (5.2): Karte „Andere Coins“: am Handy Wallet unter dem Datum, Menge unter der Richtung, Status unter dem Wert */
-#t-oc{width:100%}#t-oc td{white-space:normal}.ocm{display:none}.ocv{display:block}.ocv b{font-size:1.12em}.ocw{display:block}#t-oc td .golist{margin:0;white-space:nowrap}.ocbt{display:flex;justify-content:center;align-items:center;gap:2px;margin-top:4px}#t-oc button.vge{width:2em;min-height:32px}#t-oc .vgsz{display:block}.vgoc{margin:0 0 6px}
+#t-oc{width:100%}#t-oc td{white-space:normal}.ocm{display:none}.ocv{display:block}.ocv b{font-size:1.12em}.ocw{display:block}#t-oc td .golist{margin:0;white-space:nowrap}#oc-card.ocwr #t-oc td .golist{white-space:normal}#oc-card.ocwr #t-oc td .golist::before{content:"→\00a0"}.ocbt{display:flex;justify-content:center;align-items:center;gap:2px;margin-top:4px}#t-oc button.vge{width:2em;min-height:32px}#t-oc .vgsz{display:block}.vgoc{margin:0 0 6px}
 @media(max-width:700px){#t-oc .ocpc,#oc-card .hcopy .ocpc{display:none}#t-oc .ocm,#oc-card .hcopy .ocm{display:block}#t-oc td{padding-left:4px;padding-right:4px}}
 /* Ab 0.74 (2.3): Rechenhilfe */
 .cxrh{display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center}.cxrh input{width:11ch}#cx-rhs{margin:4px 0 0}#cx-rhs:empty{display:none}
@@ -7198,6 +7198,16 @@ function renderOc(C,DEw,rg){const card=$('oc-card'),has=S.cx.some(c=>(c.kind==='
     return `<tr data-oc="${c.id}"><td class="l">${dS(c.date)}<span class="small ocm">${w}</span></td><td class="ocpc">${w}</td><td><span class="nw">${r.dir}</span><span class="small ocm">${r.q}</span></td><td class="ocpc">${r.q}</td><td><span class="ocv">${r.lab} <b class="nw">${r.val!=null&&isFinite(r.val)?fE.format(r.val):'–'}</b>${r.suf}</span><span class="small ocw">${r.woher}</span><span class="ocm">${ST(r)}</span></td><td class="ocpc">${ST(r)}</td></tr>`}).join(''):`<tr><td colspan="6" class="small">In diesem Zeitraum gibt es keinen Tausch mit anderen Coins.</td></tr>`);
   $('oc-foot').textContent=DEw?'Gewinne und Verluste anderer Coins rechnet dieses Tool nicht.':'Gewinne und Verluste anderer Coins gehören in dieselbe Steuererklärung. Dieses Tool rechnet sie nicht.';
   if(!card.classList.contains('nohc'))hcFix(card)}
+// Ab 0.101: Knopf in der Karte „Andere Coins“ nach dem Platz, den die Tabelle wirklich hat (Breite, Schriftgröße, Schrift): normal
+// „In der Liste zeigen“; ragt die Tabelle aus der Karte, „In Liste zeigen“; reicht auch das nicht, bricht es in zwei Zeilen um (.ocwr,
+// „→ In Liste“ bleibt zusammen, geschützte Leerzeichen). ✎ bleibt daneben, Knöpfe werden nicht kleiner, Datum und Menge brechen nie um.
+// Aufgerufen von hcFix, bevor es die Spalten misst (so wirkt auch dessen ResizeObserver: Drehen, Aufklappen, größere Schrift).
+const OC_BT=['In der Liste zeigen','In\u00a0Liste zeigen'];
+function ocFit(){const card=$('oc-card'),sc=card.querySelector('.tscroll'),tb=$('t-oc'),B=[...tb.querySelectorAll('.golist[data-ocv]')],
+    set=t=>B.forEach(b=>{if(b.textContent!==t)b.textContent=t}),zu=()=>sc.clientWidth>0&&tb.offsetWidth>sc.clientWidth+0.5;
+  card.classList.remove('ocwr');set(OC_BT[0]);
+  if(!B.length||!zu())return;
+  set(OC_BT[1]);if(zu())card.classList.add('ocwr')}
 document.addEventListener('click',e=>{if(!e.target.closest)return;
   const v=e.target.closest('[data-ocv]');if(v){e.preventDefault();vgJump('c:'+v.dataset.ocv);return}
   // Ab 0.75 (3.1): ✎ öffnet dasselbe Formular wie ✎ in „Alle Vorgänge“
@@ -11923,7 +11933,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.100',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.101',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -11957,6 +11967,7 @@ function hcFix(c,retry){
   c.classList.remove('hc');const g=tb.querySelector('colgroup');if(g)g.remove();cp.innerHTML='';cp.style.transform='';
   tb.style.tableLayout='';tb.style.width='';cp.style.tableLayout='';cp.style.width='';
   if(c.id==='acc-card')fitKonten(); // Report-Namen erst ein-, bei Platzmangel zweizeilig, dann messen
+  if(c.id==='oc-card')ocFit(); // ab 0.101: „In der Liste zeigen“, bei Platzmangel „In Liste zeigen“, dann zweizeilig
   const head=tb.rows[0];
   if(!c.classList.contains('nohc')&&!c.classList.contains('closed')&&sc.offsetWidth&&head){
     // Ab 0.50 (1.5): in „Bestand jetzt“ ist am Handy die Spalte „Coin“ versteckt; versteckte Zellen bilden keine Spalte und bekommen kein <col>
