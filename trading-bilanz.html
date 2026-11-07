@@ -3565,7 +3565,7 @@ function addrAssign(S,a,to,own,ask,fr){const x=S.addr[a],toTag=to==='tag',toPay=
   // Ab 0.57: dieselbe Rückfrage (addrMvTxt), sobald sich die Wallet einer Adresse mit Bewegungen ändert, egal ob eigene Adresse oder Adresse der
   // Börse. Ausnahmen: Eine Adresse, die das Adressbuch nicht kennt und nur diese eine Bewegung hat, kommt ohne Frage hinein (wie cxAddrPlan);
   // „Entfernen“ hat seine eigene Rückfrage; nach der Frage zum Namen keine zweite.
-  // Ab 0.104 (W-309 entfernt): Eine eigene Adresse wird nie über diesen Weg „Unbekannt“ (das Menü bietet es nicht, × im Fenster der Wallet hat seine eigene Rückfrage), darum keine Frage dazu
+  // Ab 0.107 (W-309 entfernt): Eine eigene Adresse wird nie über diesen Weg „Unbekannt“ (das Menü bietet es nicht, × im Fenster der Wallet hat seine eigene Rückfrage), darum keine Frage dazu
   const mvQ=changed&&n&&!unmQ&&!toUnk&&(x&&x.own||oldW!==newW&&(!!x||n>1));
   // Ab 0.50 Nachtrag 6 Zusatz: eigene Adresse wird „Fremd“: sagt wie W17, was mit den Bewegungen passiert (mvGoneTxt), Titel „Adresse ändern“ über askCb
   if(mvQ){const q=x&&x.own&&toFr?`Adresse ${a.slice(0,6)}…${a.slice(-4)} gehört zur Wallet „${x.wallet}“. Als fremde Adresse „${fr}“ merken?\n\n${mvGoneTxt(S,[a],[a],true)}`:addrMvTxt(S,a,nm);if(!ask(q))return false}
@@ -5589,7 +5589,7 @@ function wAskHTML(k,m,q){const K=esc(k),b=(a,t,id,cls)=>`<button type="button" c
   const pick=(L,a,f,none,ids)=>L.length>1?sugChH(L.map(f),i=>b(a,'Übernehmen',L[i].id,'primary'),b(none,'Keiner davon',ids)):`<ul class="sgc">${L.map(x=>`<li>${b(a,'Übernehmen',x.id,'primary')} <span>${f(x)}</span></li>`).join('')}</ul><div class="row">${b(none,'Nein',ids)}</div>`;
   if(q.ty==='sus')return sugBox({fq:1,frage:`Soll das Tool diese ${q1} ignorieren?`,name:'Ignorieren',kurz:'sehr kleiner Betrag',cls:'warn',warum:[[ml[0],`${ml[1]}. Das ist unter 0,01 ${esc(m.coin)} und kann ein Betrugsversuch mit einer ${gl('lockadr','Lockadresse')} sein.`]],wenn:'die Bewegung zählt nicht.',btns:`<div class="row">${b('ign','Ignorieren',null,'primary')}</div>`});
   // Ab 0.42: mehrere Überträge für die Eingangsseite
-  // Ab 0.104 (W-90 entfernt): keine eigene Zeile „Als Zahlung anlegen“ mehr für die Frage pay. „Noch offen“ nimmt sie aus, Kartenzahlungen legt das Tool seit 0.49 selbst an.
+  // Ab 0.107 (W-90 entfernt): keine eigene Zeile „Als Zahlung anlegen“ mehr für die Frage pay. „Noch offen“ nimmt sie aus, Kartenzahlungen legt das Tool seit 0.49 selbst an.
   if(q.ty==='pay')return '';
   if(q.ty==='xin')return sugBox({fq:1,multi:q.l.length,frage:q.l.length>1?'Zu welchem Übertrag gehört dieser Eingang?':`Ist das der Eingang deines Übertrags von ${esc(q.l[0].wallet)} vom ${dm(q.l[0].date)}?`,name:'Eingang eines Übertrags',kurz:q1,warum:[ml,['','Zu diesen Überträgen fehlt noch die Seite, die ankam.']],wenn:'die Bewegung ist die Seite, die ankam.',
     btns:pick(xinOrd(m,q.l),'xpick',c=>xinTxt(k,m,c),'xnone',q.l.map(c=>c.id).join(','))});
@@ -6218,7 +6218,7 @@ function wfAct(e){
   if(a==='tagnone'){naRec(S,'tagnone','',()=>{for(const x of id.split(','))m.noAsk.push('t:'+x)});done();return}
   if(a==='cxyes'){const c=cxById(+id);if(c&&!c.wk){const f=Q(`[data-wfee="${ek}"]`);wCxLink(k,c,!!(f&&f.checked))}done();return}
   if(a==='cxno'){const c=cxById(+id);naRec(S,'cxno',c?`„${KIND[c.kind]||c.kind}“ vom ${dm(c.date)}`:'',()=>m.noAsk.push('c:'+id));delete m.pend;done();return}
-  // Ab 0.42: Eingangsseite eines Übertrags wählen oder ablehnen (ab 0.104 ohne „Als Zahlung anlegen“, W-90)
+  // Ab 0.42: Eingangsseite eines Übertrags wählen oder ablehnen (ab 0.107 ohne „Als Zahlung anlegen“, W-90)
   if(a==='xpick'){const c=cxById(+id);if(c&&xinFree(S,c,m))xinLink(S,k,c);done();return}
   if(a==='xnone'){naRec(S,'xnone','',()=>{for(const x of id.split(','))m.noAsk.push('x:'+x)});done();return}
 }
@@ -8856,7 +8856,7 @@ async function addCx(){
   if(k==='uebertrag'&&w===to){msg('cxmsg','bad','Wähle bei „nach Wallet“ eine andere Wallet als bei „von Wallet“.');return nd('#cx-to')}
   if(k==='tausch'&&c===c2){msg('cxmsg','bad','Wähle bei „getauscht in“ einen anderen Coin als bei „Coin“.');return nd('#cx-coin2')}
   if(GC&&GC.bad){msg('cxmsg','bad',GC.bad.msg);return nd(GC.bad.el,'#cx-date')}
-  // Ab 0.104 (Florians Entscheidung, W-342): Kauf mit Wert 0 € fragt vorher nach, in Österreich und Deutschland, im Fenster und in „Noch offen“.
+  // Ab 0.107 (Florians Entscheidung, W-342): Kauf mit Wert 0 € fragt vorher nach, in Österreich und Deutschland, im Fenster und in „Noch offen“.
   // „Wert ändern“ (auch Esc und Klick daneben) speichert nichts und setzt den Cursor ins Feld des Werts.
   if(k==='kauf'&&!usdIn&&amt===0&&!(await askBox({title:'Wert 0 €?',text:'Stimmt der Wert von 0 €? Dann zählt beim Verkauf der ganze Erlös als Gewinn.',ok:'Ja, speichern',no:'Wert ändern'}))){
     const e=$('cx-eur');if(e&&e.offsetParent){e.focus();if(e.select)e.select()}return false}
@@ -11148,7 +11148,7 @@ let grafRedraw=null;
 // Flächen für Tooltips und ohne Tooltip, gibt das SVG als Text zurück und lässt grafRedraw unberührt. Im Vollbild (GFS) füllt die Grafik die Höhe der Box.
 function renderGrafChart(points,opts,tgt){
   const T=tgt||{},box=T.box||$('graf-chart'),exp=!!T.exp;
-  // Ab 0.104 (A-25 entfernt): ohne Trades blendet das Tool die Karte vorher aus (stats-empty), mit Trades hat jede Grafik Punkte; sonst bleibt die Fläche leer
+  // Ab 0.107 (A-25 entfernt): ohne Trades blendet das Tool die Karte vorher aus (stats-empty), mit Trades hat jede Grafik Punkte; sonst bleibt die Fläche leer
   if(!points.length){if(exp)return '';box.innerHTML='';grafRedraw=null;return}
   let out='';
   const res=opts.res||null,FS=13,GAP=8,n=points.length;
@@ -11265,7 +11265,7 @@ function renderGraf(rows,sel,gx){
   $('graf-res-l').style.display=series?'':'none';$('graf-kind-l').style.display=series?'':'none';$('graf-wd-l').style.display=g.what==='weekday'?'':'none';
   $('graf-unit-l').style.display=g.what==='inv'||g.what==='hit'?'none':'';
   const box=$('graf-chart');$('graf-note').innerHTML='';$('graf-title').innerHTML='';grafRedraw=null;grafSet(null);
-  if(!rows.length){box.innerHTML='';return}// ab 0.104 ohne Satz (A-25 entfernt), siehe renderGrafChart
+  if(!rows.length){box.innerHTML='';return}// ab 0.107 ohne Satz (A-25 entfernt), siehe renderGrafChart
   const ex=S.ui.flt.pf==='ex',mode=ex?'nach PF':'vor PF',pct=g.unit==='pct';
   const size=pct?'Rendite':'Gewinn',u=pct?'%':CUR_EFF==='usd'?'USD':'€',avgWd=g.wd==='avg';
   const resName=g.res==='day'?'Tag':g.res==='month'?'Monat':'Woche';
@@ -11944,7 +11944,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.104',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.107',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -12440,7 +12440,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-offdl]');i
 initDeviceHelp();
 // Nur bei geänderter Breite neu zeichnen. Reine Höhenänderungen (z. B. Bildschirmtastatur am Handy) lösen nichts aus, damit Eingabefelder den Fokus behalten.
 {let lastW=window.innerWidth,rt=null;
-// Ab 0.104: auch die Leiste im Reiter Wallet (fitWbar) passt sich beim Ändern der Breite an, nicht erst beim nächsten Neuzeichnen
+// Ab 0.107: auch die Leiste im Reiter Wallet (fitWbar) passt sich beim Ändern der Breite an, nicht erst beim nächsten Neuzeichnen
 window.addEventListener('resize',()=>{if(window.innerWidth===lastW)return;lastW=window.innerWidth;if(FP_OPEN==='wk')placeWk();else if(TITLE_DD.includes(FP_OPEN))placeU(FP_OPEN);clearTimeout(rt);rt=setTimeout(()=>{fitTabs();fitFbar();if($('wbar').classList.contains('on'))fitWbar();fitAcc();updateNavH();if(grafRedraw)grafRedraw();if(!window.ResizeObserver&&S.ui.tab==='stats')hcAll()},150)})}
 // Kacheln neu anordnen, wenn sich ihre Breite ändert (Fenster, Drehen, Aufklappen des Überblicks)
 // Im nächsten Frame, nicht im Rückruf selbst, sonst meldet WebKit „ResizeObserver loop“
