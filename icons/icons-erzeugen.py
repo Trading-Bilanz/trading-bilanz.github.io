@@ -86,8 +86,8 @@ VORSCHAU = [
 VORSCHAU_LOGO = 200  # Höhe des Buchs in px bei 630 px Bildhöhe, die Breite folgt dem Motiv
 TITEL = 'Trading-Bilanz'
 UNTERTITEL = [  # je Eintrag eine Zeile
-    'Statistik und Steuerzahlen aus deinen MetaTrader-5-Reports.',
-    'Deine Daten bleiben bei dir in diesem Browser.',
+    'Statistik und Steuerzahlen aus deinen MT5-Reports.',
+    'Deine Daten bleiben bei dir.',
 ]
 FARBE_GRUND = '#f6f5f2'   # --bg
 FARBE_TITEL = '#1a1a1a'   # --ink

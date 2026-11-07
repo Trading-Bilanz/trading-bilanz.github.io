@@ -12,15 +12,15 @@
      og:url zeigt auf die Hauptadresse, dort liegt das Tool später als index.html. Favicon (32 px) und apple-touch-icon (180 px, ohne Transparenz)
      als data:-Adresse, weil die Content-Security-Policy Bilder nur als data: und blob: erlaubt; so bringt sie auch die Offline-Fassung mit.
      Alle Bilder erzeugt icons/icons-erzeugen.py aus icons/quelle/icon-trading-bilanz-original.png. -->
-<meta name="description" content="Statistik und Steuerzahlen aus deinen MetaTrader-5-Reports. Deine Daten bleiben bei dir in diesem Browser.">
+<meta name="description" content="Statistik und Steuerzahlen aus deinen MT5-Reports. Deine Daten bleiben bei dir.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Trading-Bilanz">
-<meta property="og:description" content="Statistik und Steuerzahlen aus deinen MetaTrader-5-Reports. Deine Daten bleiben bei dir in diesem Browser.">
+<meta property="og:description" content="Statistik und Steuerzahlen aus deinen MT5-Reports. Deine Daten bleiben bei dir.">
 <meta property="og:url" content="https://trading-bilanz.github.io/">
 <meta property="og:image" content="https://trading-bilanz.github.io/icons/vorschau-trading-bilanz.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Icon der Trading-Bilanz, darunter der Name und der Satz: Statistik und Steuerzahlen aus deinen MetaTrader-5-Reports. Deine Daten bleiben bei dir in diesem Browser.">
+<meta property="og:image:alt" content="Icon der Trading-Bilanz, darunter der Name und der Satz: Statistik und Steuerzahlen aus deinen MT5-Reports. Deine Daten bleiben bei dir.">
 <meta property="og:locale" content="de_AT">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAADAFBMVEUAAAD49/bo6uoERjbW19gEOSrd4eTO2+TJyswGNyk2Z1w6a2KQq8KmqakGOyyVssrt17ZCcmi0tbYBRpAFZq4oS0EydqwFKBstSjdFd6ZPirpUmMjNnFblzarz5tbs6+z19vUCLiYHLiIALnkCPoYqWE0oYlUzZZZDWVJRYltqdnKTprO4uLizxNPNkT3aoUzWq2vY29vgxZvq6urz8/IILCQAOn4GUT8fVkoEUpkAVqEFcrkkWUwlZ6E+dWg5i8JLUzNBbWF4e0lgi7VgnMNjqdaIdTydjFSAnruWxeamdzqufEG3gkClhUehs8WwzeXJjjnFnGTAv7/ewprIyLbYx67GxsbBxMTa4d/xr1P6vWbg4OLt7u7////w8O7x8fEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASx7RuAAABAHRSTlMA/v78/vr+/v20/Pv/+9H//vz8///2/zP4////////itWz+///+qz/9vH3/Qv/////1/9Gsj///0H///8/////+v//////2/j//4KJb+n//////v8O/xJP8v/+fNoDeIMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdMF97AAAAWhJREFUeNrdkvdWwjAUh3szmhahFIQCshVQtuDee++99f3fwps2taC+gP7+uefefOdLThJN+yMpAqY0W5xpadqbprVmPmZLcvTuLS/WCKi8vtxq98WS3z7WViVAYwDEDc56Dz21ak/bsE59wA0hQgiDeL5+t1uAGB0yyMIM3QPyuVwBRoYNQHTdB+yOXQCigBHPAAMG+zJ/tEcgANQZdF24QL9jw0ZCQGjI4CrQADCdYxd6dkX8ZkDg7uoGoqPhbOILCA0aGMtDdheBsWCLEAQKPIMQCUcCy4OAEkjD+XzUccIILP0wSIqxcCW65jQnDjOVAPh6LCIQmAhPZtqZdnSHKIBvGUzGvWsEJoWueKaAkBGPRzBxgxEd74Gwa+yb2Fe5uwWtJinnnCanGhE0RRpTSUrTm+k0FtewQFU4H68b9XFkKd1+PsBiSSBl+rEsLmNZplnefzorm2bq+++cs7jlDU+PT7R/lE+xfh9kcC7uEwAAAABJRU5ErkJggg==">
@@ -31,8 +31,10 @@
      farbige Texte mindestens 4,5 zu 1. Werte und Prüfung im Bericht zu 0.33. */
   --bg:#f6f5f2; --card:#ffffff; --ink:#1a1a1a; --ink2:#373d43; --muted:#454b51;
   --line:#e2e0da; --accent:#2a63a6; --accent-soft:#e6eef8; --neg:#c2410c; --pos:#1f7a4d; --neg-gs:#b03a0b;
-  --warn-bg:#fff4dc; --warn-ink:#7a4f00; --ok-bg:#e5f4ec; --ok-ink:#1f6b44; --bad-bg:#fde8e1; --bad-ink:#9a3412;
-  /* Stand-Kasten im Reiter Kurse (0.35): Text mindestens 7 zu 1 auf --ok-bg bzw. --warn-bg (7,2 und 7,2) */
+  /* Ab 0.98 (Florians Auftrag): eine gelbe Fläche für alle (--warn-bg, Gelb des Kastens aus 0.97, vorher #fff4dc / dunkel #3a2f14). Sie gilt für
+     .msg.warn, den Stand-Kasten im Reiter Kurse und den gelben Kasten der Begrüßung (.ystr). Schrift: --warn-ink hell 6,6 : 1, dunkel 8,6 : 1 */
+  --warn-bg:#fff7cc; --warn-ink:#7a4f00; --ok-bg:#e5f4ec; --ok-ink:#1f6b44; --bad-bg:#fde8e1; --bad-ink:#9a3412;
+  /* Stand-Kasten im Reiter Kurse (0.35): Text mindestens 7 zu 1 auf --ok-bg bzw. --warn-bg (7,2 und ab 0.98 7,3) */
   --st-ok-ink:#1a5a39; --st-warn-ink:#714900;
   /* Ab 0.45: Signalfarben (GESTALTUNG.md Regel 4): rot = fehlt für die Steuer, gelb = bitte prüfen, grau = gut zu wissen */
   --sig-r:#c2410c; --sig-y:#d99a00; --sig-y-ink:#1a1a1a; --sig-g:#8a9097;
@@ -44,6 +46,9 @@
   /* Knöpfe (Blau, in hell und dunkel gleich) und Rahmen der Reiter (Gold) */
   --btn:#2f6db5; --btn-dk:#245891;
   --tab-line:#C49A55;
+  /* Ab 0.97: gelber Streifen der Begrüßung offline (.ystr), gelber als --sig-y (Farbton 50° statt 42°), Text 16,1 : 1, Link 5,66 : 1.
+     Ab 0.98 ist seine Fläche --warn-bg (dieselbe für alle gelben Flächen), hier nur noch der Rand */
+  --ystr-line:#ccaa00;
   /* Ab 0.57: Sand für „In der Liste zeigen“ (springt in „Alle Vorgänge“), keine Bedeutung wie OK, Warnung oder Art */
   --go-line:#a8946f; --go-bg:#f7f2e9; --go-dk:#8a7653;
   --radius:10px;
@@ -56,7 +61,7 @@
   :root{
     --bg:#15181b; --card:#1e2226; --ink:#f2f4f6; --ink2:#cfd5db; --muted:#bec5cc;
     --line:#30363c; --accent:#6ea3e0; --accent-soft:#22324a; --neg:#f08a5d; --pos:#5cc08d; --neg-gs:#f08a5d;
-    --warn-bg:#3a2f14; --warn-ink:#f2cf80; --ok-bg:#163326; --ok-ink:#8fdcb2; --bad-bg:#3d1f16; --bad-ink:#f5a88a;
+    --warn-bg:#37321a; --warn-ink:#f2cf80; --ok-bg:#163326; --ok-ink:#8fdcb2; --bad-bg:#3d1f16; --bad-ink:#f5a88a;
     --st-ok-ink:#8fdcb2; --st-warn-ink:#f2cf80;
     --sig-r:#f08a5d; --sig-y:#f2c14e; --sig-y-ink:#15181b; --sig-g:#8d959c; --sig-r-txt:#f5a07a;
     --k-in:#3cc4b4; --k-out:#f0846c; --k-sw:#b18cf0; --k-tag:#6ea3e0; --k-mu:#99a1a8; --sig-y-txt:#f2c14e;
@@ -64,6 +69,7 @@
     --on-mid:#15181b;
     --btn:#2f6db5; --btn-dk:#245891;
     --tab-line:#D4B27A;
+    --ystr-line:#e8cf4a;
     --go-line:#9c8a6a; --go-bg:#2a251e; --go-dk:#b8a582;
     color-scheme:dark;
   }
@@ -90,7 +96,7 @@ h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
 /* Herunterladen-Hinweise (0.35): nur in der Online-Version (html.online, gesetzt bei http/https), in der heruntergeladenen Datei nie */
 html:not(.online) .onl{display:none!important}
 /* Ab 0.68 (Florians Regel): kein „Herunterladen“ im Kopf, „Erste Schritte“ steht auch online am Handy neben dem Titel. Herunterladen nur im Reiter „Sicherung“ und im Kästchen der Begrüßung */
-#intro-dl{margin:0 0 16px}
+#intro-dl{margin:14px 0}
 /* Begrüßung online: Den Satz „Dort kannst du sie auch herunterladen …“ sagt schon der Kasten #intro-dl darüber */
 /* Ab 0.77 (Teil 1): Begrüßung. Zeile nur in der heruntergeladenen Datei (.offl); Kästchen zur Steuer hebt sich ab, ohne Signalfarbe;
    der gewählte Knopf ist gefüllt und hat ✓; „Ohne Einführung starten“ lässt „Erste Schritte“ dreimal sanft aufleuchten (box-shadow, nichts verschiebt sich) */
@@ -104,13 +110,15 @@ html.online .offl{display:none}
 ul.ilist{list-style:none;padding:0;margin:8px 0 6px}
 ul.ilist li{position:relative;padding-left:18px;margin:5px 0}
 ul.ilist li::before{content:"";position:absolute;left:4px;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--ink2)}
-ul.ilist+.small{margin:6px 0 0}
+p.idat{margin:6px 0 0}
 #intro-tax h3{font-size:16px;margin:12px 0 4px}
 #intro-tax>p{font-size:var(--fs-s)}
 #intro-tax>p.small{margin:8px 0}
+#intro-tax>.dstr{margin:8px 0 10px}
 .dstr,.ystr{border-radius:8px;padding:6px 12px;font-size:var(--fs-s);color:var(--ink);margin:12px 0}
 .dstr{border:2px solid var(--neg);background:var(--bad-bg)}
-.ystr{border:2px solid var(--sig-y);background:var(--warn-bg)}
+/* Ab 0.97 (Florians Wunsch): gelber als --sig-y (geht ins Orange), eigener Rand. Ab 0.98 Fläche --warn-bg wie alle gelben Flächen */
+.ystr{border:2px solid var(--ystr-line);background:var(--warn-bg)}
 .dstr p,.ystr p{margin:0}
 /* Drei Knöpfe gleich breit nebeneinander; passen sie nicht in eine Zeile (Handy), stehen sie untereinander in voller Breite. Kein Knopf bricht um. */
 #intro-land{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 12px}
@@ -122,6 +130,16 @@ ul.ilist+.small{margin:6px 0 0}
 #btn-steps.pulse{animation:stpulse 1.1s ease-out 3}
 @media (prefers-reduced-motion:reduce){#btn-steps.pulse{animation:none;box-shadow:0 0 0 3px var(--accent)}}
 #intro-dl p{margin:0}
+/* Ab 0.97 (Florians Auftrag): Hinweis zum Weiterscrollen in der Begrüßung, ab 0.98 in allen Fenstern mit fester Knopfleiste. Steht in der festen Knopfleiste (.mft, sticky) und ragt darüber in den
+   scrollbaren Bereich: Verlauf in die Farbe des Fensters (--card, hell und dunkel) und ein kleiner Pfeil. Sichtbar nur, solange unten noch Inhalt kommt
+   (scrollHint). Der Pfeil scrollt ein Stück nach unten. Ohne Mausklick unsichtbar für Vorleseprogramme (aria-hidden), weil das Fenster ohnehin scrollt. */
+.shint{position:absolute;left:0;right:0;bottom:calc(100% + 1px);height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;
+  background:linear-gradient(to bottom,transparent,var(--card) 85%);pointer-events:none;opacity:0;transition:opacity .2s}
+.shint.on{opacity:1}
+.shint-a{width:30px;height:30px;padding:0;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink2);font:17px/1 system-ui,sans-serif;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15);pointer-events:none}
+.shint.on .shint-a{pointer-events:auto}
+.shint-a:hover{color:var(--ink);border-color:var(--ink2)}
+@media (prefers-reduced-motion:reduce){.shint{transition:none}}
 .sub{color:var(--ink2);margin:0}
 nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
 nav .in{max-width:1180px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:8px 16px}
@@ -265,6 +283,31 @@ tr.sum td b,tr.gesamt td b,.tdbk tr.tdcur td b,.tdrund li.tdcur>.tdar b{font-wei
 .tile .k,.tile .s{overflow-wrap:anywhere}
 .ov .tiles{margin:8px 0 2px}
 .ov .tile{background:var(--bg);border:0;border-radius:8px}
+/* Ab 0.100: Leiste „Diese Woche“ unter den Kacheln, volle Breite, wie eine Kachel, etwas weniger Innenabstand, kleinere Werte, keine Farbe.
+   PC: eine Zeile (links Titel und Stand, rechts Betrag und Rendite). Mit 2 Kachelspalten (.c2, gesetzt von layoutTiles): Titel und Stand
+   über beiden Spalten, die Werte darunter bündig mit den Kachelspalten (Innenabstand und Spaltenabstand setzt layoutTiles). */
+.cwbar{display:flex;align-items:center;justify-content:space-between;gap:6px 24px;background:var(--bg);border-radius:8px;padding:10px 16px;margin:10px 0 2px}
+.cwbar[hidden]{display:none}
+/* Ab 0.100: Grafik im Vollbild: eine Fläche über allem (Fullscreen-API, sonst feste Fläche), Titel und Zeitraum oben, die Grafik füllt den Rest */
+.gfs{position:fixed;inset:0;z-index:58;background:var(--card);color:var(--ink);display:flex;flex-direction:column;gap:6px;padding:max(10px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));box-sizing:border-box}
+.gfs[hidden]{display:none}
+.gfsh{display:flex;gap:6px 12px;align-items:flex-start;justify-content:space-between;flex:none}
+.gfst{min-width:0}
+.gfst h3{margin:0 0 2px}
+.gfst p{margin:0}
+.gfsb{display:flex;gap:8px;flex:none;align-items:center}
+.gfsc{flex:1;min-height:0;display:flex;overflow:hidden}
+.gfsc .chart{flex:1;min-width:0;min-height:0}
+html.gfso,html.gfso body{overflow:hidden}
+.cwbar .cwh{font-weight:600}
+.cwbar .s{font-size:var(--fs-xs);color:var(--muted)}
+.cwbar .cwv{display:flex;gap:28px;flex:none}
+.cwbar .k{font-size:var(--fs-s);color:var(--ink2)}
+.cwbar .v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cwbar.c2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));row-gap:6px}
+.cwbar.c2 .cwt{grid-column:1/-1}
+.cwbar.c2 .cwv{display:contents}
+.cwbar.c2 .cwv>div{min-width:0}
 th .sm,td .sm{display:block;font-weight:400;font-size:var(--fs-xxs);color:var(--muted)}
 td.acc{white-space:normal;min-width:7em}
 .fee-d{color:var(--muted)}
@@ -476,6 +519,9 @@ button.wopt:hover,button.wopt:focus-visible{color:var(--accent)}
   .tile .k{font-size:var(--fs-xs)}
   .tile>.v{font-size:clamp(15px,4.6vw,20px);white-space:nowrap}
   .tile .s{font-size:12.5px}
+  .cwbar{padding:8px 10px;margin-top:6px}
+  .cwbar .k{font-size:var(--fs-xs)}
+  .cwbar .v{font-size:clamp(14px,4.2vw,16px)}
   #fbar .fin{padding:5px 12px;gap:6px}
   .fsel{padding:4px 8px;gap:4px}
   .tscroll td:first-child{white-space:normal}
@@ -530,7 +576,9 @@ tr.hide{display:none}
 #t-taxparts tr.txp td:first-child,#t-de-parts tr.txp td:first-child{padding-left:22px}
 #t-taxparts tr.txck td,#t-de-parts tr.txck td{white-space:normal;padding-left:22px;font-size:var(--fs-s)}
 @media(max-width:700px){
-  #t-taxparts .txe,#t-de-parts .txe{width:92px}#t-taxparts .txk{width:66px}#t-de-parts .txk{width:88px}
+  /* Ab 0.99: Spalte „Kennzahl E1kv“ 72 px (vorher 66) und „Anlage und Zeile“ 96 px (vorher 88), damit „Kennzahl“ und „Kryptowerte“ auch mit
+     breiterer Schrift ganz hineinpassen (Chromium unter Linux bei 412 px: 2 bzw. 3 px zu breit) */
+  #t-taxparts .txe,#t-de-parts .txe{width:92px}#t-taxparts .txk{width:72px}#t-de-parts .txk{width:96px}
   #t-taxparts th,#t-taxparts td,#t-de-parts th,#t-de-parts td{padding-left:5px;padding-right:5px;font-size:var(--fs-s)}
   #t-taxparts tr.txp td:first-child,#t-de-parts tr.txp td:first-child{padding-left:12px}
   #t-de-parts td:last-child{white-space:normal}
@@ -804,6 +852,8 @@ button.dtt.on{border-color:var(--accent);background:var(--accent-soft)}
 /* Ab 0.54 (3): Kopfleiste (h2.sah, ×) und Knopfleiste unten liegen über den stehenden Titeln und Spaltenköpfen der Karten (.sthd 4, mit offenem Menü 5) */
 .modal .box>.mft{position:sticky;bottom:-22px;z-index:7;background:var(--card);margin:12px -26px -22px;padding:10px 26px 14px;border-top:1px solid var(--line);border-radius:0 0 14px 14px;gap:8px;flex-wrap:wrap}
 .modal .box>.mft:empty{display:none}
+/* Ab 0.98: eine Leiste nur mit dem Hinweis zum Weiterscrollen gilt als leer */
+.modal .box>.mft:not(:has(>:not(.shint))){display:none}
 .actin{display:none!important}
 .tprev.hl{animation:hl 2.2s ease-out}
 /* Ab 0.43: Zähler im Titel nur bei zugeklappter Karte, Folgefehler und Kleinkram eingeklappt, Rest bei Börsen dezent */
@@ -929,6 +979,10 @@ table.dfbt td.l{white-space:normal;overflow-wrap:anywhere;min-width:10ch}
 }table.kbt input.wbin{width:14ch}
 /* Ab 0.76 Nachtrag 1 (Regel 1): am Handy bleibt „Kontostände prüfen“ eine Tabelle, drei Spalten ohne seitliches Wischen: Coin unter der Wallet, „laut Datei“ unter den Einträgen, Unterschied unter dem Feld */
 table.kbt td .kbm{display:none}
+/* Ab 0.99: Wallet-Namen brechen auch am PC an Leerzeichen um (Regel „Namen brechen um“ ab 0.55), sonst ragte die Tabelle mit breiterer Schrift
+   ein paar Pixel seitlich heraus (Chromium unter Linux: 5 px bei „Fremde Wallet“). Jedes Wort steht in .nw, damit „Bix-Card“ nicht am Bindestrich bricht */
+table.kbt th:first-child,table.kbt td:first-child{white-space:normal}
+@media (max-width:700px){table.kbt td.l b .nw{white-space:normal}} /* am Handy wie bis 0.98 (dort bricht ein langes Wort notfalls überall) */
 @media (max-width:700px){table.kbt .kbpc{display:none}table.kbt td .kbm{display:block}table.kbt th,table.kbt td{padding-left:4px;padding-right:4px;white-space:normal}table.kbt{table-layout:fixed}table.kbt tr:first-child th:nth-child(1){width:30%}table.kbt tr:first-child th:nth-child(3){width:32%}table.kbt td{overflow-wrap:anywhere}table.kbt th:first-child,table.kbt td:first-child{white-space:normal}table.kbt input.wbin{width:100%;min-width:0;max-width:14ch}}
 tr.hl{animation:hl 2.2s ease-out}
 /* Ab 0.46 (5.2): eingeklappt ist im Überblick alles weg. Ab 0.48 (4.1) steht der Titel selbst in .sthd und bleibt wie bei den anderen Karten. */
@@ -1298,7 +1352,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <body>
 <header>
   <div class="hrow"><h1><img class="hlogo" src="data:image/png;base64,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" alt="" width="45" height="32">Trading-Bilanz</h1><button type="button" class="btn h2btn noprint" id="btn-steps">Erste Schritte</button></div>
-  <p class="sub">Statistik und Steuerzahlen aus deinen MetaTrader-5-Reports. Deine Daten bleiben bei dir in diesem Browser.</p>
+  <p class="sub">Statistik und Steuerzahlen aus deinen MT5-Reports. Deine Daten bleiben bei dir.</p>
 </header>
 <nav><div class="in" id="tabs"></div><div id="fbar" class="noprint"><div class="fin"><div class="fdd" id="fdd-range"><button type="button" class="fsel" id="fb-range" aria-expanded="false" aria-controls="fp-range" title="Zeitraum wählen"></button><div class="fpan" id="fp-range" role="dialog" aria-label="Zeitraum"></div></div><div class="fdd" id="fdd-acc"><button type="button" class="fsel" id="fb-acc" aria-expanded="false" aria-controls="fp-acc" title="Konten wählen"></button><div class="fpan" id="fp-acc" role="dialog" aria-label="Konten"></div></div><div class="fdd" id="fdd-pf"><button type="button" class="fsel" id="fb-pf" aria-expanded="false" aria-controls="fp-pf" title="Performance Fee laut MT5 oder auf die Trades verteilt"></button><div class="fpan" id="fp-pf" role="dialog" aria-label="Performance Fee"></div></div><div class="fdd" id="fdd-cur"><button type="button" class="fsel" id="fb-cur" aria-expanded="false" aria-controls="fp-cur" title="Beträge in Euro oder in USD"></button><div class="fpan" id="fp-cur" role="dialog" aria-label="Währung"></div></div></div></div><div id="wbar" class="noprint"><div class="fin"><div class="fdd" id="fdd-wr"><button type="button" class="fsel" id="fb-wr" aria-expanded="false" aria-controls="fp-wr" title="Zeitraum der Wallet-Seite wählen"></button><div class="fpan" id="fp-wr" role="dialog" aria-label="Zeitraum"></div></div><button type="button" class="fsel wbb" id="wb-dt"></button><button type="button" class="fsel wbb" id="wb-wl"></button><button type="button" class="fsel wbb" id="wb-td"></button></div></div></nav>
 <main>
@@ -1443,6 +1497,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <div class="card fold ov stk" data-fold="st-ov" id="st-ov">
       <div class="sthd"><h2 class="hx">Überblick <button type="button" class="ib" data-gl="k-ov" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Überblick">i</button><span class="fdd wdd udd noprint" id="fdd-u1"><button type="button" class="btn h2btn" id="fb-u1" aria-expanded="false" aria-controls="fp-u1">Rendite ▾</button><div class="fpan" id="fp-u1" role="dialog" aria-label="Rendite oder Betrag"></div></span></h2></div>
       <div class="tiles" id="tiles"></div>
+      <!-- Ab 0.100: Leiste „Diese Woche“ (renderStats), sichtbar in der Woche des neuesten Trades, wenn sie die heutige ist -->
+      <div class="cwbar" id="cwbar" hidden></div>
     </div>
     <div class="card fold stk" data-fold="st-hl" id="st-hl">
       <div class="sthd"><h2 class="hx">Hochs und Tiefs <button type="button" class="ib" data-gl="k-hl" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Hochs und Tiefs">i</button><span class="fdd wdd udd noprint" id="fdd-u2"><button type="button" class="btn h2btn" id="fb-u2" aria-expanded="false" aria-controls="fp-u2">Rendite ▾</button><div class="fpan" id="fp-u2" role="dialog" aria-label="Rendite oder Betrag"></div></span></h2></div>
@@ -1454,7 +1510,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
       <p class="small noprint" style="margin:10px 0 0"><span id="avg-zd"></span> · <button type="button" class="zlink">ändern</button></p>
     </div>
     <div class="card fold stk" data-fold="st-graf" id="st-graf">
-      <div class="sthd"><h2>Grafiken <button type="button" class="ib" data-gl="k-graf" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Grafiken">i</button></h2></div>
+      <div class="sthd"><h2 class="hx">Grafiken <button type="button" class="ib" data-gl="k-graf" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Grafiken">i</button><span class="tbtns noprint" id="graf-btns"><button type="button" class="btn h2btn" id="graf-fs">Vollbild</button><span class="fdd udd" id="fdd-gb"><button type="button" class="btn h2btn" id="fb-gb" aria-expanded="false" aria-controls="fp-gb">Bild ▾</button><div class="fpan" id="fp-gb" role="dialog" aria-label="Bild"></div></span></span></h2></div>
       <div class="row noprint" id="graf-controls" style="gap:10px 16px;margin-bottom:6px">
         <label>Was<br><select id="graf-what">
           <option value="period">Pro Zeitraum</option>
@@ -1680,32 +1736,35 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <div class="modal" id="intro-modal"><div class="box" role="dialog" aria-modal="true" aria-labelledby="intro-t">
   <!-- Ab 0.79: „Trading-Bilanz“ bricht nicht um (.nw statt geschütztem Bindestrich, damit die Suche nach „Trading-Bilanz“ den Titel findet) -->
   <div class="ihead"><img class="ilogo" src="data:image/png;base64,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" alt="" width="78" height="56"><h2 id="intro-t">Willkommen bei der <span class="nw">Trading-Bilanz</span></h2></div>
-  <!-- Ab 0.78: Beschreibung als Liste (Punkte per CSS, ul.ilist), darunter klein der Satz zum Internet. Ab 0.79 Florians neue Liste -->
+  <!-- Ab 0.78: Beschreibung als Liste (Punkte per CSS, ul.ilist). Ab 0.97 Florians Liste mit vier Punkten, darunter eine eigene Zeile ohne Punkt (.idat).
+       Der Satz zum Internet entfällt (steht im Fenster „Datenschutz“), „Ein- und Auszahlungen mit USDC und USDT“ steht im Kästchen zur Steuer. -->
   <ul class="ilist">
     <li><b>Ergebnisse aus deinen MT5-Reports:</b> Gewinne, Verluste, Gebühren, auch in Euro</li>
-    <li><b>Deine Rendite</b> vor und nach Performance Fee, mit Durchschnitten pro Tag, Woche und Monat</li>
-    <li><b>Hochs und Tiefs:</b> beste und schwächste Trades, Tage und Wochen</li>
-    <li><b>Grafiken:</b> Ergebnis und Rendite im Verlauf, nach Wochentag, Verteilung deiner Trades und deine Investition</li>
-    <li><b>Ein- und Auszahlungen mit USDC und USDT</b></li>
-    <li><b>Deine Daten bleiben bei dir</b> in diesem Browser.</li>
+    <li><b>Deine Rendite</b> vor und nach Performance Fee</li>
+    <li><b>Hochs, Tiefs und Durchschnitte:</b> beste und schwächste Trades, Tage, Wochen und mehr</li>
+    <li><b>Grafiken zu deinen Zahlen:</b> Verlauf, nach Wochentag, Verteilung deiner Trades und mehr</li>
   </ul>
-  <p class="small">Ins Internet geht das Tool nur für Wechselkurse. Das kannst du im Reiter „Kurse“ ausschalten.</p>
+  <p class="idat"><b>Deine Daten bleiben bei dir</b> in diesem Browser.</p>
+  <!-- Nur online: früh herunterladen, weil Online-Version und Datei getrennt speichern. Ab 0.98 (Florians Wortlaut) kürzer und direkt unter
+       „Deine Daten bleiben bei dir“, vor der Steuer-Box. Ab 0.99 (Florians Auftrag) ist die Adresse kein Link: Man ist schon auf der Seite,
+       und ein zweiter Tab mit dem Tool greift auf dieselben gespeicherten Daten zu. Der gelbe Kasten offline behält seinen Link. -->
+  <div class="msg info onl" id="intro-dl"><p>Lieber ganz ohne Internet? Lade dir das Tool herunter. Deine Daten nimmst du mit einer Sicherung mit, im Reiter „Sicherung“.</p>
+    <p><b>Lade die Datei nur hier herunter</b>, von <span class="nw">trading-bilanz.github.io</span>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p>
+    <div class="row"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>
+  <!-- Nur in der heruntergeladenen Datei (.offl), ab 0.78 als gelber Streifen (.ystr), ab 0.97 ohne 🛡️, ab 0.98 an derselben Stelle wie online das blaue Kästchen -->
+  <div class="ystr offl"><p><b>Neue Versionen und das Original:</b> <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p></div>
   <!-- Ab 0.78: Überschrift im Kästchen, Knöpfe gleich breit (am Handy untereinander), Haftung als roter Streifen (.dstr) -->
   <div class="ibox" id="intro-tax">
     <h3 id="intro-tax-t">Wo zahlst du Steuern?</h3>
-    <p>Das Tool kann dir auch zeigen, was du für die Steuer brauchst. Dafür muss es wissen, wo du steuerpflichtig bist. Bisher kennt es Österreich und Deutschland.</p>
+    <p>Das Tool kann dir auch zeigen, was du für die Steuer brauchst. Dafür muss es wissen, wo du steuerpflichtig bist. Bisher kennt es Österreich und Deutschland, für CFD und für Ein- und Auszahlungen mit USDC und USDT.</p>
     <p>Wenn du woanders steuerpflichtig bist oder nur deine Ergebnisse sehen willst, wähle „Ohne Steuer“.</p>
     <div id="intro-land" role="group" aria-labelledby="intro-tax-t"><button type="button" class="btn" data-icountry="AT" aria-pressed="false">Österreich</button><button type="button" class="btn" data-icountry="DE" aria-pressed="false">Deutschland</button><button type="button" class="btn" data-icountry="none" aria-pressed="false">Ohne Steuer</button></div>
-    <div class="dstr"><p>⚠️ Die Steuerangaben sind mit KI recherchiert und ohne Gewähr. <b>Dieses Tool ist keine Steuerberatung.</b></p></div>
+    <!-- Ab 0.97: zuerst der Satz zum Ändern, darunter die Haftung ohne ⚠️ -->
     <p class="small">Du kannst das jederzeit im Reiter „Steuer“ ändern.</p>
+    <div class="dstr"><p>Die Steuerangaben sind mit KI recherchiert und ohne Gewähr. <b>Dieses Tool ist keine Steuerberatung.</b></p></div>
   </div>
-  <!-- Nur online: früh herunterladen, weil Online-Version und Datei getrennt speichern. Ab 0.77 steht der Satz zum Original im Kästchen, ab 0.78 mit fettem Anfang -->
-  <div class="msg info onl" id="intro-dl"><p>Du kannst das Tool auch herunterladen und ganz ohne Internet nutzen. Später findest du den Knopf dazu im Reiter „Sicherung“. Wichtig: Die heruntergeladene Datei startet ohne deine Daten aus der Online-Version. Mitnehmen kannst du sie mit einer Sicherung, im selben Reiter.</p>
-    <p><b>Lade die Datei nur hier herunter,</b> von <span class="nw">trading-bilanz.github.io</span>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p>
-    <div class="row"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>
-  <!-- Nur in der heruntergeladenen Datei (.offl), ab 0.78 als gelber Streifen (.ystr) -->
-  <div class="ystr offl"><p>🛡️ <b>Neue Versionen und das Original:</b> <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p></div>
-  <div class="row" style="justify-content:flex-end"><button type="button" class="btn" id="btn-intro-skip">Ohne Einführung starten</button><button type="button" class="btn primary" id="btn-intro-steps">Erste Schritte</button></div>
+  <!-- Ab 0.97: Hinweis zum Weiterscrollen (.shint, scrollHint): Verlauf und ↓ über der Knopfleiste, nur solange unten noch Inhalt kommt -->
+  <div class="row" style="justify-content:flex-end"><div class="shint" aria-hidden="true"><button type="button" class="shint-a" tabindex="-1" title="Weiter nach unten">↓</button></div><button type="button" class="btn" id="btn-intro-skip">Ohne Einführung starten</button><button type="button" class="btn primary" id="btn-intro-steps">Erste Schritte</button></div>
 </div></div>
 <!-- Ab 0.77 (Teil 2): Hinweis zur Steuer beim Öffnen des Reiters „Steuer“ (Land gewählt, noch nicht bestätigt oder ältere Fassung des Texts, TAX_DISC_V).
      Vorbild „Was du hier machst“. Öffnet über modalOn wie die Begrüßung, nicht über openModal: kein ×, Esc und Klick daneben schließen es nicht,
@@ -2070,6 +2129,12 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <div id="adpop" class="noprint" role="dialog" aria-label="Einzelheiten" hidden></div>
 <!-- Popup für Begriffe und ⓘ, siehe „Begriffe und ⓘ (Popups)“ im Skript -->
 <div id="glpop" class="noprint" role="dialog" aria-labelledby="glpop-t" hidden><button type="button" class="glx" aria-label="Schließen">×</button><div class="glin"><div class="glt" id="glpop-t"></div><div class="glh" id="glpop-h"></div></div></div>
+<!-- Ab 0.100: Grafik im Vollbild (gfsOpen). #graf-chart wandert beim Öffnen hierher und beim Schließen zurück. -->
+<div id="gfs" class="gfs noprint" hidden role="dialog" aria-modal="true" aria-label="Grafik im Vollbild">
+  <div class="gfsh"><div class="gfst"><h3 id="gfs-title"></h3><p class="small" id="gfs-range"></p></div>
+  <div class="gfsb"><span class="fdd udd" id="fdd-gb2"><button type="button" class="btn h2btn" id="fb-gb2" aria-expanded="false" aria-controls="fp-gb2">Bild ▾</button><div class="fpan" id="fp-gb2" role="dialog" aria-label="Bild"></div></span><button type="button" class="btn h2btn" id="gfs-x">× Schließen</button></div></div>
+  <div class="gfsc" id="gfs-c"></div>
+</div>
 <script>
 "use strict";
 // Online-Version (http/https): html.online zeigt die Herunterladen-Hinweise (.onl). Gleich am Anfang, damit nichts nachträglich aufspringt.
@@ -2169,7 +2234,7 @@ function rvScan(){
 // die eine ältere Fassung bestätigt haben (S.ui.taxAck). Hier oben, weil render() es braucht.
 // Ab 0.82: Fassung 2 („von einer Steuerberatung“ statt „von einer Steuerberaterin“)
 const TAX_DISC_V=2;
-function blank(){return {v:1,accounts:{},deals:{},map:{},rates:{},tag:{},cx:[],wallets:['Meine Wallet'],defCoin:'USDC',rsrc:{},rown:{},tagDrop:[],tagSame:{},tagSkip:[],tagBatch:0,cxKeep:[],wbal:{},pfOk:[],wtx:{},addr:{},cxNo:0,tok:{},wign:{},cardFee:{},bxOpen:{},tagMeth:{},rcov:{load:'',file:''},ui:{tab:'reports',wFlt:{range:'all',from:'',to:''},rAuto:true,rtUsed:true,yTax:null,other:'',opt:false,flt:{range:'all',from:'',to:'',off:[],pf:'ex',cur:'eur',nocw:false,zeroDays:true},graf:{what:'period',res:'week',kind:'bar',unit:'amt',wd:'sum',avg:false},calc:{inv:'',dur:'12',unit:'m',own:'',tax:'',reinv:false,taxOn:false},unit:'pct'}}}
+function blank(){return {v:1,accounts:{},deals:{},map:{},rates:{},tag:{},cx:[],wallets:['Meine Wallet'],defCoin:'USDC',rsrc:{},rown:{},tagDrop:[],tagSame:{},tagSkip:[],tagBatch:0,cxKeep:[],wbal:{},pfOk:[],wtx:{},addr:{},cxNo:0,tok:{},wign:{},cardFee:{},bxOpen:{},tagMeth:{},rcov:{load:'',file:''},ui:{tab:'reports',wFlt:{range:'all',from:'',to:''},rAuto:true,rtUsed:true,yTax:null,other:'',opt:false,flt:{range:'all',from:'',to:'',off:[],pf:'ex',cur:'usd',nocw:false,zeroDays:true},graf:{what:'period',res:'week',kind:'bar',unit:'amt',wd:'sum',avg:false},calc:{inv:'',dur:'12',unit:'m',own:'',tax:'',reinv:false,taxOn:false},unit:'pct'}}}
 let S=blank();
 // Ab 0.85 (Fund 2 aus 0.84): Lässt sich der gespeicherte Stand beim Start nicht lesen, aufbereiten oder zeichnen, stürzt das Tool nicht ab. Es startet
 // mit einem leeren Stand und zeigt den Hinweis #boot-modal (bootShow). BOOT_BAD: Solange er gilt, speichert save() nichts, der Stand im Speicher
@@ -2188,7 +2253,7 @@ for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','t
   const old=S.ui||{};S.ui=Object.assign(b.ui,old);
   // bis Version 0.14: eigener Zeitraum für die Kacheln (yStats, stFrom, stTo) → gemeinsamer Filter
   if(!old.flt||typeof old.flt!=='object'){const f={range:'all',from:'',to:'',off:[]};const y=String(old.yStats||'');if(y==='custom'){f.range='custom';f.from=old.stFrom||'';f.to=old.stTo||''}else if(/^\d{4}$/.test(y))f.range='y:'+y;S.ui.flt=f}
-  S.ui.flt=Object.assign({range:'all',from:'',to:'',off:[],pf:'ex',cur:'eur',nocw:false,zeroDays:true},S.ui.flt);S.ui.flt.zeroDays=S.ui.flt.zeroDays!==false;if(typeof S.ui.flt.range!=='string')S.ui.flt.range='all';if(!Array.isArray(S.ui.flt.off))S.ui.flt.off=[];if(S.ui.flt.pf!=='inkl')S.ui.flt.pf='ex';if(S.ui.flt.cur!=='usd')S.ui.flt.cur='eur';S.ui.flt.nocw=S.ui.flt.nocw===true;
+  S.ui.flt=Object.assign({range:'all',from:'',to:'',off:[],pf:'ex',cur:'usd',nocw:false,zeroDays:true},S.ui.flt);S.ui.flt.zeroDays=S.ui.flt.zeroDays!==false;if(typeof S.ui.flt.range!=='string')S.ui.flt.range='all';if(!Array.isArray(S.ui.flt.off))S.ui.flt.off=[];if(S.ui.flt.pf!=='inkl')S.ui.flt.pf='ex';if(S.ui.flt.cur!=='eur')S.ui.flt.cur='usd';S.ui.flt.nocw=S.ui.flt.nocw===true;
   for(const k of ['yStats','stFrom','stTo','treeAcc'])delete S.ui[k];
   // bis Version 0.14: Grafik „Rendite“ als eigene Auswahl und eigene Auswahl „Betrag“ (amt) → Einheit % und PF-Schalter der Filterzeile
   const og=S.ui.graf||{};S.ui.graf=Object.assign(blank().ui.graf,og);const g=S.ui.graf;if(og.what==='roi'){g.what='period';g.unit='pct'}
@@ -2317,7 +2382,7 @@ function usd(v){if(v==null||isNaN(v))return '–';return fN.format(v)+' USD'}
 // Beträge der Auswertung in der Währung des Schalters (S.ui.flt.cur): „1.234,56 €“ bzw. „1.234,56 USD“. Steuer und Krypto nutzen weiter eur() und usd().
 // CUR_EFF: Währung, in der die Auswertung gerade rechnet. Fehlen für die gewählten Konten und den Zeitraum Kurse (CUR_MISS, aus renderStats),
 // ist es USD, auch wenn Euro gewählt ist; die Wahl in S.ui.flt.cur bleibt und gilt wieder, sobald die Kurse da sind.
-let CUR_EFF='eur',CUR_MISS=null;
+let CUR_EFF='usd',CUR_MISS=null;
 const CUR=()=>CUR_EFF==='usd'?' USD':' €';
 function fCur(v,dec=2){const r=fmtDec(v,dec);return r==null?'NaN':r+CUR()}
 function mon(v,cls=true){if(v==null||isNaN(v))return '–';const c=cls?(v<-0.005?' class="neg"':''):'';return `<span${c}>${fCur(v)}</span>`}
@@ -3110,7 +3175,8 @@ function tradeDays(w,s,e){let n=0;for(let i=0;i<5;i++){const d=addDays(w,i);if((
    Reine Rechnungen ohne Oberfläche: Auswertung (gewählte Konten und Zeitraum, Scope 'sel' bzw. 'own') und Excel (alle Konten, Scope 'all').
    Gezähltes Fenster win = {s,e}: ab dem ersten Trade (nicht der ersten Buchung) bzw. dem Anfang des Zeitraums, bis zum Ende des Zeitraums,
    höchstens bis zum Datenstand. Handelstage sind Mo bis Fr, Feiertage zählen mit. Ganze Woche: alle 5 Handelstage im Fenster.
-   Ganzer Monat: alle Handelstage des Kalendermonats im Fenster. zero = Tage, Wochen und Monate ohne Trade zählen mit 0 (S.ui.flt.zeroDays). */
+   Ganzer Monat: alle Handelstage des Kalendermonats im Fenster. Ab 0.100: Die laufende Woche (cw, aus curWeek, PF noch nicht gebucht) ist nie
+   ganz, unabhängig vom PF-Schalter, und ein Monat mit Trades der laufenden Woche auch nicht. Nach der Abrechnung gilt wieder die Regel oben. zero = Tage, Wochen und Monate ohne Trade zählen mit 0 (S.ui.flt.zeroDays). */
 const wdIdx=d=>(new Date(d+'T12:00:00Z').getUTCDay()+6)%7;
 // Quantil mit linearer Interpolation (wie QUARTILE.INC in Excel), null bei leerer Liste
 function quantile(a,p){if(!a.length)return null;const s=a.slice().sort((x,y)=>x-y),i=(s.length-1)*p,lo=Math.floor(i),hi=Math.ceil(i);return s[lo]+(s[hi]-s[lo])*(i-lo)}
@@ -3122,26 +3188,27 @@ function cntWin(first,from,to,dataEnd){if(!first)return null;return {s:from&&fro
 function mWdays(ym){let f=ym+'-01',l=monthEnd(ym);while(wdIdx(f)>4)f=addDays(f,1);while(wdIdx(l)>4)l=addDays(l,-1);return [f,l]}
 // Tage (Mo bis Fr im Fenster, dazu Tage mit Trade), Wochen oder Monate, die das Fenster schneiden. Je Periode: Trades, Zahl der Positionen,
 // ganz ja/nein, Betrag vor/nach PF (in der Währung der Zeilen), Rendite vor/nach PF auf die Investition des Scopes.
-function periods(R,win,res,scope){
+function periods(R,win,res,scope,cw){
   const g=new Map();for(const r of R){if(!isTrade(r))continue;const k=bucketKey(r,res);if(!g.has(k))g.set(k,[]);g.get(k).push(r)}
   const ks=new Set(g.keys());
   if(res==='day'){for(let d=win.s;d<=win.e;d=addDays(d,1))if(wdIdx(d)<5)ks.add(d)}
   else if(res==='week'){for(let w=monday(win.s);w<=win.e;w=addDays(w,7))ks.add(w)}
   else{for(let m=win.s.slice(0,7);m<=win.e.slice(0,7);m=addMonths(m+'-01',1).slice(0,7))ks.add(m)}
   return [...ks].sort().map(k=>{const rr=g.get(k)||[];let full=true;
-    if(res==='week')full=tradeDays(k,win.s,win.e)===5;else if(res==='month'){const [f,l]=mWdays(k);full=f>=win.s&&l<=win.e}
+    if(res==='week')full=tradeDays(k,win.s,win.e)===5&&k!==cw;else if(res==='month'){const [f,l]=mWdays(k);full=f>=win.s&&l<=win.e&&!(cw&&rr.some(r=>r.wk===cw))}
     const ri=retSum(rr,scope,false),rx=retSum(rr,scope,true);
     return {key:k,rows:rr,n:rr.length?positions(rr,scope).length:0,full,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v,rI:ri.v,rX:rx.v}});
 }
-// Köpfe der Spalten nach der ersten in „Pro Monat“ und „Pro Woche“, mit Begriffen
-const TH_MW=()=>`<th>${gl('netto','Netto-Gewinn')}${SMF}</th><th>${gl('vorpf','Ergebnis vor PF')}${SM0}</th><th>${gl('pf','Performance Fee')}${SMF}</th><th>${gl('inv','Investition')}${smx(gl('anfang','am Anfang'))}</th><th>${gl('rendite','Rendite')}${SMH}</th><th>${gl('dd','Max. Drawdown')}${SMH}</th><th>${gl('kum','Kumuliert')}${SMH}</th>`;
+// Köpfe der Spalten nach „Trades“ in „Pro Monat“ und „Pro Woche“, mit Begriffen. Ab 0.100: Netto-Gewinn, Rendite, Investition, Ergebnis vor PF,
+// Performance Fee, Max. Drawdown, Kumuliert. Alle Zeilen (Monat, Woche, Tag, Trade, Konto, Summen) folgen dieser Reihenfolge.
+const TH_MW=()=>`<th>${gl('netto','Netto-Gewinn')}${SMF}</th><th>${gl('rendite','Rendite')}${SMH}</th><th>${gl('inv','Investition')}${smx(gl('anfang','am Anfang'))}</th><th>${gl('vorpf','Ergebnis vor PF')}${SM0}</th><th>${gl('pf','Performance Fee')}${SMF}</th><th>${gl('dd','Max. Drawdown')}${SMH}</th><th>${gl('kum','Kumuliert')}${SMH}</th>`;
 // Durchschnitt und Median je Handelstag, ganzer Woche, ganzem Monat und Trade (vor PF: …I, nach PF: …X). k = Zahl der gezählten Perioden,
 // noT = ganze Perioden ohne Trade (zählen mit 0 bzw. fallen weg), part = Teilwochen bzw. angefangene Monate am Rand, nicht gezählt.
 // miss = Trading Benefit fehlt (Rendite nicht berechenbar). ws = gezählte ganze Wochen (für den Rechner).
-function avgKz(R,win,scope,zero,ress){
+function avgKz(R,win,scope,zero,ress,cw){
   const out={miss:retSum(R,scope,false).miss};
   for(const res of ress||['day','week','month']){
-    const all=periods(R,win,res,scope),cand=res==='day'?all:all.filter(p=>p.full),used=zero?cand:cand.filter(p=>p.n);
+    const all=periods(R,win,res,scope,cw),cand=res==='day'?all:all.filter(p=>p.full),used=zero?cand:cand.filter(p=>p.n);
     const col=f=>used.map(f);
     out[res]={res,k:used.length,noT:cand.filter(p=>!p.n).length,part:all.length-cand.length,zero,ps:used,
       aI:meanOf(col(p=>p.aI)),aX:meanOf(col(p=>p.aX)),mI:median(col(p=>p.aI)),mX:median(col(p=>p.aX)),
@@ -6823,7 +6890,7 @@ function kbRender(){const C=cryptoCalc(),WB=wBal(),OB=wOpenBal(C),K=new Set([...
   for(const w of S.wallets)if(![...K].some(k=>k.slice(0,k.lastIndexOf('|'))===w))K.add(w+'|'+(S.defCoin==='USDT'?'USDT':'USDC'));
   const ok='<span class="ok" role="img" aria-label="stimmt">✓</span>',diff=(d,c,src)=>Math.abs(d)<BAL_TOL?ok:`${src} ${fmtNum(Math.abs(d))} ${c} ${d>0?'mehr':'weniger'} als laut deinen Einträgen`;
   const rows=[...K].sort().map(k=>{const i=k.lastIndexOf('|'),w=k.slice(0,i),c=k.slice(i+1),p=C.pots.find(p=>p.w===w&&p.c===c),q=p?p.q:0,v=S.wbal[k],fb=WB[k],emp=!p&&v==null&&!fb,U=(v!=null&&Math.abs(v-q)>=BAL_TOL)||(fb&&Math.abs(fb.q-q)>=BAL_TOL)?wOpenUp(C,w,c):null,dT=(v!=null?`<span class="small">${diff(v-q,c,'Laut deiner App')}</span>${kbWhy(v-q,OB[k],c,w,U)}`:'')+(fb?`<span class="small">${diff(fb.q-q,c,'Laut Datei')}</span>${kbWhy(fb.q-q,OB[k],c,w,U)}`:'');
-    return `<tr data-kbr="${esc(k)}"><td class="l"><b>${esc(w)}</b><span class="small kbm">${c}</span></td><td class="kbpc">${c}</td><td>${emp?'':`<b>${fmtNum(q)}</b>`}${fb?`<span class="small kbm">laut Datei ${fmtNum(fb.q)}, Stand ${dS(fb.imp||fb.last)}</span>`:''}</td><td class="kbpc">${fb?`${fmtNum(fb.q)}<span class="small">Stand ${dS(fb.imp||fb.last)}</span>`:emp?'':'–'}</td>
+    return `<tr data-kbr="${esc(k)}"><td class="l"><b>${esc(w).split(' ').map(x=>`<span class="nw">${x}</span>`).join(' ')}</b><span class="small kbm">${c}</span></td><td class="kbpc">${c}</td><td>${emp?'':`<b>${fmtNum(q)}</b>`}${fb?`<span class="small kbm">laut Datei ${fmtNum(fb.q)}, Stand ${dS(fb.imp||fb.last)}</span>`:''}</td><td class="kbpc">${fb?`${fmtNum(fb.q)}<span class="small">Stand ${dS(fb.imp||fb.last)}</span>`:emp?'':'–'}</td>
       <td><input type="text" class="wbin" data-wb="${esc(k)}" value="${v!=null?plainDe(v):''}" placeholder="Menge" aria-label="Menge ${c} laut deiner App, ${esc(w)}">${dT?`<span class="kbm">${dT}</span>`:''}</td>
       <td class="kbd kbpc">${dT}${v==null&&!fb&&!emp?'–':''}</td></tr>`}).join('');
   $('kb-body').innerHTML=rows?`<div class="kbw"><table class="bxt kbt"><tr><th class="l">Wallet</th><th class="kbpc">Coin</th><th>laut deinen Einträgen</th><th class="kbpc">laut Datei</th><th>Stand in deiner App</th><th class="kbpc">Unterschied</th></tr>${rows}</table></div>`:'<p class="small">Noch kein Bestand.</p>'}
@@ -9149,6 +9216,8 @@ function xlsxAll(rows,o){
   const RU=curRows(rows,'usd'),U=new Map(rows.map((r,i)=>[r,RU[i]])),u=rr=>rr.map(r=>U.get(r));
   let dataEnd=rows[rows.length-1].d;for(const a of accs){const rd=repDay(a);if(rd>dataEnd)dataEnd=rd}
   const win=cntWin(tr[0].d,null,null,dataEnd);
+  // Ab 0.100: laufende Woche aller Konten (PF noch nicht gebucht), sie ist keine ganze Woche (wie in der Auswertung)
+  const cw=curWeek(rows,accs);
   const capAll=tm=>{let s=0;for(const a of accs){const c=CAP(a,tm);if(c==null)return null;s+=c}return s};
   const endOf=d=>d.replace(/-/g,'.')+' 23:59:59';
   const miss=retSum(rows,'all',false).miss;
@@ -9211,7 +9280,7 @@ function xlsxAll(rows,o){
     // Investition unbekannt (fehlender Anfang ohne Notlösung): leer wie ohne Trading Benefit. Mit Notlösung beginnt die erste Zeile des Kontos beim Startwert.
     {h:'Investition danach (USD)',w:16,c:(r,n,L)=>{const f=S.accounts[r.a].factor;if(!(f>0)||INV[r.a]!=='ok')return '';const i=IV.indexOf(r),same=i>0&&IV[i-1].a===r.a,b0=CAP(r.a,'0');return X.F(same?`${colL(7)}${n-1}+${L.q}${n}`:b0?`${Math.round(b0*1e5)/1e5}+${L.q}${n}`:`${L.q}${n}`,CAP(r.a,r.x.t),5)}}],IV);
   // Werte für die Blätter „Durchschnitt“ und „Hochs und Tiefs“
-  const AE=avgKz(rows,win,'all',zero,['day','week','month','trade']),AU=avgKz(RU,win,'all',zero,['day','week','month','trade']);
+  const AE=avgKz(rows,win,'all',zero,['day','week','month','trade'],cw),AU=avgKz(RU,win,'all',zero,['day','week','month','trade'],cw);
   const GE=glKz(rows,'all',win,AE.week.ps),GU=glKz(RU,'all',win,AU.week.ps);
   // Blätter „Durchschnitt“ und „Hochs und Tiefs“: alle Konten, ganzer Zeitraum, vor und nach PF, EUR und USD, je Wert eigener Extremwert und eigenes Datum
   const P0=v=>v==null||miss?'':X.P(v),E0=v=>v==null?'':X.E(v),N0=v=>v==null?'':X.N(v),D0=o=>o?X.D(o.d||o.w):'';
@@ -9885,7 +9954,7 @@ let FP_OPEN=null;
 // Die drei Knöpfe Rendite/Betrag (Überblick, „Hochs und Tiefs“, „Pro Konto“), alle schalten S.ui.unit
 const UNIT_DD=['u1','u2','u3'];
 // Menüs, die rechts am Knopf im Kartentitel stehen und bei Platzmangel volle Fensterbreite bekommen (placeU)
-const TITLE_DD=[...UNIT_DD,'vs','va','vw'];
+const TITLE_DD=[...UNIT_DD,'vs','va','vw','gb','gb2'];
 const WALLET_DD=['vs','va','vw','wr'];
 // Kartenfilter im Reiter Wallet (ab 0.38): Menü → Schlüssel in S.ui.cf. Gespeichert sind die abgewählten Werte, Neues ist also sichtbar.
 // Ab 0.43 nur noch der Filter der Liste „Alle Vorgänge“ (vf → S.ui.cf.vg); die Werte der alten Karten bleiben gespeichert, ungenutzt
@@ -10005,12 +10074,14 @@ function renderFbar(show){
 // Ab 0.50 (1.1): „Schließen“ (grau) statt „Fertig“; jede Wahl im Menü gilt schon beim Anklicken
 const FDONE='<div class="row" style="justify-content:flex-end"><button type="button" class="btn f-done">Schließen</button></div>';
 const ZD_WHY='Durchschnitte pro Tag, Woche und Monat zählen auch Handelstage, an denen kein Trade lief. Das zeigt, was das Konto im Schnitt wirklich bringt. Nimm das Häkchen weg, wenn du die Strategie eine Zeit lang pausiert hast, damit die Pause den Schnitt nicht drückt.';
-const CW_WHY='Tag bucht die Performance Fee erst am Samstag ab. Bis dahin fehlt sie bei „PF laut MT5“, der Netto-Gewinn ist in dieser Woche also noch zu hoch. Bei „PF verteilt“ rechnet das Tool sie aus. Ohne die laufende Woche siehst du nur fertig abgerechnete Wochen. In „Pro Woche“ siehst du die laufende Woche trotzdem, gekennzeichnet mit „nicht in den Kennzahlen“.';
+const CW_WHY='Tag bucht die Performance Fee erst am Samstag ab. Bis dahin fehlt sie bei „PF laut MT5“, bei „PF verteilt“ rechnet das Tool sie aus. Mit dem Häkchen zählt die laufende Woche in keiner Kennzahl. Du siehst sie trotzdem in „Pro Woche“ und in der Leiste „Diese Woche“.';
 // „Was heißt das?“ im PF-Menü: klappt im Menü auf und zu
 // „Was heißt das?“ im PF-Menü: klappt im Menü auf und zu
 const PF_WHY=[['Laufende Woche','Tag bucht die PF erst am Samstag ab. Bei „PF verteilt“ rechnet das Tool sie bis dahin aus.'],
   ['Steuer','rechnet immer mit den Werten laut MT5.']].map(([k,t])=>`<p><b>${k}:</b> ${t}</p>`).join('');
 function buildFpanel(which){
+  // Ab 0.100: Menü „Bild ▾“ der Grafik (Karte und Vollbild)
+  if(which==='gb'||which==='gb2'){$('fp-'+which).innerHTML='<div class="fgrp"><button type="button" class="wopt" data-gimg="save">Speichern</button><button type="button" class="wopt" data-gimg="share">Teilen</button></div>';return}
   if(which==='range'){
     const ys=years(window.__rows||[]);
     const opts=[['all','Gesamter Zeitraum'],...ys.map(y=>['y:'+y,y]),['month','Dieser Monat'],['last3m','Letzte 3 Monate'],['custom','Individuell']];
@@ -10029,7 +10100,7 @@ function buildFpanel(which){
   }else if(which==='pf'){
     // Ab 0.58 (1): je Wahl der kleine Zusatz, der dann in den Tabellen steht
     const o=[['inkl','PF laut MT5','Die PF steht dort, wo Tag sie abbucht (samstags). Trades zeigen ihr Ergebnis vor PF.','In den Tabellen steht dann klein „vor PF“ bzw. „laut MT5“.'],['ex','PF verteilt','Jeder Trade trägt seinen Anteil der PF. Zeigt, was dir von jedem Trade bleibt.','In den Tabellen steht dann klein „nach PF“ bzw. „verteilt“.']];
-    $('fp-pf').innerHTML=`<p class="fhint">PF = Performance Fee: 30 % vom Wochengewinn, abgebucht jeden Samstag.</p><div class="fgrp">${o.map(([v,l,d,t])=>`<label class="fopt two"><input type="radio" name="fpf" value="${v}"><span><b>${l}</b><span class="od">${d}</span><span class="od">${t}</span></span></label>`).join('')}
+    $('fp-pf').innerHTML=`<p class="fhint">PF = Performance Fee: 30 % vom Wochengewinn, abgebucht jeden Samstag.</p><p class="fhint">Gilt für die ganze Auswertung, auch für die Grafiken.</p><div class="fgrp">${o.map(([v,l,d,t])=>`<label class="fopt two"><input type="radio" name="fpf" value="${v}"><span><b>${l}</b><span class="od">${d}</span><span class="od">${t}</span></span></label>`).join('')}
       <button type="button" class="flink" id="f-pfwhy" aria-expanded="false" aria-controls="fpf-txt">Was heißt das?</button><div id="fpf-txt" hidden>${PF_WHY}</div></div>${FDONE}`;
   }else if(which==='cur'){
     // Fehlen Kurse (CUR_MISS), ist Euro nicht wählbar; darunter der Grund und „Kurse laden“ (Meldung in #fcur-rlm, bleibt bis zum Schließen)
@@ -10145,7 +10216,7 @@ let FP_UP=null;
 function fpFit(){
   if(!FP_OPEN)return;const p=$('fp-'+FP_OPEN),b=$('fb-'+FP_OPEN);if(!b||!b.getClientRects().length)return;
   const nav=document.querySelector('nav'),inNav=nav.contains(b);
-  FP_UP=popPlace(b,p,{top:inNav?0:nav.getBoundingClientRect().bottom,up:FP_UP,right:TITLE_DD.includes(FP_OPEN)||FP_OPEN==='wk'});
+  FP_UP=popPlace(b,p,{top:inNav||GFS?0:nav.getBoundingClientRect().bottom,up:FP_UP,right:TITLE_DD.includes(FP_OPEN)||FP_OPEN==='wk'});
 }
 // Beim Scrollen der Seite und bei jeder Größenänderung (auch nur der Höhe) neu einpassen, einmal pro Frame
 {let q=0;const f=e=>{if(FP_OPEN&&!q&&!popOwnScroll(e))q=requestAnimationFrame(()=>{q=0;fpFit()})};
@@ -10188,7 +10259,7 @@ const GL={
   'k-ov':{t:'Überblick',h:'Die wichtigsten Zahlen für den gewählten Zeitraum und die gewählten Konten. Mit „Rendite ▾“ oder „Betrag ▾“ wechselst du, ob die Kacheln Prozent oder Beträge zeigen.'},
   'k-hl':{t:'Hochs und Tiefs',h:'Die besten und schwächsten Trades, Tage und Wochen, dazu Serien am Stück. Ein Datum führt dich zur Stelle in „Pro Woche“.'},
   'k-avg':{t:'Durchschnitt',h:'Was ein Handelstag, eine Woche, ein Monat und ein Trade im Schnitt gebracht haben, als Durchschnitt und als Median.'},
-  'k-graf':{t:'Grafiken',h:'Deine Ergebnisse als Grafik. Oben wählst du, was gezeigt wird, unter der Grafik steht, was sie bedeutet.'},
+  'k-graf':{t:'Grafiken',h:'Deine Ergebnisse als Grafik. Oben wählst du, was gezeigt wird, unter der Grafik steht, was sie bedeutet.\n„Vollbild“ zeigt die Grafik über den ganzen Bildschirm. Mit „Bild“ speicherst oder teilst du sie als Bild (PNG), immer quer und hell, ohne Kontonamen.'},
   'k-acc':{t:'Pro Konto',h:'Jedes Konto einzeln und alle gewählten Konten zusammen.'},
   'k-month':{t:'Pro Monat',h:'Jeder Monat im gewählten Zeitraum.'},
   'k-week':{t:'Pro Woche',h:'Jede Woche mit ihren Tagen und Trades. Ein Klick auf eine Woche zeigt ihre Tage, ein Klick auf einen Tag seine Trades.'},
@@ -10367,9 +10438,9 @@ ${ECB_CITE}`},
   vorpf:{t:'Ergebnis vor PF',h:'Gewinne minus Verluste deiner Trades laut MT5, nach Kommission und Swap, vor Abzug der Performance Fee.'},
   pf:{t:'Performance Fee',h:'30 % vom Wochengewinn, Tag bucht sie jeden Samstag ab.\n<b>Monatswechsel:</b> Bei „PF laut MT5“ zählt die PF im Monat der Abbuchung, bei „PF verteilt“ im Monat, in dem du den Gewinn gemacht hast.'},
   pfplus:{t:'Positive Performance Fee',h:'In einer Gewinnwoche senkt ein Verlust die Performance Fee, er kostet dich deshalb nur 70 %. In einer Verlustwoche gibt es keine PF, dann kostet er 100 %. Annahme: Tag nimmt Verluste nicht in die nächste Woche mit.'},
-  rendite:{t:'Rendite',h:'Jeder Trade wird mit deiner Investition zu Beginn des Trades verglichen, die Renditen aller Trades werden zusammengezählt. Gemeint ist dein eingesetztes Geld, nicht der vervielfachte Kontostand im MT5. Bei Trading Benefit (×12, ×24) ist die Rendite deshalb viel höher als im MT5 oder bei Myfxbook.\nOhne Trading Benefit kennt das Tool deine Investition nicht. Die Rendite steht dann als „–“.'},
+  rendite:{t:'Rendite',h:'Jeder Trade wird mit deiner Investition zu Beginn des Trades verglichen, die Renditen aller Trades werden zusammengezählt. Gemeint ist dein eingesetztes Geld, nicht der vervielfachte Kontostand im MT5. Bei Trading Benefit (×12, ×24) ist die Rendite deshalb viel höher als im MT5 oder bei Myfxbook.\nOhne Trading Benefit kennt das Tool deine Investition nicht. Die Rendite steht dann als „–“.\nDeshalb ist die Rendite nicht einfach Netto-Gewinn geteilt durch Investition, sobald sich deine Investition im Zeitraum ändert. Bei „PF laut MT5“ passen die beiden auch innerhalb einer Woche nicht zusammen: Die Rendite ist dann vor PF, der Netto-Gewinn nach der abgebuchten Fee.'},
   // Ab 0.58 (1): kleine Zusätze „vor PF“ / „nach PF“ und „laut MT5“ / „verteilt“ in den Spaltenköpfen (SMH, SMF) und in „Hochs und Tiefs“
-  pfst:{t:'PF-Schalter',h:'Die kleinen Hinweise zeigen, wie gerade gerechnet wird. „vor PF“ oder „laut MT5“ heißt: Oben steht „PF laut MT5“. „nach PF“ oder „verteilt“ heißt: Oben steht „PF verteilt“. Umschalten kannst du oben in der Leiste.'},
+  pfst:{t:'PF-Schalter',h:'<b>verteilt / nach PF:</b> Tag bucht die Performance Fee einmal pro Woche ab, am Samstag, als eine Summe. Das Tool teilt sie auf die Trades der Woche auf, im Verhältnis zu ihrem Ergebnis. So steht die Fee an den Tagen, an denen du den Gewinn gemacht hast. Ein Verlust-Trade bekommt dabei einen Teil zurück. In der laufenden Woche ist die Fee noch nicht abgebucht: Bis Samstag rechnet das Tool sie aus, mit dem Anteil der letzten Abrechnung.\n<b>laut MT5 / vor PF:</b> wie im MT5-Report. Die Fee steht als eine Buchung am Samstag, in der laufenden Woche fehlt sie noch.\nUmschalten kannst du oben in der Leiste.'},
   inv:{t:'Investition',h:'Das Geld, das du selbst eingesetzt hast, immer in USD. Es enthält auch Gewinne, die du wieder eingezahlt hast.'},
   anfang:{t:'am Anfang',h:'Die Investition beim ersten Trade der Periode. Bei einzelnen Trade-Zeilen: die Investition zum Zeitpunkt des Trades.'},
   ende:{t:'am Ende',h:'Die Investition am Ende des gewählten Zeitraums.'},
@@ -10380,7 +10451,7 @@ ${ECB_CITE}`},
   median:{t:'Median',h:'Der mittlere Wert, wenn man alle der Größe nach ordnet: Die Hälfte liegt darüber, die Hälfte darunter. Beispiel: fünf Wochen mit 1 %, 1 %, 1 %, 1 % und 6 %. Der Durchschnitt ist 2 %, der Median 1 %. Eine einzelne sehr gute Woche hebt den Durchschnitt, den Median kaum.'},
   betrag:{t:'Ø Betrag',h:'Beträge hängen davon ab, wie viel gerade investiert war. Hast du Gewinne wieder eingezahlt, Geld nachgelegt, Kapital abgezogen oder kam ein Konto später dazu, zeigen Ø und Median in Betrag den Schnitt der Vergangenheit, nicht, was du mit deiner heutigen Investition erwarten kannst. Dafür ist die Rendite in % da.'},
   tag:{t:'Handelstag',h:'Montag bis Freitag, gezählt ab deinem ersten Trade. Feiertage zählen mit, auch wenn der Markt geschlossen war. Ob Tage ohne Trade mitzählen, stellst du im Zeitraum-Menü unter „Zählweise“ ein.'},
-  ganz:{t:'ganze Wochen',h:'Durchschnitte pro Woche und pro Monat sowie die beste und schlechteste Woche rechnen nur mit ganzen Wochen und Monaten. Angefangene am Rand des Zeitraums zählen nicht.'},
+  ganz:{t:'ganze Wochen',h:'Durchschnitte pro Woche und pro Monat sowie die beste und schlechteste Woche rechnen nur mit ganzen Wochen und Monaten. Angefangene am Rand des Zeitraums zählen nicht. Die laufende Woche zählt erst als ganz, wenn Tag die Performance Fee abgebucht hat.'},
   rand:{t:'angeschnittene Periode',h:'Der gewählte Zeitraum beginnt oder endet mitten in dieser Periode. Gezählt werden nur die Tage im Zeitraum.'},
   offen:{t:'offen',h:'Tag hat die Performance Fee für diese Woche noch nicht abgebucht, das passiert am Samstag. Bei „PF verteilt“ rechnet das Tool sie bis dahin aus.'},
   nichtkz:{t:'nicht in den Kennzahlen',h:'Du hast im Zeitraum-Menü „Laufende Woche weglassen“ gewählt. Die Woche steht hier zur Ansicht, zählt aber in keiner Kennzahl, Grafik oder Summe mit, nur in „Summe mit laufender Woche“.'},
@@ -10488,7 +10559,7 @@ document.querySelectorAll('.fpan').forEach(p=>wheelContain(p));
 {let q=0;const f=e=>{if(GP&&!q&&!popOwnScroll(e))q=requestAnimationFrame(()=>{q=0;glPlace()})};
  document.addEventListener('scroll',f,{capture:true,passive:true});window.addEventListener('resize',f)}
 
-// Kacheln: Paare bleiben zusammen. 5 Spalten spaltenweise (zwei Reihen, Paare untereinander), 4 Spalten zeilenweise (4 + 4 + 2, Paare
+// Kacheln: Paare bleiben zusammen (Reihenfolge im Array tiles in renderStats, je zwei hintereinander). 5 Spalten spaltenweise (zwei Reihen, Paare untereinander), 4 Spalten zeilenweise (4 + 4 + 2, Paare
 // nebeneinander, das letzte Paar mittig in den Spalten 2 und 3, gleich breit wie alle) oder 2 Spalten zeilenweise (Paare nebeneinander).
 // Gemessen werden der längste Titel ohne Umbruch (kw) und der breiteste Wert in normaler Schrift (vw: tatsächlicher Wert voll, der Wert der
 // anderen Stellung des Schalters Rendite/Betrag aus data-alt und das Muster „-12.345,67 €“ bzw. „-12.345,67 USD“).
@@ -10514,6 +10585,8 @@ function layoutTiles(){
   // 4 Spalten: neunte Kachel in Spalte 2, die zehnte folgt in Spalte 3 (letztes Paar mittig)
   if(ts[8])ts[8].style.gridColumn=cols===4?'2':'';
   box.dataset.cols=cols;
+  // Ab 0.100: Leiste „Diese Woche“ mit 2 Kachelspalten: Werte bündig mit den Kachelspalten (Innenabstand wie die Kachel, Spaltenabstand Gap + 2 × Innenabstand)
+  {const cb=$('cwbar'),c2=cols===2,P=parseFloat(tc.paddingLeft);cb.classList.toggle('c2',c2);cb.style.paddingLeft=cb.style.paddingRight=c2?P+'px':'';cb.style.columnGap=c2?(gap+2*P)+'px':''}
   fitTileVals();
 }
 // Voller Text eines Kachelwerts (Beträge stehen in .vi mit data-f = mit Nachkommastellen, data-s = ohne)
@@ -10524,6 +10597,16 @@ function fitTileVals(){
   const vfs=$('tiles').dataset.vfs;
   for(const v of $('tiles').querySelectorAll('.tile>.v')){
     v.style.fontSize=vfs?vfs+'px':'';const i=v.querySelector('.vi');if(i)i.textContent=i.dataset.f;
+    const av=v.clientWidth;if(!av)continue;
+    const rg=document.createRange();const w=()=>{rg.selectNodeContents(v);return rg.getBoundingClientRect().width};
+    if(w()<=av+0.5)continue;
+    if(i&&i.dataset.s!==i.dataset.f){i.textContent=i.dataset.s;if(w()<=av+0.5)continue}
+    let fs=parseFloat(getComputedStyle(v).fontSize);
+    for(let k=0;k<30&&fs>8&&w()>av+0.5;k++){let nf=Math.floor(fs*av/w()*2)/2;if(nf>=fs)nf=fs-0.5;fs=Math.max(8,nf);v.style.fontSize=fs+'px'}
+  }
+  // Ab 0.100: Werte der Leiste „Diese Woche“ genauso (nur wenn sie nicht passen: ohne Nachkommastellen, dann kleiner)
+  for(const v of $('cwbar').querySelectorAll('.v')){
+    v.style.fontSize='';const i=v.querySelector('.vi');if(i)i.textContent=i.dataset.f;
     const av=v.clientWidth;if(!av)continue;
     const rg=document.createRange();const w=()=>{rg.selectNodeContents(v);return rg.getBoundingClientRect().width};
     if(w()<=av+0.5)continue;
@@ -10610,7 +10693,7 @@ function renderStats(rows){
   const T=pfz(R);const P=positions(R);const PS=tradeStats(P,'eur'),PN=tradeStats(P,'exE'),PX=ex?PN:PS;
   const rS=retSum(R,'sel',ex),dT=maxDD(R,'sel',ex);
   // Durchschnitte nach Zählweise (Kacheln, Karte „Durchschnitt“, Grafik, Rechner)
-  const AK=avgKz(R,win,'sel',zero,['day','week','month','trade']);
+  const AK=avgKz(R,win,'sel',zero,['day','week','month','trade'],CW);
   // Schalter Rendite/Betrag (S.ui.unit): Jede Kachel hat beide Stellungen. Jede sucht ihren eigenen Extremwert mit eigenem Datum.
   // Gezeigt wird die gewählte, der volle Wert der anderen steht in data-alt, damit layoutTiles() beide misst und nichts springt.
   const pct=S.ui.unit!=='amt';
@@ -10637,19 +10720,33 @@ function renderStats(rows){
     const r=fR.format(ex?z.rX:z.rI);
     return pct?[r,fCur(amt)+'<br>'+base,fCur(amt)]:[monT(amt),r+'<br>'+base,r];
   };
+  // Ab 0.100: Paare Netto-Gewinn | Rendite, Ø pro Handelstag | Ø pro Woche, Beste | Schlechteste Woche, Bester | Schlechtester Trade, Trefferquote | Max. Drawdown
   const tiles=[
     ex?[gl('netto','Netto-Gewinn'),monT(T.nN),'']:[gl('vorpf','Ergebnis vor PF'),monT(T.res),''],
+    [gl('rendite','Rendite'),retHtml(rS,'–',true),'auf deine '+gl('inv','Investition')+(rS.miss?'<br>'+mTx:'')],
+    ['Ø pro '+gl('tag','Handelstag'),...avgTile(AK.day,'Handelstag','Handelstagen','–')],
     ['Ø pro Woche',...avgTile(AK.week,'ganzen Woche','ganzen Wochen','noch keine ganze Woche')],
     ['Beste Woche',...wkTile(1)],
     ['Schlechteste Woche',...wkTile(-1)],
     ['Bester Trade',...trTile(PX.best,extP(1))],
     ['Schlechtester Trade',...trTile(PX.worst,extP(-1))],
-    [gl('rendite','Rendite'),retHtml(rS,'–',true),'auf deine '+gl('inv','Investition')+(rS.miss?'<br>'+mTx:'')],
-    ['Ø pro '+gl('tag','Handelstag'),...avgTile(AK.day,'Handelstag','Handelstagen','–')],
     [gl('hit','Trefferquote'),PS.n?fP.format(PS.win/PS.n):'–',`${fI.format(PS.win)} von ${fI.format(PS.n)} ${PS.n===1?'Trade':'Trades'}`],
     [gl('dd','Max. Drawdown'),ddHtml(dT,'–',true),dT.miss?mTx:'auf deine '+gl('inv','Investition')+(dT.n&&dT.v<0?' · '+jlink('d',dT.d,'am '+dS(dT.d)):'')]
   ];
   $('tiles').innerHTML=tiles.map(([k,v,s,alt])=>`<div class="tile"><div class="k">${k}</div><div class="v"${alt?` data-alt="${esc(alt)}"`:''}>${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`).join('');
+  // Ab 0.100: Leiste „Diese Woche“. Sichtbar, wenn die Woche (Mo bis So) des neuesten Trades der gewählten Konten die heutige Woche ist (Uhr des Geräts)
+  // und im gewählten Zeitraum liegt, also bis Sonntag 23:59, auch nach der Abrechnung. Stand: laufend (CW) vor Samstag „bisher · n von 5 Handelstagen“
+  // (n = Handelstage bis zum Datenstand), ab Samstag „Handel vorbei“ (mit „· PF noch offen“, wenn die Woche vor PF im Plus ist), sonst „abgerechnet“.
+  // Werte wie die erste Kachel (PF verteilt: Netto-Gewinn, PF laut MT5: Ergebnis vor PF) und die Rendite nach PF-Schalter, immer beide.
+  {const bar=$('cwbar');let lt=null;for(const r of RA)if(isTrade(r))lt=r;
+   const W=lt?lt.wk:null,inO=r=>(!rg.from||r.d>=rg.from)&&(!toOrig||r.d<=toOrig);
+   const on=!!W&&!rg.bad&&W===monday(todayLocal())&&RA.some(r=>isTrade(r)&&r.wk===W&&inO(r));
+   bar.hidden=!on;
+   if(on){const rw=nocwOn()?CWR:R.filter(r=>r.wk===W),z=pfz(rw);
+     let st=CW!==W?'abgerechnet':dataEnd<addDays(W,5)?`bisher · ${tradeDays(W,null,dataEnd)} von 5 Handelstagen`:z.res>0?'Handel vorbei · PF noch offen':'Handel vorbei';
+     if(nocwOn())st+=' · nicht in den Kennzahlen';
+     bar.innerHTML=`<div class="cwt"><div class="cwh">${jlink('w',W,'Diese Woche')}</div><div class="s">${st}</div></div><div class="cwv"><div><div class="k">${ex?gl('netto','Netto-Gewinn'):gl('vorpf','Ergebnis vor PF')}</div><div class="v">${monT(ex?z.nN:z.res)}</div></div><div><div class="k">${gl('rendite','Rendite')}</div><div class="v">${retHtml(retSum(rw,'sel',ex),'–',true)}</div></div></div>`}
+   else bar.innerHTML=''}
   layoutTiles();
   // Tabellen: Jede wechselnde Zelle enthält beide Stellungen (sw), sichtbar ist die gewählte
   $('stats-body').classList.toggle('pf-ex',ex);
@@ -10676,11 +10773,11 @@ function renderStats(rows){
     const ra=R.filter(r=>r.a===a);const z=pfz(ra);const cl=ra.filter(r=>r.cat==='close');
     const tI=tradeStats(cl,'eur'),tN=tradeStats(cl,'exE');
     const cap=CAP(a,endT); if(cap==null)capOk=false;else capSum+=cap;
-    h+=`<tr><td class="acc">${accCell(a)}</td><td>${fI.format(tI.n)}</td>${netTd(z)}<td>${mon(z.res)}</td>${feeTd(z)}${utd([[trd(tI.best,'eur'),trd(tN.best,'exE')],[trd(tI.worst,'eur'),trd(tN.worst,'exE')],[tI.n?mon(tI.avg):'–',tI.n?mon(tN.avg):'–']],trR(positions(ra,'own'),ra,'own',retSum(ra,'own',false).miss,[a]))}<td>${cap==null?gl(invKey([a]),INV[a]==='nofac'?'Trading Benefit fehlt':'unbekannt'):usd(cap)}</td><td>${rtSw(ra,'own','–',[a])}</td><td>${(()=>{const f=RA.find(r=>r.a===a&&isTrade(r));return f&&ra.some(isTrade)?wkAvg(avgKz(ra,cntWin(f.d,rg.from,rg.to,dataEnd),'own',zero,['week']),[a]):'–'})()}</td><td>${tI.n?fP.format(tI.win/tI.n):'–'}</td><td>${ddSw(ra,'own','–',[a])}</td></tr>`;
+    h+=`<tr><td class="acc">${accCell(a)}</td><td>${fI.format(tI.n)}</td>${netTd(z)}<td>${rtSw(ra,'own','–',[a])}</td><td>${cap==null?gl(invKey([a]),INV[a]==='nofac'?'Trading Benefit fehlt':'unbekannt'):usd(cap)}</td><td>${mon(z.res)}</td>${feeTd(z)}${utd([[trd(tI.best,'eur'),trd(tN.best,'exE')],[trd(tI.worst,'eur'),trd(tN.worst,'exE')],[tI.n?mon(tI.avg):'–',tI.n?mon(tN.avg):'–']],trR(positions(ra,'own'),ra,'own',retSum(ra,'own',false).miss,[a]))}<td>${(()=>{const f=RA.find(r=>r.a===a&&isTrade(r));return f&&ra.some(isTrade)?wkAvg(avgKz(ra,cntWin(f.d,rg.from,rg.to,dataEnd),'own',zero,['week'],CW),[a]):'–'})()}</td><td>${tI.n?fP.format(tI.win/tI.n):'–'}</td><td>${ddSw(ra,'own','–',[a])}</td></tr>`;
   }
-  h+=`<tr class="gesamt"><td class="acc">Gesamt (${allSel?'alle Konten':'Auswahl'})</td><td>${fI.format(PS.n)}</td>${netTd(T)}<td>${mon(T.res)}</td>${feeTd(T)}${utd([[trd(PS.best,'eur'),trd(PN.best,'exE')],[trd(PS.worst,'eur'),trd(PN.worst,'exE')],[PS.n?mon(PS.avg):'–',PS.n?mon(PN.avg):'–']],trR(P,R,'sel',AK.miss,sel))}<td>${capOk?usd(capSum):invDash(sel)}</td><td>${rtSw(R,'sel','–')}</td><td>${wkAvg(AK)}</td><td>${PS.n?fP.format(PS.win/PS.n):'–'}</td><td>${ddSw(R,'sel','–')}</td></tr>`;
-  $('t-acc').innerHTML=`<tr><th>Konto${SM0}</th><th>Trades${SM0}</th><th>${gl('netto','Netto-Gewinn')}${SMF}</th><th>${gl('vorpf','Ergebnis vor PF')}${SM0}</th><th>${gl('pf','Performance Fee')}${SMF}</th><th>Bester Trade${SMH}</th><th>Schlechtester Trade${SMH}</th><th>Ø pro Trade${SMH}</th><th>${gl('inv','Investition')}${smx(gl('ende','am Ende'))}</th><th>${gl('rendite','Rendite')}${SMH}</th><th class="w2">${gl('avg','Ø Rendite pro Woche')}${SMH}</th><th>${gl('hit','Trefferquote')}${SM0}</th><th>${gl('dd','Max. Drawdown')}${SMH}</th></tr>`+h;
-  renderGraf(R,sel,{wdCnt,win,zero,AK,from:rg.from});
+  h+=`<tr class="gesamt"><td class="acc">Gesamt (${allSel?'alle Konten':'Auswahl'})</td><td>${fI.format(PS.n)}</td>${netTd(T)}<td>${rtSw(R,'sel','–')}</td><td>${capOk?usd(capSum):invDash(sel)}</td><td>${mon(T.res)}</td>${feeTd(T)}${utd([[trd(PS.best,'eur'),trd(PN.best,'exE')],[trd(PS.worst,'eur'),trd(PN.worst,'exE')],[PS.n?mon(PS.avg):'–',PS.n?mon(PN.avg):'–']],trR(P,R,'sel',AK.miss,sel))}<td>${wkAvg(AK)}</td><td>${PS.n?fP.format(PS.win/PS.n):'–'}</td><td>${ddSw(R,'sel','–')}</td></tr>`;
+  $('t-acc').innerHTML=`<tr><th>Konto${SM0}</th><th>Trades${SM0}</th><th>${gl('netto','Netto-Gewinn')}${SMF}</th><th>${gl('rendite','Rendite')}${SMH}</th><th>${gl('inv','Investition')}${smx(gl('ende','am Ende'))}</th><th>${gl('vorpf','Ergebnis vor PF')}${SM0}</th><th>${gl('pf','Performance Fee')}${SMF}</th><th>Bester Trade${SMH}</th><th>Schlechtester Trade${SMH}</th><th>Ø pro Trade${SMH}</th><th class="w2">${gl('avg','Ø Rendite pro Woche')}${SMH}</th><th>${gl('hit','Trefferquote')}${SM0}</th><th>${gl('dd','Max. Drawdown')}${SMH}</th></tr>`+h;
+  renderGraf(R,sel,{wdCnt,win,zero,AK,from:rg.from,rl:rg.label+(nocwOn()?' ohne laufende Woche':'')});
   // Rechner „Was wäre wenn“: Wochenrenditen nach PF der gezählten ganzen Wochen, heutige Investition der gewählten Konten
   {let inv=0;for(const a of sel){const c=CAP(a,'9999');if(c==null){inv=null;break}inv+=c}
    CALC_D={k:AK.week.k,rets:AK.week.ps.map(p=>p.rX),miss:AK.miss||inv==null,accs:sel,why:invWhy(sel,'der Anfang eines Reports fehlt'),inv};renderCalc()}
@@ -10689,8 +10786,8 @@ function renderStats(rows){
   let mh='',cV=0,cN=0;
   // Investition am Anfang des Monats (invStart): beim ersten Trade, ohne Trade am sichtbaren Monatsbeginn
   const mStart=m=>rg.from&&rg.from>m+'-01'&&rg.from.slice(0,7)===m?rg.from:m+'-01';
-  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=pfz(rr);cV+=z.res;cN+=z.nN;mh+=`<tr><td>${mLabel(m)}</td><td>${positions(rr).length}</td>${netTd(z)}<td>${mon(z.res)}</td>${feeTd(z)}<td>${invU(invStart(rr,sel,mStart(m)),sel)}</td><td>${rtSw(rr,'sel','–')}</td><td>${ddSw(rr,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`}
-  mh+=`<tr class="sum"><td>Summe</td><td>${PS.n}</td>${netTd(T)}<td>${mon(T.res)}</td>${feeTd(T)}<td></td><td>${rtSw(R,'sel','–')}</td><td>${ddSw(R,'sel','–')}</td><td></td></tr>`;
+  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=pfz(rr);cV+=z.res;cN+=z.nN;mh+=`<tr><td>${mLabel(m)}</td><td>${positions(rr).length}</td>${netTd(z)}<td>${rtSw(rr,'sel','–')}</td><td>${invU(invStart(rr,sel,mStart(m)),sel)}</td><td>${mon(z.res)}</td>${feeTd(z)}<td>${ddSw(rr,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`}
+  mh+=`<tr class="sum"><td>Summe</td><td>${PS.n}</td>${netTd(T)}<td>${rtSw(R,'sel','–')}</td><td></td><td>${mon(T.res)}</td>${feeTd(T)}<td>${ddSw(R,'sel','–')}</td><td></td></tr>`;
   $('t-month').innerHTML=`<tr><th>Monat${SM0}</th><th>Trades${SM0}</th>${TH_MW()}</tr>`+mh;
   weekTree(R,{multi:sel.length>1,sel,wkSpan,cw:CW,cwr:CWR,cwSpan:CWR.length?[rg.from&&rg.from>CW?rg.from:CW,toOrig&&toOrig<addDays(CW,6)?toOrig:addDays(CW,6)]:null});
   // Matrix
@@ -10908,12 +11005,12 @@ function weekTree(R0,cx){
       if(!tr.length){gF.push(fee(fCur(zd.fV)));gN.push(netD(zd.nV,zd.res))}
       const ps=positions(rd).sort((a,b)=>a.t<b.t?-1:1);
       const wdI=(new Date(d+'T12:00:00Z').getUTCDay()+6)%7;
-      dh+=`<tr class="dy" data-w="${w}" data-d="${d}">${c1(`${ps.length?'<span class="tw">▸</span> ':'<span class="tw"></span> '}${WD[wdI]} ${dm(d)}`)}<td>${ps.length||''}</td><td>${sw(tr.length||fr?netD(zd.nV,zd.res):'',tr.length?netD(zd.nN,zd.res):'')}</td><td>${tr.length?mon(zd.res):''}</td><td>${sw(fr?fee(fCur(zd.fV)):'',tr.length?pfP(zd.fN):'')}</td><td>${invU(invStart(rd,cx.sel,d),cx.sel)}</td><td>${rtSw(rd,'sel','')}</td><td>${ddSw(rd,'sel','')}</td><td></td></tr>`;
+      dh+=`<tr class="dy" data-w="${w}" data-d="${d}">${c1(`${ps.length?'<span class="tw">▸</span> ':'<span class="tw"></span> '}${WD[wdI]} ${dm(d)}`)}<td>${ps.length||''}</td><td>${sw(tr.length||fr?netD(zd.nV,zd.res):'',tr.length?netD(zd.nN,zd.res):'')}</td><td>${rtSw(rd,'sel','')}</td><td>${invU(invStart(rd,cx.sel,d),cx.sel)}</td><td>${tr.length?mon(zd.res):''}</td><td>${sw(fr?fee(fCur(zd.fV)):'',tr.length?pfP(zd.fN):'')}</td><td>${ddSw(rd,'sel','')}</td><td></td></tr>`;
       for(const p of ps){
         const pk=esc(p.t+'|'+p.sym);
-        dh+=`<tr class="tr${multi?' x':''}" data-d="${d}" data-p="${pk}">${c1(`${multi?'<span class="tw">▸</span> ':''}${p.t.slice(11,16)} · ${esc(p.sym)}`)}<td></td><td>${sw(mon(p.eur),mon(p.exE))}</td><td>${mon(p.eur)}</td><td>${sw('',pfP(p.exE-p.eur))}</td><td>${invU(p.cap,cx.sel)}</td><td>${p.rMiss?'':sw(rH(p.rI),rH(p.rX))}</td><td></td><td></td></tr>`;
+        dh+=`<tr class="tr${multi?' x':''}" data-d="${d}" data-p="${pk}">${c1(`${multi?'<span class="tw">▸</span> ':''}${p.t.slice(11,16)} · ${esc(p.sym)}`)}<td></td><td>${sw(mon(p.eur),mon(p.exE))}</td><td>${p.rMiss?'':sw(rH(p.rI),rH(p.rX))}</td><td>${invU(p.cap,cx.sel)}</td><td>${mon(p.eur)}</td><td>${sw('',pfP(p.exE-p.eur))}</td><td></td><td></td></tr>`;
         if(multi)for(const a of Object.keys(p.acc).sort()){const q=p.acc[a];
-          dh+=`<tr class="ac" data-d="${d}" data-p="${pk}">${c1(esc(accName(a)))}<td></td><td>${sw(mon(q.eur),mon(q.exE))}</td><td>${mon(q.eur)}</td><td>${sw('',pfP(q.exE-q.eur))}</td><td>${invU(q.cO,[a])}</td><td>${q.cO>0?sw(rH(q.amt/q.cO),rH(q.exU/q.cO)):''}</td><td></td><td></td></tr>`}
+          dh+=`<tr class="ac" data-d="${d}" data-p="${pk}">${c1(esc(accName(a)))}<td></td><td>${sw(mon(q.eur),mon(q.exE))}</td><td>${q.cO>0?sw(rH(q.amt/q.cO),rH(q.exU/q.cO)):''}</td><td>${invU(q.cO,[a])}</td><td>${mon(q.eur)}</td><td>${sw('',pfP(q.exE-q.eur))}</td><td></td><td></td></tr>`}
       }
     }
     // Wochenzeile: aufgeklappt nur „KW 35“, das volle Label bleibt unsichtbar stehen und hält die Breite der ersten Spalte
@@ -10926,10 +11023,10 @@ function weekTree(R0,cx){
       GL.offencw={t:'offen',h:GL.offen.h+'\n'+t};
       GL.pfcw={t:'Performance Fee der laufenden Woche',h:'Tag bucht die Performance Fee dieser Woche erst am Samstag ab. Bis dahin rechnet das Tool sie aus: Anteil der letzten Abrechnung × Ergebnis der Woche, wenn es positiv ist.\n'+t};
       return sw(gl('offencw','offen'),gl('pfcw',mon(z.fN)),gF)};
-    h+=`<tr class="wk" data-w="${w}"><td><span class="wo"><span class="tw">▸</span> ${RW(`<b>${kw}</b>`)}</span><span class="wl"><span class="tw">▸</span> ${RW(`<b>${kw}</b> · ${dm(s)}${DS}${dm(e)}${yy}`)}</span>${nk?`<span class="sm">${gl('nichtkz','nicht in den Kennzahlen')}</span>`:''}</td><td>${np}</td><td><b>${sw(mon(z.nV),mon(z.nN),gN)}</b></td><td>${mon(z.res)}</td><td>${w===cx.cw?cwPf(rw,z,gF):sw(mon(z.fV),mon(z.fN),gF)}</td><td>${invU(invStart(rw,cx.sel,s),cx.sel)}</td><td>${rtSw(rw,'sel','–')}</td><td>${ddSw(rw,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`+dh;
+    h+=`<tr class="wk" data-w="${w}"><td><span class="wo"><span class="tw">▸</span> ${RW(`<b>${kw}</b>`)}</span><span class="wl"><span class="tw">▸</span> ${RW(`<b>${kw}</b> · ${dm(s)}${DS}${dm(e)}${yy}`)}</span>${nk?`<span class="sm">${gl('nichtkz','nicht in den Kennzahlen')}</span>`:''}</td><td>${np}</td><td><b>${sw(mon(z.nV),mon(z.nN),gN)}</b></td><td>${rtSw(rw,'sel','–')}</td><td>${invU(invStart(rw,cx.sel,s),cx.sel)}</td><td>${mon(z.res)}</td><td>${w===cx.cw?cwPf(rw,z,gF):sw(mon(z.fV),mon(z.fN),gF)}</td><td>${ddSw(rw,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`+dh;
   }
-  h+=`<tr class="sum"><td>Summe</td><td>${positions(R0).length}</td><td>${sw(mon(T.nV),mon(T.nN))}</td><td>${mon(T.res)}</td><td>${sw(mon(T.fV),mon(T.fN))}</td><td></td><td>${rtSw(R0,'sel','–')}</td><td>${ddSw(R0,'sel','–')}</td><td></td></tr>`;
-  if(cwr.length){const T2=pfz(R);h+=`<tr class="sum2"><td>Summe mit laufender Woche</td><td>${positions(R).length}</td><td>${sw(mon(T2.nV),mon(T2.nN))}</td><td>${mon(T2.res)}</td><td>${sw(mon(T2.fV),mon(T2.fN))}</td><td></td><td>${rtSw(R,'sel','–')}</td><td>${ddSw(R,'sel','–')}</td><td></td></tr>`}
+  h+=`<tr class="sum"><td>Summe</td><td>${positions(R0).length}</td><td>${sw(mon(T.nV),mon(T.nN))}</td><td>${rtSw(R0,'sel','–')}</td><td></td><td>${mon(T.res)}</td><td>${sw(mon(T.fV),mon(T.fN))}</td><td>${ddSw(R0,'sel','–')}</td><td></td></tr>`;
+  if(cwr.length){const T2=pfz(R);h+=`<tr class="sum2"><td>Summe mit laufender Woche</td><td>${positions(R).length}</td><td>${sw(mon(T2.nV),mon(T2.nN))}</td><td>${rtSw(R,'sel','–')}</td><td></td><td>${mon(T2.res)}</td><td>${sw(mon(T2.fV),mon(T2.fN))}</td><td>${ddSw(R,'sel','–')}</td><td></td></tr>`}
   const tb=$('t-week');
   tb.innerHTML=`<tr><th>Woche${SM0}</th><th>Trades${SM0}</th>${TH_MW()}</tr>`+h;
   weekVis();
@@ -11021,21 +11118,24 @@ function hitPoints(rows,res){
   return [...m.keys()].sort().map(k=>{const o=m.get(k);return Object.assign(mkPt(k,bucketLabel(k,res),{v:o.w/o.n}),{sub:`${fI.format(o.w)} von ${fI.format(o.n)} ${o.n===1?'Trade':'Trades'}`})});
 }
 // Textbreiten in einem unsichtbaren SVG messen (gleiche Schrift wie die Grafik)
-function measureTexts(texts,size){
+function measureTexts(texts,size,host){
   const NS='http://www.w3.org/2000/svg';const sv=document.createElementNS(NS,'svg');
   sv.setAttribute('style','position:absolute;left:-9999px;top:0;visibility:hidden');sv.setAttribute('width','10');sv.setAttribute('height','10');
-  $('graf-chart').appendChild(sv);
+  (host||$('graf-chart')).appendChild(sv);
   const out=texts.map(t=>{const el=document.createElementNS(NS,'text');el.setAttribute('font-size',size);el.textContent=t;sv.appendChild(el);return el}).map(el=>el.getBBox().width);
   sv.remove();return out;
 }
 let grafRedraw=null;
-function renderGrafChart(points,opts){
-  const box=$('graf-chart');
-  if(!points.length){box.innerHTML='<p class="small">Keine Daten in diesem Zeitraum.</p>';grafRedraw=null;return}
+// Ab 0.100: tgt (optional) = {box, w, h, exp}. exp = für das Bild (PNG): zeichnet mit fester Größe in box (unsichtbar, zum Messen), ohne
+// Flächen für Tooltips und ohne Tooltip, gibt das SVG als Text zurück und lässt grafRedraw unberührt. Im Vollbild (GFS) füllt die Grafik die Höhe der Box.
+function renderGrafChart(points,opts,tgt){
+  const T=tgt||{},box=T.box||$('graf-chart'),exp=!!T.exp;
+  if(!points.length){if(exp)return '';box.innerHTML='<p class="small">Keine Daten in diesem Zeitraum.</p>';grafRedraw=null;return}
+  let out='';
   const res=opts.res||null,FS=13,GAP=8,n=points.length;
   const draw=()=>{
     // pt: oben Platz für die Beschriftung der senkrechten Linien (Verteilung)
-    const w=Math.max(280,Math.round(box.getBoundingClientRect().width)||1000),h=260,pt=opts.vl?30:14,pb=34,FE=12;
+    const w=T.w||Math.max(280,Math.round(box.getBoundingClientRect().width)||1000),h=T.h||(GFS?Math.max(200,Math.round(box.getBoundingClientRect().height)||260):260),pt=opts.vl?30:14,pb=34,FE=12;
     // Die Werte der Ø-Linie stehen in der Titelzeile (Legende), die Grafik nutzt die volle Breite
     const pr=12;
     // Feste Skala (opts.yr = {mn, mx, step}, z. B. Trefferquote 0 bis 100 %), sonst aus den Werten
@@ -11046,7 +11146,7 @@ function renderGrafChart(points,opts){
       step=niceStep((mx-mn)/4);mx=Math.ceil(mx/step)*step;mn=Math.floor(mn/step)*step}
     // Linker Rand nach der breitesten Beschriftung der y-Achse (z. B. „-10.000 USD“), mindestens 60 px
     const yt=[];for(let v=mn;v<=mx+1e-9;v+=step)yt.push(opts.yfmt(v));
-    const pl=Math.max(60,Math.ceil(Math.max(...measureTexts(yt,FS)))+14);
+    const pl=Math.max(60,Math.ceil(Math.max(...measureTexts(yt,FS,box)))+14);
     // Mit Beschriftung von höchstem und tiefstem Balken (opts.ext) oben und unten je 16 px Luft, damit sie nie an Rand oder Achse stößt
     const eT=pt+(opts.ext?16:0),eB=h-pb-(opts.ext?16:0);
     const y=v=>eT+(mx-v)/(mx-mn)*(eB-eT);
@@ -11056,8 +11156,8 @@ function renderGrafChart(points,opts){
     const m=opts.edges?n+1:n;
     const base=opts.edges||points.map(p=>res?shortLabel(p.key,res,false):(p.axis||p.label));
     const withY=points.map(p=>(res==='day'||res==='week')?shortLabel(p.key,res,true):null);
-    const wBase=measureTexts(base,FS);
-    const wYear=withY[0]!=null?measureTexts(withY,FS):wBase;
+    const wBase=measureTexts(base,FS,box);
+    const wYear=withY[0]!=null?measureTexts(withY,FS,box):wBase;
     const multiYear=(res==='day'||res==='week')&&new Set(points.map(p=>bucketYear(p.key,res))).size>1;
     const cx=i=>pl+bw*i+bw/2;
     const ax=i=>opts.edges?pl+bw*i:cx(i);
@@ -11086,7 +11186,7 @@ function renderGrafChart(points,opts){
     // Verteilung: senkrechte Linien für Ø und Median pro Trade. Beschriftung oben, an der linken Linie nach links, an der rechten nach rechts,
     // so überdecken sie sich auch bei gleichen Werten nicht. Stößt eine an den Rand, rückt sie hinein; überlappen sie dann, kommt die zweite eine Zeile tiefer.
     if(opts.vl){
-      const vs=opts.vl.map(o=>Object.assign({},o,{x:Math.max(pl,Math.min(w-pr,pl+bw*(o.v-opts.lo)/opts.step)),tw:measureTexts([o.t],FS)[0]})).sort((a,b)=>a.x-b.x);
+      const vs=opts.vl.map(o=>Object.assign({},o,{x:Math.max(pl,Math.min(w-pr,pl+bw*(o.v-opts.lo)/opts.step)),tw:measureTexts([o.t],FS,box)[0]})).sort((a,b)=>a.x-b.x);
       vs.forEach((o,i)=>{const left=vs.length>1&&i===0;o.x0=left?o.x-4-o.tw:o.x+4;if(o.x0<2)o.x0=2;if(o.x0+o.tw>w-2)o.x0=w-2-o.tw;o.yb=pt-12;
         s+=`<line x1="${o.x}" x2="${o.x}" y1="${pt-8}" y2="${h-pb}" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="6 4" opacity=".75"/>`});
       if(vs.length>1&&vs[1].x0<vs[0].x0+vs[0].tw+4)vs[1].yb=pt+6;
@@ -11099,7 +11199,7 @@ function renderGrafChart(points,opts){
       const L=[{i:iMax,hi:true}];if(iMin!==iMax)L.push({i:iMin,hi:false});
       const ya=opts.avg?y(opts.avg.v):null,done=[];
       for(const o of L){
-        const p=points[o.i],t=opts.tipfmt(p.v),tw=measureTexts([t],FE)[0];
+        const p=points[o.i],t=opts.tipfmt(p.v),tw=measureTexts([t],FE,box)[0];
         const up=opts.kind==='line'?o.hi:p.v>=0,gapUp=opts.kind==='line'?7:5,gapDn=opts.kind==='line'?FE+5:FE+3;
         let by=up?y(p.v)-gapUp:y(p.v)+gapDn;
         const x=Math.max(pl+tw/2+1,Math.min(w-pr-tw/2-1,cx(o.i)));
@@ -11111,10 +11211,11 @@ function renderGrafChart(points,opts){
         s+=`<text class="exl" x="${x}" y="${by}" text-anchor="middle" font-size="${FE}" fill="var(--ink2)">${esc(t)}</text>`;
       }
     }
-    points.forEach((p,i)=>{s+=`<rect class="hit" data-i="${i}" x="${pl+bw*i}" y="${pt}" width="${bw}" height="${h-pt-pb}" fill="transparent"/>`});
+    if(!exp)points.forEach((p,i)=>{s+=`<rect class="hit" data-i="${i}" x="${pl+bw*i}" y="${pt}" width="${bw}" height="${h-pt-pb}" fill="transparent"/>`});
     for(const o of lab)s+=`<text class="axlbl" x="${place(o.i,o.wd)}" y="${h-12}" text-anchor="middle" font-size="${FS}" fill="var(--muted)">${esc(o.t)}</text>`;
-    s+=`<line x1="${pl}" x2="${w-pr}" y1="${y(0)}" y2="${y(0)}" stroke="var(--ink2)" stroke-width="1"/></svg><div class="tip" id="graf-tip"></div>`;
-    box.innerHTML=s;
+    s+=`<line x1="${pl}" x2="${w-pr}" y1="${y(0)}" y2="${y(0)}" stroke="var(--ink2)" stroke-width="1"/></svg>`;
+    if(exp){out=s;return}
+    box.innerHTML=s+'<div class="tip" id="graf-tip"></div>';
     const tip=$('graf-tip');
     // Dritte Zeile: eigene Zeile des Punkts (p.sub, z. B. „6 von 7 Trades“), sonst die PF-Stellung
     const show=(i,x,yy)=>{const p=points[i];tip.innerHTML=`${esc(p.label)}<br><b>${opts.tipfmt(p.v)}</b><br>${esc(p.sub!=null?p.sub:opts.mode||'')}`;tip.style.display='block';const b=box.getBoundingClientRect();let lx=x-b.left+12;if(lx>b.width-200)lx-=220;if(lx<0)lx=0;tip.style.left=lx+'px';tip.style.top=(yy-b.top-10)+'px'};
@@ -11126,6 +11227,7 @@ function renderGrafChart(points,opts){
     });
   };
   draw();
+  if(exp)return out;
   grafRedraw=draw;
 }
 // rows = schon gefilterte Zeilen (Zeitraum und Konten aus dem Filter oben), sel = gewählte Konten. vor/nach PF kommt vom Schalter in der Filterzeile.
@@ -11143,7 +11245,7 @@ function renderGraf(rows,sel,gx){
   const series=g.what==='period'||g.what==='cum'||g.what==='avg'||g.what==='inv'||g.what==='hit';
   $('graf-res-l').style.display=series?'':'none';$('graf-kind-l').style.display=series?'':'none';$('graf-wd-l').style.display=g.what==='weekday'?'':'none';
   $('graf-unit-l').style.display=g.what==='inv'||g.what==='hit'?'none':'';
-  const box=$('graf-chart');$('graf-note').innerHTML='';$('graf-title').innerHTML='';grafRedraw=null;
+  const box=$('graf-chart');$('graf-note').innerHTML='';$('graf-title').innerHTML='';grafRedraw=null;grafSet(null);
   if(!rows.length){box.innerHTML='<p class="small">Keine Daten in diesem Zeitraum.</p>';return}
   const ex=S.ui.flt.pf==='ex',mode=ex?'nach PF':'vor PF',pct=g.unit==='pct';
   const size=pct?'Rendite':'Gewinn',u=pct?'%':CUR_EFF==='usd'?'USD':'€',avgWd=g.wd==='avg';
@@ -11214,9 +11316,91 @@ function renderGraf(rows,sel,gx){
   const leg=opts.avg?lg(opts.avg.t):opts.vl?opts.vl.map(o=>lg(o.lt)).join(''):'';
   $('graf-title').innerHTML=tline(leg);
   renderGrafChart(pts,opts);
+  // Ab 0.100: für Vollbild und Bild (Titelzeile als Text, Legende einzeln, Name und Auflösung für den Dateinamen)
+  grafSet(pts.length?{pts,opts,title,tsub,leg:opts.avg?[opts.avg.t]:opts.vl?opts.vl.map(o=>o.lt):[],what:g.what,res:series?g.res:null,rl:gx.rl||''}:null);
   $('graf-note').innerHTML=`<p style="margin:4px 0">${esc(main)}</p>`;
   save();
 }
+/* ---------------- Ab 0.100: Grafik im Vollbild und als Bild (PNG) ----------------
+   GRAF_LAST: die gezeigte Grafik (Punkte, Optionen, Titel, Legende, Zeitraum), gesetzt von renderGraf, null ohne Grafik.
+   Vollbild: #graf-chart wandert in #gfs (Tooltips bleiben), Fullscreen-API wo vorhanden, sonst eine feste Fläche (z. B. iPhone).
+   Schließen: Knopf, Esc, Zurück-Taste (ein Eintrag im Verlauf) und Verlassen des Vollbilds durch das System. Keine Sperre der Ausrichtung.
+   Bild: immer quer (960 × 540, gespeichert mit 1200 × 675 Pixeln), immer hell (Farben aus der hellen :root-Regel fest im Bild), komplett offline. */
+let GRAF_LAST=null,GFS=false,GFS_H=false,GPNG=null,GPNG_B=null;
+// Teilen von Dateien: einmal prüfen. Ohne heißt der Knopf „Bild speichern“ und speichert direkt.
+const CAN_SHARE_FILE=(()=>{try{return !!(navigator.canShare&&navigator.share&&navigator.canShare({files:[new File([new Uint8Array(8)],'t.png',{type:'image/png'})]}))}catch(e){return false}})();
+for(const w of ['gb','gb2']){const b=$('fb-'+w);b.textContent=CAN_SHARE_FILE?'Bild ▾':'Bild speichern';if(!CAN_SHARE_FILE){b.removeAttribute('aria-expanded');b.removeAttribute('aria-controls')}}
+function grafSet(L){GRAF_LAST=L;GPNG=GPNG_B=null;$('graf-btns').hidden=!L;if(GFS){if(L)gfsHead();else gfsClose()}}
+// Kopf im Vollbild: Titel wie in der Karte (mit PF-Stellung und Legende), darunter der Zeitraum
+function gfsHead(){$('gfs-title').innerHTML=$('graf-title').innerHTML;$('gfs-range').textContent=GRAF_LAST?GRAF_LAST.rl:''}
+function gfsRedraw(){if(GFS&&grafRedraw)grafRedraw()}
+function gfsOpen(){
+  if(GFS||!GRAF_LAST)return;GFS=true;closeFpanel();if(typeof glClose==='function'&&GP)glClose();
+  const ov=$('gfs');ov.hidden=false;gfsHead();$('gfs-c').appendChild($('graf-chart'));document.documentElement.classList.add('gfso');
+  try{history.pushState({gfs:1},'');GFS_H=true}catch(e){GFS_H=false}
+  if(ov.requestFullscreen)ov.requestFullscreen().catch(()=>{});
+  requestAnimationFrame(gfsRedraw);$('gfs-x').focus({preventScroll:true});
+}
+function gfsClose(){
+  if(!GFS)return;GFS=false;closeFpanel();
+  $('graf-note').before($('graf-chart'));$('gfs').hidden=true;document.documentElement.classList.remove('gfso');
+  if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+  if(GFS_H){GFS_H=false;try{history.back()}catch(e){}}
+  if(grafRedraw)grafRedraw();$('graf-fs').focus({preventScroll:true});
+}
+$('graf-fs').addEventListener('click',e=>{e.stopPropagation();e.preventDefault();gfsOpen()});
+$('gfs-x').addEventListener('click',e=>{e.preventDefault();gfsClose()});
+window.addEventListener('popstate',()=>{if(GFS){GFS_H=false;gfsClose()}});
+document.addEventListener('fullscreenchange',()=>{if(!GFS)return;if(!document.fullscreenElement)gfsClose();else requestAnimationFrame(gfsRedraw)});
+// Esc: zuerst offenes Menü oder Begriff (eigene Handler), sonst Vollbild zu. Auf window in der Capture-Phase, damit der Zustand vor den anderen Handlern gilt.
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&GFS&&!FP_OPEN&&!GP&&!MODAL){e.preventDefault();gfsClose()}},true);
+// Drehen oder Größe ändern im Vollbild: neu zeichnen (der allgemeine Handler zeichnet nur bei neuer Breite)
+{let q=0;const f=()=>{if(GFS&&!q)q=requestAnimationFrame(()=>{q=0;gfsRedraw()})};window.addEventListener('resize',f);window.addEventListener('orientationchange',f)}
+// Knöpfe „Bild ▾“ / „Bild speichern“ (Karte und Vollbild). Beim Öffnen des Menüs entsteht das Bild schon, damit „Teilen“ in der Nutzergeste bleibt.
+for(const w of ['gb','gb2'])$('fdd-'+w).addEventListener('click',e=>{e.stopPropagation();
+  if(e.target.closest('#fb-'+w)){e.preventDefault();if(!CAN_SHARE_FILE){grafSave();return}if(FP_OPEN===w)closeFpanel();else{openFpanel(w);grafPrep()}return}
+  const o=e.target.closest('[data-gimg]');if(o){closeFpanel();if(o.dataset.gimg==='share')grafShare();else grafSave()}});
+// Dateiname: Trading-Bilanz_<Grafik>_<Auflösung>_<JJJJ-MM-TT>.png (Grafiken ohne Wahl der Auflösung ohne diesen Teil)
+const GRAF_FN={period:'Pro-Zeitraum',cum:'Verlauf',avg:'Durchschnitt-pro-Trade',weekday:'Wochentag',dist:'Verteilung',inv:'Investition',hit:'Trefferquote'};
+function grafFileName(){const L=GRAF_LAST,r=L&&L.res?{day:'Tag',week:'Woche',month:'Monat'}[L.res]:'';return `Trading-Bilanz_${L&&GRAF_FN[L.what]||'Grafik'}${r?'_'+r:''}_${todayLocal()}.png`}
+// Helle Farben: Variablen der :root-Regel außerhalb von @media (dort stehen die dunklen), Ersatz falls nicht lesbar
+const GLIGHT={'--card':'#ffffff','--ink':'#1a1a1a','--ink2':'#373d43','--muted':'#454b51','--line':'#e2e0da','--accent':'#2a63a6','--neg':'#c2410c','--pos':'#1f7a4d'};
+function lightVars(){const o=Object.assign({},GLIGHT);
+  for(const sh of document.styleSheets){let rs;try{rs=sh.cssRules}catch(e){continue}for(const r of rs)if(r.type===1&&r.selectorText===':root')for(const n of r.style)if(n.startsWith('--')){const v=r.style.getPropertyValue(n).trim();if(v)o[n]=v}}
+  return o}
+// Bild der gezeigten Grafik als PNG (Promise<Blob>): Titel wie angezeigt, Zeitraum, Grafik (Ø/Median und Extremwerte nur, wenn die Grafik sie zeigt),
+// unten klein „Trading-Bilanz · trading-bilanz.github.io“. Keine Kontonamen, keine Hinweise, keine Tooltips, keine Knöpfe.
+function grafPng(){
+  const L=GRAF_LAST;if(!L)return Promise.reject(new Error('keine Grafik'));
+  const W=960,H=540,M=24,SC=1200/W,ff=getComputedStyle(document.body).fontFamily,V=lightVars(),col=t=>t.replace(/var\((--[\w-]+)\)/g,(m,n)=>V[n]||GLIGHT['--ink']);
+  const cv=document.createElement('canvas'),cx=cv.getContext('2d'),tw=(t,f)=>{cx.font=f;return cx.measureText(t).width};
+  // Titelzeile in Stücken: Titel fett, dann „· nach PF“ und die Legende (gestrichelter Strich und Wert); umbrochen nur zwischen den Stücken
+  const FT=`700 19px ${ff}`,FL=`400 14px ${ff}`,parts=[{t:L.title,f:FT,b:1}];
+  if(L.tsub)parts.push({t:'· '+L.tsub,f:FL});for(const x of L.leg)parts.push({t:'· ',f:FL,dash:x});
+  let lines=[[]],x0=M;const LH=26;
+  for(const p of parts){const w=p.dash?tw(p.t,FL)+22+tw(p.dash,FL):tw(p.t,p.f);if(lines[lines.length-1].length&&x0+w>W-M){lines.push([]);x0=M}lines[lines.length-1].push(Object.assign({x:x0,w},p));x0+=w+7}
+  let s='';const top0=M+18;
+  lines.forEach((ln,i)=>{const y=top0+i*LH;for(const p of ln){
+    if(p.dash){const a=p.x+tw(p.t,FL);s+=`<text x="${p.x}" y="${y}" font-size="14" fill="${V['--ink2']}">${esc(p.t)}</text><line x1="${a}" x2="${a+18}" y1="${y-5}" y2="${y-5}" stroke="${V['--ink']}" stroke-width="1.5" stroke-dasharray="6 4" opacity=".75"/><text x="${a+22}" y="${y}" font-size="14" fill="${V['--ink2']}">${esc(p.dash)}</text>`}
+    else s+=`<text x="${p.x}" y="${y}" font-size="${p.b?19:14}" font-weight="${p.b?700:400}" fill="${p.b?V['--ink']:V['--ink2']}">${esc(p.t)}</text>`}});
+  const yR=top0+(lines.length-1)*LH+22;s+=`<text x="${M}" y="${yR}" font-size="13" fill="${V['--muted']}">${esc(L.rl)}</text>`;
+  const cT=yR+14,cH=H-cT-30,cW=W-2*M;
+  const hb=document.createElement('div');hb.className='chart';hb.style.cssText=`position:absolute;left:-10000px;top:0;width:${cW}px;visibility:hidden`;document.body.appendChild(hb);
+  let ch;try{ch=renderGrafChart(L.pts,L.opts,{box:hb,w:cW,h:cH,exp:true})}finally{hb.remove()}
+  s+=col(ch).replace(/^<svg /,`<svg x="${M}" y="${cT}" `);
+  s+=`<text x="${W-M}" y="${H-10}" text-anchor="end" font-size="11" fill="${V['--muted']}">Trading-Bilanz · trading-bilanz.github.io</text>`;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W*SC}" height="${H*SC}" viewBox="0 0 ${W} ${H}" font-family="${esc(ff)}"><rect width="${W}" height="${H}" fill="${V['--card']}"/>${s}</svg>`;
+  return new Promise((ok,bad)=>{const img=new Image(),u=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
+    img.onload=()=>{try{cv.width=W*SC;cv.height=H*SC;const c=cv.getContext('2d');c.fillStyle=V['--card'];c.fillRect(0,0,cv.width,cv.height);c.drawImage(img,0,0,cv.width,cv.height);URL.revokeObjectURL(u);
+      cv.toBlob(b=>b?ok(b):bad(new Error('toBlob')),'image/png')}catch(e){URL.revokeObjectURL(u);bad(e)}};
+    img.onerror=()=>{URL.revokeObjectURL(u);bad(new Error('Bild'))};img.src=u});
+}
+function grafPrep(){if(!GPNG){const L=GRAF_LAST;GPNG=grafPng();GPNG.then(b=>{if(GRAF_LAST===L)GPNG_B=b},()=>{GPNG=null})}return GPNG}
+function grafSave(){const n=grafFileName();(GPNG_B?Promise.resolve(GPNG_B):grafPrep()).then(b=>download(n,b,'image/png'),()=>toast('Das Bild ließ sich nicht erzeugen.'))}
+// Teilen: dieselbe PNG-Datei. Abbrechen ohne Meldung; geht Teilen nicht, speichert das Tool das Bild.
+function grafShare(){const n=grafFileName();
+  const go=b=>{const f=new File([b],n,{type:'image/png'});navigator.share({files:[f]}).catch(e=>{if(e&&e.name==='AbortError')return;download(n,b,'image/png');toast('Teilen ging nicht, das Bild ist gespeichert.')})};
+  if(GPNG_B)go(GPNG_B);else grafPrep().then(go,()=>toast('Das Bild ließ sich nicht erzeugen.'))}
 function renderTax(rows){
   // Ab 0.46 (2.7, 3.4): „Ohne Steuer“: nur der Hinweis und die Wahl, sonst nichts (die Rechnung im Hintergrund bleibt gleich)
   $('country').value=['DE','none'].includes(S.ui.country)?S.ui.country:'AT';const off=S.ui.country==='none';$('tax-off').hidden=!off;
@@ -11740,7 +11924,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.96',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.100',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -11869,13 +12053,38 @@ function goTo(tab,id){
 // Nach jedem Öffnen und Schließen aufrufen (modalOn, openModal, closeModal).
 function modalLock(){const on=!!document.querySelector('.modal.on'),r=document.documentElement;if(on===r.classList.contains('mlock'))return;
   if(on){r.style.setProperty('--sbw',Math.max(0,window.innerWidth-r.clientWidth)+'px');r.classList.add('mlock')}else{r.classList.remove('mlock');r.style.removeProperty('--sbw')}}
-function modalOn(el,on){el.classList.toggle('on',on);modalLock()}
+function modalOn(el,on){el.classList.toggle('on',on);modalLock();
+  // Ab 0.98: Hinweis zum Weiterscrollen beim Öffnen prüfen (scrollHint)
+  const b=on&&el.querySelector('.box');if(b&&b._shint)b._shint()}
+// Ab 0.97: Hinweis zum Weiterscrollen (.shint in der Knopfleiste). Sichtbar, solange unter dem sichtbaren Bereich noch mehr als 4 px Inhalt kommen.
+// Ab 0.98 (Florians Auftrag) in allen Fenstern mit fester Knopfleiste (.mft, sticky), ein Mechanismus für alle: scrollHint setzt .shint als erstes Kind
+// in die Knopfleiste (die Begrüßung hat ihn schon im HTML). Schreibt das Tool die Leiste neu („＋ Daten“, dtFoot), setzt ihn upd wieder hinein.
+// Scrollt ein Bereich im Fenster selbst (SHINT_IN, „Kontostände prüfen“), zählt er mit; der Pfeil scrollt zuerst das Fenster, dann diesen Bereich.
+// Prüft beim Scrollen (auch innen), bei jeder Größenänderung von Fenster und Inhalt (ResizeObserver), bei neuem Inhalt (MutationObserver) und beim
+// Öffnen (modalOn). Der Pfeil scrollt um gut die Hälfte der sichtbaren Höhe. Nicht in der Rückfrage (#ask-box): Dort scrollt die Knopfleiste mit.
+const SHINT_HTML='<div class="shint" aria-hidden="true"><button type="button" class="shint-a" tabindex="-1" title="Weiter nach unten">↓</button></div>',SHINT_IN='.kbw';
+function scrollHint(box){const mft=box&&box.querySelector(':scope>.mft');if(!mft)return()=>{};
+  let h=mft.querySelector(':scope>.shint');if(!h){mft.insertAdjacentHTML('afterbegin',SHINT_HTML);h=mft.firstElementChild}
+  const rest=el=>el.clientHeight>0?el.scrollHeight-el.clientHeight-el.scrollTop:0,
+    areas=()=>[box,...[...box.querySelectorAll(SHINT_IN)].filter(el=>el.getClientRects().length)];
+  let raf=0;const upd=()=>{if(raf){cancelAnimationFrame(raf);raf=0}if(h.parentNode!==mft)mft.prepend(h);h.classList.toggle('on',areas().some(el=>rest(el)>4))},
+    later=()=>{if(!raf)raf=requestAnimationFrame(upd)};
+  box.addEventListener('scroll',upd,{passive:true,capture:true});window.addEventListener('resize',later);
+  const seen=new WeakSet(),ro=window.ResizeObserver?new ResizeObserver(later):null,
+    obs=()=>{if(ro)for(const c of [box,...box.children])if(!seen.has(c)){seen.add(c);ro.observe(c)}};obs();
+  if(window.MutationObserver)new MutationObserver(()=>{obs();later()}).observe(box,{childList:true,subtree:true,attributes:true,attributeFilter:['open','hidden']});
+  h.querySelector('button').addEventListener('click',()=>{const el=areas().find(x=>rest(x)>4);
+    if(el)el.scrollBy({top:Math.max(80,Math.round(el.clientHeight*.6)),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});
+  box._shint=upd;upd();return upd}
 document.querySelectorAll('.modal .box').forEach(b=>wheelContain(b));
 // Ab 0.44: feste Knopfleiste unten in jedem Fenster. Fenster ohne eigene (.mft): Ist das letzte Element eine Zeile mit Knöpfen, wird sie zur
 // Leiste, sonst kommt „Schließen“ dazu.
 document.querySelectorAll('.modal .box').forEach(b=>{if(b.querySelector(':scope>.mft'))return;const l=b.lastElementChild;
   if(l&&l.classList.contains('row')&&l.querySelector('button')&&!l.querySelector('input,select,textarea')){l.classList.add('mft');l.style.marginTop='';return}
   b.insertAdjacentHTML('beforeend','<div class="row mft"><button type="button" class="btn" data-mclose>Schließen</button></div>')});
+// Ab 0.98: Hinweis zum Weiterscrollen in allen Fenstern außer der Rückfrage (siehe scrollHint)
+document.querySelectorAll('.modal .box').forEach(b=>{if(b.parentNode.id!=='ask-box')scrollHint(b)});
+const INTRO_HINT=$('intro-modal').querySelector('.box')._shint||(()=>{});
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-mclose]')){if(MODAL&&MODAL.id==='td-modal')tdLeave(closeModal);else closeModal()}});
 // Fenster mit × („Erste Schritte“, „Datenschutz“, Anleitungen): schließen mit ×, Esc oder Klick daneben, danach Fokus zurück auf den Knopf.
 // Es ist immer nur ein Fenster offen (openModal schließt das vorige).
@@ -12236,7 +12445,7 @@ try{
  // Ab 0.50 (2.2 b): gespeicherte Antworten, die auf nicht mehr Vorhandenes zeigen oder nichts bewirken, fallen weg
  if(naClean(S))ch++;
  if(ch)save()}
-if(!BOOT_BAD&&!S.ui.ack){introLand('');modalOn($('intro-modal'),true)}
+if(!BOOT_BAD&&!S.ui.ack){introLand('');modalOn($('intro-modal'),true);INTRO_HINT()}
 render()}catch(e){bootFail(e);modalOn($('intro-modal'),false);try{render()}catch(e2){console.warn(e2)}}
 SAVE_OFF=false;if(SAVE_DUE&&!BOOT_BAD){SAVE_DUE=false;save()}
 if(BOOT_BAD)bootShow();else rateGoneToast();
