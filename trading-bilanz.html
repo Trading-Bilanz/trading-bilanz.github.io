@@ -283,6 +283,31 @@ tr.sum td b,tr.gesamt td b,.tdbk tr.tdcur td b,.tdrund li.tdcur>.tdar b{font-wei
 .tile .k,.tile .s{overflow-wrap:anywhere}
 .ov .tiles{margin:8px 0 2px}
 .ov .tile{background:var(--bg);border:0;border-radius:8px}
+/* Ab 0.100: Leiste „Diese Woche“ unter den Kacheln, volle Breite, wie eine Kachel, etwas weniger Innenabstand, kleinere Werte, keine Farbe.
+   PC: eine Zeile (links Titel und Stand, rechts Betrag und Rendite). Mit 2 Kachelspalten (.c2, gesetzt von layoutTiles): Titel und Stand
+   über beiden Spalten, die Werte darunter bündig mit den Kachelspalten (Innenabstand und Spaltenabstand setzt layoutTiles). */
+.cwbar{display:flex;align-items:center;justify-content:space-between;gap:6px 24px;background:var(--bg);border-radius:8px;padding:10px 16px;margin:10px 0 2px}
+.cwbar[hidden]{display:none}
+/* Ab 0.100: Grafik im Vollbild: eine Fläche über allem (Fullscreen-API, sonst feste Fläche), Titel und Zeitraum oben, die Grafik füllt den Rest */
+.gfs{position:fixed;inset:0;z-index:58;background:var(--card);color:var(--ink);display:flex;flex-direction:column;gap:6px;padding:max(10px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));box-sizing:border-box}
+.gfs[hidden]{display:none}
+.gfsh{display:flex;gap:6px 12px;align-items:flex-start;justify-content:space-between;flex:none}
+.gfst{min-width:0}
+.gfst h3{margin:0 0 2px}
+.gfst p{margin:0}
+.gfsb{display:flex;gap:8px;flex:none;align-items:center}
+.gfsc{flex:1;min-height:0;display:flex;overflow:hidden}
+.gfsc .chart{flex:1;min-width:0;min-height:0}
+html.gfso,html.gfso body{overflow:hidden}
+.cwbar .cwh{font-weight:600}
+.cwbar .s{font-size:var(--fs-xs);color:var(--muted)}
+.cwbar .cwv{display:flex;gap:28px;flex:none}
+.cwbar .k{font-size:var(--fs-s);color:var(--ink2)}
+.cwbar .v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cwbar.c2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));row-gap:6px}
+.cwbar.c2 .cwt{grid-column:1/-1}
+.cwbar.c2 .cwv{display:contents}
+.cwbar.c2 .cwv>div{min-width:0}
 th .sm,td .sm{display:block;font-weight:400;font-size:var(--fs-xxs);color:var(--muted)}
 td.acc{white-space:normal;min-width:7em}
 .fee-d{color:var(--muted)}
@@ -494,6 +519,9 @@ button.wopt:hover,button.wopt:focus-visible{color:var(--accent)}
   .tile .k{font-size:var(--fs-xs)}
   .tile>.v{font-size:clamp(15px,4.6vw,20px);white-space:nowrap}
   .tile .s{font-size:12.5px}
+  .cwbar{padding:8px 10px;margin-top:6px}
+  .cwbar .k{font-size:var(--fs-xs)}
+  .cwbar .v{font-size:clamp(14px,4.2vw,16px)}
   #fbar .fin{padding:5px 12px;gap:6px}
   .fsel{padding:4px 8px;gap:4px}
   .tscroll td:first-child{white-space:normal}
@@ -1469,6 +1497,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <div class="card fold ov stk" data-fold="st-ov" id="st-ov">
       <div class="sthd"><h2 class="hx">Überblick <button type="button" class="ib" data-gl="k-ov" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Überblick">i</button><span class="fdd wdd udd noprint" id="fdd-u1"><button type="button" class="btn h2btn" id="fb-u1" aria-expanded="false" aria-controls="fp-u1">Rendite ▾</button><div class="fpan" id="fp-u1" role="dialog" aria-label="Rendite oder Betrag"></div></span></h2></div>
       <div class="tiles" id="tiles"></div>
+      <!-- Ab 0.100: Leiste „Diese Woche“ (renderStats), sichtbar in der Woche des neuesten Trades, wenn sie die heutige ist -->
+      <div class="cwbar" id="cwbar" hidden></div>
     </div>
     <div class="card fold stk" data-fold="st-hl" id="st-hl">
       <div class="sthd"><h2 class="hx">Hochs und Tiefs <button type="button" class="ib" data-gl="k-hl" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Hochs und Tiefs">i</button><span class="fdd wdd udd noprint" id="fdd-u2"><button type="button" class="btn h2btn" id="fb-u2" aria-expanded="false" aria-controls="fp-u2">Rendite ▾</button><div class="fpan" id="fp-u2" role="dialog" aria-label="Rendite oder Betrag"></div></span></h2></div>
@@ -1480,7 +1510,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
       <p class="small noprint" style="margin:10px 0 0"><span id="avg-zd"></span> · <button type="button" class="zlink">ändern</button></p>
     </div>
     <div class="card fold stk" data-fold="st-graf" id="st-graf">
-      <div class="sthd"><h2>Grafiken <button type="button" class="ib" data-gl="k-graf" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Grafiken">i</button></h2></div>
+      <div class="sthd"><h2 class="hx">Grafiken <button type="button" class="ib" data-gl="k-graf" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Grafiken">i</button><span class="tbtns noprint" id="graf-btns"><button type="button" class="btn h2btn" id="graf-fs">Vollbild</button><span class="fdd udd" id="fdd-gb"><button type="button" class="btn h2btn" id="fb-gb" aria-expanded="false" aria-controls="fp-gb">Bild ▾</button><div class="fpan" id="fp-gb" role="dialog" aria-label="Bild"></div></span></span></h2></div>
       <div class="row noprint" id="graf-controls" style="gap:10px 16px;margin-bottom:6px">
         <label>Was<br><select id="graf-what">
           <option value="period">Pro Zeitraum</option>
@@ -2099,6 +2129,12 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <div id="adpop" class="noprint" role="dialog" aria-label="Einzelheiten" hidden></div>
 <!-- Popup für Begriffe und ⓘ, siehe „Begriffe und ⓘ (Popups)“ im Skript -->
 <div id="glpop" class="noprint" role="dialog" aria-labelledby="glpop-t" hidden><button type="button" class="glx" aria-label="Schließen">×</button><div class="glin"><div class="glt" id="glpop-t"></div><div class="glh" id="glpop-h"></div></div></div>
+<!-- Ab 0.100: Grafik im Vollbild (gfsOpen). #graf-chart wandert beim Öffnen hierher und beim Schließen zurück. -->
+<div id="gfs" class="gfs noprint" hidden role="dialog" aria-modal="true" aria-label="Grafik im Vollbild">
+  <div class="gfsh"><div class="gfst"><h3 id="gfs-title"></h3><p class="small" id="gfs-range"></p></div>
+  <div class="gfsb"><span class="fdd udd" id="fdd-gb2"><button type="button" class="btn h2btn" id="fb-gb2" aria-expanded="false" aria-controls="fp-gb2">Bild ▾</button><div class="fpan" id="fp-gb2" role="dialog" aria-label="Bild"></div></span><button type="button" class="btn h2btn" id="gfs-x">× Schließen</button></div></div>
+  <div class="gfsc" id="gfs-c"></div>
+</div>
 <script>
 "use strict";
 // Online-Version (http/https): html.online zeigt die Herunterladen-Hinweise (.onl). Gleich am Anfang, damit nichts nachträglich aufspringt.
@@ -2198,7 +2234,7 @@ function rvScan(){
 // die eine ältere Fassung bestätigt haben (S.ui.taxAck). Hier oben, weil render() es braucht.
 // Ab 0.82: Fassung 2 („von einer Steuerberatung“ statt „von einer Steuerberaterin“)
 const TAX_DISC_V=2;
-function blank(){return {v:1,accounts:{},deals:{},map:{},rates:{},tag:{},cx:[],wallets:['Meine Wallet'],defCoin:'USDC',rsrc:{},rown:{},tagDrop:[],tagSame:{},tagSkip:[],tagBatch:0,cxKeep:[],wbal:{},pfOk:[],wtx:{},addr:{},cxNo:0,tok:{},wign:{},cardFee:{},bxOpen:{},tagMeth:{},rcov:{load:'',file:''},ui:{tab:'reports',wFlt:{range:'all',from:'',to:''},rAuto:true,rtUsed:true,yTax:null,other:'',opt:false,flt:{range:'all',from:'',to:'',off:[],pf:'ex',cur:'eur',nocw:false,zeroDays:true},graf:{what:'period',res:'week',kind:'bar',unit:'amt',wd:'sum',avg:false},calc:{inv:'',dur:'12',unit:'m',own:'',tax:'',reinv:false,taxOn:false},unit:'pct'}}}
+function blank(){return {v:1,accounts:{},deals:{},map:{},rates:{},tag:{},cx:[],wallets:['Meine Wallet'],defCoin:'USDC',rsrc:{},rown:{},tagDrop:[],tagSame:{},tagSkip:[],tagBatch:0,cxKeep:[],wbal:{},pfOk:[],wtx:{},addr:{},cxNo:0,tok:{},wign:{},cardFee:{},bxOpen:{},tagMeth:{},rcov:{load:'',file:''},ui:{tab:'reports',wFlt:{range:'all',from:'',to:''},rAuto:true,rtUsed:true,yTax:null,other:'',opt:false,flt:{range:'all',from:'',to:'',off:[],pf:'ex',cur:'usd',nocw:false,zeroDays:true},graf:{what:'period',res:'week',kind:'bar',unit:'amt',wd:'sum',avg:false},calc:{inv:'',dur:'12',unit:'m',own:'',tax:'',reinv:false,taxOn:false},unit:'pct'}}}
 let S=blank();
 // Ab 0.85 (Fund 2 aus 0.84): Lässt sich der gespeicherte Stand beim Start nicht lesen, aufbereiten oder zeichnen, stürzt das Tool nicht ab. Es startet
 // mit einem leeren Stand und zeigt den Hinweis #boot-modal (bootShow). BOOT_BAD: Solange er gilt, speichert save() nichts, der Stand im Speicher
@@ -2217,7 +2253,7 @@ for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','t
   const old=S.ui||{};S.ui=Object.assign(b.ui,old);
   // bis Version 0.14: eigener Zeitraum für die Kacheln (yStats, stFrom, stTo) → gemeinsamer Filter
   if(!old.flt||typeof old.flt!=='object'){const f={range:'all',from:'',to:'',off:[]};const y=String(old.yStats||'');if(y==='custom'){f.range='custom';f.from=old.stFrom||'';f.to=old.stTo||''}else if(/^\d{4}$/.test(y))f.range='y:'+y;S.ui.flt=f}
-  S.ui.flt=Object.assign({range:'all',from:'',to:'',off:[],pf:'ex',cur:'eur',nocw:false,zeroDays:true},S.ui.flt);S.ui.flt.zeroDays=S.ui.flt.zeroDays!==false;if(typeof S.ui.flt.range!=='string')S.ui.flt.range='all';if(!Array.isArray(S.ui.flt.off))S.ui.flt.off=[];if(S.ui.flt.pf!=='inkl')S.ui.flt.pf='ex';if(S.ui.flt.cur!=='usd')S.ui.flt.cur='eur';S.ui.flt.nocw=S.ui.flt.nocw===true;
+  S.ui.flt=Object.assign({range:'all',from:'',to:'',off:[],pf:'ex',cur:'usd',nocw:false,zeroDays:true},S.ui.flt);S.ui.flt.zeroDays=S.ui.flt.zeroDays!==false;if(typeof S.ui.flt.range!=='string')S.ui.flt.range='all';if(!Array.isArray(S.ui.flt.off))S.ui.flt.off=[];if(S.ui.flt.pf!=='inkl')S.ui.flt.pf='ex';if(S.ui.flt.cur!=='eur')S.ui.flt.cur='usd';S.ui.flt.nocw=S.ui.flt.nocw===true;
   for(const k of ['yStats','stFrom','stTo','treeAcc'])delete S.ui[k];
   // bis Version 0.14: Grafik „Rendite“ als eigene Auswahl und eigene Auswahl „Betrag“ (amt) → Einheit % und PF-Schalter der Filterzeile
   const og=S.ui.graf||{};S.ui.graf=Object.assign(blank().ui.graf,og);const g=S.ui.graf;if(og.what==='roi'){g.what='period';g.unit='pct'}
@@ -2346,7 +2382,7 @@ function usd(v){if(v==null||isNaN(v))return '–';return fN.format(v)+' USD'}
 // Beträge der Auswertung in der Währung des Schalters (S.ui.flt.cur): „1.234,56 €“ bzw. „1.234,56 USD“. Steuer und Krypto nutzen weiter eur() und usd().
 // CUR_EFF: Währung, in der die Auswertung gerade rechnet. Fehlen für die gewählten Konten und den Zeitraum Kurse (CUR_MISS, aus renderStats),
 // ist es USD, auch wenn Euro gewählt ist; die Wahl in S.ui.flt.cur bleibt und gilt wieder, sobald die Kurse da sind.
-let CUR_EFF='eur',CUR_MISS=null;
+let CUR_EFF='usd',CUR_MISS=null;
 const CUR=()=>CUR_EFF==='usd'?' USD':' €';
 function fCur(v,dec=2){const r=fmtDec(v,dec);return r==null?'NaN':r+CUR()}
 function mon(v,cls=true){if(v==null||isNaN(v))return '–';const c=cls?(v<-0.005?' class="neg"':''):'';return `<span${c}>${fCur(v)}</span>`}
@@ -3139,7 +3175,8 @@ function tradeDays(w,s,e){let n=0;for(let i=0;i<5;i++){const d=addDays(w,i);if((
    Reine Rechnungen ohne Oberfläche: Auswertung (gewählte Konten und Zeitraum, Scope 'sel' bzw. 'own') und Excel (alle Konten, Scope 'all').
    Gezähltes Fenster win = {s,e}: ab dem ersten Trade (nicht der ersten Buchung) bzw. dem Anfang des Zeitraums, bis zum Ende des Zeitraums,
    höchstens bis zum Datenstand. Handelstage sind Mo bis Fr, Feiertage zählen mit. Ganze Woche: alle 5 Handelstage im Fenster.
-   Ganzer Monat: alle Handelstage des Kalendermonats im Fenster. zero = Tage, Wochen und Monate ohne Trade zählen mit 0 (S.ui.flt.zeroDays). */
+   Ganzer Monat: alle Handelstage des Kalendermonats im Fenster. Ab 0.100: Die laufende Woche (cw, aus curWeek, PF noch nicht gebucht) ist nie
+   ganz, unabhängig vom PF-Schalter, und ein Monat mit Trades der laufenden Woche auch nicht. Nach der Abrechnung gilt wieder die Regel oben. zero = Tage, Wochen und Monate ohne Trade zählen mit 0 (S.ui.flt.zeroDays). */
 const wdIdx=d=>(new Date(d+'T12:00:00Z').getUTCDay()+6)%7;
 // Quantil mit linearer Interpolation (wie QUARTILE.INC in Excel), null bei leerer Liste
 function quantile(a,p){if(!a.length)return null;const s=a.slice().sort((x,y)=>x-y),i=(s.length-1)*p,lo=Math.floor(i),hi=Math.ceil(i);return s[lo]+(s[hi]-s[lo])*(i-lo)}
@@ -3151,26 +3188,27 @@ function cntWin(first,from,to,dataEnd){if(!first)return null;return {s:from&&fro
 function mWdays(ym){let f=ym+'-01',l=monthEnd(ym);while(wdIdx(f)>4)f=addDays(f,1);while(wdIdx(l)>4)l=addDays(l,-1);return [f,l]}
 // Tage (Mo bis Fr im Fenster, dazu Tage mit Trade), Wochen oder Monate, die das Fenster schneiden. Je Periode: Trades, Zahl der Positionen,
 // ganz ja/nein, Betrag vor/nach PF (in der Währung der Zeilen), Rendite vor/nach PF auf die Investition des Scopes.
-function periods(R,win,res,scope){
+function periods(R,win,res,scope,cw){
   const g=new Map();for(const r of R){if(!isTrade(r))continue;const k=bucketKey(r,res);if(!g.has(k))g.set(k,[]);g.get(k).push(r)}
   const ks=new Set(g.keys());
   if(res==='day'){for(let d=win.s;d<=win.e;d=addDays(d,1))if(wdIdx(d)<5)ks.add(d)}
   else if(res==='week'){for(let w=monday(win.s);w<=win.e;w=addDays(w,7))ks.add(w)}
   else{for(let m=win.s.slice(0,7);m<=win.e.slice(0,7);m=addMonths(m+'-01',1).slice(0,7))ks.add(m)}
   return [...ks].sort().map(k=>{const rr=g.get(k)||[];let full=true;
-    if(res==='week')full=tradeDays(k,win.s,win.e)===5;else if(res==='month'){const [f,l]=mWdays(k);full=f>=win.s&&l<=win.e}
+    if(res==='week')full=tradeDays(k,win.s,win.e)===5&&k!==cw;else if(res==='month'){const [f,l]=mWdays(k);full=f>=win.s&&l<=win.e&&!(cw&&rr.some(r=>r.wk===cw))}
     const ri=retSum(rr,scope,false),rx=retSum(rr,scope,true);
     return {key:k,rows:rr,n:rr.length?positions(rr,scope).length:0,full,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v,rI:ri.v,rX:rx.v}});
 }
-// Köpfe der Spalten nach der ersten in „Pro Monat“ und „Pro Woche“, mit Begriffen
-const TH_MW=()=>`<th>${gl('netto','Netto-Gewinn')}${SMF}</th><th>${gl('vorpf','Ergebnis vor PF')}${SM0}</th><th>${gl('pf','Performance Fee')}${SMF}</th><th>${gl('inv','Investition')}${smx(gl('anfang','am Anfang'))}</th><th>${gl('rendite','Rendite')}${SMH}</th><th>${gl('dd','Max. Drawdown')}${SMH}</th><th>${gl('kum','Kumuliert')}${SMH}</th>`;
+// Köpfe der Spalten nach „Trades“ in „Pro Monat“ und „Pro Woche“, mit Begriffen. Ab 0.100: Netto-Gewinn, Rendite, Investition, Ergebnis vor PF,
+// Performance Fee, Max. Drawdown, Kumuliert. Alle Zeilen (Monat, Woche, Tag, Trade, Konto, Summen) folgen dieser Reihenfolge.
+const TH_MW=()=>`<th>${gl('netto','Netto-Gewinn')}${SMF}</th><th>${gl('rendite','Rendite')}${SMH}</th><th>${gl('inv','Investition')}${smx(gl('anfang','am Anfang'))}</th><th>${gl('vorpf','Ergebnis vor PF')}${SM0}</th><th>${gl('pf','Performance Fee')}${SMF}</th><th>${gl('dd','Max. Drawdown')}${SMH}</th><th>${gl('kum','Kumuliert')}${SMH}</th>`;
 // Durchschnitt und Median je Handelstag, ganzer Woche, ganzem Monat und Trade (vor PF: …I, nach PF: …X). k = Zahl der gezählten Perioden,
 // noT = ganze Perioden ohne Trade (zählen mit 0 bzw. fallen weg), part = Teilwochen bzw. angefangene Monate am Rand, nicht gezählt.
 // miss = Trading Benefit fehlt (Rendite nicht berechenbar). ws = gezählte ganze Wochen (für den Rechner).
-function avgKz(R,win,scope,zero,ress){
+function avgKz(R,win,scope,zero,ress,cw){
   const out={miss:retSum(R,scope,false).miss};
   for(const res of ress||['day','week','month']){
-    const all=periods(R,win,res,scope),cand=res==='day'?all:all.filter(p=>p.full),used=zero?cand:cand.filter(p=>p.n);
+    const all=periods(R,win,res,scope,cw),cand=res==='day'?all:all.filter(p=>p.full),used=zero?cand:cand.filter(p=>p.n);
     const col=f=>used.map(f);
     out[res]={res,k:used.length,noT:cand.filter(p=>!p.n).length,part:all.length-cand.length,zero,ps:used,
       aI:meanOf(col(p=>p.aI)),aX:meanOf(col(p=>p.aX)),mI:median(col(p=>p.aI)),mX:median(col(p=>p.aX)),
@@ -9177,6 +9215,8 @@ function xlsxAll(rows,o){
   const RU=curRows(rows,'usd'),U=new Map(rows.map((r,i)=>[r,RU[i]])),u=rr=>rr.map(r=>U.get(r));
   let dataEnd=rows[rows.length-1].d;for(const a of accs){const rd=repDay(a);if(rd>dataEnd)dataEnd=rd}
   const win=cntWin(tr[0].d,null,null,dataEnd);
+  // Ab 0.100: laufende Woche aller Konten (PF noch nicht gebucht), sie ist keine ganze Woche (wie in der Auswertung)
+  const cw=curWeek(rows,accs);
   const capAll=tm=>{let s=0;for(const a of accs){const c=CAP(a,tm);if(c==null)return null;s+=c}return s};
   const endOf=d=>d.replace(/-/g,'.')+' 23:59:59';
   const miss=retSum(rows,'all',false).miss;
@@ -9239,7 +9279,7 @@ function xlsxAll(rows,o){
     // Investition unbekannt (fehlender Anfang ohne Notlösung): leer wie ohne Trading Benefit. Mit Notlösung beginnt die erste Zeile des Kontos beim Startwert.
     {h:'Investition danach (USD)',w:16,c:(r,n,L)=>{const f=S.accounts[r.a].factor;if(!(f>0)||INV[r.a]!=='ok')return '';const i=IV.indexOf(r),same=i>0&&IV[i-1].a===r.a,b0=CAP(r.a,'0');return X.F(same?`${colL(7)}${n-1}+${L.q}${n}`:b0?`${Math.round(b0*1e5)/1e5}+${L.q}${n}`:`${L.q}${n}`,CAP(r.a,r.x.t),5)}}],IV);
   // Werte für die Blätter „Durchschnitt“ und „Hochs und Tiefs“
-  const AE=avgKz(rows,win,'all',zero,['day','week','month','trade']),AU=avgKz(RU,win,'all',zero,['day','week','month','trade']);
+  const AE=avgKz(rows,win,'all',zero,['day','week','month','trade'],cw),AU=avgKz(RU,win,'all',zero,['day','week','month','trade'],cw);
   const GE=glKz(rows,'all',win,AE.week.ps),GU=glKz(RU,'all',win,AU.week.ps);
   // Blätter „Durchschnitt“ und „Hochs und Tiefs“: alle Konten, ganzer Zeitraum, vor und nach PF, EUR und USD, je Wert eigener Extremwert und eigenes Datum
   const P0=v=>v==null||miss?'':X.P(v),E0=v=>v==null?'':X.E(v),N0=v=>v==null?'':X.N(v),D0=o=>o?X.D(o.d||o.w):'';
@@ -9913,7 +9953,7 @@ let FP_OPEN=null;
 // Die drei Knöpfe Rendite/Betrag (Überblick, „Hochs und Tiefs“, „Pro Konto“), alle schalten S.ui.unit
 const UNIT_DD=['u1','u2','u3'];
 // Menüs, die rechts am Knopf im Kartentitel stehen und bei Platzmangel volle Fensterbreite bekommen (placeU)
-const TITLE_DD=[...UNIT_DD,'vs','va','vw'];
+const TITLE_DD=[...UNIT_DD,'vs','va','vw','gb','gb2'];
 const WALLET_DD=['vs','va','vw','wr'];
 // Kartenfilter im Reiter Wallet (ab 0.38): Menü → Schlüssel in S.ui.cf. Gespeichert sind die abgewählten Werte, Neues ist also sichtbar.
 // Ab 0.43 nur noch der Filter der Liste „Alle Vorgänge“ (vf → S.ui.cf.vg); die Werte der alten Karten bleiben gespeichert, ungenutzt
@@ -10033,12 +10073,14 @@ function renderFbar(show){
 // Ab 0.50 (1.1): „Schließen“ (grau) statt „Fertig“; jede Wahl im Menü gilt schon beim Anklicken
 const FDONE='<div class="row" style="justify-content:flex-end"><button type="button" class="btn f-done">Schließen</button></div>';
 const ZD_WHY='Durchschnitte pro Tag, Woche und Monat zählen auch Handelstage, an denen kein Trade lief. Das zeigt, was das Konto im Schnitt wirklich bringt. Nimm das Häkchen weg, wenn du die Strategie eine Zeit lang pausiert hast, damit die Pause den Schnitt nicht drückt.';
-const CW_WHY='Tag bucht die Performance Fee erst am Samstag ab. Bis dahin fehlt sie bei „PF laut MT5“, der Netto-Gewinn ist in dieser Woche also noch zu hoch. Bei „PF verteilt“ rechnet das Tool sie aus. Ohne die laufende Woche siehst du nur fertig abgerechnete Wochen. In „Pro Woche“ siehst du die laufende Woche trotzdem, gekennzeichnet mit „nicht in den Kennzahlen“.';
+const CW_WHY='Tag bucht die Performance Fee erst am Samstag ab. Bis dahin fehlt sie bei „PF laut MT5“, bei „PF verteilt“ rechnet das Tool sie aus. Mit dem Häkchen zählt die laufende Woche in keiner Kennzahl. Du siehst sie trotzdem in „Pro Woche“ und in der Leiste „Diese Woche“.';
 // „Was heißt das?“ im PF-Menü: klappt im Menü auf und zu
 // „Was heißt das?“ im PF-Menü: klappt im Menü auf und zu
 const PF_WHY=[['Laufende Woche','Tag bucht die PF erst am Samstag ab. Bei „PF verteilt“ rechnet das Tool sie bis dahin aus.'],
   ['Steuer','rechnet immer mit den Werten laut MT5.']].map(([k,t])=>`<p><b>${k}:</b> ${t}</p>`).join('');
 function buildFpanel(which){
+  // Ab 0.100: Menü „Bild ▾“ der Grafik (Karte und Vollbild)
+  if(which==='gb'||which==='gb2'){$('fp-'+which).innerHTML='<div class="fgrp"><button type="button" class="wopt" data-gimg="save">Speichern</button><button type="button" class="wopt" data-gimg="share">Teilen</button></div>';return}
   if(which==='range'){
     const ys=years(window.__rows||[]);
     const opts=[['all','Gesamter Zeitraum'],...ys.map(y=>['y:'+y,y]),['month','Dieser Monat'],['last3m','Letzte 3 Monate'],['custom','Individuell']];
@@ -10057,7 +10099,7 @@ function buildFpanel(which){
   }else if(which==='pf'){
     // Ab 0.58 (1): je Wahl der kleine Zusatz, der dann in den Tabellen steht
     const o=[['inkl','PF laut MT5','Die PF steht dort, wo Tag sie abbucht (samstags). Trades zeigen ihr Ergebnis vor PF.','In den Tabellen steht dann klein „vor PF“ bzw. „laut MT5“.'],['ex','PF verteilt','Jeder Trade trägt seinen Anteil der PF. Zeigt, was dir von jedem Trade bleibt.','In den Tabellen steht dann klein „nach PF“ bzw. „verteilt“.']];
-    $('fp-pf').innerHTML=`<p class="fhint">PF = Performance Fee: 30 % vom Wochengewinn, abgebucht jeden Samstag.</p><div class="fgrp">${o.map(([v,l,d,t])=>`<label class="fopt two"><input type="radio" name="fpf" value="${v}"><span><b>${l}</b><span class="od">${d}</span><span class="od">${t}</span></span></label>`).join('')}
+    $('fp-pf').innerHTML=`<p class="fhint">PF = Performance Fee: 30 % vom Wochengewinn, abgebucht jeden Samstag.</p><p class="fhint">Gilt für die ganze Auswertung, auch für die Grafiken.</p><div class="fgrp">${o.map(([v,l,d,t])=>`<label class="fopt two"><input type="radio" name="fpf" value="${v}"><span><b>${l}</b><span class="od">${d}</span><span class="od">${t}</span></span></label>`).join('')}
       <button type="button" class="flink" id="f-pfwhy" aria-expanded="false" aria-controls="fpf-txt">Was heißt das?</button><div id="fpf-txt" hidden>${PF_WHY}</div></div>${FDONE}`;
   }else if(which==='cur'){
     // Fehlen Kurse (CUR_MISS), ist Euro nicht wählbar; darunter der Grund und „Kurse laden“ (Meldung in #fcur-rlm, bleibt bis zum Schließen)
@@ -10173,7 +10215,7 @@ let FP_UP=null;
 function fpFit(){
   if(!FP_OPEN)return;const p=$('fp-'+FP_OPEN),b=$('fb-'+FP_OPEN);if(!b||!b.getClientRects().length)return;
   const nav=document.querySelector('nav'),inNav=nav.contains(b);
-  FP_UP=popPlace(b,p,{top:inNav?0:nav.getBoundingClientRect().bottom,up:FP_UP,right:TITLE_DD.includes(FP_OPEN)||FP_OPEN==='wk'});
+  FP_UP=popPlace(b,p,{top:inNav||GFS?0:nav.getBoundingClientRect().bottom,up:FP_UP,right:TITLE_DD.includes(FP_OPEN)||FP_OPEN==='wk'});
 }
 // Beim Scrollen der Seite und bei jeder Größenänderung (auch nur der Höhe) neu einpassen, einmal pro Frame
 {let q=0;const f=e=>{if(FP_OPEN&&!q&&!popOwnScroll(e))q=requestAnimationFrame(()=>{q=0;fpFit()})};
@@ -10216,7 +10258,7 @@ const GL={
   'k-ov':{t:'Überblick',h:'Die wichtigsten Zahlen für den gewählten Zeitraum und die gewählten Konten. Mit „Rendite ▾“ oder „Betrag ▾“ wechselst du, ob die Kacheln Prozent oder Beträge zeigen.'},
   'k-hl':{t:'Hochs und Tiefs',h:'Die besten und schwächsten Trades, Tage und Wochen, dazu Serien am Stück. Ein Datum führt dich zur Stelle in „Pro Woche“.'},
   'k-avg':{t:'Durchschnitt',h:'Was ein Handelstag, eine Woche, ein Monat und ein Trade im Schnitt gebracht haben, als Durchschnitt und als Median.'},
-  'k-graf':{t:'Grafiken',h:'Deine Ergebnisse als Grafik. Oben wählst du, was gezeigt wird, unter der Grafik steht, was sie bedeutet.'},
+  'k-graf':{t:'Grafiken',h:'Deine Ergebnisse als Grafik. Oben wählst du, was gezeigt wird, unter der Grafik steht, was sie bedeutet.\n„Vollbild“ zeigt die Grafik über den ganzen Bildschirm. Mit „Bild“ speicherst oder teilst du sie als Bild (PNG), immer quer und hell, ohne Kontonamen.'},
   'k-acc':{t:'Pro Konto',h:'Jedes Konto einzeln und alle gewählten Konten zusammen.'},
   'k-month':{t:'Pro Monat',h:'Jeder Monat im gewählten Zeitraum.'},
   'k-week':{t:'Pro Woche',h:'Jede Woche mit ihren Tagen und Trades. Ein Klick auf eine Woche zeigt ihre Tage, ein Klick auf einen Tag seine Trades.'},
@@ -10395,9 +10437,9 @@ ${ECB_CITE}`},
   vorpf:{t:'Ergebnis vor PF',h:'Gewinne minus Verluste deiner Trades laut MT5, nach Kommission und Swap, vor Abzug der Performance Fee.'},
   pf:{t:'Performance Fee',h:'30 % vom Wochengewinn, Tag bucht sie jeden Samstag ab.\n<b>Monatswechsel:</b> Bei „PF laut MT5“ zählt die PF im Monat der Abbuchung, bei „PF verteilt“ im Monat, in dem du den Gewinn gemacht hast.'},
   pfplus:{t:'Positive Performance Fee',h:'In einer Gewinnwoche senkt ein Verlust die Performance Fee, er kostet dich deshalb nur 70 %. In einer Verlustwoche gibt es keine PF, dann kostet er 100 %. Annahme: Tag nimmt Verluste nicht in die nächste Woche mit.'},
-  rendite:{t:'Rendite',h:'Jeder Trade wird mit deiner Investition zu Beginn des Trades verglichen, die Renditen aller Trades werden zusammengezählt. Gemeint ist dein eingesetztes Geld, nicht der vervielfachte Kontostand im MT5. Bei Trading Benefit (×12, ×24) ist die Rendite deshalb viel höher als im MT5 oder bei Myfxbook.\nOhne Trading Benefit kennt das Tool deine Investition nicht. Die Rendite steht dann als „–“.'},
+  rendite:{t:'Rendite',h:'Jeder Trade wird mit deiner Investition zu Beginn des Trades verglichen, die Renditen aller Trades werden zusammengezählt. Gemeint ist dein eingesetztes Geld, nicht der vervielfachte Kontostand im MT5. Bei Trading Benefit (×12, ×24) ist die Rendite deshalb viel höher als im MT5 oder bei Myfxbook.\nOhne Trading Benefit kennt das Tool deine Investition nicht. Die Rendite steht dann als „–“.\nDeshalb ist die Rendite nicht einfach Netto-Gewinn geteilt durch Investition, sobald sich deine Investition im Zeitraum ändert. Bei „PF laut MT5“ passen die beiden auch innerhalb einer Woche nicht zusammen: Die Rendite ist dann vor PF, der Netto-Gewinn nach der abgebuchten Fee.'},
   // Ab 0.58 (1): kleine Zusätze „vor PF“ / „nach PF“ und „laut MT5“ / „verteilt“ in den Spaltenköpfen (SMH, SMF) und in „Hochs und Tiefs“
-  pfst:{t:'PF-Schalter',h:'Die kleinen Hinweise zeigen, wie gerade gerechnet wird. „vor PF“ oder „laut MT5“ heißt: Oben steht „PF laut MT5“. „nach PF“ oder „verteilt“ heißt: Oben steht „PF verteilt“. Umschalten kannst du oben in der Leiste.'},
+  pfst:{t:'PF-Schalter',h:'<b>verteilt / nach PF:</b> Tag bucht die Performance Fee einmal pro Woche ab, am Samstag, als eine Summe. Das Tool teilt sie auf die Trades der Woche auf, im Verhältnis zu ihrem Ergebnis. So steht die Fee an den Tagen, an denen du den Gewinn gemacht hast. Ein Verlust-Trade bekommt dabei einen Teil zurück. In der laufenden Woche ist die Fee noch nicht abgebucht: Bis Samstag rechnet das Tool sie aus, mit dem Anteil der letzten Abrechnung.\n<b>laut MT5 / vor PF:</b> wie im MT5-Report. Die Fee steht als eine Buchung am Samstag, in der laufenden Woche fehlt sie noch.\nUmschalten kannst du oben in der Leiste.'},
   inv:{t:'Investition',h:'Das Geld, das du selbst eingesetzt hast, immer in USD. Es enthält auch Gewinne, die du wieder eingezahlt hast.'},
   anfang:{t:'am Anfang',h:'Die Investition beim ersten Trade der Periode. Bei einzelnen Trade-Zeilen: die Investition zum Zeitpunkt des Trades.'},
   ende:{t:'am Ende',h:'Die Investition am Ende des gewählten Zeitraums.'},
@@ -10408,7 +10450,7 @@ ${ECB_CITE}`},
   median:{t:'Median',h:'Der mittlere Wert, wenn man alle der Größe nach ordnet: Die Hälfte liegt darüber, die Hälfte darunter. Beispiel: fünf Wochen mit 1 %, 1 %, 1 %, 1 % und 6 %. Der Durchschnitt ist 2 %, der Median 1 %. Eine einzelne sehr gute Woche hebt den Durchschnitt, den Median kaum.'},
   betrag:{t:'Ø Betrag',h:'Beträge hängen davon ab, wie viel gerade investiert war. Hast du Gewinne wieder eingezahlt, Geld nachgelegt, Kapital abgezogen oder kam ein Konto später dazu, zeigen Ø und Median in Betrag den Schnitt der Vergangenheit, nicht, was du mit deiner heutigen Investition erwarten kannst. Dafür ist die Rendite in % da.'},
   tag:{t:'Handelstag',h:'Montag bis Freitag, gezählt ab deinem ersten Trade. Feiertage zählen mit, auch wenn der Markt geschlossen war. Ob Tage ohne Trade mitzählen, stellst du im Zeitraum-Menü unter „Zählweise“ ein.'},
-  ganz:{t:'ganze Wochen',h:'Durchschnitte pro Woche und pro Monat sowie die beste und schlechteste Woche rechnen nur mit ganzen Wochen und Monaten. Angefangene am Rand des Zeitraums zählen nicht.'},
+  ganz:{t:'ganze Wochen',h:'Durchschnitte pro Woche und pro Monat sowie die beste und schlechteste Woche rechnen nur mit ganzen Wochen und Monaten. Angefangene am Rand des Zeitraums zählen nicht. Die laufende Woche zählt erst als ganz, wenn Tag die Performance Fee abgebucht hat.'},
   rand:{t:'angeschnittene Periode',h:'Der gewählte Zeitraum beginnt oder endet mitten in dieser Periode. Gezählt werden nur die Tage im Zeitraum.'},
   offen:{t:'offen',h:'Tag hat die Performance Fee für diese Woche noch nicht abgebucht, das passiert am Samstag. Bei „PF verteilt“ rechnet das Tool sie bis dahin aus.'},
   nichtkz:{t:'nicht in den Kennzahlen',h:'Du hast im Zeitraum-Menü „Laufende Woche weglassen“ gewählt. Die Woche steht hier zur Ansicht, zählt aber in keiner Kennzahl, Grafik oder Summe mit, nur in „Summe mit laufender Woche“.'},
@@ -10516,7 +10558,7 @@ document.querySelectorAll('.fpan').forEach(p=>wheelContain(p));
 {let q=0;const f=e=>{if(GP&&!q&&!popOwnScroll(e))q=requestAnimationFrame(()=>{q=0;glPlace()})};
  document.addEventListener('scroll',f,{capture:true,passive:true});window.addEventListener('resize',f)}
 
-// Kacheln: Paare bleiben zusammen. 5 Spalten spaltenweise (zwei Reihen, Paare untereinander), 4 Spalten zeilenweise (4 + 4 + 2, Paare
+// Kacheln: Paare bleiben zusammen (Reihenfolge im Array tiles in renderStats, je zwei hintereinander). 5 Spalten spaltenweise (zwei Reihen, Paare untereinander), 4 Spalten zeilenweise (4 + 4 + 2, Paare
 // nebeneinander, das letzte Paar mittig in den Spalten 2 und 3, gleich breit wie alle) oder 2 Spalten zeilenweise (Paare nebeneinander).
 // Gemessen werden der längste Titel ohne Umbruch (kw) und der breiteste Wert in normaler Schrift (vw: tatsächlicher Wert voll, der Wert der
 // anderen Stellung des Schalters Rendite/Betrag aus data-alt und das Muster „-12.345,67 €“ bzw. „-12.345,67 USD“).
@@ -10542,6 +10584,8 @@ function layoutTiles(){
   // 4 Spalten: neunte Kachel in Spalte 2, die zehnte folgt in Spalte 3 (letztes Paar mittig)
   if(ts[8])ts[8].style.gridColumn=cols===4?'2':'';
   box.dataset.cols=cols;
+  // Ab 0.100: Leiste „Diese Woche“ mit 2 Kachelspalten: Werte bündig mit den Kachelspalten (Innenabstand wie die Kachel, Spaltenabstand Gap + 2 × Innenabstand)
+  {const cb=$('cwbar'),c2=cols===2,P=parseFloat(tc.paddingLeft);cb.classList.toggle('c2',c2);cb.style.paddingLeft=cb.style.paddingRight=c2?P+'px':'';cb.style.columnGap=c2?(gap+2*P)+'px':''}
   fitTileVals();
 }
 // Voller Text eines Kachelwerts (Beträge stehen in .vi mit data-f = mit Nachkommastellen, data-s = ohne)
@@ -10552,6 +10596,16 @@ function fitTileVals(){
   const vfs=$('tiles').dataset.vfs;
   for(const v of $('tiles').querySelectorAll('.tile>.v')){
     v.style.fontSize=vfs?vfs+'px':'';const i=v.querySelector('.vi');if(i)i.textContent=i.dataset.f;
+    const av=v.clientWidth;if(!av)continue;
+    const rg=document.createRange();const w=()=>{rg.selectNodeContents(v);return rg.getBoundingClientRect().width};
+    if(w()<=av+0.5)continue;
+    if(i&&i.dataset.s!==i.dataset.f){i.textContent=i.dataset.s;if(w()<=av+0.5)continue}
+    let fs=parseFloat(getComputedStyle(v).fontSize);
+    for(let k=0;k<30&&fs>8&&w()>av+0.5;k++){let nf=Math.floor(fs*av/w()*2)/2;if(nf>=fs)nf=fs-0.5;fs=Math.max(8,nf);v.style.fontSize=fs+'px'}
+  }
+  // Ab 0.100: Werte der Leiste „Diese Woche“ genauso (nur wenn sie nicht passen: ohne Nachkommastellen, dann kleiner)
+  for(const v of $('cwbar').querySelectorAll('.v')){
+    v.style.fontSize='';const i=v.querySelector('.vi');if(i)i.textContent=i.dataset.f;
     const av=v.clientWidth;if(!av)continue;
     const rg=document.createRange();const w=()=>{rg.selectNodeContents(v);return rg.getBoundingClientRect().width};
     if(w()<=av+0.5)continue;
@@ -10638,7 +10692,7 @@ function renderStats(rows){
   const T=pfz(R);const P=positions(R);const PS=tradeStats(P,'eur'),PN=tradeStats(P,'exE'),PX=ex?PN:PS;
   const rS=retSum(R,'sel',ex),dT=maxDD(R,'sel',ex);
   // Durchschnitte nach Zählweise (Kacheln, Karte „Durchschnitt“, Grafik, Rechner)
-  const AK=avgKz(R,win,'sel',zero,['day','week','month','trade']);
+  const AK=avgKz(R,win,'sel',zero,['day','week','month','trade'],CW);
   // Schalter Rendite/Betrag (S.ui.unit): Jede Kachel hat beide Stellungen. Jede sucht ihren eigenen Extremwert mit eigenem Datum.
   // Gezeigt wird die gewählte, der volle Wert der anderen steht in data-alt, damit layoutTiles() beide misst und nichts springt.
   const pct=S.ui.unit!=='amt';
@@ -10665,19 +10719,33 @@ function renderStats(rows){
     const r=fR.format(ex?z.rX:z.rI);
     return pct?[r,fCur(amt)+'<br>'+base,fCur(amt)]:[monT(amt),r+'<br>'+base,r];
   };
+  // Ab 0.100: Paare Netto-Gewinn | Rendite, Ø pro Handelstag | Ø pro Woche, Beste | Schlechteste Woche, Bester | Schlechtester Trade, Trefferquote | Max. Drawdown
   const tiles=[
     ex?[gl('netto','Netto-Gewinn'),monT(T.nN),'']:[gl('vorpf','Ergebnis vor PF'),monT(T.res),''],
+    [gl('rendite','Rendite'),retHtml(rS,'–',true),'auf deine '+gl('inv','Investition')+(rS.miss?'<br>'+mTx:'')],
+    ['Ø pro '+gl('tag','Handelstag'),...avgTile(AK.day,'Handelstag','Handelstagen','–')],
     ['Ø pro Woche',...avgTile(AK.week,'ganzen Woche','ganzen Wochen','noch keine ganze Woche')],
     ['Beste Woche',...wkTile(1)],
     ['Schlechteste Woche',...wkTile(-1)],
     ['Bester Trade',...trTile(PX.best,extP(1))],
     ['Schlechtester Trade',...trTile(PX.worst,extP(-1))],
-    [gl('rendite','Rendite'),retHtml(rS,'–',true),'auf deine '+gl('inv','Investition')+(rS.miss?'<br>'+mTx:'')],
-    ['Ø pro '+gl('tag','Handelstag'),...avgTile(AK.day,'Handelstag','Handelstagen','–')],
     [gl('hit','Trefferquote'),PS.n?fP.format(PS.win/PS.n):'–',`${fI.format(PS.win)} von ${fI.format(PS.n)} ${PS.n===1?'Trade':'Trades'}`],
     [gl('dd','Max. Drawdown'),ddHtml(dT,'–',true),dT.miss?mTx:'auf deine '+gl('inv','Investition')+(dT.n&&dT.v<0?' · '+jlink('d',dT.d,'am '+dS(dT.d)):'')]
   ];
   $('tiles').innerHTML=tiles.map(([k,v,s,alt])=>`<div class="tile"><div class="k">${k}</div><div class="v"${alt?` data-alt="${esc(alt)}"`:''}>${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`).join('');
+  // Ab 0.100: Leiste „Diese Woche“. Sichtbar, wenn die Woche (Mo bis So) des neuesten Trades der gewählten Konten die heutige Woche ist (Uhr des Geräts)
+  // und im gewählten Zeitraum liegt, also bis Sonntag 23:59, auch nach der Abrechnung. Stand: laufend (CW) vor Samstag „bisher · n von 5 Handelstagen“
+  // (n = Handelstage bis zum Datenstand), ab Samstag „Handel vorbei“ (mit „· PF noch offen“, wenn die Woche vor PF im Plus ist), sonst „abgerechnet“.
+  // Werte wie die erste Kachel (PF verteilt: Netto-Gewinn, PF laut MT5: Ergebnis vor PF) und die Rendite nach PF-Schalter, immer beide.
+  {const bar=$('cwbar');let lt=null;for(const r of RA)if(isTrade(r))lt=r;
+   const W=lt?lt.wk:null,inO=r=>(!rg.from||r.d>=rg.from)&&(!toOrig||r.d<=toOrig);
+   const on=!!W&&!rg.bad&&W===monday(todayLocal())&&RA.some(r=>isTrade(r)&&r.wk===W&&inO(r));
+   bar.hidden=!on;
+   if(on){const rw=nocwOn()?CWR:R.filter(r=>r.wk===W),z=pfz(rw);
+     let st=CW!==W?'abgerechnet':dataEnd<addDays(W,5)?`bisher · ${tradeDays(W,null,dataEnd)} von 5 Handelstagen`:z.res>0?'Handel vorbei · PF noch offen':'Handel vorbei';
+     if(nocwOn())st+=' · nicht in den Kennzahlen';
+     bar.innerHTML=`<div class="cwt"><div class="cwh">${jlink('w',W,'Diese Woche')}</div><div class="s">${st}</div></div><div class="cwv"><div><div class="k">${ex?gl('netto','Netto-Gewinn'):gl('vorpf','Ergebnis vor PF')}</div><div class="v">${monT(ex?z.nN:z.res)}</div></div><div><div class="k">${gl('rendite','Rendite')}</div><div class="v">${retHtml(retSum(rw,'sel',ex),'–',true)}</div></div></div>`}
+   else bar.innerHTML=''}
   layoutTiles();
   // Tabellen: Jede wechselnde Zelle enthält beide Stellungen (sw), sichtbar ist die gewählte
   $('stats-body').classList.toggle('pf-ex',ex);
@@ -10704,11 +10772,11 @@ function renderStats(rows){
     const ra=R.filter(r=>r.a===a);const z=pfz(ra);const cl=ra.filter(r=>r.cat==='close');
     const tI=tradeStats(cl,'eur'),tN=tradeStats(cl,'exE');
     const cap=CAP(a,endT); if(cap==null)capOk=false;else capSum+=cap;
-    h+=`<tr><td class="acc">${accCell(a)}</td><td>${fI.format(tI.n)}</td>${netTd(z)}<td>${mon(z.res)}</td>${feeTd(z)}${utd([[trd(tI.best,'eur'),trd(tN.best,'exE')],[trd(tI.worst,'eur'),trd(tN.worst,'exE')],[tI.n?mon(tI.avg):'–',tI.n?mon(tN.avg):'–']],trR(positions(ra,'own'),ra,'own',retSum(ra,'own',false).miss,[a]))}<td>${cap==null?gl(invKey([a]),INV[a]==='nofac'?'Trading Benefit fehlt':'unbekannt'):usd(cap)}</td><td>${rtSw(ra,'own','–',[a])}</td><td>${(()=>{const f=RA.find(r=>r.a===a&&isTrade(r));return f&&ra.some(isTrade)?wkAvg(avgKz(ra,cntWin(f.d,rg.from,rg.to,dataEnd),'own',zero,['week']),[a]):'–'})()}</td><td>${tI.n?fP.format(tI.win/tI.n):'–'}</td><td>${ddSw(ra,'own','–',[a])}</td></tr>`;
+    h+=`<tr><td class="acc">${accCell(a)}</td><td>${fI.format(tI.n)}</td>${netTd(z)}<td>${rtSw(ra,'own','–',[a])}</td><td>${cap==null?gl(invKey([a]),INV[a]==='nofac'?'Trading Benefit fehlt':'unbekannt'):usd(cap)}</td><td>${mon(z.res)}</td>${feeTd(z)}${utd([[trd(tI.best,'eur'),trd(tN.best,'exE')],[trd(tI.worst,'eur'),trd(tN.worst,'exE')],[tI.n?mon(tI.avg):'–',tI.n?mon(tN.avg):'–']],trR(positions(ra,'own'),ra,'own',retSum(ra,'own',false).miss,[a]))}<td>${(()=>{const f=RA.find(r=>r.a===a&&isTrade(r));return f&&ra.some(isTrade)?wkAvg(avgKz(ra,cntWin(f.d,rg.from,rg.to,dataEnd),'own',zero,['week'],CW),[a]):'–'})()}</td><td>${tI.n?fP.format(tI.win/tI.n):'–'}</td><td>${ddSw(ra,'own','–',[a])}</td></tr>`;
   }
-  h+=`<tr class="gesamt"><td class="acc">Gesamt (${allSel?'alle Konten':'Auswahl'})</td><td>${fI.format(PS.n)}</td>${netTd(T)}<td>${mon(T.res)}</td>${feeTd(T)}${utd([[trd(PS.best,'eur'),trd(PN.best,'exE')],[trd(PS.worst,'eur'),trd(PN.worst,'exE')],[PS.n?mon(PS.avg):'–',PS.n?mon(PN.avg):'–']],trR(P,R,'sel',AK.miss,sel))}<td>${capOk?usd(capSum):invDash(sel)}</td><td>${rtSw(R,'sel','–')}</td><td>${wkAvg(AK)}</td><td>${PS.n?fP.format(PS.win/PS.n):'–'}</td><td>${ddSw(R,'sel','–')}</td></tr>`;
-  $('t-acc').innerHTML=`<tr><th>Konto${SM0}</th><th>Trades${SM0}</th><th>${gl('netto','Netto-Gewinn')}${SMF}</th><th>${gl('vorpf','Ergebnis vor PF')}${SM0}</th><th>${gl('pf','Performance Fee')}${SMF}</th><th>Bester Trade${SMH}</th><th>Schlechtester Trade${SMH}</th><th>Ø pro Trade${SMH}</th><th>${gl('inv','Investition')}${smx(gl('ende','am Ende'))}</th><th>${gl('rendite','Rendite')}${SMH}</th><th class="w2">${gl('avg','Ø Rendite pro Woche')}${SMH}</th><th>${gl('hit','Trefferquote')}${SM0}</th><th>${gl('dd','Max. Drawdown')}${SMH}</th></tr>`+h;
-  renderGraf(R,sel,{wdCnt,win,zero,AK,from:rg.from});
+  h+=`<tr class="gesamt"><td class="acc">Gesamt (${allSel?'alle Konten':'Auswahl'})</td><td>${fI.format(PS.n)}</td>${netTd(T)}<td>${rtSw(R,'sel','–')}</td><td>${capOk?usd(capSum):invDash(sel)}</td><td>${mon(T.res)}</td>${feeTd(T)}${utd([[trd(PS.best,'eur'),trd(PN.best,'exE')],[trd(PS.worst,'eur'),trd(PN.worst,'exE')],[PS.n?mon(PS.avg):'–',PS.n?mon(PN.avg):'–']],trR(P,R,'sel',AK.miss,sel))}<td>${wkAvg(AK)}</td><td>${PS.n?fP.format(PS.win/PS.n):'–'}</td><td>${ddSw(R,'sel','–')}</td></tr>`;
+  $('t-acc').innerHTML=`<tr><th>Konto${SM0}</th><th>Trades${SM0}</th><th>${gl('netto','Netto-Gewinn')}${SMF}</th><th>${gl('rendite','Rendite')}${SMH}</th><th>${gl('inv','Investition')}${smx(gl('ende','am Ende'))}</th><th>${gl('vorpf','Ergebnis vor PF')}${SM0}</th><th>${gl('pf','Performance Fee')}${SMF}</th><th>Bester Trade${SMH}</th><th>Schlechtester Trade${SMH}</th><th>Ø pro Trade${SMH}</th><th class="w2">${gl('avg','Ø Rendite pro Woche')}${SMH}</th><th>${gl('hit','Trefferquote')}${SM0}</th><th>${gl('dd','Max. Drawdown')}${SMH}</th></tr>`+h;
+  renderGraf(R,sel,{wdCnt,win,zero,AK,from:rg.from,rl:rg.label+(nocwOn()?' ohne laufende Woche':'')});
   // Rechner „Was wäre wenn“: Wochenrenditen nach PF der gezählten ganzen Wochen, heutige Investition der gewählten Konten
   {let inv=0;for(const a of sel){const c=CAP(a,'9999');if(c==null){inv=null;break}inv+=c}
    CALC_D={k:AK.week.k,rets:AK.week.ps.map(p=>p.rX),miss:AK.miss||inv==null,accs:sel,why:invWhy(sel,'der Anfang eines Reports fehlt'),inv};renderCalc()}
@@ -10717,8 +10785,8 @@ function renderStats(rows){
   let mh='',cV=0,cN=0;
   // Investition am Anfang des Monats (invStart): beim ersten Trade, ohne Trade am sichtbaren Monatsbeginn
   const mStart=m=>rg.from&&rg.from>m+'-01'&&rg.from.slice(0,7)===m?rg.from:m+'-01';
-  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=pfz(rr);cV+=z.res;cN+=z.nN;mh+=`<tr><td>${mLabel(m)}</td><td>${positions(rr).length}</td>${netTd(z)}<td>${mon(z.res)}</td>${feeTd(z)}<td>${invU(invStart(rr,sel,mStart(m)),sel)}</td><td>${rtSw(rr,'sel','–')}</td><td>${ddSw(rr,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`}
-  mh+=`<tr class="sum"><td>Summe</td><td>${PS.n}</td>${netTd(T)}<td>${mon(T.res)}</td>${feeTd(T)}<td></td><td>${rtSw(R,'sel','–')}</td><td>${ddSw(R,'sel','–')}</td><td></td></tr>`;
+  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=pfz(rr);cV+=z.res;cN+=z.nN;mh+=`<tr><td>${mLabel(m)}</td><td>${positions(rr).length}</td>${netTd(z)}<td>${rtSw(rr,'sel','–')}</td><td>${invU(invStart(rr,sel,mStart(m)),sel)}</td><td>${mon(z.res)}</td>${feeTd(z)}<td>${ddSw(rr,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`}
+  mh+=`<tr class="sum"><td>Summe</td><td>${PS.n}</td>${netTd(T)}<td>${rtSw(R,'sel','–')}</td><td></td><td>${mon(T.res)}</td>${feeTd(T)}<td>${ddSw(R,'sel','–')}</td><td></td></tr>`;
   $('t-month').innerHTML=`<tr><th>Monat${SM0}</th><th>Trades${SM0}</th>${TH_MW()}</tr>`+mh;
   weekTree(R,{multi:sel.length>1,sel,wkSpan,cw:CW,cwr:CWR,cwSpan:CWR.length?[rg.from&&rg.from>CW?rg.from:CW,toOrig&&toOrig<addDays(CW,6)?toOrig:addDays(CW,6)]:null});
   // Matrix
@@ -10936,12 +11004,12 @@ function weekTree(R0,cx){
       if(!tr.length){gF.push(fee(fCur(zd.fV)));gN.push(netD(zd.nV,zd.res))}
       const ps=positions(rd).sort((a,b)=>a.t<b.t?-1:1);
       const wdI=(new Date(d+'T12:00:00Z').getUTCDay()+6)%7;
-      dh+=`<tr class="dy" data-w="${w}" data-d="${d}">${c1(`${ps.length?'<span class="tw">▸</span> ':'<span class="tw"></span> '}${WD[wdI]} ${dm(d)}`)}<td>${ps.length||''}</td><td>${sw(tr.length||fr?netD(zd.nV,zd.res):'',tr.length?netD(zd.nN,zd.res):'')}</td><td>${tr.length?mon(zd.res):''}</td><td>${sw(fr?fee(fCur(zd.fV)):'',tr.length?pfP(zd.fN):'')}</td><td>${invU(invStart(rd,cx.sel,d),cx.sel)}</td><td>${rtSw(rd,'sel','')}</td><td>${ddSw(rd,'sel','')}</td><td></td></tr>`;
+      dh+=`<tr class="dy" data-w="${w}" data-d="${d}">${c1(`${ps.length?'<span class="tw">▸</span> ':'<span class="tw"></span> '}${WD[wdI]} ${dm(d)}`)}<td>${ps.length||''}</td><td>${sw(tr.length||fr?netD(zd.nV,zd.res):'',tr.length?netD(zd.nN,zd.res):'')}</td><td>${rtSw(rd,'sel','')}</td><td>${invU(invStart(rd,cx.sel,d),cx.sel)}</td><td>${tr.length?mon(zd.res):''}</td><td>${sw(fr?fee(fCur(zd.fV)):'',tr.length?pfP(zd.fN):'')}</td><td>${ddSw(rd,'sel','')}</td><td></td></tr>`;
       for(const p of ps){
         const pk=esc(p.t+'|'+p.sym);
-        dh+=`<tr class="tr${multi?' x':''}" data-d="${d}" data-p="${pk}">${c1(`${multi?'<span class="tw">▸</span> ':''}${p.t.slice(11,16)} · ${esc(p.sym)}`)}<td></td><td>${sw(mon(p.eur),mon(p.exE))}</td><td>${mon(p.eur)}</td><td>${sw('',pfP(p.exE-p.eur))}</td><td>${invU(p.cap,cx.sel)}</td><td>${p.rMiss?'':sw(rH(p.rI),rH(p.rX))}</td><td></td><td></td></tr>`;
+        dh+=`<tr class="tr${multi?' x':''}" data-d="${d}" data-p="${pk}">${c1(`${multi?'<span class="tw">▸</span> ':''}${p.t.slice(11,16)} · ${esc(p.sym)}`)}<td></td><td>${sw(mon(p.eur),mon(p.exE))}</td><td>${p.rMiss?'':sw(rH(p.rI),rH(p.rX))}</td><td>${invU(p.cap,cx.sel)}</td><td>${mon(p.eur)}</td><td>${sw('',pfP(p.exE-p.eur))}</td><td></td><td></td></tr>`;
         if(multi)for(const a of Object.keys(p.acc).sort()){const q=p.acc[a];
-          dh+=`<tr class="ac" data-d="${d}" data-p="${pk}">${c1(esc(accName(a)))}<td></td><td>${sw(mon(q.eur),mon(q.exE))}</td><td>${mon(q.eur)}</td><td>${sw('',pfP(q.exE-q.eur))}</td><td>${invU(q.cO,[a])}</td><td>${q.cO>0?sw(rH(q.amt/q.cO),rH(q.exU/q.cO)):''}</td><td></td><td></td></tr>`}
+          dh+=`<tr class="ac" data-d="${d}" data-p="${pk}">${c1(esc(accName(a)))}<td></td><td>${sw(mon(q.eur),mon(q.exE))}</td><td>${q.cO>0?sw(rH(q.amt/q.cO),rH(q.exU/q.cO)):''}</td><td>${invU(q.cO,[a])}</td><td>${mon(q.eur)}</td><td>${sw('',pfP(q.exE-q.eur))}</td><td></td><td></td></tr>`}
       }
     }
     // Wochenzeile: aufgeklappt nur „KW 35“, das volle Label bleibt unsichtbar stehen und hält die Breite der ersten Spalte
@@ -10954,10 +11022,10 @@ function weekTree(R0,cx){
       GL.offencw={t:'offen',h:GL.offen.h+'\n'+t};
       GL.pfcw={t:'Performance Fee der laufenden Woche',h:'Tag bucht die Performance Fee dieser Woche erst am Samstag ab. Bis dahin rechnet das Tool sie aus: Anteil der letzten Abrechnung × Ergebnis der Woche, wenn es positiv ist.\n'+t};
       return sw(gl('offencw','offen'),gl('pfcw',mon(z.fN)),gF)};
-    h+=`<tr class="wk" data-w="${w}"><td><span class="wo"><span class="tw">▸</span> ${RW(`<b>${kw}</b>`)}</span><span class="wl"><span class="tw">▸</span> ${RW(`<b>${kw}</b> · ${dm(s)}${DS}${dm(e)}${yy}`)}</span>${nk?`<span class="sm">${gl('nichtkz','nicht in den Kennzahlen')}</span>`:''}</td><td>${np}</td><td><b>${sw(mon(z.nV),mon(z.nN),gN)}</b></td><td>${mon(z.res)}</td><td>${w===cx.cw?cwPf(rw,z,gF):sw(mon(z.fV),mon(z.fN),gF)}</td><td>${invU(invStart(rw,cx.sel,s),cx.sel)}</td><td>${rtSw(rw,'sel','–')}</td><td>${ddSw(rw,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`+dh;
+    h+=`<tr class="wk" data-w="${w}"><td><span class="wo"><span class="tw">▸</span> ${RW(`<b>${kw}</b>`)}</span><span class="wl"><span class="tw">▸</span> ${RW(`<b>${kw}</b> · ${dm(s)}${DS}${dm(e)}${yy}`)}</span>${nk?`<span class="sm">${gl('nichtkz','nicht in den Kennzahlen')}</span>`:''}</td><td>${np}</td><td><b>${sw(mon(z.nV),mon(z.nN),gN)}</b></td><td>${rtSw(rw,'sel','–')}</td><td>${invU(invStart(rw,cx.sel,s),cx.sel)}</td><td>${mon(z.res)}</td><td>${w===cx.cw?cwPf(rw,z,gF):sw(mon(z.fV),mon(z.fN),gF)}</td><td>${ddSw(rw,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`+dh;
   }
-  h+=`<tr class="sum"><td>Summe</td><td>${positions(R0).length}</td><td>${sw(mon(T.nV),mon(T.nN))}</td><td>${mon(T.res)}</td><td>${sw(mon(T.fV),mon(T.fN))}</td><td></td><td>${rtSw(R0,'sel','–')}</td><td>${ddSw(R0,'sel','–')}</td><td></td></tr>`;
-  if(cwr.length){const T2=pfz(R);h+=`<tr class="sum2"><td>Summe mit laufender Woche</td><td>${positions(R).length}</td><td>${sw(mon(T2.nV),mon(T2.nN))}</td><td>${mon(T2.res)}</td><td>${sw(mon(T2.fV),mon(T2.fN))}</td><td></td><td>${rtSw(R,'sel','–')}</td><td>${ddSw(R,'sel','–')}</td><td></td></tr>`}
+  h+=`<tr class="sum"><td>Summe</td><td>${positions(R0).length}</td><td>${sw(mon(T.nV),mon(T.nN))}</td><td>${rtSw(R0,'sel','–')}</td><td></td><td>${mon(T.res)}</td><td>${sw(mon(T.fV),mon(T.fN))}</td><td>${ddSw(R0,'sel','–')}</td><td></td></tr>`;
+  if(cwr.length){const T2=pfz(R);h+=`<tr class="sum2"><td>Summe mit laufender Woche</td><td>${positions(R).length}</td><td>${sw(mon(T2.nV),mon(T2.nN))}</td><td>${rtSw(R,'sel','–')}</td><td></td><td>${mon(T2.res)}</td><td>${sw(mon(T2.fV),mon(T2.fN))}</td><td>${ddSw(R,'sel','–')}</td><td></td></tr>`}
   const tb=$('t-week');
   tb.innerHTML=`<tr><th>Woche${SM0}</th><th>Trades${SM0}</th>${TH_MW()}</tr>`+h;
   weekVis();
@@ -11049,21 +11117,24 @@ function hitPoints(rows,res){
   return [...m.keys()].sort().map(k=>{const o=m.get(k);return Object.assign(mkPt(k,bucketLabel(k,res),{v:o.w/o.n}),{sub:`${fI.format(o.w)} von ${fI.format(o.n)} ${o.n===1?'Trade':'Trades'}`})});
 }
 // Textbreiten in einem unsichtbaren SVG messen (gleiche Schrift wie die Grafik)
-function measureTexts(texts,size){
+function measureTexts(texts,size,host){
   const NS='http://www.w3.org/2000/svg';const sv=document.createElementNS(NS,'svg');
   sv.setAttribute('style','position:absolute;left:-9999px;top:0;visibility:hidden');sv.setAttribute('width','10');sv.setAttribute('height','10');
-  $('graf-chart').appendChild(sv);
+  (host||$('graf-chart')).appendChild(sv);
   const out=texts.map(t=>{const el=document.createElementNS(NS,'text');el.setAttribute('font-size',size);el.textContent=t;sv.appendChild(el);return el}).map(el=>el.getBBox().width);
   sv.remove();return out;
 }
 let grafRedraw=null;
-function renderGrafChart(points,opts){
-  const box=$('graf-chart');
-  if(!points.length){box.innerHTML='<p class="small">Keine Daten in diesem Zeitraum.</p>';grafRedraw=null;return}
+// Ab 0.100: tgt (optional) = {box, w, h, exp}. exp = für das Bild (PNG): zeichnet mit fester Größe in box (unsichtbar, zum Messen), ohne
+// Flächen für Tooltips und ohne Tooltip, gibt das SVG als Text zurück und lässt grafRedraw unberührt. Im Vollbild (GFS) füllt die Grafik die Höhe der Box.
+function renderGrafChart(points,opts,tgt){
+  const T=tgt||{},box=T.box||$('graf-chart'),exp=!!T.exp;
+  if(!points.length){if(exp)return '';box.innerHTML='<p class="small">Keine Daten in diesem Zeitraum.</p>';grafRedraw=null;return}
+  let out='';
   const res=opts.res||null,FS=13,GAP=8,n=points.length;
   const draw=()=>{
     // pt: oben Platz für die Beschriftung der senkrechten Linien (Verteilung)
-    const w=Math.max(280,Math.round(box.getBoundingClientRect().width)||1000),h=260,pt=opts.vl?30:14,pb=34,FE=12;
+    const w=T.w||Math.max(280,Math.round(box.getBoundingClientRect().width)||1000),h=T.h||(GFS?Math.max(200,Math.round(box.getBoundingClientRect().height)||260):260),pt=opts.vl?30:14,pb=34,FE=12;
     // Die Werte der Ø-Linie stehen in der Titelzeile (Legende), die Grafik nutzt die volle Breite
     const pr=12;
     // Feste Skala (opts.yr = {mn, mx, step}, z. B. Trefferquote 0 bis 100 %), sonst aus den Werten
@@ -11074,7 +11145,7 @@ function renderGrafChart(points,opts){
       step=niceStep((mx-mn)/4);mx=Math.ceil(mx/step)*step;mn=Math.floor(mn/step)*step}
     // Linker Rand nach der breitesten Beschriftung der y-Achse (z. B. „-10.000 USD“), mindestens 60 px
     const yt=[];for(let v=mn;v<=mx+1e-9;v+=step)yt.push(opts.yfmt(v));
-    const pl=Math.max(60,Math.ceil(Math.max(...measureTexts(yt,FS)))+14);
+    const pl=Math.max(60,Math.ceil(Math.max(...measureTexts(yt,FS,box)))+14);
     // Mit Beschriftung von höchstem und tiefstem Balken (opts.ext) oben und unten je 16 px Luft, damit sie nie an Rand oder Achse stößt
     const eT=pt+(opts.ext?16:0),eB=h-pb-(opts.ext?16:0);
     const y=v=>eT+(mx-v)/(mx-mn)*(eB-eT);
@@ -11084,8 +11155,8 @@ function renderGrafChart(points,opts){
     const m=opts.edges?n+1:n;
     const base=opts.edges||points.map(p=>res?shortLabel(p.key,res,false):(p.axis||p.label));
     const withY=points.map(p=>(res==='day'||res==='week')?shortLabel(p.key,res,true):null);
-    const wBase=measureTexts(base,FS);
-    const wYear=withY[0]!=null?measureTexts(withY,FS):wBase;
+    const wBase=measureTexts(base,FS,box);
+    const wYear=withY[0]!=null?measureTexts(withY,FS,box):wBase;
     const multiYear=(res==='day'||res==='week')&&new Set(points.map(p=>bucketYear(p.key,res))).size>1;
     const cx=i=>pl+bw*i+bw/2;
     const ax=i=>opts.edges?pl+bw*i:cx(i);
@@ -11114,7 +11185,7 @@ function renderGrafChart(points,opts){
     // Verteilung: senkrechte Linien für Ø und Median pro Trade. Beschriftung oben, an der linken Linie nach links, an der rechten nach rechts,
     // so überdecken sie sich auch bei gleichen Werten nicht. Stößt eine an den Rand, rückt sie hinein; überlappen sie dann, kommt die zweite eine Zeile tiefer.
     if(opts.vl){
-      const vs=opts.vl.map(o=>Object.assign({},o,{x:Math.max(pl,Math.min(w-pr,pl+bw*(o.v-opts.lo)/opts.step)),tw:measureTexts([o.t],FS)[0]})).sort((a,b)=>a.x-b.x);
+      const vs=opts.vl.map(o=>Object.assign({},o,{x:Math.max(pl,Math.min(w-pr,pl+bw*(o.v-opts.lo)/opts.step)),tw:measureTexts([o.t],FS,box)[0]})).sort((a,b)=>a.x-b.x);
       vs.forEach((o,i)=>{const left=vs.length>1&&i===0;o.x0=left?o.x-4-o.tw:o.x+4;if(o.x0<2)o.x0=2;if(o.x0+o.tw>w-2)o.x0=w-2-o.tw;o.yb=pt-12;
         s+=`<line x1="${o.x}" x2="${o.x}" y1="${pt-8}" y2="${h-pb}" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="6 4" opacity=".75"/>`});
       if(vs.length>1&&vs[1].x0<vs[0].x0+vs[0].tw+4)vs[1].yb=pt+6;
@@ -11127,7 +11198,7 @@ function renderGrafChart(points,opts){
       const L=[{i:iMax,hi:true}];if(iMin!==iMax)L.push({i:iMin,hi:false});
       const ya=opts.avg?y(opts.avg.v):null,done=[];
       for(const o of L){
-        const p=points[o.i],t=opts.tipfmt(p.v),tw=measureTexts([t],FE)[0];
+        const p=points[o.i],t=opts.tipfmt(p.v),tw=measureTexts([t],FE,box)[0];
         const up=opts.kind==='line'?o.hi:p.v>=0,gapUp=opts.kind==='line'?7:5,gapDn=opts.kind==='line'?FE+5:FE+3;
         let by=up?y(p.v)-gapUp:y(p.v)+gapDn;
         const x=Math.max(pl+tw/2+1,Math.min(w-pr-tw/2-1,cx(o.i)));
@@ -11139,10 +11210,11 @@ function renderGrafChart(points,opts){
         s+=`<text class="exl" x="${x}" y="${by}" text-anchor="middle" font-size="${FE}" fill="var(--ink2)">${esc(t)}</text>`;
       }
     }
-    points.forEach((p,i)=>{s+=`<rect class="hit" data-i="${i}" x="${pl+bw*i}" y="${pt}" width="${bw}" height="${h-pt-pb}" fill="transparent"/>`});
+    if(!exp)points.forEach((p,i)=>{s+=`<rect class="hit" data-i="${i}" x="${pl+bw*i}" y="${pt}" width="${bw}" height="${h-pt-pb}" fill="transparent"/>`});
     for(const o of lab)s+=`<text class="axlbl" x="${place(o.i,o.wd)}" y="${h-12}" text-anchor="middle" font-size="${FS}" fill="var(--muted)">${esc(o.t)}</text>`;
-    s+=`<line x1="${pl}" x2="${w-pr}" y1="${y(0)}" y2="${y(0)}" stroke="var(--ink2)" stroke-width="1"/></svg><div class="tip" id="graf-tip"></div>`;
-    box.innerHTML=s;
+    s+=`<line x1="${pl}" x2="${w-pr}" y1="${y(0)}" y2="${y(0)}" stroke="var(--ink2)" stroke-width="1"/></svg>`;
+    if(exp){out=s;return}
+    box.innerHTML=s+'<div class="tip" id="graf-tip"></div>';
     const tip=$('graf-tip');
     // Dritte Zeile: eigene Zeile des Punkts (p.sub, z. B. „6 von 7 Trades“), sonst die PF-Stellung
     const show=(i,x,yy)=>{const p=points[i];tip.innerHTML=`${esc(p.label)}<br><b>${opts.tipfmt(p.v)}</b><br>${esc(p.sub!=null?p.sub:opts.mode||'')}`;tip.style.display='block';const b=box.getBoundingClientRect();let lx=x-b.left+12;if(lx>b.width-200)lx-=220;if(lx<0)lx=0;tip.style.left=lx+'px';tip.style.top=(yy-b.top-10)+'px'};
@@ -11154,6 +11226,7 @@ function renderGrafChart(points,opts){
     });
   };
   draw();
+  if(exp)return out;
   grafRedraw=draw;
 }
 // rows = schon gefilterte Zeilen (Zeitraum und Konten aus dem Filter oben), sel = gewählte Konten. vor/nach PF kommt vom Schalter in der Filterzeile.
@@ -11171,7 +11244,7 @@ function renderGraf(rows,sel,gx){
   const series=g.what==='period'||g.what==='cum'||g.what==='avg'||g.what==='inv'||g.what==='hit';
   $('graf-res-l').style.display=series?'':'none';$('graf-kind-l').style.display=series?'':'none';$('graf-wd-l').style.display=g.what==='weekday'?'':'none';
   $('graf-unit-l').style.display=g.what==='inv'||g.what==='hit'?'none':'';
-  const box=$('graf-chart');$('graf-note').innerHTML='';$('graf-title').innerHTML='';grafRedraw=null;
+  const box=$('graf-chart');$('graf-note').innerHTML='';$('graf-title').innerHTML='';grafRedraw=null;grafSet(null);
   if(!rows.length){box.innerHTML='<p class="small">Keine Daten in diesem Zeitraum.</p>';return}
   const ex=S.ui.flt.pf==='ex',mode=ex?'nach PF':'vor PF',pct=g.unit==='pct';
   const size=pct?'Rendite':'Gewinn',u=pct?'%':CUR_EFF==='usd'?'USD':'€',avgWd=g.wd==='avg';
@@ -11242,9 +11315,91 @@ function renderGraf(rows,sel,gx){
   const leg=opts.avg?lg(opts.avg.t):opts.vl?opts.vl.map(o=>lg(o.lt)).join(''):'';
   $('graf-title').innerHTML=tline(leg);
   renderGrafChart(pts,opts);
+  // Ab 0.100: für Vollbild und Bild (Titelzeile als Text, Legende einzeln, Name und Auflösung für den Dateinamen)
+  grafSet(pts.length?{pts,opts,title,tsub,leg:opts.avg?[opts.avg.t]:opts.vl?opts.vl.map(o=>o.lt):[],what:g.what,res:series?g.res:null,rl:gx.rl||''}:null);
   $('graf-note').innerHTML=`<p style="margin:4px 0">${esc(main)}</p>`;
   save();
 }
+/* ---------------- Ab 0.100: Grafik im Vollbild und als Bild (PNG) ----------------
+   GRAF_LAST: die gezeigte Grafik (Punkte, Optionen, Titel, Legende, Zeitraum), gesetzt von renderGraf, null ohne Grafik.
+   Vollbild: #graf-chart wandert in #gfs (Tooltips bleiben), Fullscreen-API wo vorhanden, sonst eine feste Fläche (z. B. iPhone).
+   Schließen: Knopf, Esc, Zurück-Taste (ein Eintrag im Verlauf) und Verlassen des Vollbilds durch das System. Keine Sperre der Ausrichtung.
+   Bild: immer quer (960 × 540, gespeichert mit 1200 × 675 Pixeln), immer hell (Farben aus der hellen :root-Regel fest im Bild), komplett offline. */
+let GRAF_LAST=null,GFS=false,GFS_H=false,GPNG=null,GPNG_B=null;
+// Teilen von Dateien: einmal prüfen. Ohne heißt der Knopf „Bild speichern“ und speichert direkt.
+const CAN_SHARE_FILE=(()=>{try{return !!(navigator.canShare&&navigator.share&&navigator.canShare({files:[new File([new Uint8Array(8)],'t.png',{type:'image/png'})]}))}catch(e){return false}})();
+for(const w of ['gb','gb2']){const b=$('fb-'+w);b.textContent=CAN_SHARE_FILE?'Bild ▾':'Bild speichern';if(!CAN_SHARE_FILE){b.removeAttribute('aria-expanded');b.removeAttribute('aria-controls')}}
+function grafSet(L){GRAF_LAST=L;GPNG=GPNG_B=null;$('graf-btns').hidden=!L;if(GFS){if(L)gfsHead();else gfsClose()}}
+// Kopf im Vollbild: Titel wie in der Karte (mit PF-Stellung und Legende), darunter der Zeitraum
+function gfsHead(){$('gfs-title').innerHTML=$('graf-title').innerHTML;$('gfs-range').textContent=GRAF_LAST?GRAF_LAST.rl:''}
+function gfsRedraw(){if(GFS&&grafRedraw)grafRedraw()}
+function gfsOpen(){
+  if(GFS||!GRAF_LAST)return;GFS=true;closeFpanel();if(typeof glClose==='function'&&GP)glClose();
+  const ov=$('gfs');ov.hidden=false;gfsHead();$('gfs-c').appendChild($('graf-chart'));document.documentElement.classList.add('gfso');
+  try{history.pushState({gfs:1},'');GFS_H=true}catch(e){GFS_H=false}
+  if(ov.requestFullscreen)ov.requestFullscreen().catch(()=>{});
+  requestAnimationFrame(gfsRedraw);$('gfs-x').focus({preventScroll:true});
+}
+function gfsClose(){
+  if(!GFS)return;GFS=false;closeFpanel();
+  $('graf-note').before($('graf-chart'));$('gfs').hidden=true;document.documentElement.classList.remove('gfso');
+  if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+  if(GFS_H){GFS_H=false;try{history.back()}catch(e){}}
+  if(grafRedraw)grafRedraw();$('graf-fs').focus({preventScroll:true});
+}
+$('graf-fs').addEventListener('click',e=>{e.stopPropagation();e.preventDefault();gfsOpen()});
+$('gfs-x').addEventListener('click',e=>{e.preventDefault();gfsClose()});
+window.addEventListener('popstate',()=>{if(GFS){GFS_H=false;gfsClose()}});
+document.addEventListener('fullscreenchange',()=>{if(!GFS)return;if(!document.fullscreenElement)gfsClose();else requestAnimationFrame(gfsRedraw)});
+// Esc: zuerst offenes Menü oder Begriff (eigene Handler), sonst Vollbild zu. Auf window in der Capture-Phase, damit der Zustand vor den anderen Handlern gilt.
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&GFS&&!FP_OPEN&&!GP&&!MODAL){e.preventDefault();gfsClose()}},true);
+// Drehen oder Größe ändern im Vollbild: neu zeichnen (der allgemeine Handler zeichnet nur bei neuer Breite)
+{let q=0;const f=()=>{if(GFS&&!q)q=requestAnimationFrame(()=>{q=0;gfsRedraw()})};window.addEventListener('resize',f);window.addEventListener('orientationchange',f)}
+// Knöpfe „Bild ▾“ / „Bild speichern“ (Karte und Vollbild). Beim Öffnen des Menüs entsteht das Bild schon, damit „Teilen“ in der Nutzergeste bleibt.
+for(const w of ['gb','gb2'])$('fdd-'+w).addEventListener('click',e=>{e.stopPropagation();
+  if(e.target.closest('#fb-'+w)){e.preventDefault();if(!CAN_SHARE_FILE){grafSave();return}if(FP_OPEN===w)closeFpanel();else{openFpanel(w);grafPrep()}return}
+  const o=e.target.closest('[data-gimg]');if(o){closeFpanel();if(o.dataset.gimg==='share')grafShare();else grafSave()}});
+// Dateiname: Trading-Bilanz_<Grafik>_<Auflösung>_<JJJJ-MM-TT>.png (Grafiken ohne Wahl der Auflösung ohne diesen Teil)
+const GRAF_FN={period:'Pro-Zeitraum',cum:'Verlauf',avg:'Durchschnitt-pro-Trade',weekday:'Wochentag',dist:'Verteilung',inv:'Investition',hit:'Trefferquote'};
+function grafFileName(){const L=GRAF_LAST,r=L&&L.res?{day:'Tag',week:'Woche',month:'Monat'}[L.res]:'';return `Trading-Bilanz_${L&&GRAF_FN[L.what]||'Grafik'}${r?'_'+r:''}_${todayLocal()}.png`}
+// Helle Farben: Variablen der :root-Regel außerhalb von @media (dort stehen die dunklen), Ersatz falls nicht lesbar
+const GLIGHT={'--card':'#ffffff','--ink':'#1a1a1a','--ink2':'#373d43','--muted':'#454b51','--line':'#e2e0da','--accent':'#2a63a6','--neg':'#c2410c','--pos':'#1f7a4d'};
+function lightVars(){const o=Object.assign({},GLIGHT);
+  for(const sh of document.styleSheets){let rs;try{rs=sh.cssRules}catch(e){continue}for(const r of rs)if(r.type===1&&r.selectorText===':root')for(const n of r.style)if(n.startsWith('--')){const v=r.style.getPropertyValue(n).trim();if(v)o[n]=v}}
+  return o}
+// Bild der gezeigten Grafik als PNG (Promise<Blob>): Titel wie angezeigt, Zeitraum, Grafik (Ø/Median und Extremwerte nur, wenn die Grafik sie zeigt),
+// unten klein „Trading-Bilanz · trading-bilanz.github.io“. Keine Kontonamen, keine Hinweise, keine Tooltips, keine Knöpfe.
+function grafPng(){
+  const L=GRAF_LAST;if(!L)return Promise.reject(new Error('keine Grafik'));
+  const W=960,H=540,M=24,SC=1200/W,ff=getComputedStyle(document.body).fontFamily,V=lightVars(),col=t=>t.replace(/var\((--[\w-]+)\)/g,(m,n)=>V[n]||GLIGHT['--ink']);
+  const cv=document.createElement('canvas'),cx=cv.getContext('2d'),tw=(t,f)=>{cx.font=f;return cx.measureText(t).width};
+  // Titelzeile in Stücken: Titel fett, dann „· nach PF“ und die Legende (gestrichelter Strich und Wert); umbrochen nur zwischen den Stücken
+  const FT=`700 19px ${ff}`,FL=`400 14px ${ff}`,parts=[{t:L.title,f:FT,b:1}];
+  if(L.tsub)parts.push({t:'· '+L.tsub,f:FL});for(const x of L.leg)parts.push({t:'· ',f:FL,dash:x});
+  let lines=[[]],x0=M;const LH=26;
+  for(const p of parts){const w=p.dash?tw(p.t,FL)+22+tw(p.dash,FL):tw(p.t,p.f);if(lines[lines.length-1].length&&x0+w>W-M){lines.push([]);x0=M}lines[lines.length-1].push(Object.assign({x:x0,w},p));x0+=w+7}
+  let s='';const top0=M+18;
+  lines.forEach((ln,i)=>{const y=top0+i*LH;for(const p of ln){
+    if(p.dash){const a=p.x+tw(p.t,FL);s+=`<text x="${p.x}" y="${y}" font-size="14" fill="${V['--ink2']}">${esc(p.t)}</text><line x1="${a}" x2="${a+18}" y1="${y-5}" y2="${y-5}" stroke="${V['--ink']}" stroke-width="1.5" stroke-dasharray="6 4" opacity=".75"/><text x="${a+22}" y="${y}" font-size="14" fill="${V['--ink2']}">${esc(p.dash)}</text>`}
+    else s+=`<text x="${p.x}" y="${y}" font-size="${p.b?19:14}" font-weight="${p.b?700:400}" fill="${p.b?V['--ink']:V['--ink2']}">${esc(p.t)}</text>`}});
+  const yR=top0+(lines.length-1)*LH+22;s+=`<text x="${M}" y="${yR}" font-size="13" fill="${V['--muted']}">${esc(L.rl)}</text>`;
+  const cT=yR+14,cH=H-cT-30,cW=W-2*M;
+  const hb=document.createElement('div');hb.className='chart';hb.style.cssText=`position:absolute;left:-10000px;top:0;width:${cW}px;visibility:hidden`;document.body.appendChild(hb);
+  let ch;try{ch=renderGrafChart(L.pts,L.opts,{box:hb,w:cW,h:cH,exp:true})}finally{hb.remove()}
+  s+=col(ch).replace(/^<svg /,`<svg x="${M}" y="${cT}" `);
+  s+=`<text x="${W-M}" y="${H-10}" text-anchor="end" font-size="11" fill="${V['--muted']}">Trading-Bilanz · trading-bilanz.github.io</text>`;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W*SC}" height="${H*SC}" viewBox="0 0 ${W} ${H}" font-family="${esc(ff)}"><rect width="${W}" height="${H}" fill="${V['--card']}"/>${s}</svg>`;
+  return new Promise((ok,bad)=>{const img=new Image(),u=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
+    img.onload=()=>{try{cv.width=W*SC;cv.height=H*SC;const c=cv.getContext('2d');c.fillStyle=V['--card'];c.fillRect(0,0,cv.width,cv.height);c.drawImage(img,0,0,cv.width,cv.height);URL.revokeObjectURL(u);
+      cv.toBlob(b=>b?ok(b):bad(new Error('toBlob')),'image/png')}catch(e){URL.revokeObjectURL(u);bad(e)}};
+    img.onerror=()=>{URL.revokeObjectURL(u);bad(new Error('Bild'))};img.src=u});
+}
+function grafPrep(){if(!GPNG){const L=GRAF_LAST;GPNG=grafPng();GPNG.then(b=>{if(GRAF_LAST===L)GPNG_B=b},()=>{GPNG=null})}return GPNG}
+function grafSave(){const n=grafFileName();(GPNG_B?Promise.resolve(GPNG_B):grafPrep()).then(b=>download(n,b,'image/png'),()=>toast('Das Bild ließ sich nicht erzeugen.'))}
+// Teilen: dieselbe PNG-Datei. Abbrechen ohne Meldung; geht Teilen nicht, speichert das Tool das Bild.
+function grafShare(){const n=grafFileName();
+  const go=b=>{const f=new File([b],n,{type:'image/png'});navigator.share({files:[f]}).catch(e=>{if(e&&e.name==='AbortError')return;download(n,b,'image/png');toast('Teilen ging nicht, das Bild ist gespeichert.')})};
+  if(GPNG_B)go(GPNG_B);else grafPrep().then(go,()=>toast('Das Bild ließ sich nicht erzeugen.'))}
 function renderTax(rows){
   // Ab 0.46 (2.7, 3.4): „Ohne Steuer“: nur der Hinweis und die Wahl, sonst nichts (die Rechnung im Hintergrund bleibt gleich)
   $('country').value=['DE','none'].includes(S.ui.country)?S.ui.country:'AT';const off=S.ui.country==='none';$('tax-off').hidden=!off;
@@ -11768,7 +11923,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.99',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.100',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
