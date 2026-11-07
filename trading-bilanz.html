@@ -295,9 +295,10 @@ tr.sum td b,tr.gesamt td b,.tdbk tr.tdcur td b,.tdrund li.tdcur>.tdar b{font-wei
 .gfst{min-width:0}
 .gfst h3{margin:0 0 2px}
 .gfst p{margin:0}
-/* Ab 0.102: Hinweis nur hochkant (Höhe größer als Breite), nicht in der Karte und nicht im Bild */
+/* Ab 0.102: Hinweis nur hochkant (Höhe größer als Breite), nicht in der Karte und nicht im Bild.
+   Ab 0.105: nur auf Geräten mit Touch als Hauptbedienung (Handy, Tablet), am PC nie, auch nicht bei hohem, schmalem Fenster */
 .gfsrot{display:none}
-@media (orientation:portrait){.gfsrot{display:block}}
+@media (orientation:portrait) and (pointer:coarse){.gfsrot{display:block}}
 .gfsb{display:flex;gap:8px;flex:none;align-items:center}
 .gfsc{flex:1;min-height:0;display:flex;overflow:hidden}
 .gfsc .chart{flex:1;min-width:0;min-height:0}
@@ -2137,7 +2138,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <div id="glpop" class="noprint" role="dialog" aria-labelledby="glpop-t" hidden><button type="button" class="glx" aria-label="Schließen">×</button><div class="glin"><div class="glt" id="glpop-t"></div><div class="glh" id="glpop-h"></div></div></div>
 <!-- Ab 0.100: Grafik im Vollbild (gfsOpen). #graf-chart wandert beim Öffnen hierher und beim Schließen zurück. -->
 <div id="gfs" class="gfs noprint" hidden role="dialog" aria-modal="true" aria-label="Grafik im Vollbild">
-  <div class="gfsh"><div class="gfst"><h3 id="gfs-title"></h3><p class="small" id="gfs-range"></p><p class="small gfsrot" id="gfs-rot">Dreh dein Handy für eine bessere Ansicht</p></div>
+  <div class="gfsh"><div class="gfst"><h3 id="gfs-title"></h3><p class="small" id="gfs-range"></p><p class="small gfsrot" id="gfs-rot">Dreh dein Gerät für eine bessere Ansicht</p></div>
   <div class="gfsb"><span class="fdd udd" id="fdd-gb2"><button type="button" class="btn h2btn" id="fb-gb2" aria-expanded="false" aria-controls="fp-gb2">Bild ▾</button><div class="fpan" id="fp-gb2" role="dialog" aria-label="Bild"></div></span><button type="button" class="btn h2btn" id="gfs-x">× Schließen</button></div></div>
   <div class="gfsc" id="gfs-c"></div>
 </div>
@@ -11152,7 +11153,8 @@ function renderGrafChart(points,opts,tgt){
   if(!points.length){if(exp)return '';box.innerHTML='';grafRedraw=null;return}
   let out='';
   const res=opts.res||null,FS=13,GAP=8,n=points.length;
-  const draw=()=>{
+  // Ab 0.105: xT/xB = zusätzlicher oberer bzw. unterer Rand für die Beschriftung von höchstem und tiefstem Wert, wenn sie sonst keinen freien Platz findet
+  const draw=(xT=0,xB=0)=>{
     // pt: oben Platz für die Beschriftung der senkrechten Linien (Verteilung)
     const w=T.w||Math.max(280,Math.round(box.getBoundingClientRect().width)||1000),h=T.h||(GFS?Math.max(200,Math.round(box.getBoundingClientRect().height)||260):260),pt=opts.vl?30:14,pb=34,FE=12;
     // Die Werte der Ø-Linie stehen in der Titelzeile (Legende), die Grafik nutzt die volle Breite
@@ -11167,7 +11169,7 @@ function renderGrafChart(points,opts,tgt){
     const yt=[];for(let v=mn;v<=mx+1e-9;v+=step)yt.push(opts.yfmt(v));
     const pl=Math.max(60,Math.ceil(Math.max(...measureTexts(yt,FS,box)))+14);
     // Mit Beschriftung von höchstem und tiefstem Balken (opts.ext) oben und unten je 16 px Luft, damit sie nie an Rand oder Achse stößt
-    const eT=pt+(opts.ext?16:0),eB=h-pb-(opts.ext?16:0);
+    const eT=pt+(opts.ext?16+xT:0),eB=h-pb-(opts.ext?16+xB:0);
     const y=v=>eT+(mx-v)/(mx-mn)*(eB-eT);
     const bw=(w-pl-pr)/n;const bar=Math.max(2,Math.min(28,bw*.6));
     // Achsenbeschriftung: kleinste Schrittweite k, bei der jede k-te Beschriftung ohne Überlappung passt
@@ -11212,23 +11214,79 @@ function renderGrafChart(points,opts,tgt){
       for(const o of vs)s+=`<text class="vll" x="${o.x0}" y="${o.yb}" font-size="${FS}" fill="var(--ink)">${esc(o.t)}</text>`;
     }
     // Höchster und tiefster Wert beschriftet (Pro Zeitraum, Ø pro Trade, Nach Wochentag; Gleichstand der letzte), außen am Balkenende bzw. am Punkt.
-    // Ab 0.102: kein Ausweichen vor der Ø-Linie mehr, die Beschriftung bleibt an ihrem Balken. Ein schmaler Rand in der Hintergrundfarbe
-    // (stroke var(--card), paint-order stroke; im Bild hell) unterbricht dort Ø-Linie und Gitterlinien. Überschneiden sich beide, rückt die zweite eine Zeile weiter.
+    // Ein schmaler Rand in der Hintergrundfarbe (stroke var(--card), paint-order stroke; im Bild hell) unterbricht dort Ø-Linie und Gitterlinien.
+    // Ab 0.105: Die Beschriftung (mit Rand) berührt nie einen Balken, die andere Beschriftung oder den Rand der Zeichenfläche. Passt sie an ihrer
+    // normalen Stelle, bleibt sie dort (ohne Linie). Sonst nimmt sie die nächstgelegene freie Stelle: mittig über dem Balken, nach links oder nach rechts
+    // versetzt, Stufe um Stufe weiter vom Balkenende weg (unter null nach unten); bei gleichem Abstand mittig vor links vor rechts. Frei heißt auch: Die
+    // Verbindungslinie (1 px, var(--muted)) vom Balkenende zur Beschriftung kreuzt keinen anderen Balken. Bei „Linie“ sind die Punkte Hindernisse wie die
+    // Balken, die Linie selbst nur, solange sich so eine freie Stelle findet. Findet sich keine, zeichnet draw() neu mit größerem Rand oben bzw. unten
+    // (Platz über bzw. unter allen Balken); reicht auch das nicht, die Stelle mit der kleinsten Überdeckung (data-lage="notfall").
     if(opts.ext){
       let iMax=0,iMin=0;points.forEach((p,i)=>{if(p.v>=points[iMax].v)iMax=i;if(p.v<=points[iMin].v)iMin=i});
       const L=[{i:iMax,hi:true}];if(iMin!==iMax)L.push({i:iMin,hi:false});
-      const done=[];
-      for(const o of L){
+      const isL=opts.kind==='line',R=Math.min(3.5,Math.max(1.5,bw*0.45));
+      // Hindernisse: Balken bzw. Punkte als Rechtecke, bei „Linie“ dazu die Strecken der Linie
+      const ob=points.map((p,i)=>{const yv=y(p.v);if(isL)return {x0:cx(i)-R,x1:cx(i)+R,y0:yv-R,y1:yv+R};
+        const y0=y(0),top=Math.min(y0,yv);return {x0:cx(i)-bar/2,x1:cx(i)+bar/2,y0:top,y1:top+Math.max(1,Math.abs(yv-y0))}});
+      const sg=isL?points.slice(1).map((p,i)=>[cx(i),y(points[i].v),cx(i+1),y(p.v)]):[];
+      const hit=(a,b,m)=>a.x0<b.x1+m&&a.x1>b.x0-m&&a.y0<b.y1+m&&a.y1>b.y0-m;
+      const ovl=(a,b,m)=>Math.max(0,Math.min(a.x1,b.x1+m)-Math.max(a.x0,b.x0-m))*Math.max(0,Math.min(a.y1,b.y1+m)-Math.max(a.y0,b.y0-m));
+      // Strecke schneidet Rechteck (Liang-Barsky) bzw. Strecke schneidet Strecke
+      const sr=(x1,y1,x2,y2,b)=>{let t0=0,t1=1;const dx=x2-x1,dy=y2-y1;
+        for(const [pp,q] of [[-dx,x1-b.x0],[dx,b.x1-x1],[-dy,y1-b.y0],[dy,b.y1-y1]]){if(pp===0){if(q<0)return false}else{const r=q/pp;if(pp<0){if(r>t1)return false;if(r>t0)t0=r}else{if(r<t0)return false;if(r<t1)t1=r}}}
+        return true};
+      const ori=(ax,ay,bx,by,qx,qy)=>Math.sign((bx-ax)*(qy-ay)-(by-ay)*(qx-ax));
+      const ss=(a,b)=>ori(a[0],a[1],a[2],a[3],b[0],b[1])*ori(a[0],a[1],a[2],a[3],b[2],b[3])<0&&ori(b[0],b[1],b[2],b[3],a[0],a[1])*ori(b[0],b[1],b[2],b[3],a[2],a[3])<0;
+      // Zeichenfläche: waagrecht zwischen Achse und rechtem Rand, senkrecht vom oberen Rand bis knapp über die Beschriftung der Achse unten
+      // run(ord,k): beide Beschriftungen in dieser Reihenfolge setzen, die erste an ihrer k-ten freien Stelle (null, wenn es die nicht gibt).
+      // Zuerst der höchste Wert an seiner nächsten Stelle. Findet eine keine freie Stelle, probiert das Tool beide Reihenfolgen und für die
+      // erste Beschriftung auch ihre weiteren freien Stellen; es gilt die Anordnung mit den wenigsten Notlösungen, dann den kürzesten Wegen.
+      const A={y0:1,y1:h-pb+6};
+      const run=(ord,k)=>{const placed=[],pG=[],lines=[],T={};let need=0,bad=0,sum=0;
+      for(const o of ord){
         const p=points[o.i],t=opts.tipfmt(p.v),tw=measureTexts([t],FE,box)[0];
-        const up=opts.kind==='line'?o.hi:p.v>=0,gapUp=opts.kind==='line'?7:5,gapDn=opts.kind==='line'?FE+5:FE+3;
-        let by=up?y(p.v)-gapUp:y(p.v)+gapDn;
-        const x=Math.max(pl+tw/2+1,Math.min(w-pr-tw/2-1,cx(o.i)));
-        const bx=b=>({x0:x-tw/2,x1:x+tw/2,y0:b-FE+1,y1:b+3});
-        for(const q of done){const b=bx(by);if(b.x0<q.x1+2&&b.x1>q.x0-2&&b.y0<q.y1+1&&b.y1>q.y0-1)by=up?q.y0-4:q.y1+FE+1}
-        by=Math.max(FE,Math.min(h-pb-2,by));
-        done.push(bx(by));
-        s+=`<text class="exl" x="${x}" y="${by}" text-anchor="middle" font-size="${FE}" fill="var(--ink2)" stroke="var(--card)" stroke-width="6" stroke-linejoin="round" paint-order="stroke">${esc(t)}</text>`;
+        const up=isL?o.hi:p.v>=0,dir=up?-1:1,gapUp=isL?7:5,gapDn=isL?FE+5:FE+3,yv=y(p.v);
+        const by0=up?yv-gapUp:yv+gapDn,cl=xx=>Math.max(pl+tw/2+1,Math.min(w-pr-tw/2-1,xx)),xc=cl(cx(o.i));
+        // Ziffern (G) und Ziffern mit Rand (K): oben 9 px über der Grundlinie, unten 2 px (Komma), Rand 3 px
+        const G=(x,b)=>({x0:x-tw/2,x1:x+tw/2,y0:b-9,y1:b+2}),K=(x,b)=>({x0:x-tw/2-3,x1:x+tw/2+3,y0:b-12,y1:b+5});
+        const sy0=isL?R+2:2,S={x:cx(o.i),y:yv+dir*sy0};
+        // Ende der Verbindungslinie: nächster Punkt am Text, mit 3 px Abstand
+        const lead=(x,b)=>{const g=G(x,b),ex=Math.max(g.x0-3,Math.min(g.x1+3,S.x)),ey=Math.max(g.y0-3,Math.min(g.y1+3,S.y));return [S.x,S.y,ex,ey]};
+        // Seitlich: Rand der Beschriftung endet genau über der Mitte des Balkens, dort setzt die Verbindungslinie an
+        const cand=[];
+        for(let d=0;;d+=d?3:8){const b=by0+dir*d,k0=K(xc,b);if(k0.y0<A.y0-1||k0.y1>A.y1+1)break;
+          [[xc,0],[cl(cx(o.i)-tw/2-3),1],[cl(cx(o.i)+tw/2+3),2]].forEach(([x,ty])=>{if(ty&&Math.abs(x-xc)<1)return;cand.push({x,b,ty,d,dist:Math.hypot(x-xc,d)})})}
+        if(!cand.length)cand.push({x:xc,b:by0,ty:0,d:0,dist:0});
+        cand.sort((a,b)=>a.dist-b.dist||a.ty-b.ty);
+        const others=i=>ob.filter((_,j)=>j!==i);const OB=others(o.i);
+        const free=(c,soft)=>{const k=K(c.x,c.b);if(k.y0<A.y0||k.y1>A.y1)return false;
+          if(OB.some(q=>hit(k,q,1))||placed.some(q=>hit(k,q,1))||lines.some(q=>sr(q[0],q[1],q[2],q[3],k)))return false;
+          if(soft&&sg.some(q=>sr(q[0],q[1],q[2],q[3],k)))return false;
+          if(c.d||c.ty){const ln=lead(c.x,c.b);if(OB.some(q=>sr(ln[0],ln[1],ln[2],ln[3],{x0:q.x0-1,x1:q.x1+1,y0:q.y0-1,y1:q.y1+1}))||pG.some(q=>sr(ln[0],ln[1],ln[2],ln[3],q)))return false;
+            if(soft&&sg.some(q=>ss(ln,q)))return false}
+          return true};
+        let c;if(k&&o===ord[0]){c=cand.filter(q=>free(q,true))[k];if(!c)return null}else{c=cand.find(q=>free(q,true));if(!c&&isL)c=cand.find(q=>free(q,false))}
+        let lage=c?(c.d||c.ty?'frei':'normal'):'';
+        if(!c){bad++;if(!(up?xT:xB)){need|=up?1:2;c=cand[0]}
+          else{lage='notfall';let best=Infinity;for(const q of cand){const k=K(q.x,q.b);if(k.y0<A.y0||k.y1>A.y1)continue;
+            // Kosten: Balken anschneiden am meisten, dann Linie durch die andere Zahl bzw. durch Balken, dann bloßes Berühren, zuletzt der Abstand
+            let v=q.dist*0.01;for(const r of OB)v+=100*ovl(k,r,0)+ovl(k,r,1);for(const r of placed)v+=100*ovl(k,r,0);
+            if(q.d||q.ty){const ln=lead(q.x,q.b);for(const r of OB)if(sr(ln[0],ln[1],ln[2],ln[3],r))v+=200;for(const r of pG)if(sr(ln[0],ln[1],ln[2],ln[3],r))v+=400}
+            if(v<best){best=v;c=q}}
+            if(!c)c=cand[0]}}
+        if(lage==='frei'&&(up?xT:xB))lage='rand';
+        // Die Verbindungslinie der anderen darf durch den Rand dieser Beschriftung, nicht durch ihre Ziffern (G: Breite des Textes, etwas mehr als die Ziffern)
+        placed.push(K(c.x,c.b));pG.push(G(c.x,c.b));
+        if(c.d||c.ty){const ln=lead(c.x,c.b);if(Math.hypot(ln[2]-ln[0],ln[3]-ln[1])>=3)lines.push(ln)}
+        sum+=c.dist;
+        T[o.i]=`<text class="exl" data-i="${o.i}" data-lage="${lage||'normal'}" x="${c.x}" y="${c.b}" text-anchor="middle" font-size="${FE}" fill="var(--ink2)" stroke="var(--card)" stroke-width="6" stroke-linejoin="round" paint-order="stroke">${esc(t)}</text>`;
       }
+      return {need,bad,sum,lines,T}};
+      const sc=q=>q.bad*1e4+q.sum;let r=run(L,0);
+      if(L.length>1&&r.bad)for(const ord of [L,[L[1],L[0]]])for(let k=0;k<20&&r.bad;k++){const r2=run(ord,k);if(!r2)break;if(sc(r2)<sc(r))r=r2}
+      if(r.need)return draw(xT||(r.need&1?24:0),xB||(r.need&2?24:0));
+      for(const o of L)s+=r.T[o.i];
+      for(const ln of r.lines)s+=`<line class="exv" x1="${ln[0]}" y1="${ln[1]}" x2="${ln[2]}" y2="${ln[3]}" stroke="var(--muted)" stroke-width="1"/>`;
     }
     if(!exp)points.forEach((p,i)=>{s+=`<rect class="hit" data-i="${i}" x="${pl+bw*i}" y="${pt}" width="${bw}" height="${h-pt-pb}" fill="transparent"/>`});
     for(const o of lab)s+=`<text class="axlbl" x="${place(o.i,o.wd)}" y="${h-12}" text-anchor="middle" font-size="${FS}" fill="var(--muted)">${esc(o.t)}</text>`;
