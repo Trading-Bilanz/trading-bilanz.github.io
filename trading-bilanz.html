@@ -299,6 +299,10 @@ tr.sum td b,tr.gesamt td b,.tdbk tr.tdcur td b,.tdrund li.tdcur>.tdar b{font-wei
    Ab 0.105: nur auf Geräten mit Touch als Hauptbedienung (Handy, Tablet), am PC nie, auch nicht bei hohem, schmalem Fenster */
 .gfsrot{display:none}
 @media (orientation:portrait) and (pointer:coarse){.gfsrot{display:block}}
+/* Ab 0.108: Hinweis als kleiner hellblauer Kasten, nur so breit wie der Text, bricht bei Platzmangel um. Steht unter der ganzen Kopfzeile
+   (Titel, Zeitraum, Knöpfe), nicht mehr in der schmalen Spalte neben den Knöpfen. Schrift --accent auf --accent-soft: hell 5,23 : 1,
+   dunkel 4,92 : 1. Das Zeichen ↻ ist Schmuck (aria-hidden). Kein Link: keine Unterstreichung, normaler Mauszeiger */
+.gfs p.gfsrot{flex:none;align-self:flex-start;width:fit-content;max-width:100%;box-sizing:border-box;margin:0;padding:2px 8px;border-radius:6px;background:var(--accent-soft);color:var(--accent);text-decoration:none;cursor:default}
 .gfsb{display:flex;gap:8px;flex:none;align-items:center}
 .gfsc{flex:1;min-height:0;display:flex;overflow:hidden}
 .gfsc .chart{flex:1;min-width:0;min-height:0}
@@ -2138,8 +2142,9 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <div id="glpop" class="noprint" role="dialog" aria-labelledby="glpop-t" hidden><button type="button" class="glx" aria-label="Schließen">×</button><div class="glin"><div class="glt" id="glpop-t"></div><div class="glh" id="glpop-h"></div></div></div>
 <!-- Ab 0.100: Grafik im Vollbild (gfsOpen). #graf-chart wandert beim Öffnen hierher und beim Schließen zurück. -->
 <div id="gfs" class="gfs noprint" hidden role="dialog" aria-modal="true" aria-label="Grafik im Vollbild">
-  <div class="gfsh"><div class="gfst"><h3 id="gfs-title"></h3><p class="small" id="gfs-range"></p><p class="small gfsrot" id="gfs-rot">Dreh dein Gerät für eine bessere Ansicht</p></div>
+  <div class="gfsh"><div class="gfst"><h3 id="gfs-title"></h3><p class="small" id="gfs-range"></p></div>
   <div class="gfsb"><span class="fdd udd" id="fdd-gb2"><button type="button" class="btn h2btn" id="fb-gb2" aria-expanded="false" aria-controls="fp-gb2">Bild ▾</button><div class="fpan" id="fp-gb2" role="dialog" aria-label="Bild"></div></span><button type="button" class="btn h2btn" id="gfs-x">× Schließen</button></div></div>
+  <p class="small gfsrot" id="gfs-rot"><span aria-hidden="true">↻</span> Dreh dein Gerät für eine bessere Ansicht</p>
   <div class="gfsc" id="gfs-c"></div>
 </div>
 <script>
@@ -12002,7 +12007,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.107',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.108',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
