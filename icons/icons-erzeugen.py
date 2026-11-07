@@ -18,6 +18,9 @@
 #
 # Schrift der Vorschaubilder und der Übersicht: Inter (SIL Open Font License 1.1, icons/quelle/schrift/OFL.txt),
 # auf westeuropäische Zeichen gekürzt. Sie liegt hier bei, damit jeder Rechner dieselben Bilder macht.
+# OFL.txt ist byte-gleich die Datei LICENSE.txt aus github.com/rsms/inter, Tag v4.0 (Commit 2ce9119398be143fa289c3e180824db1b7ed803e,
+# passend zu den Schriftdateien Version 4.000), nur umbenannt. SHA-256:
+# 262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a
 
 import base64
 import io
