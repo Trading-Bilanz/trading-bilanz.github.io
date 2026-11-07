@@ -1887,7 +1887,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <div id="tg-na"></div>
   <div id="tgmsg"></div>
   <p class="small" id="tg-delhint"></p>
-  <div class="row mft"><button type="button" class="btn primary" id="btn-tg">Speichern</button><button type="button" class="btn danger" id="btn-tgdel">Löschen</button><button type="button" class="btn" id="btn-tgcancel">Abbrechen</button></div>
+  <div class="row mft"><button type="button" class="btn primary" id="btn-tg">Speichern</button><button type="button" class="btn danger" id="btn-tgdel">Entfernen</button><button type="button" class="btn" id="btn-tgcancel">Abbrechen</button></div>
 </div></div>
 <!-- Ab 0.46 (5.1): Kontostände prüfen (laut Einträgen, laut Datei, Stand in deiner App, Unterschied) -->
 <!-- Ab 0.50 Nachtrag 1 (4.4): „Alle Vorschläge ansehen und übernehmen“ als eigenes Fenster: feste Kopfzeile und Knopfleiste, eine scrollende Fläche -->
@@ -5888,8 +5888,9 @@ let ASK=null;
 function askBox(o){if(typeof o==='string')o={text:o};return new Promise(res=>{const b=$('ask-box');if(ASK)ASK.done(false);
   $('ask-t').textContent=o.title||'Rückfrage';$('ask-body').innerHTML=o.html||`<p>${esc(o.text||'').replace(/\n\n/g,'</p><p>')}</p>`;
   // Ab 0.50 Nachtrag 4: o.more {t, fn(Knopf)}: dritter Knopf vorne (blau), der die Rückfrage offen lässt (z. B. „Sicherung speichern“)
+  // Ab 0.96: o.noDanger = zweiter Knopf rot (z. B. „Verwerfen“ neben „Speichern“; „Verwerfen“ ist überall rot)
   // Ab 0.58 (6): o.alt = Text eines weiteren Wegs (grauer Knopf vor dem Hauptknopf), Ergebnis dann 'alt'
-  $('ask-btns').innerHTML=`${o.more?`<button type="button" class="btn primary" data-ask="x">${esc(o.more.t)}</button>`:''}${o.alt?`<button type="button" class="btn" data-ask="2">${esc(o.alt)}</button>`:''}<button type="button" class="btn ${o.danger?'danger':'primary'}" data-ask="1">${esc(o.ok||'Ja')}</button><button type="button" class="btn" data-ask="0">${esc(o.no||'Abbrechen')}</button>`;$('ask-btns').classList.toggle('ask3',!!o.more);$('ask-btns').classList.toggle('ask4',!!(o.more&&o.alt));$('ask-box').classList.toggle('ask4',!!(o.more&&o.alt));
+  $('ask-btns').innerHTML=`${o.more?`<button type="button" class="btn primary" data-ask="x">${esc(o.more.t)}</button>`:''}${o.alt?`<button type="button" class="btn" data-ask="2">${esc(o.alt)}</button>`:''}<button type="button" class="btn ${o.danger?'danger':'primary'}" data-ask="1">${esc(o.ok||'Ja')}</button><button type="button" class="btn${o.noDanger?' danger':''}" data-ask="0">${esc(o.no||'Abbrechen')}</button>`;$('ask-btns').classList.toggle('ask3',!!o.more);$('ask-btns').classList.toggle('ask4',!!(o.more&&o.alt));$('ask-box').classList.toggle('ask4',!!(o.more&&o.alt));
   const prev=document.activeElement;ASK={esc:o.stay?null:false,more:o.more,done:v=>{b.classList.remove('on');ASK=null;if(prev&&prev.focus&&document.contains(prev))prev.focus({preventScroll:true});res(v)}};
   b.classList.add('on');b.querySelector(o.more?'[data-ask="x"]':'[data-ask="1"]').focus()})}
 $('ask-box').addEventListener('click',e=>{if(!ASK)return;const a=e.target.closest('[data-ask]');if(a){if(a.dataset.ask==='x'){if(ASK.more)ASK.more.fn(a);return}ASK.done(a.dataset.ask==='2'?'alt':a.dataset.ask==='1')}else if(e.target===$('ask-box'))ASK.done(ASK.esc)});
@@ -8176,7 +8177,7 @@ async function tdSaveCur(){
 // Jeder Weg aus der Karte läuft hierüber: mit ungespeicherten Eingaben erst die Rückfrage. go(gespeichert) führt den Weg aus.
 // Esc und Klick daneben auf die Rückfrage: auf der Karte bleiben.
 function tdLeave(go){if(!tdDirty()){go(false);return}
-  askBox({title:'Nicht gespeichert',text:'Du hast in diesem Fenster etwas eingegeben und noch nicht gespeichert.',ok:'Speichern',no:'Verwerfen',stay:true}).then(async v=>{if(v==null)return;
+  askBox({title:'Nicht gespeichert',text:'Du hast in diesem Fenster etwas eingegeben und noch nicht gespeichert.',ok:'Speichern',no:'Verwerfen',noDanger:true,stay:true}).then(async v=>{if(v==null)return;
     if(v){if(!(await tdSaveCur()))return}TD_DIRTY='';delete $('td-modal').dataset.dirty;go(!!v)})}
 // „Nächster“/„Zurück“: Nach dem Speichern ist der Punkt erledigt und weg; „Nächster“ zeigt dann den, der an seine Stelle gerückt ist
 function tdNav(dir){const cur=TD_CUR;tdLeave(s=>{const n=TD_ITEMS.length;if(!n)return;if(s&&dir>0&&!TD_ITEMS.some(x=>x.id===cur)){tdGo(TD_POS);return}tdGo((TD_POS+dir+n)%n)})}
