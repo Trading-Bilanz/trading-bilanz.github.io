@@ -295,6 +295,9 @@ tr.sum td b,tr.gesamt td b,.tdbk tr.tdcur td b,.tdrund li.tdcur>.tdar b{font-wei
 .gfst{min-width:0}
 .gfst h3{margin:0 0 2px}
 .gfst p{margin:0}
+/* Ab 0.102: Hinweis nur hochkant (Höhe größer als Breite), nicht in der Karte und nicht im Bild */
+.gfsrot{display:none}
+@media (orientation:portrait){.gfsrot{display:block}}
 .gfsb{display:flex;gap:8px;flex:none;align-items:center}
 .gfsc{flex:1;min-height:0;display:flex;overflow:hidden}
 .gfsc .chart{flex:1;min-width:0;min-height:0}
@@ -2131,7 +2134,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <div id="glpop" class="noprint" role="dialog" aria-labelledby="glpop-t" hidden><button type="button" class="glx" aria-label="Schließen">×</button><div class="glin"><div class="glt" id="glpop-t"></div><div class="glh" id="glpop-h"></div></div></div>
 <!-- Ab 0.100: Grafik im Vollbild (gfsOpen). #graf-chart wandert beim Öffnen hierher und beim Schließen zurück. -->
 <div id="gfs" class="gfs noprint" hidden role="dialog" aria-modal="true" aria-label="Grafik im Vollbild">
-  <div class="gfsh"><div class="gfst"><h3 id="gfs-title"></h3><p class="small" id="gfs-range"></p></div>
+  <div class="gfsh"><div class="gfst"><h3 id="gfs-title"></h3><p class="small" id="gfs-range"></p><p class="small gfsrot" id="gfs-rot">Dreh dein Handy für eine bessere Ansicht</p></div>
   <div class="gfsb"><span class="fdd udd" id="fdd-gb2"><button type="button" class="btn h2btn" id="fb-gb2" aria-expanded="false" aria-controls="fp-gb2">Bild ▾</button><div class="fpan" id="fp-gb2" role="dialog" aria-label="Bild"></div></span><button type="button" class="btn h2btn" id="gfs-x">× Schließen</button></div></div>
   <div class="gfsc" id="gfs-c"></div>
 </div>
@@ -11107,7 +11110,8 @@ function distPoints(rows,unit,ex){
   const edge=j=>+(lo+j*step).toFixed(dec);
   const pts=bins.map((cnt,i)=>{const x0=edge(i),x1=edge(i+1);
     return {label:`von ${fmtDec(x0,dec)}${sfx} bis unter ${fmtDec(x1,dec)}${sfx}`,v:cnt,color:(x0+x1)/2<0?'neg':'pos'}});
-  pts.edges=Array.from({length:nb+1},(_,j)=>fmtDec(edge(j),dec));
+  // Ab 0.102: Achse mit Einheit („20 USD“, „20 €“, „2 %“), ausgedünnt nach gemessener Breite wie bisher
+  pts.edges=Array.from({length:nb+1},(_,j)=>fmtDec(edge(j),dec)+sfx);
   pts.lo=lo;pts.step=step; // für die senkrechten Linien Ø und Median (Wert → Lage auf der Achse)
   return pts;
 }
@@ -11201,23 +11205,23 @@ function renderGrafChart(points,opts,tgt){
       if(vs.length>1&&vs[1].x0<vs[0].x0+vs[0].tw+4)vs[1].yb=pt+6;
       for(const o of vs)s+=`<text class="vll" x="${o.x0}" y="${o.yb}" font-size="${FS}" fill="var(--ink)">${esc(o.t)}</text>`;
     }
-    // Pro Zeitraum: höchster und tiefster Wert beschriftet (Gleichstand der letzte), außen am Balkenende bzw. am Punkt.
-    // Berührt eine Beschriftung die Ø-Linie, rückt sie auf deren andere Seite; überschneiden sich beide, rückt die zweite eine Zeile weiter.
+    // Höchster und tiefster Wert beschriftet (Pro Zeitraum, Ø pro Trade, Nach Wochentag; Gleichstand der letzte), außen am Balkenende bzw. am Punkt.
+    // Ab 0.102: kein Ausweichen vor der Ø-Linie mehr, die Beschriftung bleibt an ihrem Balken. Ein schmaler Rand in der Hintergrundfarbe
+    // (stroke var(--card), paint-order stroke; im Bild hell) unterbricht dort Ø-Linie und Gitterlinien. Überschneiden sich beide, rückt die zweite eine Zeile weiter.
     if(opts.ext){
       let iMax=0,iMin=0;points.forEach((p,i)=>{if(p.v>=points[iMax].v)iMax=i;if(p.v<=points[iMin].v)iMin=i});
       const L=[{i:iMax,hi:true}];if(iMin!==iMax)L.push({i:iMin,hi:false});
-      const ya=opts.avg?y(opts.avg.v):null,done=[];
+      const done=[];
       for(const o of L){
         const p=points[o.i],t=opts.tipfmt(p.v),tw=measureTexts([t],FE,box)[0];
         const up=opts.kind==='line'?o.hi:p.v>=0,gapUp=opts.kind==='line'?7:5,gapDn=opts.kind==='line'?FE+5:FE+3;
         let by=up?y(p.v)-gapUp:y(p.v)+gapDn;
         const x=Math.max(pl+tw/2+1,Math.min(w-pr-tw/2-1,cx(o.i)));
         const bx=b=>({x0:x-tw/2,x1:x+tw/2,y0:b-FE+1,y1:b+3});
-        if(ya!=null){const b=bx(by);if(ya>=b.y0-2&&ya<=b.y1+2)by=up?ya-5:ya+FE+3}
         for(const q of done){const b=bx(by);if(b.x0<q.x1+2&&b.x1>q.x0-2&&b.y0<q.y1+1&&b.y1>q.y0-1)by=up?q.y0-4:q.y1+FE+1}
         by=Math.max(FE,Math.min(h-pb-2,by));
         done.push(bx(by));
-        s+=`<text class="exl" x="${x}" y="${by}" text-anchor="middle" font-size="${FE}" fill="var(--ink2)">${esc(t)}</text>`;
+        s+=`<text class="exl" x="${x}" y="${by}" text-anchor="middle" font-size="${FE}" fill="var(--ink2)" stroke="var(--card)" stroke-width="6" stroke-linejoin="round" paint-order="stroke">${esc(t)}</text>`;
       }
     }
     if(!exp)points.forEach((p,i)=>{s+=`<rect class="hit" data-i="${i}" x="${pl+bw*i}" y="${pt}" width="${bw}" height="${h-pt-pb}" fill="transparent"/>`});
@@ -11292,7 +11296,8 @@ function renderGraf(rows,sel,gx){
   const yf=pct?(v=>fR.format(v)):(v=>fI.format(Math.round(v))+CUR()),tf=pct?(v=>fR.format(v)):(v=>fCur(v));
   if(g.what==='period'||g.what==='cum'||g.what==='avg'){
     pts=g.what==='avg'?avgPoints(rows,g.res,g.unit,ex):periodPoints(rows,g.res,g.unit,ex,gx.zero?winKeys(gx.win,g.res):null);if(g.what==='cum')pts=cumulatePoints(pts);
-    opts={kind:g.kind,res:g.res,yfmt:yf,tipfmt:tf,ext:g.what==='period'};
+    // Ab 0.102: höchster und tiefster Wert bei „Pro Zeitraum“ und „Ø pro Trade“ (nicht beim Verlauf)
+    opts={kind:g.kind,res:g.res,yfmt:yf,tipfmt:tf,ext:g.what==='period'||g.what==='avg'};
     // Ø-Linie: derselbe Wert wie in der Karte „Durchschnitt“ (Auflösung bzw. pro Trade), nicht der Schnitt der sichtbaren Balken
     if(g.avg&&avgOk){const z=g.what==='avg'?gx.AK.trade:gx.AK[g.res];const v=!z.k?null:pct?(gx.AK.miss?null:ex?z.rX:z.rI):(ex?z.aX:z.aI);
       if(v!=null&&isFinite(v)){opts.avg={v,t:'Ø '+tf(v)};main+=' Die Ø-Linie zeigt denselben Wert wie die Karte Durchschnitt.'}
@@ -11307,7 +11312,7 @@ function renderGraf(rows,sel,gx){
     if(g.avg){const P=positions(rows);if(P.length){const v=P.filter(p=>p.eur>0).length/P.length;opts.avg={v,t:'Ø '+fP.format(v)}}}
   }else if(g.what==='weekday'){
     pts=weekdayPoints(rows,g.unit,ex,avgWd,wdCnt);
-    opts={kind:'bar',yfmt:yf,tipfmt:tf};
+    opts={kind:'bar',yfmt:yf,tipfmt:tf,ext:true}; // ab 0.102 mit höchstem und tiefstem Wert (Summe und Durchschnitt)
     // Durchschnitt je Wochentag: Ø-Linie = Ø pro Handelstag aus der Karte „Durchschnitt“
     if(g.avg&&avgWd){const z=gx.AK.day;const v=!z.k?null:pct?(gx.AK.miss?null:ex?z.rX:z.rI):(ex?z.aX:z.aI);
       if(v!=null&&isFinite(v)){opts.avg={v,t:'Ø '+tf(v)};main+=' Die Ø-Linie zeigt den Ø pro Handelstag aus der Karte Durchschnitt.'}}
@@ -11933,7 +11938,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.101',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.102',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
