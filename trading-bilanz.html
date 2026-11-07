@@ -792,7 +792,7 @@ details.dhc{margin:4px 0}details.dhc summary{cursor:pointer;color:var(--accent)}
 #cx-sess{flex:1 0 100%;max-height:26vh;overflow:auto;margin:-4px 0 2px}#cx-sess[hidden]{display:none}#cx-sess p{margin:0}#cx-sess ul.cxsl{margin:2px 0;padding-left:18px}#cx-sess li{margin:2px 0}
 td.wbc .small{display:block}
 /* Ab 0.52 (1): Fenster „Wallets“ wie die Auswertung. Bis 960 px breit, Kopfleiste mit × steht (wie „Alle Vorschläge“), darunter stehen Titel und
-   Spaltenkopf jeder Karte (--wlh = Höhe der Kopfleiste, gemessen über einen ResizeObserver an #wl-t). Die Tabellen scrollen nie seitlich (.tscroll hier ohne overflow).
+   Spaltenkopf jeder Karte (--wlh = Höhe der Kopfleiste, gemessen über einen ResizeObserver an #wl-t). Bis 0.102 scrollten die Tabellen nie seitlich (.tscroll hier ohne overflow).
    Spalten „Andere Adressen“: Name · Adresse ⧉ (Netzwerke klein darunter) · Bewegungen · ✎. „Deine Wallets“ bis 700 px: Art klein unter dem Namen. */
 .modal .box.wlbox{max-width:960px}
 /* Ab 0.94: Fenster „Bewegung“ am PC 960 px, Tabelle nach Inhalt (keine festen Prozente), Umbruch nur an Leerzeichen;
@@ -817,7 +817,10 @@ td.wbc .small{display:block}
 #wl-modal .card.stk>.sthd{top:calc(var(--wlh,60px) - 22px)}
 #wl-modal .sthd>h3,#wl-modal .sthd>h4{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;font-size:1.05em}
 #wl-modal .card.fold.closed>.sthd>h4{margin:0}
-#wl-modal .tscroll{overflow:visible}
+/* Ab 0.103 (Florians Regel): Ist eine Tabelle zu breit (große Schrift, schmales Handy), bleibt sie in ihrer Karte und lässt sich dort seitlich wischen,
+   wie „Andere Coins“ (.tscroll mit overflow-x:auto, erste Spalte steht, Kopf zieht über hcAlign mit). Bis 0.102 overflow:visible, die Tabelle ragte
+   dann über den Rand der Karte (z. B. „Unbekannt“ bei 375 px mit Inter 11 px). Mit genug Platz ändert sich nichts. */
+#wl-modal .tscroll{overflow-x:auto}
 #wl-modal .tscroll table,#wl-modal .hcopy{font-size:var(--fs-s)}
 #wl-modal .tscroll th,#wl-modal .hcopy th{padding-bottom:7px}
 #wl-modal .tscroll td{vertical-align:top;white-space:normal}
@@ -11939,7 +11942,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.102',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.103',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
