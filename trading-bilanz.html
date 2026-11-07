@@ -296,7 +296,7 @@ tr.sum td b,tr.gesamt td b,.tdbk tr.tdcur td b,.tdrund li.tdcur>.tdar b{font-wei
 .gfst h3{margin:0 0 2px}
 .gfst p{margin:0}
 /* Ab 0.102: Hinweis nur hochkant (Höhe größer als Breite), nicht in der Karte und nicht im Bild.
-   Ab 0.104: nur auf Geräten mit Touch als Hauptbedienung (Handy, Tablet), am PC nie, auch nicht bei hohem, schmalem Fenster */
+   Ab 0.105: nur auf Geräten mit Touch als Hauptbedienung (Handy, Tablet), am PC nie, auch nicht bei hohem, schmalem Fenster */
 .gfsrot{display:none}
 @media (orientation:portrait) and (pointer:coarse){.gfsrot{display:block}}
 .gfsb{display:flex;gap:8px;flex:none;align-items:center}
@@ -11151,7 +11151,7 @@ function renderGrafChart(points,opts,tgt){
   if(!points.length){if(exp)return '';box.innerHTML='<p class="small">Keine Daten in diesem Zeitraum.</p>';grafRedraw=null;return}
   let out='';
   const res=opts.res||null,FS=13,GAP=8,n=points.length;
-  // Ab 0.104: xT/xB = zusätzlicher oberer bzw. unterer Rand für die Beschriftung von höchstem und tiefstem Wert, wenn sie sonst keinen freien Platz findet
+  // Ab 0.105: xT/xB = zusätzlicher oberer bzw. unterer Rand für die Beschriftung von höchstem und tiefstem Wert, wenn sie sonst keinen freien Platz findet
   const draw=(xT=0,xB=0)=>{
     // pt: oben Platz für die Beschriftung der senkrechten Linien (Verteilung)
     const w=T.w||Math.max(280,Math.round(box.getBoundingClientRect().width)||1000),h=T.h||(GFS?Math.max(200,Math.round(box.getBoundingClientRect().height)||260):260),pt=opts.vl?30:14,pb=34,FE=12;
@@ -11213,7 +11213,7 @@ function renderGrafChart(points,opts,tgt){
     }
     // Höchster und tiefster Wert beschriftet (Pro Zeitraum, Ø pro Trade, Nach Wochentag; Gleichstand der letzte), außen am Balkenende bzw. am Punkt.
     // Ein schmaler Rand in der Hintergrundfarbe (stroke var(--card), paint-order stroke; im Bild hell) unterbricht dort Ø-Linie und Gitterlinien.
-    // Ab 0.104: Die Beschriftung (mit Rand) berührt nie einen Balken, die andere Beschriftung oder den Rand der Zeichenfläche. Passt sie an ihrer
+    // Ab 0.105: Die Beschriftung (mit Rand) berührt nie einen Balken, die andere Beschriftung oder den Rand der Zeichenfläche. Passt sie an ihrer
     // normalen Stelle, bleibt sie dort (ohne Linie). Sonst nimmt sie die nächstgelegene freie Stelle: mittig über dem Balken, nach links oder nach rechts
     // versetzt, Stufe um Stufe weiter vom Balkenende weg (unter null nach unten); bei gleichem Abstand mittig vor links vor rechts. Frei heißt auch: Die
     // Verbindungslinie (1 px, var(--muted)) vom Balkenende zur Beschriftung kreuzt keinen anderen Balken. Bei „Linie“ sind die Punkte Hindernisse wie die
@@ -12000,7 +12000,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.104',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.105',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
