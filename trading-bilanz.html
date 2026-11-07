@@ -548,7 +548,9 @@ tr.hide{display:none}
 #t-taxparts tr.txp td:first-child,#t-de-parts tr.txp td:first-child{padding-left:22px}
 #t-taxparts tr.txck td,#t-de-parts tr.txck td{white-space:normal;padding-left:22px;font-size:var(--fs-s)}
 @media(max-width:700px){
-  #t-taxparts .txe,#t-de-parts .txe{width:92px}#t-taxparts .txk{width:66px}#t-de-parts .txk{width:88px}
+  /* Ab 0.99: Spalte „Kennzahl E1kv“ 72 px (vorher 66) und „Anlage und Zeile“ 96 px (vorher 88), damit „Kennzahl“ und „Kryptowerte“ auch mit
+     breiterer Schrift ganz hineinpassen (Chromium unter Linux bei 412 px: 2 bzw. 3 px zu breit) */
+  #t-taxparts .txe,#t-de-parts .txe{width:92px}#t-taxparts .txk{width:72px}#t-de-parts .txk{width:96px}
   #t-taxparts th,#t-taxparts td,#t-de-parts th,#t-de-parts td{padding-left:5px;padding-right:5px;font-size:var(--fs-s)}
   #t-taxparts tr.txp td:first-child,#t-de-parts tr.txp td:first-child{padding-left:12px}
   #t-de-parts td:last-child{white-space:normal}
@@ -949,6 +951,10 @@ table.dfbt td.l{white-space:normal;overflow-wrap:anywhere;min-width:10ch}
 }table.kbt input.wbin{width:14ch}
 /* Ab 0.76 Nachtrag 1 (Regel 1): am Handy bleibt „Kontostände prüfen“ eine Tabelle, drei Spalten ohne seitliches Wischen: Coin unter der Wallet, „laut Datei“ unter den Einträgen, Unterschied unter dem Feld */
 table.kbt td .kbm{display:none}
+/* Ab 0.99: Wallet-Namen brechen auch am PC an Leerzeichen um (Regel „Namen brechen um“ ab 0.55), sonst ragte die Tabelle mit breiterer Schrift
+   ein paar Pixel seitlich heraus (Chromium unter Linux: 5 px bei „Fremde Wallet“). Jedes Wort steht in .nw, damit „Bix-Card“ nicht am Bindestrich bricht */
+table.kbt th:first-child,table.kbt td:first-child{white-space:normal}
+@media (max-width:700px){table.kbt td.l b .nw{white-space:normal}} /* am Handy wie bis 0.98 (dort bricht ein langes Wort notfalls überall) */
 @media (max-width:700px){table.kbt .kbpc{display:none}table.kbt td .kbm{display:block}table.kbt th,table.kbt td{padding-left:4px;padding-right:4px;white-space:normal}table.kbt{table-layout:fixed}table.kbt tr:first-child th:nth-child(1){width:30%}table.kbt tr:first-child th:nth-child(3){width:32%}table.kbt td{overflow-wrap:anywhere}table.kbt th:first-child,table.kbt td:first-child{white-space:normal}table.kbt input.wbin{width:100%;min-width:0;max-width:14ch}}
 tr.hl{animation:hl 2.2s ease-out}
 /* Ab 0.46 (5.2): eingeklappt ist im Überblick alles weg. Ab 0.48 (4.1) steht der Titel selbst in .sthd und bleibt wie bei den anderen Karten. */
@@ -1710,9 +1716,10 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   </ul>
   <p class="idat"><b>Deine Daten bleiben bei dir</b> in diesem Browser.</p>
   <!-- Nur online: früh herunterladen, weil Online-Version und Datei getrennt speichern. Ab 0.98 (Florians Wortlaut) kürzer und direkt unter
-       „Deine Daten bleiben bei dir“, vor der Steuer-Box; die Adresse ist ein Link -->
+       „Deine Daten bleiben bei dir“, vor der Steuer-Box. Ab 0.99 (Florians Auftrag) ist die Adresse kein Link: Man ist schon auf der Seite,
+       und ein zweiter Tab mit dem Tool greift auf dieselben gespeicherten Daten zu. Der gelbe Kasten offline behält seinen Link. -->
   <div class="msg info onl" id="intro-dl"><p>Lieber ganz ohne Internet? Lade dir das Tool herunter. Deine Daten nimmst du mit einer Sicherung mit, im Reiter „Sicherung“.</p>
-    <p><b>Lade die Datei nur hier herunter</b>, von <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p>
+    <p><b>Lade die Datei nur hier herunter</b>, von <span class="nw">trading-bilanz.github.io</span>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p>
     <div class="row"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>
   <!-- Nur in der heruntergeladenen Datei (.offl), ab 0.78 als gelber Streifen (.ystr), ab 0.97 ohne 🛡️, ab 0.98 an derselben Stelle wie online das blaue Kästchen -->
   <div class="ystr offl"><p><b>Neue Versionen und das Original:</b> <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p></div>
@@ -6844,7 +6851,7 @@ function kbRender(){const C=cryptoCalc(),WB=wBal(),OB=wOpenBal(C),K=new Set([...
   for(const w of S.wallets)if(![...K].some(k=>k.slice(0,k.lastIndexOf('|'))===w))K.add(w+'|'+(S.defCoin==='USDT'?'USDT':'USDC'));
   const ok='<span class="ok" role="img" aria-label="stimmt">✓</span>',diff=(d,c,src)=>Math.abs(d)<BAL_TOL?ok:`${src} ${fmtNum(Math.abs(d))} ${c} ${d>0?'mehr':'weniger'} als laut deinen Einträgen`;
   const rows=[...K].sort().map(k=>{const i=k.lastIndexOf('|'),w=k.slice(0,i),c=k.slice(i+1),p=C.pots.find(p=>p.w===w&&p.c===c),q=p?p.q:0,v=S.wbal[k],fb=WB[k],emp=!p&&v==null&&!fb,U=(v!=null&&Math.abs(v-q)>=BAL_TOL)||(fb&&Math.abs(fb.q-q)>=BAL_TOL)?wOpenUp(C,w,c):null,dT=(v!=null?`<span class="small">${diff(v-q,c,'Laut deiner App')}</span>${kbWhy(v-q,OB[k],c,w,U)}`:'')+(fb?`<span class="small">${diff(fb.q-q,c,'Laut Datei')}</span>${kbWhy(fb.q-q,OB[k],c,w,U)}`:'');
-    return `<tr data-kbr="${esc(k)}"><td class="l"><b>${esc(w)}</b><span class="small kbm">${c}</span></td><td class="kbpc">${c}</td><td>${emp?'':`<b>${fmtNum(q)}</b>`}${fb?`<span class="small kbm">laut Datei ${fmtNum(fb.q)}, Stand ${dS(fb.imp||fb.last)}</span>`:''}</td><td class="kbpc">${fb?`${fmtNum(fb.q)}<span class="small">Stand ${dS(fb.imp||fb.last)}</span>`:emp?'':'–'}</td>
+    return `<tr data-kbr="${esc(k)}"><td class="l"><b>${esc(w).split(' ').map(x=>`<span class="nw">${x}</span>`).join(' ')}</b><span class="small kbm">${c}</span></td><td class="kbpc">${c}</td><td>${emp?'':`<b>${fmtNum(q)}</b>`}${fb?`<span class="small kbm">laut Datei ${fmtNum(fb.q)}, Stand ${dS(fb.imp||fb.last)}</span>`:''}</td><td class="kbpc">${fb?`${fmtNum(fb.q)}<span class="small">Stand ${dS(fb.imp||fb.last)}</span>`:emp?'':'–'}</td>
       <td><input type="text" class="wbin" data-wb="${esc(k)}" value="${v!=null?plainDe(v):''}" placeholder="Menge" aria-label="Menge ${c} laut deiner App, ${esc(w)}">${dT?`<span class="kbm">${dT}</span>`:''}</td>
       <td class="kbd kbpc">${dT}${v==null&&!fb&&!emp?'–':''}</td></tr>`}).join('');
   $('kb-body').innerHTML=rows?`<div class="kbw"><table class="bxt kbt"><tr><th class="l">Wallet</th><th class="kbpc">Coin</th><th>laut deinen Einträgen</th><th class="kbpc">laut Datei</th><th>Stand in deiner App</th><th class="kbpc">Unterschied</th></tr>${rows}</table></div>`:'<p class="small">Noch kein Bestand.</p>'}
@@ -11761,7 +11768,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.98',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.99',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
