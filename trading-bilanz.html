@@ -320,6 +320,10 @@ html.gfso,html.gfso body{overflow:hidden}
 .cwbar.c2 .cwv>div{min-width:0}
 th .sm,td .sm{display:block;font-weight:400;font-size:var(--fs-xxs);color:var(--muted)}
 td.acc{white-space:normal;min-width:7em}
+/* Ab 0.113 (Florians Auftrag): Kontoname in „Pro Konto“ und „Netto pro Konto und Monat“ in fester Breite, so breit wie bis 0.112 in USD
+   (7em Spalte minus 2 × 6 px Abstand). Vorher hing die Breite am Abstand nach Regel A und am Restplatz der Tabelle, der Name brach je nach
+   Währung anders um. Höchstens 2 Zeilen, länger mit „…“ gekürzt; den vollen Namen zeigt dann ein Tooltip (accTip). */
+.accn{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;width:calc(7em - 12px);overflow-wrap:break-word}
 .fee-d{color:var(--muted)}
 /* ⓘ am Kartentitel: kleiner runder Knopf, öffnet ein Popup mit einer kurzen Beschreibung der Karte (nur per Klick). Offen gefüllt. */
 .ib{display:inline-grid;place-items:center;box-sizing:border-box;width:18px;height:18px;padding:0;margin:0 0 0 2px;border:1.5px solid var(--accent);border-radius:50%;background:none;color:var(--accent);font:italic 700 12px/1 Georgia,"Times New Roman",serif;cursor:pointer;vertical-align:-3px;flex:none;user-select:none}
@@ -414,7 +418,6 @@ button.zlink{border:0;background:none;padding:0;font:inherit;cursor:pointer}
 /* Am Handy bricht „Eigene Wochen-Rendite (%)“ am Bindestrich um, damit das Häkchen daneben passt */
 @media (max-width:400px){#calc-in .crow{column-gap:12px}#calc-in .cown{max-width:7.5em}}
 #calc-out .tscroll{margin-top:6px}
-#calc-info{margin:6px 0 0}
 #st-avg .tscroll td.bs{text-align:left}
 /* Legende der Ø-Linie in der Titelzeile der Grafik */
 .glg{white-space:nowrap;margin-left:4px}
@@ -1588,19 +1591,18 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
       <div class="sthd"><h2>Was wäre wenn <button type="button" class="ib" data-gl="k-calc" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Was wäre wenn">i</button></h2></div>
       <div id="calc-in">
         <div class="crow">
-          <div class="cl"><label for="c-inv">Investition (USD)</label><br><input type="text" id="c-inv" inputmode="decimal"><br><button type="button" class="zlink small" id="c-reset">zurücksetzen</button></div>
+          <div class="cl"><label for="c-inv" id="c-inv-l">Investition (USD)</label><br><input type="text" id="c-inv" inputmode="decimal"><br><button type="button" class="zlink small" id="c-reset">zurücksetzen</button></div>
           <div class="cl"><label for="c-dur">Dauer</label><div class="cdur"><input type="number" id="c-dur" min="1" step="1"><select id="c-unit" aria-label="Einheit der Dauer"><option value="w">Wochen</option><option value="m">Monate</option></select></div></div>
         </div>
         <div class="crow">
           <div class="cl cown"><label for="c-own">Eigene Wochen-Rendite (%)</label><br><input type="text" id="c-own" inputmode="decimal" placeholder="optional"></div>
-          <div class="cl copt"><label class="fopt"><input type="checkbox" id="c-reinv"><span>Mit Wiederanlage</span></label></div>
+          <div class="cl copt"><label class="fopt"><input type="checkbox" id="c-reinv"> <span class="gl" data-gl="wiederanlage" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Mit Wiederanlage</span></label></div>
         </div>
         <p class="small" style="margin:6px 0 0"><span class="gl" data-gl="zahlen" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Zahlen eingeben</span></p>
       </div>
       <div id="calc-ask"></div>
       <div id="calc-out"></div>
-      <!-- Außerhalb von #calc-out, damit es beim Tippen offen bleibt: renderCalc() schreibt nur #calc-info-b -->
-      <details class="more" id="calc-info" hidden><summary>Info</summary><div id="calc-info-b"></div></details>
+      <!-- Ab 0.113 ohne aufklappbare „Info“ (#calc-info): die Sätze stehen in der Zeile unter der Tabelle, im (i) und in den Begriffen -->
     </div>
   </div>
 </section>
@@ -2264,7 +2266,7 @@ function rvScan(){
 // die eine ältere Fassung bestätigt haben (S.ui.taxAck). Hier oben, weil render() es braucht.
 // Ab 0.82: Fassung 2 („von einer Steuerberatung“ statt „von einer Steuerberaterin“)
 const TAX_DISC_V=2;
-function blank(){return {v:1,accounts:{},deals:{},map:{},rates:{},tag:{},cx:[],wallets:['Meine Wallet'],defCoin:'USDC',rsrc:{},rown:{},tagDrop:[],tagSame:{},tagSkip:[],tagBatch:0,cxKeep:[],wbal:{},pfOk:[],wtx:{},addr:{},cxNo:0,tok:{},wign:{},cardFee:{},bxOpen:{},tagMeth:{},rcov:{load:'',file:''},ui:{tab:'reports',wFlt:{range:'all',from:'',to:''},rAuto:true,rtUsed:true,yTax:null,other:'',opt:false,flt:{range:'all',from:'',to:'',off:[],pf:'ex',cur:'usd',nocw:false,zeroDays:true},graf:{what:'period',res:'week',kind:'bar',unit:'amt',wd:'sum',avg:false},calc:{inv:'',dur:'12',unit:'m',own:'',tax:'',reinv:false,taxOn:false},unit:'pct'}}}
+function blank(){return {v:1,accounts:{},deals:{},map:{},rates:{},tag:{},cx:[],wallets:['Meine Wallet'],defCoin:'USDC',rsrc:{},rown:{},tagDrop:[],tagSame:{},tagSkip:[],tagBatch:0,cxKeep:[],wbal:{},pfOk:[],wtx:{},addr:{},cxNo:0,tok:{},wign:{},cardFee:{},bxOpen:{},tagMeth:{},rcov:{load:'',file:''},ui:{tab:'reports',wFlt:{range:'all',from:'',to:''},rAuto:true,rtUsed:true,yTax:null,other:'',opt:false,flt:{range:'all',from:'',to:'',off:[],pf:'ex',cur:'usd',nocw:false,zeroDays:true},graf:{what:'period',res:'week',kind:'bar',unit:'amt',wd:'sum',avg:false},calc:{inv:'',invCur:'usd',dur:'12',unit:'m',own:'',tax:'',reinv:false,taxOn:false},unit:'pct'}}}
 let S=blank();
 // Ab 0.85 (Fund 2 aus 0.84): Lässt sich der gespeicherte Stand beim Start nicht lesen, aufbereiten oder zeichnen, stürzt das Tool nicht ab. Es startet
 // mit einem leeren Stand und zeigt den Hinweis #boot-modal (bootShow). BOOT_BAD: Solange er gilt, speichert save() nichts, der Stand im Speicher
@@ -2292,7 +2294,7 @@ for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','t
   if(!['period','cum','avg','weekday','dist','inv','hit'].includes(g.what))g.what='period';if(g.unit!=='pct')g.unit='amt';if(g.wd!=='avg')g.wd='sum';
   if(!['day','week','month'].includes(g.res))g.res='week';if(g.kind!=='line')g.kind='bar';g.avg=g.avg===true;
   // ab Version 0.22: Eingaben des Rechners „Was wäre wenn“ (Texte wie eingegeben, leer = Vorgabe)
-  const c=S.ui.calc=Object.assign({},blank().ui.calc,S.ui.calc&&typeof S.ui.calc==='object'?S.ui.calc:{});for(const k of ['inv','dur','own','tax'])c[k]=c[k]==null?'':String(c[k]);if(c.unit!=='w')c.unit='m';c.reinv=c.reinv===true;c.taxOn=c.taxOn===true;
+  const c=S.ui.calc=Object.assign({},blank().ui.calc,S.ui.calc&&typeof S.ui.calc==='object'?S.ui.calc:{});for(const k of ['inv','dur','own','tax'])c[k]=c[k]==null?'':String(c[k]);if(c.unit!=='w')c.unit='m';if(c.invCur!=='eur')c.invCur='usd';c.reinv=c.reinv===true;c.taxOn=c.taxOn===true;
   // ab Version 0.23: Schalter Rendite/Betrag für Kacheln und „Hochs und Tiefs“
   if(S.ui.unit!=='amt')S.ui.unit='pct';
   // ab Version 0.31: eigene Kurse getrennt (S.rown), „abgedeckt bis“ je Quelle (S.rcov), Häkchen automatisch laden / nur verwendete zeigen
@@ -2690,7 +2692,10 @@ function missingRates(o){o=o||{};let n=0,provRd='';const days=new Set(),prov=new
   // aller Jahre bis 31.12. des Jahres (sie gehen über den Topf in die Rechnung des Jahres ein), solange Krypto in der Steuer zählt. Bank-Zeilen nur im Jahr.
   const cxAll=!!(o.tax&&o.year&&S.ui.cxIncl!==false&&!taxOff()),cxR=d=>cxAll?d<=`${o.year}-12-31`:inR(d);
   const chk=(d,t,cx)=>{if(!(cx?cxR(d):inR(d)))return;const r=rateInfo(d,t);if(!r){n++;days.add(d)}else if(r.prov){prov.add(d);if(r.rd>provRd)provRd=r.rd}};
-  for(const x of Object.values(S.deals)){const cur=(S.accounts[x.a]||{}).cur||'USD';if(cur!=='USD')continue;if(o.accs&&!o.accs.has(x.a))continue;if(o.tax&&!taxIn(x.a))continue;chk(dOf(x.t),x.t)}
+  // Ab 0.113: o.inv = auch alle Ein- und Auszahlungen der Konten, unabhängig vom Zeitraum (Investition in Euro, Auswertung)
+  for(const x of Object.values(S.deals)){const cur=(S.accounts[x.a]||{}).cur||'USD';if(cur!=='USD')continue;if(o.accs&&!o.accs.has(x.a))continue;if(o.tax&&!taxIn(x.a))continue;
+    const d=dOf(x.t);if(o.inv&&!inR(d)&&/^(einzahlung|kapitalabzug)$/.test(catOf(x))){const r=rateInfo(d,x.t);if(!r){n++;days.add(d)}else if(r.prov){prov.add(d);if(r.rd>provRd)provRd=r.rd}continue}
+    chk(d,x.t)}
   if(!o.deals&&!o.accs){for(const t of Object.values(S.tag)){if(t.status!=='ok'||!t.own)continue;chk(tagD(t),tagT(t),!t.fiat)}
     for(const c of S.cx)if(c.cur==='USD'&&c.date)chk(c.date,'',1);
     // Ab 0.49 (5.1): auch die Tageswerte der Krypto-Rechnung (nur vollständige Einträge, nur wenn Krypto in der Abrechnung zählt): Gebühr in Coins,
@@ -2915,6 +2920,10 @@ function distPF(vals,pf){
 }
 // Investition eines Kontos zu einem Zeitpunkt ('YYYY.MM.DD HH:MM:SS'), null ohne Trading Benefit oder bei fehlendem Anfang. Wird in addAnalysis gesetzt.
 let CAP=()=>null;
+// Ab 0.113: dieselbe Investition in Euro (Ein- und Auszahlungen zum EZB-Kurs ihres Tages), ebenfalls aus addAnalysis. capCur nimmt die Währung
+// der Auswertung (CUR_EFF). Nur für die Anzeige: Rendite, Max. Drawdown und alle anderen Prozentwerte rechnen weiter mit CAP (USD).
+let CAPE=()=>null;
+const capCur=(a,tm)=>CUR_EFF==='usd'?CAP(a,tm):CAPE(a,tm);
 // Zustand der Investition je Konto (siehe addAnalysis) und Kontostand-Kette (chainCheck), beide gesetzt in addAnalysis
 let INV={},CHAIN={};
 // Kontostand-Kette je Konto, auf allen geladenen Buchungen (nicht pro Datei, sonst meldet sie sich bei jedem kürzeren Report).
@@ -2954,6 +2963,8 @@ function invDash(accs){const k=invKey(accs);return k?gl(k,'–'):'–'}
 function invMissTxt(accs){const k=invKey(accs);return k?gl(k,accs.some(a=>INV[a]==='nofac')?'Trading Benefit fehlt':'Investition unbekannt'):''}
 // Investition in USD, ohne Wert der Begriff (invDash)
 const invU=(v,accs)=>v==null?invDash(accs):usd(v);
+// Ab 0.113: Investition in der Währung der Auswertung (Wert aus capCur), ohne Wert der Begriff (invDash)
+const invM=(v,accs)=>v==null?invDash(accs):isNaN(v)?'–':fCur(v);
 // Ab 0.59 (2): gemeinsamer Sprung in den Reiter Reports: Karte c aufklappen, neu zeichnen, das Element aus find() unter Reiter und stehenden
 // Kartentitel scrollen und einmal aufleuchten lassen (wie jumpTo). Rückgabe: das Element oder null.
 function goUnder(c,find){glClose();closeFpanel();S.ui.tab='reports';unfold(c);save();render();const el=find();if(!el)return null;
@@ -3030,15 +3041,20 @@ function addAnalysis(rows){
   CHAIN=chainCheck();INV={};
   const ev={};
   for(const a of Object.keys(S.accounts)){
-    const A=S.accounts[a],f=A.factor;let c=0;const t=[],cum=[];
-    if(f>0)for(const r of (byAcc[a]||[])){if(r.cat==='einzahlung'||r.cat==='kapitalabzug'){c+=r.amt/f;t.push(r.x.t);cum.push(c)}}
+    // Ab 0.113: daneben dieselbe Summe in Euro (cumE): jede Ein- und Auszahlung zum EZB-Kurs ihres Tages (r.eur, ohne Kurs an dem Tag der
+    // letzte verfügbare, wie bei den Trades). Fehlt ein Kurs, ist sie NaN (renderStats prüft die Kurse dieser Buchungen, CUR_MISS).
+    const A=S.accounts[a],f=A.factor;let c=0,ce=0;const t=[],cum=[],cumE=[];
+    if(f>0)for(const r of (byAcc[a]||[])){if(r.cat==='einzahlung'||r.cat==='kapitalabzug'){c+=r.amt/f;ce+=r.eur/f;t.push(r.x.t);cum.push(c);cumE.push(ce)}}
     let base=0,st=f>0?'ok':'nofac';
     if(st==='ok'&&CHAIN[a]&&CHAIN[a].gaps.length)st='gap';
     else if(st==='ok'&&CHAIN[a]&&CHAIN[a].start){if(A.invNow==null)st='nostart';else{base=A.invNow-c;if(base<0&&base>-0.005)base=0;if(base<0)st='bad'}}
-    INV[a]=st;ev[a]={ok:st==='ok',t,cum,base};
+    // Notlösung in Euro: der Startwert (Einzahlungen vor dem Report) zum Kurs der ersten Buchung des Kontos (ihr Tag ist nicht bekannt)
+    const r0=(byAcc[a]||[])[0],baseE=base?(r0&&r0.rate?base/r0.rate:NaN):0;
+    INV[a]=st;ev[a]={ok:st==='ok',t,cum,base,cumE,baseE};
   }
   const capAt=(a,tm)=>{const e=ev[a];if(!e||!e.ok)return null;let lo=0,hi=e.t.length-1,b=-1;while(lo<=hi){const m=(lo+hi)>>1;if(e.t[m]<=tm){b=m;lo=m+1}else hi=m-1}return b<0?e.base:e.base+e.cum[b]};
   CAP=capAt;
+  CAPE=(a,tm)=>{const e=ev[a];if(!e||!e.ok)return null;let lo=0,hi=e.t.length-1,b=-1;while(lo<=hi){const m=(lo+hi)>>1;if(e.t[m]<=tm){b=m;lo=m+1}else hi=m-1}return b<0?e.baseE:e.baseE+e.cumE[b]};
   const accs=Object.keys(ev);
   for(const r of rows){
     if(r.cat!=='close'&&r.cat!=='open')continue;
@@ -3129,10 +3145,12 @@ function curRows(rows,cur){
 // Investition, mit der ein Trade verglichen wird. 'own' = eigenes Konto, 'sel' = gewählte Konten (r.cS, gesetzt in renderStats), sonst alle Konten.
 function capOf(r,scope){return scope==='own'?r.cO:scope==='sel'?r.cS:r.cA}
 // Investition der Konten sel am Anfang des Tages day ('YYYY-MM-DD'), null ohne Trading Benefit
-function invAt(sel,day){let s=0;for(const a of sel){const c=CAP(a,day.replace(/-/g,'.')+' 00:00:00');if(c==null)return null;s+=c}return s}
+// Ab 0.113 in der Währung der Auswertung (capCur), nur für die Anzeige
+function invAt(sel,day){return invSum(sel,day.replace(/-/g,'.')+' 00:00:00')}
+function invSum(sel,tm){let s=0;for(const a of sel){const c=capCur(a,tm);if(c==null)return null;s+=c}return s}
 // Investition am Anfang einer Periode: beim ersten Trade der Periode (r.cS, die Zeilen sind zeitlich sortiert).
 // Periode ohne Trade: am sichtbaren Beginn day (Anfang der Periode bzw. des Zeitraums, wenn er die Periode anschneidet).
-function invStart(rows,sel,day){const f=rows.find(isTrade);return f?f.cS:invAt(sel,day)}
+function invStart(rows,sel,day){const f=rows.find(isTrade);return f?(CUR_EFF==='usd'?f.cS:invSum(sel,f.x.t)):invAt(sel,day)}
 // Summe der Trade-Renditen. ex = nach PF.
 function retSum(rows,scope,ex){
   let v=0,n=0,miss=false;
@@ -9947,7 +9965,9 @@ function retHtml(o,empty,plain,ma){
   return o.v<0&&!plain?`<span class="neg">${t}</span>`:t;
 }
 // Name und Nummer eines Kontos für die erste Tabellenspalte: Name darf umbrechen, Nummer klein darunter
-function accCell(a){const x=S.accounts[a];return x&&x.name?`${esc(x.name)}<span class="sm">${a}</span>`:a}
+function accCell(a){const x=S.accounts[a];return x&&x.name?`<span class="accn">${esc(x.name)}</span><span class="sm">${a}</span>`:`<span class="accn">${a}</span>`}
+// Ab 0.113: Tooltip mit dem vollen Kontonamen nur, wenn er auf 2 Zeilen gekürzt ist (nach jedem Messen in hcFix)
+function accTip(c){for(const e of c.querySelectorAll('.tscroll .accn')){const cut=e.scrollHeight>e.clientHeight+1;if(cut)e.title=e.textContent;else e.removeAttribute('title')}}
 
 /* ---------------- Filter der Auswertung (Zeitraum und Konten) ----------------
    Gilt nur für die Auswertung. Steuer, Zusammenfassung, Excel und CSV rechnen weiter mit allen Zeilen (window.__rows). */
@@ -10145,7 +10165,7 @@ function buildFpanel(which){
       <button type="button" class="flink" id="f-pfwhy" aria-expanded="false" aria-controls="fpf-txt">Was heißt das?</button><div id="fpf-txt" hidden>${PF_WHY}</div></div>${FDONE}`;
   }else if(which==='cur'){
     // Fehlen Kurse (CUR_MISS), ist Euro nicht wählbar; darunter der Grund und „Kurse laden“ (Meldung in #fcur-rlm, bleibt bis zum Schließen)
-    $('fp-cur').innerHTML=`<div class="fgrp">${[['eur','EUR (zum EZB-Kurs des jeweiligen Tages)'],['usd','USD (wie im MT5-Report)']].map(([v,l])=>`<label class="fopt"><input type="radio" name="fcur" value="${v}"><span>${l}</span></label>`).join('')}<div id="fcur-miss"></div><div id="fcur-rlm"></div></div>${FDONE}`;
+    $('fp-cur').innerHTML=`<div class="fgrp">${[['eur','EUR (zum EZB-Kurs des jeweiligen Tages)'],['usd','USD (wie im MT5-Report)']].map(([v,l])=>`<label class="fopt"><input type="radio" name="fcur" value="${v}"><span>${l}</span></label>`).join('')}<p class="fhint">Prozentwerte werden immer aus den USD-Werten des MT5-Reports berechnet und sind in beiden Ansichten gleich.</p><div id="fcur-miss"></div><div id="fcur-rlm"></div></div>${FDONE}`;
   }else if(UNIT_DD.includes(which)){
     // Schalter Rendite/Betrag (Überblick, „Hochs und Tiefs“, „Pro Konto“): ein Zustand, drei Knöpfe
     $('fp-'+which).innerHTML=`<div class="fgrp">${[['pct','Rendite in %'],['amt','Betrag']].map(([v,l])=>`<label class="fopt"><input type="radio" name="funit-${which}" value="${v}"><span>${l}</span></label>`).join('')}</div>`;
@@ -10474,7 +10494,7 @@ ${ECB_CITE}`},
   invk:{t:'Investition',h:'Das Geld, das du selbst in dieses Konto eingesetzt hast, in USD: Einzahlungen geteilt durch den Trading Benefit. Es sollte genau mit „Invested“ im Tag-Portal übereinstimmen (CopyX → Follower Hub → Strategies). Weicht es ab, stimmt wahrscheinlich der Trading Benefit nicht.'},
   repvom:{t:'Report vom',h:'Das Datum, an dem du den Report in MT5 gespeichert hast. Das Tool kennt die Buchungen nach diesem Datum noch nicht. Für aktuelle Zahlen speichere den Report neu und lade ihn hier.'},
   abgl:{t:'Abgleich',h:'Das Tool zählt alle Buchungen zusammen, die es aus dem Report gelesen hat, und vergleicht sie mit den Summen am Ende des Reports: Kommission, Gebühr, Swap und Gewinn aus der Summenzeile der Buchungen, deinen letzten Kontostand mit dem Kontostand dort, dazu „Nettogewinn gesamt“ (bis auf Rundung) und die Zahl der Trades. Geprüft wird der zuletzt geladene Report.\n<b>✓ stimmt:</b> Alles wurde vollständig gelesen.\n<b>⚠ Abweichung:</b> Darunter steht die Zeile, die nicht passt, mit dem gelesenen Wert und dem Wert im Report. Das Tool hat den Report vielleicht nicht ganz richtig gelesen. Speichere ihn frisch aus MT5 und lade ihn hier noch einmal. Bleibt die Warnung, stimmen die Zahlen dieses Kontos vielleicht nicht. Schreibe mir dann bitte an florian@weltenwandel.at.'},
-  'k-calc':{t:'Was wäre wenn',h:'Rechnet hoch, was aus einer Investition werden könnte, wenn es so weiterläuft wie in deinen bisherigen Wochen.'},
+  'k-calc':{t:'Was wäre wenn',h:'Rechnet hoch, was aus einer Investition werden könnte, wenn es so weiterläuft wie in deinen bisherigen Wochen. Die Szenarien beruhen nur auf diesen Wochen. Eine Verlustphase, die bisher nicht vorkam, ist darin nicht enthalten.\nBeträge in € werden zum letzten verfügbaren EZB-Kurs in USD umgerechnet, weil die Trades in USD laufen.'},
   netto:{t:'Netto-Gewinn',h:'Das Ergebnis nach Abzug der Performance Fee, also das, was dir bleibt.'},
   vorpf:{t:'Ergebnis vor PF',h:'Gewinne minus Verluste deiner Trades laut MT5, nach Kommission und Swap, vor Abzug der Performance Fee.'},
   pf:{t:'Performance Fee',h:'30 % vom Wochengewinn, Tag bucht sie jeden Samstag ab.\n<b>Monatswechsel:</b> Bei „PF laut MT5“ zählt die PF im Monat der Abbuchung, bei „PF verteilt“ im Monat, in dem du den Gewinn gemacht hast.'},
@@ -10482,7 +10502,7 @@ ${ECB_CITE}`},
   rendite:{t:'Rendite',h:'Jeder Trade wird mit deiner Investition zu Beginn des Trades verglichen, die Renditen aller Trades werden zusammengezählt. Gemeint ist dein eingesetztes Geld, nicht der vervielfachte Kontostand im MT5. Bei Trading Benefit (×12, ×24) ist die Rendite deshalb viel höher als im MT5 oder bei Myfxbook.\nOhne Trading Benefit kennt das Tool deine Investition nicht. Die Rendite steht dann als „–“.\nDeshalb ist die Rendite nicht einfach Netto-Gewinn geteilt durch Investition, sobald sich deine Investition im Zeitraum ändert. Bei „PF laut MT5“ passen die beiden auch innerhalb einer Woche nicht zusammen: Die Rendite ist dann vor PF, der Netto-Gewinn nach der abgebuchten Fee.'},
   // Ab 0.58 (1): kleine Zusätze „vor PF“ / „nach PF“ und „laut MT5“ / „verteilt“ in den Spaltenköpfen (SMH, SMF) und in „Hochs und Tiefs“
   pfst:{t:'PF-Schalter',h:'<b>verteilt / nach PF:</b> Tag bucht die Performance Fee einmal pro Woche ab, am Samstag, als eine Summe. Das Tool teilt sie auf die Trades der Woche auf, im Verhältnis zu ihrem Ergebnis. So steht die Fee an den Tagen, an denen du den Gewinn gemacht hast. Ein Verlust-Trade bekommt dabei einen Teil zurück. In der laufenden Woche ist die Fee noch nicht abgebucht: Bis Samstag rechnet das Tool sie aus, mit dem Anteil der letzten Abrechnung.\n<b>laut MT5 / vor PF:</b> wie im MT5-Report. Die Fee steht als eine Buchung am Samstag, in der laufenden Woche fehlt sie noch.\nUmschalten kannst du oben in der Leiste.'},
-  inv:{t:'Investition',h:'Das Geld, das du selbst eingesetzt hast, immer in USD. Es enthält auch Gewinne, die du wieder eingezahlt hast.'},
+  inv:{t:'Investition',h:'Das Geld, das du selbst eingesetzt hast. In Euro ist jede Ein- und Auszahlung zum EZB-Kurs ihres Tages umgerechnet. Es enthält auch Gewinne, die du wieder eingezahlt hast.'},
   anfang:{t:'am Anfang',h:'Die Investition beim ersten Trade der Periode. Bei einzelnen Trade-Zeilen: die Investition zum Zeitpunkt des Trades.'},
   ende:{t:'am Ende',h:'Die Investition am Ende des gewählten Zeitraums.'},
   dd:{t:'Max. Drawdown',h:'Der größte zwischenzeitliche Rückgang. Beispiel: Deine Investition ist 100 USD. Nach einigen Gewinnen kommen drei Verluste hintereinander, je 1 USD, also je 1 % deiner Investition. Danach geht es wieder aufwärts. Der Max. Drawdown ist −3 %, gemessen vom Höchststand vor den Verlusten bis zum tiefsten Punkt danach. Spätere Gewinne ändern daran nichts.\n<b>Bei „PF verteilt“ ist er kleiner,</b> weil Tag die PF vom Wochengewinn nach Abzug der Verluste berechnet. Ein Verlust von 1 USD senkt bei 30 % PF die Gebühr um 0,30 USD und kostet dich unterm Strich nur 0,70 USD.\n<b>Andere Werte bei Myfxbook oder im MT5:</b> Diese rechnen mit dem vervielfachten Kontostand (bei ×24 stehen 100 USD als 2.400 USD da). Derselbe Verlust ist dort nur ein Bruchteil so viele Prozent, der Drawdown deshalb viel kleiner als hier. Dafür zählen sie offene Trades mit. Der MT5-Report enthält nur geschlossene Trades, deshalb fehlen sie hier.'},
@@ -10504,6 +10524,7 @@ ${ECB_CITE}`},
   pfaktor:{t:'Profit-Faktor',amt:1,h:'Summe aller Gewinne geteilt durch Summe aller Verluste. 13,1 zu 1 heißt: Für jeden verlorenen Dollar wurden 13,10 Dollar gewonnen. Über 1 ist eine Strategie im Plus, Werte um 1,5 bis 2 gelten auf Plattformen wie Myfxbook schon als gut. Sehr hohe Werte entstehen, wenn es bisher nur wenige und kleine Verluste gab. Bei „Betrag“ gerechnet wie im MT5-Report, bei „Rendite“ aus den Renditen, deshalb weichen die beiden leicht voneinander ab.'},
   wr:{t:'Wochen-Rendite',h:'Die Rendite pro Woche nach PF, aus deinen ganzen Wochen im gewählten Zeitraum.'},
   vorsichtig:{t:'Vorsichtig',h:'In einem Viertel deiner Wochen war die Rendite niedriger als dieser Wert.'},
+  wiederanlage:{t:'Mit Wiederanlage',h:'Annahme, dass du deine Gewinne jede Woche wieder einzahlst und sie genauso vervielfacht werden.'},
   ein:{t:'Eingezahlt',h:'Eigenes Geld, das von außen auf deine Tag Wallet kam. Gewinne, die du von der Tag Wallet wieder in ein Konto einzahlst, zählen hier nicht.'},
   aus:{t:'Ausgezahlt',h:'Was du von der Tag Wallet abgezogen hast.'},
   einsatz:{t:'Netto-Einsatz',h:'Eingezahlt minus ausgezahlt.'},
@@ -10674,7 +10695,7 @@ function renderStats(rows){
   // PF-Schalter: ex = PF verteilt (PF anteilig bei den Trades, in der laufenden Woche ausgerechnet), sonst PF laut MT5
   const ex=S.ui.flt.pf==='ex',mode=ex?'nach PF':'vor PF',key=ex?'exE':'eur';
   // Währungsschalter: Ab hier tragen eur, exE und pfE den Betrag in der gewählten Währung (curRows)
-  {const r0=fltRange(years(rows)),m=r0.bad?{n:0}:missingRates({accs:selSet,from:r0.from,to:r0.to});CUR_MISS=m.n?m:null}
+  {const r0=fltRange(years(rows)),m=r0.bad?{n:0}:missingRates({accs:selSet,from:r0.from,to:r0.to,inv:true});CUR_MISS=m.n?m:null}
   CUR_EFF=S.ui.flt.cur==='usd'||CUR_MISS?'usd':'eur';
   $('cur-note').innerHTML=CUR_MISS&&S.ui.flt.cur!=='usd'?`<div class="msg info">Beträge in USD, weil für Euro Kurse fehlen. <button type="button" class="btn" data-rl="cur-rlm" style="padding:3px 10px;margin-left:4px">Kurse laden</button></div><div id="cur-rlm"></div>`:'';
   // Ab 0.58 (4): Hinweis, solange bei einem gewählten Konto der Trading Benefit fehlt, mit dem Sprung zu „Deine Konten“
@@ -10813,23 +10834,24 @@ function renderStats(rows){
   for(const a of sel){
     const ra=R.filter(r=>r.a===a);const z=pfz(ra);const cl=ra.filter(r=>r.cat==='close');
     const tI=tradeStats(cl,'eur'),tN=tradeStats(cl,'exE');
-    const cap=CAP(a,endT); if(cap==null)capOk=false;else capSum+=cap;
-    h+=`<tr><td class="acc">${accCell(a)}</td><td>${fI.format(tI.n)}</td>${netTd(z)}<td>${rtSw(ra,'own','–',[a])}</td><td>${cap==null?gl(invKey([a]),INV[a]==='nofac'?'Trading Benefit fehlt':'unbekannt'):usd(cap)}</td><td>${mon(z.res)}</td>${feeTd(z)}${utd([[trd(tI.best,'eur'),trd(tN.best,'exE')],[trd(tI.worst,'eur'),trd(tN.worst,'exE')],[tI.n?mon(tI.avg):'–',tI.n?mon(tN.avg):'–']],trR(positions(ra,'own'),ra,'own',retSum(ra,'own',false).miss,[a]))}<td>${(()=>{const f=RA.find(r=>r.a===a&&isTrade(r));return f&&ra.some(isTrade)?wkAvg(avgKz(ra,cntWin(f.d,rg.from,rg.to,dataEnd),'own',zero,['week'],CW),[a]):'–'})()}</td><td>${tI.n?fP.format(tI.win/tI.n):'–'}</td><td>${ddSw(ra,'own','–',[a])}</td></tr>`;
+    const cap=capCur(a,endT); if(cap==null)capOk=false;else capSum+=cap; // ab 0.113 in der Währung der Auswertung
+    h+=`<tr><td class="acc">${accCell(a)}</td><td>${fI.format(tI.n)}</td>${netTd(z)}<td>${rtSw(ra,'own','–',[a])}</td><td>${cap==null?gl(invKey([a]),INV[a]==='nofac'?'Trading Benefit fehlt':'unbekannt'):invM(cap)}</td><td>${mon(z.res)}</td>${feeTd(z)}${utd([[trd(tI.best,'eur'),trd(tN.best,'exE')],[trd(tI.worst,'eur'),trd(tN.worst,'exE')],[tI.n?mon(tI.avg):'–',tI.n?mon(tN.avg):'–']],trR(positions(ra,'own'),ra,'own',retSum(ra,'own',false).miss,[a]))}<td>${(()=>{const f=RA.find(r=>r.a===a&&isTrade(r));return f&&ra.some(isTrade)?wkAvg(avgKz(ra,cntWin(f.d,rg.from,rg.to,dataEnd),'own',zero,['week'],CW),[a]):'–'})()}</td><td>${tI.n?fP.format(tI.win/tI.n):'–'}</td><td>${ddSw(ra,'own','–',[a])}</td></tr>`;
   }
   // Ab 0.109: „Treffer&shy;quote“ darf im Spaltenkopf umbrechen (mit 8 px Innenabstand, siehe CSS :where(#s-stats)), so passt „Pro Konto“ mit s2r bei 1280 px
   // Ab 0.111 bleibt der Umbruch; den Innenabstand (10, 8 oder 6 px) wählt tpFit nach Regel A
-  h+=`<tr class="gesamt"><td class="acc">Gesamt (${allSel?'alle Konten':'Auswahl'})</td><td>${fI.format(PS.n)}</td>${netTd(T)}<td>${rtSw(R,'sel','–')}</td><td>${capOk?usd(capSum):invDash(sel)}</td><td>${mon(T.res)}</td>${feeTd(T)}${utd([[trd(PS.best,'eur'),trd(PN.best,'exE')],[trd(PS.worst,'eur'),trd(PN.worst,'exE')],[PS.n?mon(PS.avg):'–',PS.n?mon(PN.avg):'–']],trR(P,R,'sel',AK.miss,sel))}<td>${wkAvg(AK)}</td><td>${PS.n?fP.format(PS.win/PS.n):'–'}</td><td>${ddSw(R,'sel','–')}</td></tr>`;
+  h+=`<tr class="gesamt"><td class="acc"><span class="accn">Gesamt (${allSel?'alle Konten':'Auswahl'})</span></td><td>${fI.format(PS.n)}</td>${netTd(T)}<td>${rtSw(R,'sel','–')}</td><td>${capOk?invM(capSum):invDash(sel)}</td><td>${mon(T.res)}</td>${feeTd(T)}${utd([[trd(PS.best,'eur'),trd(PN.best,'exE')],[trd(PS.worst,'eur'),trd(PN.worst,'exE')],[PS.n?mon(PS.avg):'–',PS.n?mon(PN.avg):'–']],trR(P,R,'sel',AK.miss,sel))}<td>${wkAvg(AK)}</td><td>${PS.n?fP.format(PS.win/PS.n):'–'}</td><td>${ddSw(R,'sel','–')}</td></tr>`;
   $('t-acc').innerHTML=`<tr><th>Konto${SM0}</th><th>Trades${SM0}</th><th>${gl('netto','Netto-Gewinn')}${SMF}</th><th>${gl('rendite','Rendite')}${SMH}</th><th>${gl('inv','Investition')}${smx(gl('ende','am Ende'))}</th><th>${gl('vorpf','Ergebnis vor PF')}${SM0}</th><th>${gl('pf','Performance Fee')}${SMF}</th><th>Bester Trade${SMH}</th><th>Schlechtester Trade${SMH}</th><th>Ø pro Trade${SMH}</th><th class="w2">${gl('avg','Ø Rendite pro Woche')}${SMH}</th><th>${gl('hit','Treffer&shy;quote')}${SM0}</th><th>${gl('dd','Max. Drawdown')}${SMH}</th></tr>`+h;
   renderGraf(R,sel,{wdCnt,win,zero,AK,from:rg.from,rl:rg.label+(nocwOn()?' ohne laufende Woche':'')});
   // Rechner „Was wäre wenn“: Wochenrenditen nach PF der gezählten ganzen Wochen, heutige Investition der gewählten Konten
-  {let inv=0;for(const a of sel){const c=CAP(a,'9999');if(c==null){inv=null;break}inv+=c}
-   CALC_D={k:AK.week.k,rets:AK.week.ps.map(p=>p.rX),miss:AK.miss||inv==null,accs:sel,why:invWhy(sel,'der Anfang eines Reports fehlt'),inv};renderCalc()}
+  // Ab 0.113 dazu dieselbe Investition in Euro (invE, Ein- und Auszahlungen zum EZB-Kurs ihres Tages) für die Euro-Ansicht des Rechners
+  {let inv=0,invE=0;for(const a of sel){const c=CAP(a,'9999');if(c==null){inv=null;break}inv+=c;invE+=CAPE(a,'9999')}
+   CALC_D={k:AK.week.k,rets:AK.week.ps.map(p=>p.rX),miss:AK.miss||inv==null,accs:sel,why:invWhy(sel,'der Anfang eines Reports fehlt'),inv,invE:inv==null?null:invE};renderCalc()}
   // Monate. Kumuliert ab Anfang des Zeitraums: PF laut MT5 Summe der Gewinne vor PF, PF verteilt Summe der Netto-Gewinne
   const yms=[...new Set(R.map(r=>r.ym))].sort();
   let mh='',cV=0,cN=0;
   // Investition am Anfang des Monats (invStart): beim ersten Trade, ohne Trade am sichtbaren Monatsbeginn
   const mStart=m=>rg.from&&rg.from>m+'-01'&&rg.from.slice(0,7)===m?rg.from:m+'-01';
-  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=pfz(rr);cV+=z.res;cN+=z.nN;mh+=`<tr><td>${mLabel(m)}</td><td>${positions(rr).length}</td>${netTd(z)}<td>${rtSw(rr,'sel','–')}</td><td>${invU(invStart(rr,sel,mStart(m)),sel)}</td><td>${mon(z.res)}</td>${feeTd(z)}<td>${ddSw(rr,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`}
+  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=pfz(rr);cV+=z.res;cN+=z.nN;mh+=`<tr><td>${mLabel(m)}</td><td>${positions(rr).length}</td>${netTd(z)}<td>${rtSw(rr,'sel','–')}</td><td>${invM(invStart(rr,sel,mStart(m)),sel)}</td><td>${mon(z.res)}</td>${feeTd(z)}<td>${ddSw(rr,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`}
   mh+=`<tr class="sum"><td>Summe</td><td>${PS.n}</td>${netTd(T)}<td>${rtSw(R,'sel','–')}</td><td></td><td>${mon(T.res)}</td>${feeTd(T)}<td>${ddSw(R,'sel','–')}</td><td></td></tr>`;
   $('t-month').innerHTML=`<tr><th>Monat${SM0}</th><th>Trades${SM0}</th>${TH_MW()}</tr>`+mh;
   weekTree(R,{multi:sel.length>1,sel,wkSpan,cw:CW,cwr:CWR,cwSpan:CWR.length?[rg.from&&rg.from>CW?rg.from:CW,toOrig&&toOrig<addDays(CW,6)?toOrig:addDays(CW,6)]:null});
@@ -10989,41 +11011,40 @@ function calcScen(I,r,n){
   const simple=I*r*n,comp=I*Math.pow(1+r,n);
   return {sG:simple,sE:I+simple,cE:comp,cG:comp-I};
 }
-// Ergebnis in #calc-out, die Texte dazu im festen „Info“ (#calc-info) darunter, das beim Tippen offen bleibt. Ohne Ergebnis ist „Info“ aus.
+// Ergebnis in #calc-out, darunter eine Zeile mit Grundlage, Investition, Dauer und Wiederanlage. Ab 0.113 ohne aufklappbare „Info“ (Florians
+// Auftrag): ihre Sätze stehen in dieser Zeile, im (i) der Karte (k-calc) und in den Begriffen „Vorsichtig“ und „Mit Wiederanlage“.
+// Ab 0.113: Die Investition folgt dem Währungsschalter. In Euro: Vorgabe = Investition in Euro (CAPE, wie „Pro Konto“), gerechnet wird in USD
+// zum letzten verfügbaren EZB-Kurs (k), die Ergebnisse wieder ÷ k in Euro. Ein eingegebener Betrag merkt seine Währung (c.invCur) und wird
+// beim Umschalten zum selben Kurs umgerechnet, damit das Szenario gleich bleibt.
 function renderCalc(){
-  const D=CALC_D,c=S.ui.calc,out=$('calc-out'),info=$('calc-info');if(!D)return;
+  const D=CALC_D,c=S.ui.calc,out=$('calc-out');if(!D)return;
+  const eurC=CUR_EFF!=='usd',ds=rateDates(),ld=ds[ds.length-1],k=eurC&&ld?rateVal(ld):1,cc=eurC?'eur':'usd';
+  if(c.inv!==''&&c.invCur!==cc){const v=parseDe(c.inv),r=ld?rateVal(ld):null;if(v>0&&r>0)c.inv=numIn(cc==='eur'?v/r:v*r);c.invCur=cc}
+  const DI=eurC?D.invE:D.inv;
+  $('c-inv-l').textContent=`Investition (${eurC?'€':'USD'})`;
   const setv=(id,v)=>{const i=$(id);if(document.activeElement!==i)i.value=v};
-  setv('c-inv',c.inv!==''?c.inv:(D.inv!=null?numIn(D.inv):''));setv('c-dur',c.dur);$('c-unit').value=c.unit;setv('c-own',c.own);
+  setv('c-inv',c.inv!==''?c.inv:(DI!=null&&isFinite(DI)?numIn(DI):''));setv('c-dur',c.dur);$('c-unit').value=c.unit;setv('c-own',c.own);
   $('c-reset').hidden=c.inv==='';$('c-reinv').checked=c.reinv;
-  const none=h=>{out.innerHTML=h;info.hidden=true};
+  const none=h=>{out.innerHTML=h};
   // Ab 0.58 (4): „Trading Benefit fehlt“ und „Investition unbekannt“ als Begriff (invMissTxt), mit Grund und Konto
   if(D.miss)return none(D.accs.some(a=>INV[a]==='nofac')?`<p class="small">${invMissTxt(D.accs)}. Wähle ihn im Reiter „Reports“.</p>`:`<p class="small">${invMissTxt(D.accs)}, weil ${D.why}. Siehe Reiter „Reports“.</p>`);
   if(!D.k)return none('<p class="small">Für den Rechner braucht es mindestens eine ganze Woche.</p>');
-  const I=c.inv!==''?parseDe(c.inv):D.inv,dur=parseDe(c.dur),n=c.unit==='m'?dur*52/12:dur;
+  const I=c.inv!==''?parseDe(c.inv):DI,dur=parseDe(c.dur),n=c.unit==='m'?dur*52/12:dur;
   const own=c.own.trim()?parseDe(c.own)/100:null;
-  const bad=!(I>0)?'Trage bei Investition einen Betrag in USD ein, z. B. 1000.':!(n>0)?'Trage eine Dauer ein, z. B. 12 Monate.':own!=null&&isNaN(own)?'Die eigene Rendite ist keine Zahl. Schreibe sie z. B. als 1,5.':'';
+  const bad=!(I>0)?`Trage bei Investition einen Betrag in ${eurC?'Euro':'USD'} ein, z. B. 1000.`:!(n>0)?'Trage eine Dauer ein, z. B. 12 Monate.':own!=null&&isNaN(own)?'Die eigene Rendite ist keine Zahl. Schreibe sie z. B. als 1,5.':'';
   if(bad)return none(`<p class="msg warn">${bad}</p>`);
   const sc=[['Durchschnitt',meanOf(D.rets)],[gl('median','Typisch (Median)'),median(D.rets)],[gl('vorsichtig','Vorsichtig'),quantile(D.rets,0.25)]];if(own!=null)sc.push(['Eigene',own]);
-  // Gezeigt wird nur die gewählte Variante (mit oder ohne Wiederanlage), immer Betrag am Ende und Gewinn
-  const R=sc.map(([l,r])=>{const o=calcScen(I,r,n);return c.reinv?[o.cE,o.cG]:[o.sE,o.sG]});
+  // Gezeigt wird nur die gewählte Variante (mit oder ohne Wiederanlage), immer Betrag am Ende und Gewinn. Gerechnet in USD (I × k).
+  const R=sc.map(([l,r])=>{const o=calcScen(I*k,r,n);return c.reinv?[o.cE,o.cG]:[o.sE,o.sG]});
   // Ergebnisse in der Währung des Schalters; Euro zum letzten EZB-Kurs
-  const eurC=CUR_EFF!=='usd',ds=rateDates(),ld=ds[ds.length-1],k=eurC&&ld?rateVal(ld):1;
   const M=v=>{const x=v/k;return `<span${x<-0.005?' class="neg"':''}>${fCur(x,0)}</span>`};
   // Zeilennamen mit Bindestrich, damit sie am Handy dort umbrechen
   let h=`<tr><th>${SM0}</th>${sc.map(([l])=>`<th>${l}${SM0}</th>`).join('')}</tr><tr><td>${gl('wr','Wochen-Rendite')}</td>${sc.map(([,r])=>`<td>${retHtml({v:r,n:1,miss:false},'–')}</td>`).join('')}</tr>`;
   h+=`<tr><td>End-Betrag</td>${R.map(o=>`<td><b>${M(o[0])}</b></td>`).join('')}</tr><tr><td>Gewinn</td>${R.map(o=>`<td>${M(o[1])}</td>`).join('')}</tr>`;
-  out.innerHTML=`<div class="tscroll"><table>${h}</table></div>
-    <p class="small" style="margin:8px 0 0">Hochrechnung aus ${D.k===1?'deiner 1 '+gl('ganz','ganzen Woche'):`deinen ${D.k} `+gl('ganz','ganzen Wochen')}, keine Vorhersage.</p>`;
   const nTxt=fmtDec(n,Math.abs(n-Math.round(n))<1e-9?0:1);
-  const p=t=>`<p class="small" style="margin:4px 0">${t}</p>`;
-  // Ab 0.111 (Regel B): „USD“ hängt am Betrag (geschütztes Leerzeichen), rutscht nie allein in die nächste Zeile
-  $('calc-info-b').innerHTML=p(`Wochen-Rendite nach PF, aus ${nW(D.k,'ganzen Woche','ganzen Wochen')} im gewählten Zeitraum. Investition ${usd(I).replace(' USD','&nbsp;USD')}, Dauer ${nTxt} ${n===1?'Woche':'Wochen'}, ${c.reinv?'mit':'ohne'} Wiederanlage.`)+
-    p('<b>Vorsichtig:</b> '+GL.vorsichtig.h)+
-    p('Die Szenarien beruhen nur auf deinen bisherigen Wochen. Eine Verlustphase, die bisher nicht vorkam, ist darin nicht enthalten. Der Rechner zeigt, was wäre, wenn es so weiterläuft, keine Vorhersage.')+
-    (c.reinv?p('<b>Mit Wiederanlage:</b> Annahme, dass du deine Gewinne jede Woche wieder einzahlst und sie genauso vervielfacht werden.'):'')+
-    p('Alle Beträge vor Steuer.')+
-    (eurC&&ld?p(`Umgerechnet zum EZB-Kurs vom ${dS(ld)}. Wie der Kurs künftig steht, weiß niemand.`):'');
-  info.hidden=false;
+  // Regel B (ab 0.111): die Einheit hängt am Betrag (geschütztes Leerzeichen), rutscht nie allein in die nächste Zeile
+  out.innerHTML=`<div class="tscroll"><table>${h}</table></div>
+    <p class="small" style="margin:8px 0 0">Hochrechnung aus ${D.k===1?'deiner 1 '+gl('ganz','ganzen Woche'):`deinen ${D.k} `+gl('ganz','ganzen Wochen')} nach PF, Investition ${fCur(I).replace(/ (USD|€)$/,'&nbsp;$1')}, für ${nTxt} ${n===1?'Woche':'Wochen'}, ${c.reinv?'mit':'ohne'} Wiederanlage.${eurC&&ld?` EZB-Kurs vom ${fD(ld)}.`:''} Vor Steuer, keine Vorhersage.</p>`;
   tpSimple(); // ab 0.111: Abstand nach Regel A
 }
 
@@ -11074,12 +11095,12 @@ function weekTree(R0,cx){
       if(!tr.length){gF.push(fee(fCur(zd.fV)));gN.push(netD(zd.nV,zd.res))}
       const ps=positions(rd).sort((a,b)=>a.t<b.t?-1:1);
       const wdI=(new Date(d+'T12:00:00Z').getUTCDay()+6)%7;
-      dh+=`<tr class="dy" data-w="${w}" data-d="${d}">${c1(`${ps.length?'<span class="tw">▸</span> ':'<span class="tw"></span> '}${WD[wdI]} ${dm(d)}`)}<td>${ps.length||''}</td><td>${sw(tr.length||fr?netD(zd.nV,zd.res):'',tr.length?netD(zd.nN,zd.res):'')}</td><td>${rtSw(rd,'sel','')}</td><td>${invU(invStart(rd,cx.sel,d),cx.sel)}</td><td>${tr.length?mon(zd.res):''}</td><td>${sw(fr?fee(fCur(zd.fV)):'',tr.length?pfP(zd.fN):'')}</td><td>${ddSw(rd,'sel','')}</td><td></td></tr>`;
+      dh+=`<tr class="dy" data-w="${w}" data-d="${d}">${c1(`${ps.length?'<span class="tw">▸</span> ':'<span class="tw"></span> '}${WD[wdI]} ${dm(d)}`)}<td>${ps.length||''}</td><td>${sw(tr.length||fr?netD(zd.nV,zd.res):'',tr.length?netD(zd.nN,zd.res):'')}</td><td>${rtSw(rd,'sel','')}</td><td>${invM(invStart(rd,cx.sel,d),cx.sel)}</td><td>${tr.length?mon(zd.res):''}</td><td>${sw(fr?fee(fCur(zd.fV)):'',tr.length?pfP(zd.fN):'')}</td><td>${ddSw(rd,'sel','')}</td><td></td></tr>`;
       for(const p of ps){
         const pk=esc(p.t+'|'+p.sym);
-        dh+=`<tr class="tr${multi?' x':''}" data-d="${d}" data-p="${pk}">${c1(`${multi?'<span class="tw">▸</span> ':''}${p.t.slice(11,16)} · ${esc(p.sym)}`)}<td></td><td>${sw(mon(p.eur),mon(p.exE))}</td><td>${p.rMiss?'':sw(rH(p.rI),rH(p.rX))}</td><td>${invU(p.cap,cx.sel)}</td><td>${mon(p.eur)}</td><td>${sw('',pfP(p.exE-p.eur))}</td><td></td><td></td></tr>`;
+        dh+=`<tr class="tr${multi?' x':''}" data-d="${d}" data-p="${pk}">${c1(`${multi?'<span class="tw">▸</span> ':''}${p.t.slice(11,16)} · ${esc(p.sym)}`)}<td></td><td>${sw(mon(p.eur),mon(p.exE))}</td><td>${p.rMiss?'':sw(rH(p.rI),rH(p.rX))}</td><td>${invM(CUR_EFF==='usd'?p.cap:invSum(cx.sel,p.t),cx.sel)}</td><td>${mon(p.eur)}</td><td>${sw('',pfP(p.exE-p.eur))}</td><td></td><td></td></tr>`;
         if(multi)for(const a of Object.keys(p.acc).sort()){const q=p.acc[a];
-          dh+=`<tr class="ac" data-d="${d}" data-p="${pk}">${c1(esc(accName(a)))}<td></td><td>${sw(mon(q.eur),mon(q.exE))}</td><td>${q.cO>0?sw(rH(q.amt/q.cO),rH(q.exU/q.cO)):''}</td><td>${invU(q.cO,[a])}</td><td>${mon(q.eur)}</td><td>${sw('',pfP(q.exE-q.eur))}</td><td></td><td></td></tr>`}
+          dh+=`<tr class="ac" data-d="${d}" data-p="${pk}">${c1(esc(accName(a)))}<td></td><td>${sw(mon(q.eur),mon(q.exE))}</td><td>${q.cO>0?sw(rH(q.amt/q.cO),rH(q.exU/q.cO)):''}</td><td>${invM(CUR_EFF==='usd'?q.cO:capCur(a,p.t),[a])}</td><td>${mon(q.eur)}</td><td>${sw('',pfP(q.exE-q.eur))}</td><td></td><td></td></tr>`}
       }
     }
     // Wochenzeile: aufgeklappt nur „KW 35“, das volle Label bleibt unsichtbar stehen und hält die Breite der ersten Spalte
@@ -11092,7 +11113,7 @@ function weekTree(R0,cx){
       GL.offencw={t:'offen',h:GL.offen.h+'\n'+t};
       GL.pfcw={t:'Performance Fee der laufenden Woche',h:'Tag bucht die Performance Fee dieser Woche erst am Samstag ab. Bis dahin rechnet das Tool sie aus: Anteil der letzten Abrechnung × Ergebnis der Woche, wenn es positiv ist.\n'+t};
       return sw(gl('offencw','offen'),gl('pfcw',mon(z.fN)),gF)};
-    h+=`<tr class="wk" data-w="${w}"><td><span class="wo"><span class="tw">▸</span> ${RW(`<b>${kw}</b>`)}</span><span class="wl"><span class="tw">▸</span> ${RW(`<b>${kw}</b> · ${dm(s)}${DS}${dm(e)}${yy}`)}</span>${nk?`<span class="sm">${gl('nichtkz','nicht in den Kennzahlen')}</span>`:''}</td><td>${np}</td><td><b>${sw(mon(z.nV),mon(z.nN),gN)}</b></td><td>${rtSw(rw,'sel','–')}</td><td>${invU(invStart(rw,cx.sel,s),cx.sel)}</td><td>${mon(z.res)}</td><td>${w===cx.cw?cwPf(rw,z,gF):sw(mon(z.fV),mon(z.fN),gF)}</td><td>${ddSw(rw,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`+dh;
+    h+=`<tr class="wk" data-w="${w}"><td><span class="wo"><span class="tw">▸</span> ${RW(`<b>${kw}</b>`)}</span><span class="wl"><span class="tw">▸</span> ${RW(`<b>${kw}</b> · ${dm(s)}${DS}${dm(e)}${yy}`)}</span>${nk?`<span class="sm">${gl('nichtkz','nicht in den Kennzahlen')}</span>`:''}</td><td>${np}</td><td><b>${sw(mon(z.nV),mon(z.nN),gN)}</b></td><td>${rtSw(rw,'sel','–')}</td><td>${invM(invStart(rw,cx.sel,s),cx.sel)}</td><td>${mon(z.res)}</td><td>${w===cx.cw?cwPf(rw,z,gF):sw(mon(z.fV),mon(z.fN),gF)}</td><td>${ddSw(rw,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`+dh;
   }
   h+=`<tr class="sum"><td>Summe</td><td>${positions(R0).length}</td><td>${sw(mon(T.nV),mon(T.nN))}</td><td>${rtSw(R0,'sel','–')}</td><td></td><td>${mon(T.res)}</td><td>${sw(mon(T.fV),mon(T.fN))}</td><td>${ddSw(R0,'sel','–')}</td><td></td></tr>`;
   if(cwr.length){const T2=pfz(R);h+=`<tr class="sum2"><td>Summe mit laufender Woche</td><td>${positions(R).length}</td><td>${sw(mon(T2.nV),mon(T2.nN))}</td><td>${rtSw(R,'sel','–')}</td><td></td><td>${mon(T2.res)}</td><td>${sw(mon(T2.fV),mon(T2.fN))}</td><td>${ddSw(R,'sel','–')}</td><td></td></tr>`}
@@ -11172,7 +11193,7 @@ function distPoints(rows,unit,ex){
   pts.lo=lo;pts.step=step; // für die senkrechten Linien Ø und Median (Wert → Lage auf der Achse)
   return pts;
 }
-// Investition am Anfang jedes Zeitraums (immer USD): alle Zeiträume im gezählten Fenster und alle mit Trades. Wert beim ersten Trade,
+// Investition am Anfang jedes Zeitraums (ab 0.113 in der Währung der Auswertung, invStart): alle Zeiträume im gezählten Fenster und alle mit Trades. Wert beim ersten Trade,
 // ohne Trade am sichtbaren Beginn (Anfang des Zeitraums, bzw. from, wenn der gewählte Zeitraum ihn anschneidet). Wie die Spalte in „Pro Woche“.
 function invPoints(rows,res,sel,win,from){
   const m=byBucket(rows,res);const ks=new Set(m.keys());for(const k of winKeys(win,res))ks.add(k);
@@ -11367,7 +11388,7 @@ function renderGraf(rows,sel,gx){
   const g=S.ui.graf,wdCnt=gx.wdCnt;
   $('graf-what').value=g.what;$('graf-res').value=g.res;$('graf-kind').value=g.kind;$('graf-unit').value=g.unit;$('graf-wd').value=g.wd;$('graf-avg').checked=g.avg;
   // Ø-Linie gibt es bei Pro Zeitraum, Ø pro Trade, Nach Wochentag (Durchschnitt) und Verteilung (dort Ø und Median)
-  // Investition und Trefferquote: ohne Einheit (immer USD bzw. %), Ø-Linie nur bei der Trefferquote
+  // Investition und Trefferquote: ohne Schalter Einheit (Investition in der Währung der Auswertung, ab 0.113; bis 0.112 immer USD), Ø-Linie nur bei der Trefferquote
   const avgOk=g.what==='period'||g.what==='avg'||(g.what==='weekday'&&g.wd==='avg')||g.what==='dist'||g.what==='hit';
   $('graf-avg-l').style.display=avgOk?'':'none';$('graf-avg-t').textContent=g.what==='dist'?'Ø und Median':'Ø-Linie';
   const series=g.what==='period'||g.what==='cum'||g.what==='avg'||g.what==='inv'||g.what==='hit';
@@ -11394,8 +11415,8 @@ function renderGraf(rows,sel,gx){
     title=`${size} nach Wochentag in\u00a0${u} (${avgWd?'Durchschnitt':'Summe'})`;
     main=avgWd?`Zeigt, wie viel ${pct?'Rendite ':''}ein Montag, Dienstag usw. im Schnitt gebracht hat: die Summe geteilt durch die Anzahl dieses Wochentags im Zeitraum${gx.zero?'':' mit Trade'}.`:`Zeigt, an welchen Wochentagen deine Trades zusammengerechnet am meisten ${pct?'Rendite':'Gewinn'} oder Verlust gebracht haben.`;
   }else if(g.what==='inv'){
-    title=`Investition je ${resName} in\u00a0USD`;
-    main='Zeigt deine Investition am Anfang jedes Zeitraums, beim ersten Trade. Sie ist immer in USD und hängt nicht vom PF-Schalter ab.';
+    title=`Investition je ${resName} in\u00a0${CUR_EFF==='usd'?'USD':'€'}`;
+    main='Zeigt deine Investition am Anfang jedes Zeitraums, beim ersten Trade. Sie hängt nicht vom PF-Schalter ab.';
   }else if(g.what==='hit'){
     title=`Trefferquote pro ${resName}`;
     main='Zeigt, wie viele deiner Trades in jedem Zeitraum im Plus waren. Läuft dieselbe Position auf mehreren Konten, zählt sie als ein Trade. Zeiträume ohne Trade haben keinen Balken. Die Ø-Linie zeigt die Trefferquote aus dem Überblick.';
@@ -11420,7 +11441,7 @@ function renderGraf(rows,sel,gx){
       else main+=g.what==='period'&&g.res==='month'?' Keine Ø-Linie: noch kein ganzer Monat.':g.what==='period'&&g.res==='week'?' Keine Ø-Linie: noch keine ganze Woche.':''}
   }else if(g.what==='inv'){
     pts=invPoints(rows,g.res,sel,gx.win,gx.from);
-    opts={kind:g.kind,res:g.res,yfmt:v=>fI.format(Math.round(v))+' USD',tipfmt:v=>usd(v)};
+    opts={kind:g.kind,res:g.res,yfmt:v=>fI.format(Math.round(v))+CUR(),tipfmt:v=>fCur(v)}; // ab 0.113 in der Währung der Auswertung
   }else if(g.what==='hit'){
     pts=hitPoints(rows,g.res);
     opts={kind:g.kind,res:g.res,yr:{mn:0,mx:1,step:0.25},yfmt:v=>fmtDec(v*100,0)+' %',tipfmt:v=>fP.format(v)};
@@ -12007,9 +12028,9 @@ $('t-week').addEventListener('animationend',e=>{const tr=e.target.closest('tr.hl
 // Rechner: Eingaben speichern und nur die Karte neu zeichnen (Fokus bleibt im Feld)
 // S.ui.calc.tax und taxOn (bis 0.24: Steuer abziehen) bleiben im Speicher, werden aber nicht mehr benutzt
 // Investition und eigene Rendite mit Punkt: erst beim Verlassen des Felds nachfragen (askDots), bis dahin bleibt der alte Wert
-$('calc-in').addEventListener('input',e=>{const k={'c-inv':'inv','c-dur':'dur','c-own':'own'}[e.target.id];if(k){if(k!=='dur'&&e.target.value.includes('.'))return;$('calc-ask').innerHTML='';S.ui.calc[k]=e.target.value;save();renderCalc()}});
+$('calc-in').addEventListener('input',e=>{const k={'c-inv':'inv','c-dur':'dur','c-own':'own'}[e.target.id];if(k){if(k!=='dur'&&e.target.value.includes('.'))return;$('calc-ask').innerHTML='';S.ui.calc[k]=e.target.value;if(k==='inv')S.ui.calc.invCur=CUR_EFF;save();renderCalc()}});
 $('calc-in').addEventListener('change',e=>{const t=e.target,c=S.ui.calc;
-  const kd={'c-inv':'inv','c-own':'own'}[t.id];if(kd){const go=()=>{if(!askDots([[t,t.id==='c-inv'?'Investition':'Eigene Wochen-Rendite']],$('calc-ask'),go))return;c[kd]=t.value;save();renderCalc()};go();return}if(t.id==='c-unit')c.unit=t.value==='w'?'w':'m';else if(t.id==='c-reinv')c.reinv=t.checked;else return;save();renderCalc()});
+  const kd={'c-inv':'inv','c-own':'own'}[t.id];if(kd){const go=()=>{if(!askDots([[t,t.id==='c-inv'?'Investition':'Eigene Wochen-Rendite']],$('calc-ask'),go))return;c[kd]=t.value;if(kd==='inv')c.invCur=CUR_EFF;save();renderCalc()};go();return}if(t.id==='c-unit')c.unit=t.value==='w'?'w':'m';else if(t.id==='c-reinv')c.reinv=t.checked;else return;save();renderCalc()});
 $('calc-in').addEventListener('click',e=>{if(e.target.closest('#c-reset')){S.ui.calc.inv='';save();renderCalc()}});
 $('yr-tax').onchange=e=>{S.ui.yTax=e.target.value;save();render()};
 $('other').oninput=e=>{S.ui.other=e.target.value;save();render()};
@@ -12054,7 +12075,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.112',VDATE='08.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.113',VDATE='08.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -12101,6 +12122,7 @@ function hcFix(c,retry){
     for(const t of [tb,cp]){t.style.tableLayout='fixed';t.style.width=sum+'px'}
     c.classList.add('hc');
   }
+  if(c.id==='st-acc'||c.id==='st-matrix')accTip(c);
   sc.scrollLeft=x;st.key=hcKey(c,sc,tb);
   hcAlign(c,retry);
   if(GP)glPlace(); // Popup an einem Begriff der alten Kopie schließt
