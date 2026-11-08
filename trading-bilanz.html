@@ -174,9 +174,8 @@ section{scroll-margin-top:var(--navh,70px)}
   #tabs.l8 .trow{flex-wrap:wrap}
 }
 main{max-width:1180px;margin:0 auto;padding:16px 16px 60px}
-/* Ab 0.111: Im Reiter Auswertung dürfen Karten und Filterleiste bis 1320 px breit werden (Florians Auftrag). Kopf, Reiterleiste und Fuß bleiben
-   bei 1180 px, damit beim Wechsel der Reiter nichts springt. body.tstats setzt renderTabs. Nur am Bildschirm, der Druck bleibt, wie er war. */
-@media screen{body.tstats main,body.tstats #fbar .fin{max-width:1320px}}
+/* Alle Reiter höchstens 1180 px. Die Auswertung bis 1320 px aus 0.111 ist ab 0.112 zurückgenommen (Florians Auftrag: Tabellen mit wenigen
+   Spalten zogen sich zu weit auseinander; ein wenig seitliches Scrollen in „Pro Konto“ ist in Ordnung). body.tstats entfällt damit. */
 section{display:none}
 section.on{display:block}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin:0 0 16px}
@@ -1231,9 +1230,10 @@ details.more .hint{margin-top:6px}
    und im Druck. :where hält die Gewichtung niedrig, engere Regeln einzelner Tabellen am Handy gelten weiter. */
 :where(#s-stats) .tscroll th,:where(#s-stats) .tscroll td,:where(#s-stats) .hcopy th{padding-left:8px;padding-right:8px}
 :where(#s-stats) .tscroll th>.sm,:where(#s-stats) .hcopy th>.sm{left:8px;right:8px}
-/* Ab 0.111, Regel A (Florians Regel): am PC je Tabelle 10 px; passt sie so nicht in ihre Karte 8 px; 6 px nur, wenn sie damit ganz passt,
-   sonst 8 px und die Tabelle scrollt. Den Wert wählt tpFit im Skript und setzt ihn als --tp (Karte, #hlw, .tscroll). Zellen, Köpfe, die
-   stehende Kopie der Köpfe und die kleinen Texte im Kopf (.sm) nehmen denselben Wert, so misst hcFix die Spalten mit demselben Abstand.
+/* Ab 0.111, Regel A (Florians Regel, ab 0.112 angepasst): am PC je Tabelle 10 px; passt sie so nicht in ihre Karte 8 px, sonst 6 px.
+   Passt sie auch mit 6 px nicht, bleibt es bei 6 px (so wenig Scrollen wie möglich). Den Wert wählt tpFit im Skript und setzt ihn als --tp
+   (Karte, #hlw, .tscroll). Zellen, Köpfe, die stehende Kopie der Köpfe und die kleinen Texte im Kopf (.sm) nehmen denselben Wert, so misst
+   hcFix die Spalten mit demselben Abstand.
    Ohne --tp 8 px wie am Handy: Beim Wechsel über 700 px ändert sich der Abstand so höchstens einmal (auf den gewählten Wert). */
 @media screen and (min-width:701px){
   :where(#s-stats) .tscroll th,:where(#s-stats) .tscroll td,:where(#s-stats) .hcopy th{padding-left:var(--tp,8px);padding-right:var(--tp,8px)}
@@ -1560,10 +1560,6 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
       <div class="chart" id="graf-chart"></div>
       <div class="small" id="graf-note"></div>
     </div>
-    <div class="card fold stk" data-fold="st-acc" id="st-acc">
-      <div class="sthd"><h2 class="hx">Pro Konto <button type="button" class="ib" data-gl="k-acc" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Pro Konto">i</button><span class="fdd wdd udd noprint" id="fdd-u3"><button type="button" class="btn h2btn" id="fb-u3" aria-expanded="false" aria-controls="fp-u3">Rendite ▾</button><div class="fpan" id="fp-u3" role="dialog" aria-label="Rendite oder Betrag"></div></span></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
-      <div class="tscroll"><table id="t-acc"></table></div>
-    </div>
     <div class="card fold stk" data-fold="st-month" id="st-month">
       <div class="sthd"><h2>Pro Monat <button type="button" class="ib" data-gl="k-month" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Pro Monat">i</button></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
       <div class="tscroll"><table id="t-month"></table></div>
@@ -1571,6 +1567,11 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <div class="card fold stk" data-fold="st-week" id="st-week">
       <div class="sthd"><h2>Pro Woche <button type="button" class="ib" data-gl="k-week" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Pro Woche">i</button><span class="fdd wdd noprint" id="fdd-wk"><button type="button" class="btn h2btn" id="fb-wk" aria-expanded="false" aria-controls="fp-wk">Aufklappen ▾</button><div class="fpan" id="fp-wk" role="dialog" aria-label="Aufklappen"></div></span></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
       <div class="tscroll"><table id="t-week"></table></div>
+    </div>
+    <!-- Ab 0.112: „Pro Konto“ hinter „Pro Woche“ (Florians Auftrag) -->
+    <div class="card fold stk" data-fold="st-acc" id="st-acc">
+      <div class="sthd"><h2 class="hx">Pro Konto <button type="button" class="ib" data-gl="k-acc" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Pro Konto">i</button><span class="fdd wdd udd noprint" id="fdd-u3"><button type="button" class="btn h2btn" id="fb-u3" aria-expanded="false" aria-controls="fp-u3">Rendite ▾</button><div class="fpan" id="fp-u3" role="dialog" aria-label="Rendite oder Betrag"></div></span></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
+      <div class="tscroll"><table id="t-acc"></table></div>
     </div>
     <div class="card fold stk" data-fold="st-matrix" id="st-matrix">
       <div class="sthd"><h2><span><span class="gl" data-gl="netto" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Netto</span> pro Konto und Monat</span> <button type="button" class="ib" data-gl="k-matrix" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Netto pro Konto und Monat">i</button></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
@@ -9670,7 +9671,6 @@ function renderTabs(st){
   // Nur nach oben scrollen, und nur wenn der Anfang des Abschnitts oberhalb des sichtbaren Bereichs liegt
   $('tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.ui.tab=b.dataset.t;save();render();const sec=$('s-'+b.dataset.t);if(sec.getBoundingClientRect().top<document.querySelector('nav').getBoundingClientRect().height)sec.scrollIntoView({behavior:'auto',block:'start'})});
   for(const [k] of TABS){$('s-'+k).classList.toggle('on',S.ui.tab===k);$('s-'+k).classList.toggle('print',S.ui.tab===k)}
-  document.body.classList.toggle('tstats',S.ui.tab==='stats'); // ab 0.111: Auswertung bis 1320 px breit (CSS body.tstats)
 }
 // Ab 0.50 Nachtrag 5 (R1): Rückfrage zu × am Konto nennt die Buchungen mit Zeitraum und deine Angaben, die mit dem Konto wegfallen. Name, Trading
 // Benefit und „Invested“ stehen nur im Tool, ein neu geladener Report bringt sie nicht zurück (Antworten zur Prüfung der Kontostände fallen auch weg).
@@ -10918,14 +10918,15 @@ function renderHL(G,AK,h){
 // wäre die Tabelle um Bruchteile zu breit und am Handy (hohe Pixeldichte) erschiene ein Scrollbalken ohne echten Überlauf.
 const HL_MAX=520,HL_VGAP=20;
 // Ab 0.111, Regel A (Florians Regel): Innenabstand links und rechts in den Tabellen der Auswertung am PC (über 700 px, nur Bildschirm).
-// Erst 10 px; passt die Tabelle nicht in ihren Bereich (fits() falsch), 8 px; dann probeweise 6 px, nur wenn sie damit ganz passt, sonst 8 px
-// (die Tabelle scrollt). Der Wert steht als --tp am Element el und gilt für alles darin (CSS :where(#s-stats)). Alles in einem Schritt, vor dem
+// Erst 10 px; passt die Tabelle nicht in ihren Bereich (fits() falsch), 8 px; passt sie auch so nicht, 6 px. Ab 0.112 (Florians Regel) bleibt
+// es bei 6 px, auch wenn die Tabelle damit nicht ganz passt (sie scrollt dann, aber so wenig wie möglich; bis 0.111 zurück auf 8 px).
+// Der Wert steht als --tp am Element el und gilt für alles darin (CSS :where(#s-stats)). Alles in einem Schritt, vor dem
 // Zeichnen; je Breite immer dasselbe Ergebnis, darum springt nichts zwischen zwei Stufen. Am Handy und im Druck gilt das CSS (8 px bzw. enger).
 function tpPC(){return matchMedia('screen and (min-width:701px)').matches}
 function tpFit(el,fits){
   if(!tpPC()){el.style.removeProperty('--tp');return 0}
-  for(const p of [10,8,6]){el.style.setProperty('--tp',p+'px');if(fits())return p}
-  el.style.setProperty('--tp','8px');return 8;
+  for(const p of [10,8]){el.style.setProperty('--tp',p+'px');if(fits())return p}
+  el.style.setProperty('--tp','6px');return 6;
 }
 // Tabelle passt in ihren Bereich (kein seitliches Scrollen); halbe Pixel Spielraum wegen gerundeter Breiten
 const tpIn=(sc,tb)=>()=>tb.getBoundingClientRect().width<=sc.getBoundingClientRect().width+0.5;
@@ -12053,7 +12054,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.111',VDATE='08.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.112',VDATE='08.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
