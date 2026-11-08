@@ -1228,6 +1228,9 @@ details.more .hint{margin-top:6px}
    ohne Wischen, alle Tabellen der Auswertung gleich). :where hält die Gewichtung niedrig, engere Regeln einzelner Tabellen am Handy gelten weiter. */
 :where(#s-stats) .tscroll th,:where(#s-stats) .tscroll td,:where(#s-stats) .hcopy th{padding-left:8px;padding-right:8px}
 :where(#s-stats) .tscroll th>.sm,:where(#s-stats) .hcopy th>.sm{left:8px;right:8px}
+/* Ab 0.110: Nur „Pro Konto“ und nur am PC (über 700 px) 6 statt 8 px links und rechts (Florians Auftrag: kein seitliches Scrollen am PC).
+   Zellen, Köpfe und die stehende Kopie der Köpfe gleich, so misst hcFix die Spalten mit denselben Abständen. Oben und unten unverändert. */
+@media (min-width:701px){#st-acc .tscroll th,#st-acc .tscroll td,#st-acc .hcopy th{padding-left:6px;padding-right:6px}#st-acc .tscroll th>.sm,#st-acc .hcopy th>.sm{left:6px;right:6px}}
 .tscroll th>.smw,.hcopy th>.smw{display:block;height:0;overflow:hidden;visibility:hidden;font-size:var(--fs-xxs);font-weight:400;white-space:nowrap}
 .tscroll th:first-child,.tscroll td:first-child{position:-webkit-sticky;position:sticky;left:0;z-index:1;background:var(--card);box-shadow:1px 0 0 var(--line)}
 .tscroll th:first-child{background:var(--bg)}
@@ -11338,27 +11341,28 @@ function renderGraf(rows,sel,gx){
   const size=pct?'Rendite':'Gewinn',u=pct?'%':CUR_EFF==='usd'?'USD':'€',avgWd=g.wd==='avg';
   const resName=g.res==='day'?'Tag':g.res==='month'?'Monat':'Woche';
   const resWhen=g.res==='day'?'an jedem Tag':g.res==='month'?'in jedem Monat':'in jeder Woche';
+  // Ab 0.110: vor der Einheit ein geschütztes Leerzeichen (\u00a0), damit „in €“, „in USD“ und „in %“ im Titel nicht getrennt umbrechen (Karte, Vollbild, Bild)
   let title,main,pts,opts;
   if(g.what==='period'){
-    title=`${size} pro ${resName} in ${u}`;
+    title=`${size} pro ${resName} in\u00a0${u}`;
     main=pct?`Zeigt, wie viel Prozent deiner Investition du ${resWhen} mit deinen Trades gewonnen oder verloren hast.`:`Zeigt, wie viel du ${resWhen} mit deinen Trades gewonnen oder verloren hast.`;
   }else if(g.what==='cum'){
-    title=`${size}-Verlauf je ${resName} in ${u}`;
+    title=`${size}-Verlauf je ${resName} in\u00a0${u}`;
     main=pct?'Zeigt, wie deine Rendite seit Beginn des gewählten Zeitraums gewachsen ist. Jeder Punkt ist die Summe aller Trade-Renditen bis dahin.':'Zeigt, wie dein Gewinn seit Beginn des gewählten Zeitraums gewachsen ist. Jeder Punkt ist die Summe aller Gewinne und Verluste bis dahin.';
   }else if(g.what==='avg'){
-    title=`Ø ${size} pro Trade je ${resName} in ${u}`;
+    title=`Ø ${size} pro Trade je ${resName} in\u00a0${u}`;
     main=`Zeigt, wie viel ${pct?'Rendite ':''}ein Trade ${resWhen} im Schnitt gebracht hat. Läuft dieselbe Position auf mehreren Konten, zählt sie als ein Trade.`;
   }else if(g.what==='weekday'){
-    title=`${size} nach Wochentag in ${u} (${avgWd?'Durchschnitt':'Summe'})`;
+    title=`${size} nach Wochentag in\u00a0${u} (${avgWd?'Durchschnitt':'Summe'})`;
     main=avgWd?`Zeigt, wie viel ${pct?'Rendite ':''}ein Montag, Dienstag usw. im Schnitt gebracht hat: die Summe geteilt durch die Anzahl dieses Wochentags im Zeitraum${gx.zero?'':' mit Trade'}.`:`Zeigt, an welchen Wochentagen deine Trades zusammengerechnet am meisten ${pct?'Rendite':'Gewinn'} oder Verlust gebracht haben.`;
   }else if(g.what==='inv'){
-    title=`Investition je ${resName} in USD`;
+    title=`Investition je ${resName} in\u00a0USD`;
     main='Zeigt deine Investition am Anfang jedes Zeitraums, beim ersten Trade. Sie ist immer in USD und hängt nicht vom PF-Schalter ab.';
   }else if(g.what==='hit'){
     title=`Trefferquote pro ${resName}`;
     main='Zeigt, wie viele deiner Trades in jedem Zeitraum im Plus waren. Läuft dieselbe Position auf mehreren Konten, zählt sie als ein Trade. Zeiträume ohne Trade haben keinen Balken. Die Ø-Linie zeigt die Trefferquote aus dem Überblick.';
   }else{
-    title=`Verteilung der Trades nach ${size} in ${u}`;
+    title=`Verteilung der Trades nach ${size} in\u00a0${u}`;
     main=`Jeder Balken zählt die Trades, deren ${pct?'Rendite':'Gewinn oder Verlust'} in diesem Bereich liegt. Links stehen die Verluste, rechts die Gewinne. Läuft dieselbe Position auf mehreren Konten, zählt sie als ein Trade.`;
   }
   // Zusatz in der Titelzeile: PF-Stellung, bei der Investition „am Anfang“, bei der Trefferquote keiner (Vorzeichen vor PF, der Schalter wirkt nicht)
@@ -12012,7 +12016,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.109',VDATE='07.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.110',VDATE='08.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
