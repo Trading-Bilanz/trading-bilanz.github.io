@@ -9953,8 +9953,13 @@ function guard(id){
 }
 // Ab 0.80 (3): Hinweis oben in Auswertung und Steuer, solange es Buchungen „noch unklar“ gibt: Anzahl, Betrag, Datum, Konto, Link zur Karte.
 // Im Reiter Steuer zusätzlich „Sag das deiner Steuerberatung.“ Nicht in Zusammenfassung und Steuer-Excel. Mit „Ohne Steuer“ ohne das Wort Steuer.
+// Ab 0.115: Betrag in der Auswertung in der Währung des Schalters (CUR_EFF), im Reiter Steuer in Euro, beides wie die übrigen Beträge:
+// jede Buchung zum EZB-Kurs ihres Tages (rateInfo, wie enrich). Fehlt für eine der Buchungen der Kurs, steht die Summe wie bisher in USD.
 function unklarH(tax){const L=unklarDeals();if(!L.length)return '';
-  const n=L.length,sum=L.reduce((s,x)=>s+x.prof,0),sg=v=>(v>0?'+':'')+usd(v),d1=fD(dOf(L[0].t)),d2=fD(dOf(L[n-1].t)),A=[...new Set(L.map(x=>x.a))].sort();
+  const sumU=L.reduce((s,x)=>s+x.prof,0),wantE=tax||CUR_EFF==='eur';
+  let sumE=0;if(wantE)for(const x of L){const ri=rateInfo(dOf(x.t),x.t);if(!ri||!ri.v){sumE=NaN;break}sumE+=x.prof/ri.v}
+  const E=wantE&&!isNaN(sumE),sum=E?sumE:sumU;
+  const n=L.length,sg=v=>(v>0?'+':'')+(E?fE.format(v):usd(v)),d1=fD(dOf(L[0].t)),d2=fD(dOf(L[n-1].t)),A=[...new Set(L.map(x=>x.a))].sort();
   const when=d1===d2?`am ${d1}`:`vom ${d1} bis ${d2}`,acc=A.length===1?`Konto ${esc(A[0])}`:`Konten ${esc(and2(A))}`;
   const t=(n===1?`1 Buchung ist noch unklar: ${sg(sum)} ${when}, ${acc}. Sie ist nicht eingerechnet.`:`${fI.format(n)} Buchungen sind noch unklar: zusammen ${sg(sum)}, ${when}, ${acc}. Sie sind nicht eingerechnet.`)+
     (S.ui.country==='none'?' Investition und Ergebnis können daher abweichen.':' Investition, Ergebnis und Steuer können daher abweichen.')+(tax?' Sag das deiner Steuerberatung.':'');
@@ -10529,7 +10534,7 @@ ${ECB_CITE}`},
   // summe, htage, pfaktor: bei „Betrag“ hängt glOpen den Absatz aus betrag an (amt)
   summe:{t:'Summe',amt:1,h:'Alle Gewinn-Trades zusammen und alle Verlust-Trades zusammen. Beide zusammen ergeben deine Rendite bzw. deinen Gewinn im Zeitraum, geteilt ergeben sie den Profit-Faktor.'},
   htage:{t:'Größter Trade in Handelstagen',amt:1,h:'Der größte Trade, verglichen mit einem durchschnittlichen Handelstag. 3,2 heißt: Der beste Trade hat so viel gebracht wie gut drei normale Handelstage. 0,9 heißt: Der schlechteste hat etwas weniger gekostet, als ein normaler Handelstag bringt.'},
-  pfaktor:{t:'Profit-Faktor',amt:1,h:'Summe aller Gewinne geteilt durch Summe aller Verluste. 13,1 zu 1 heißt: Für jeden verlorenen Dollar wurden 13,10 Dollar gewonnen. Über 1 ist eine Strategie im Plus, Werte um 1,5 bis 2 gelten auf Plattformen wie Myfxbook schon als gut. Sehr hohe Werte entstehen, wenn es bisher nur wenige und kleine Verluste gab. Bei „Betrag“ gerechnet wie im MT5-Report, bei „Rendite“ aus den Renditen, deshalb weichen die beiden leicht voneinander ab.'},
+  pfaktor:{t:'Profit-Faktor',amt:1,h:'Summe aller Gewinne geteilt durch Summe aller Verluste. 13,1 zu 1 heißt: Auf jeden verlorenen Euro oder Dollar kommen 13,10 gewonnene. Über 1 ist eine Strategie im Plus, Werte um 1,5 bis 2 gelten auf Plattformen wie Myfxbook schon als gut. Sehr hohe Werte entstehen, wenn es bisher nur wenige und kleine Verluste gab. Bei „Betrag“ gerechnet wie im MT5-Report, bei „Rendite“ aus den Renditen, deshalb weichen die beiden leicht voneinander ab.'},
   wr:{t:'Wochen-Rendite',h:'Die Rendite pro Woche nach PF, aus deinen ganzen Wochen im gewählten Zeitraum.'},
   vorsichtig:{t:'Vorsichtig',h:'In einem Viertel deiner Wochen war die Rendite niedriger als dieser Wert.'},
   wiederanlage:{t:'Mit Wiederanlage',h:'Annahme, dass du deine Gewinne jede Woche wieder einzahlst und sie genauso vervielfacht werden.'},
@@ -10538,7 +10543,7 @@ ${ECB_CITE}`},
   einsatz:{t:'Netto-Einsatz',h:'Eingezahlt minus ausgezahlt.'},
   nettostart:{t:'Netto-Gewinn seit Start',h:'Alles nach Performance Fee, aus allen Konten. In Euro ist jede Buchung zum EZB-Kurs ihres Tages umgerechnet, wie die Ein- und Auszahlungen.'},
   fremd:{t:'Nicht mitgezählt',h:'Einzahlungen, die nicht dein Geld sind. Sie zählen oben nicht mit.'},
-  echt:{t:'Rendite seit Start',h:'Netto-Gewinn seit Start geteilt durch Eingezahlt.\n<b>Warum ist die Rendite in der Auswertung höher?</b> Dort zählt jeder Dollar nur, solange er investiert ist. Hier wird der Gewinn mit allem verglichen, was du je eingezahlt hast, egal wie lange es schon arbeitet. Beispiel: 1.000 USD bringen 100 USD (10 %), danach zahlst du 9.000 USD dazu, die bringen nochmal 900 USD (10 %). In der Auswertung: 10 % + 10 % = 20 %. Hier: 1.000 von 10.000 = 10 %. Außerdem ist die Rendite der Auswertung bei „PF laut MT5“ vor Abzug der Performance Fee und folgt dem Filter, hier steht immer alles nach Fee.'}
+  echt:{t:'Rendite seit Start',h:'Netto-Gewinn seit Start geteilt durch Eingezahlt.\n<b>Warum ist die Rendite in der Auswertung höher?</b> Dort zählt jeder eingezahlte Betrag nur, solange er investiert ist. Hier wird der Gewinn mit allem verglichen, was du je eingezahlt hast, egal wie lange es schon arbeitet. Beispiel: 1.000 bringen 100 (10 %), danach zahlst du 9.000 dazu, die bringen nochmal 900 (10 %). In der Auswertung: 10 % + 10 % = 20 %. Hier: 1.000 von 10.000 = 10 %. Außerdem ist die Rendite der Auswertung bei „PF laut MT5“ vor Abzug der Performance Fee und folgt dem Filter, hier steht immer alles nach Fee.'}
 };
 // Ab 0.52 (1, 2): (i) von „Andere Adressen“ und je Gruppe (Texte in ADDR_O, vorher als Absatz in der Tabelle). Der Satz „Nur zum Zuordnen …“ stand
 // bis 0.51 fett über der Tabelle.
@@ -10705,6 +10710,7 @@ function renderStats(rows){
   // Währungsschalter: Ab hier tragen eur, exE und pfE den Betrag in der gewählten Währung (curRows)
   {const r0=fltRange(years(rows)),m=r0.bad?{n:0}:missingRates({accs:selSet,from:r0.from,to:r0.to,inv:true,real:Object.values(S.tag).some(t=>t.status==='ok')});CUR_MISS=m.n?m:null}
   CUR_EFF=S.ui.flt.cur==='usd'||CUR_MISS?'usd':'eur';
+  $('stats-guard').innerHTML=unklarH(false); // ab 0.115: Hinweis „noch unklar“ in der eben bestimmten Währung (guard() lief vorher)
   $('cur-note').innerHTML=CUR_MISS&&S.ui.flt.cur!=='usd'?`<div class="msg info">Beträge in USD, weil für Euro Kurse fehlen. <button type="button" class="btn" data-rl="cur-rlm" style="padding:3px 10px;margin-left:4px">Kurse laden</button></div><div id="cur-rlm"></div>`:'';
   // Ab 0.58 (4): Hinweis, solange bei einem gewählten Konto der Trading Benefit fehlt, mit dem Sprung zu „Deine Konten“
   {const L=sel.filter(a=>INV[a]==='nofac');$('tb-note').innerHTML=L.length?`<div class="msg info">Bei ${L.length===1?'Konto':'den Konten'} ${and2(L)} fehlt der Trading Benefit. Ohne ihn keine Rendite. <button type="button" class="btn" data-tbgo style="padding:3px 10px;margin-left:4px">Zu „Deine Konten“</button></div>`:''}
@@ -12084,7 +12090,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.114',VDATE='08.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.115',VDATE='08.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
