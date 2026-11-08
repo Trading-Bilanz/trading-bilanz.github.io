@@ -174,6 +174,9 @@ section{scroll-margin-top:var(--navh,70px)}
   #tabs.l8 .trow{flex-wrap:wrap}
 }
 main{max-width:1180px;margin:0 auto;padding:16px 16px 60px}
+/* Ab 0.111: Im Reiter Auswertung dürfen Karten und Filterleiste bis 1320 px breit werden (Florians Auftrag). Kopf, Reiterleiste und Fuß bleiben
+   bei 1180 px, damit beim Wechsel der Reiter nichts springt. body.tstats setzt renderTabs. Nur am Bildschirm, der Druck bleibt, wie er war. */
+@media screen{body.tstats main,body.tstats #fbar .fin{max-width:1320px}}
 section{display:none}
 section.on{display:block}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin:0 0 16px}
@@ -1224,13 +1227,20 @@ details.more .hint{margin-top:6px}
 .tscroll td{text-align:center}
 .tscroll td:first-child{text-align:left}
 .tscroll th>.sm,.hcopy th>.sm{position:absolute;left:10px;right:10px;bottom:7px;line-height:16px;text-align:right;white-space:nowrap}
-/* Ab 0.109: In allen Tabellen der Auswertung 8 statt 10 px Innenabstand links und rechts (Florians Auftrag: „Pro Konto“ passt mit s2r bei 1280 px
-   ohne Wischen, alle Tabellen der Auswertung gleich). :where hält die Gewichtung niedrig, engere Regeln einzelner Tabellen am Handy gelten weiter. */
+/* Ab 0.109: In allen Tabellen der Auswertung 8 statt 10 px Innenabstand links und rechts. Ab 0.111 gilt das nur noch am Handy (bis 700 px)
+   und im Druck. :where hält die Gewichtung niedrig, engere Regeln einzelner Tabellen am Handy gelten weiter. */
 :where(#s-stats) .tscroll th,:where(#s-stats) .tscroll td,:where(#s-stats) .hcopy th{padding-left:8px;padding-right:8px}
 :where(#s-stats) .tscroll th>.sm,:where(#s-stats) .hcopy th>.sm{left:8px;right:8px}
-/* Ab 0.110: Nur „Pro Konto“ und nur am PC (über 700 px) 6 statt 8 px links und rechts (Florians Auftrag: kein seitliches Scrollen am PC).
-   Zellen, Köpfe und die stehende Kopie der Köpfe gleich, so misst hcFix die Spalten mit denselben Abständen. Oben und unten unverändert. */
-@media (min-width:701px){#st-acc .tscroll th,#st-acc .tscroll td,#st-acc .hcopy th{padding-left:6px;padding-right:6px}#st-acc .tscroll th>.sm,#st-acc .hcopy th>.sm{left:6px;right:6px}}
+/* Ab 0.111, Regel A (Florians Regel): am PC je Tabelle 10 px; passt sie so nicht in ihre Karte 8 px; 6 px nur, wenn sie damit ganz passt,
+   sonst 8 px und die Tabelle scrollt. Den Wert wählt tpFit im Skript und setzt ihn als --tp (Karte, #hlw, .tscroll). Zellen, Köpfe, die
+   stehende Kopie der Köpfe und die kleinen Texte im Kopf (.sm) nehmen denselben Wert, so misst hcFix die Spalten mit demselben Abstand.
+   Ohne --tp 8 px wie am Handy: Beim Wechsel über 700 px ändert sich der Abstand so höchstens einmal (auf den gewählten Wert). */
+@media screen and (min-width:701px){
+  :where(#s-stats) .tscroll th,:where(#s-stats) .tscroll td,:where(#s-stats) .hcopy th{padding-left:var(--tp,8px);padding-right:var(--tp,8px)}
+  :where(#s-stats) .tscroll th>.sm,:where(#s-stats) .hcopy th>.sm{left:var(--tp,8px);right:var(--tp,8px)}
+}
+/* 0.110: „Pro Konto“ 6 px über 700 px. Ab 0.111 am Bildschirm durch Regel A ersetzt, im Druck bleibt es (Druck unverändert). */
+@media print and (min-width:701px){#st-acc .tscroll th,#st-acc .tscroll td,#st-acc .hcopy th{padding-left:6px;padding-right:6px}#st-acc .tscroll th>.sm,#st-acc .hcopy th>.sm{left:6px;right:6px}}
 .tscroll th>.smw,.hcopy th>.smw{display:block;height:0;overflow:hidden;visibility:hidden;font-size:var(--fs-xxs);font-weight:400;white-space:nowrap}
 .tscroll th:first-child,.tscroll td:first-child{position:-webkit-sticky;position:sticky;left:0;z-index:1;background:var(--card);box-shadow:1px 0 0 var(--line)}
 .tscroll th:first-child{background:var(--bg)}
@@ -9660,6 +9670,7 @@ function renderTabs(st){
   // Nur nach oben scrollen, und nur wenn der Anfang des Abschnitts oberhalb des sichtbaren Bereichs liegt
   $('tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.ui.tab=b.dataset.t;save();render();const sec=$('s-'+b.dataset.t);if(sec.getBoundingClientRect().top<document.querySelector('nav').getBoundingClientRect().height)sec.scrollIntoView({behavior:'auto',block:'start'})});
   for(const [k] of TABS){$('s-'+k).classList.toggle('on',S.ui.tab===k);$('s-'+k).classList.toggle('print',S.ui.tab===k)}
+  document.body.classList.toggle('tstats',S.ui.tab==='stats'); // ab 0.111: Auswertung bis 1320 px breit (CSS body.tstats)
 }
 // Ab 0.50 Nachtrag 5 (R1): Rückfrage zu × am Konto nennt die Buchungen mit Zeitraum und deine Angaben, die mit dem Konto wegfallen. Name, Trading
 // Benefit und „Invested“ stehen nur im Tool, ein neu geladener Report bringt sie nicht zurück (Antworten zur Prüfung der Kontostände fallen auch weg).
@@ -10806,6 +10817,7 @@ function renderStats(rows){
     h+=`<tr><td class="acc">${accCell(a)}</td><td>${fI.format(tI.n)}</td>${netTd(z)}<td>${rtSw(ra,'own','–',[a])}</td><td>${cap==null?gl(invKey([a]),INV[a]==='nofac'?'Trading Benefit fehlt':'unbekannt'):usd(cap)}</td><td>${mon(z.res)}</td>${feeTd(z)}${utd([[trd(tI.best,'eur'),trd(tN.best,'exE')],[trd(tI.worst,'eur'),trd(tN.worst,'exE')],[tI.n?mon(tI.avg):'–',tI.n?mon(tN.avg):'–']],trR(positions(ra,'own'),ra,'own',retSum(ra,'own',false).miss,[a]))}<td>${(()=>{const f=RA.find(r=>r.a===a&&isTrade(r));return f&&ra.some(isTrade)?wkAvg(avgKz(ra,cntWin(f.d,rg.from,rg.to,dataEnd),'own',zero,['week'],CW),[a]):'–'})()}</td><td>${tI.n?fP.format(tI.win/tI.n):'–'}</td><td>${ddSw(ra,'own','–',[a])}</td></tr>`;
   }
   // Ab 0.109: „Treffer&shy;quote“ darf im Spaltenkopf umbrechen (mit 8 px Innenabstand, siehe CSS :where(#s-stats)), so passt „Pro Konto“ mit s2r bei 1280 px
+  // Ab 0.111 bleibt der Umbruch; den Innenabstand (10, 8 oder 6 px) wählt tpFit nach Regel A
   h+=`<tr class="gesamt"><td class="acc">Gesamt (${allSel?'alle Konten':'Auswahl'})</td><td>${fI.format(PS.n)}</td>${netTd(T)}<td>${rtSw(R,'sel','–')}</td><td>${capOk?usd(capSum):invDash(sel)}</td><td>${mon(T.res)}</td>${feeTd(T)}${utd([[trd(PS.best,'eur'),trd(PN.best,'exE')],[trd(PS.worst,'eur'),trd(PN.worst,'exE')],[PS.n?mon(PS.avg):'–',PS.n?mon(PN.avg):'–']],trR(P,R,'sel',AK.miss,sel))}<td>${wkAvg(AK)}</td><td>${PS.n?fP.format(PS.win/PS.n):'–'}</td><td>${ddSw(R,'sel','–')}</td></tr>`;
   $('t-acc').innerHTML=`<tr><th>Konto${SM0}</th><th>Trades${SM0}</th><th>${gl('netto','Netto-Gewinn')}${SMF}</th><th>${gl('rendite','Rendite')}${SMH}</th><th>${gl('inv','Investition')}${smx(gl('ende','am Ende'))}</th><th>${gl('vorpf','Ergebnis vor PF')}${SM0}</th><th>${gl('pf','Performance Fee')}${SMF}</th><th>Bester Trade${SMH}</th><th>Schlechtester Trade${SMH}</th><th>Ø pro Trade${SMH}</th><th class="w2">${gl('avg','Ø Rendite pro Woche')}${SMH}</th><th>${gl('hit','Treffer&shy;quote')}${SM0}</th><th>${gl('dd','Max. Drawdown')}${SMH}</th></tr>`+h;
   renderGraf(R,sel,{wdCnt,win,zero,AK,from:rg.from,rl:rg.label+(nocwOn()?' ohne laufende Woche':'')});
@@ -10827,7 +10839,7 @@ function renderStats(rows){
   for(const a of sel){xh+=`<tr><td class="acc">${accCell(a)}</td>${yms.map(m=>`<td>${mx(pfz(R.filter(r=>r.a===a&&r.ym===m)))}</td>`).join('')}<td><b>${mx(pfz(R.filter(r=>r.a===a)))}</b></td></tr>`}
   xh+=`<tr class="sum"><td>Summe</td>${yms.map(m=>`<td>${mx(pfz(R.filter(r=>r.ym===m)))}</td>`).join('')}<td>${mx(T)}</td></tr>`;
   $('t-matrix').innerHTML=xh;
-  hcAll();fitHL();
+  hcAll();fitHL();tpSimple();
 }
 
 // Karte „Durchschnitt“: Ø und Median von Betrag und Rendite pro Handelstag, ganzer Woche, ganzem Monat und Trade, mit Basis-Text
@@ -10905,9 +10917,35 @@ function renderHL(G,AK,h){
 // Breiten aus getBoundingClientRect, abgerundet: clientWidth ist gerundet und kann einen halben Pixel größer sein als der Platz, dann
 // wäre die Tabelle um Bruchteile zu breit und am Handy (hohe Pixeldichte) erschiene ein Scrollbalken ohne echten Überlauf.
 const HL_MAX=520,HL_VGAP=20;
+// Ab 0.111, Regel A (Florians Regel): Innenabstand links und rechts in den Tabellen der Auswertung am PC (über 700 px, nur Bildschirm).
+// Erst 10 px; passt die Tabelle nicht in ihren Bereich (fits() falsch), 8 px; dann probeweise 6 px, nur wenn sie damit ganz passt, sonst 8 px
+// (die Tabelle scrollt). Der Wert steht als --tp am Element el und gilt für alles darin (CSS :where(#s-stats)). Alles in einem Schritt, vor dem
+// Zeichnen; je Breite immer dasselbe Ergebnis, darum springt nichts zwischen zwei Stufen. Am Handy und im Druck gilt das CSS (8 px bzw. enger).
+function tpPC(){return matchMedia('screen and (min-width:701px)').matches}
+function tpFit(el,fits){
+  if(!tpPC()){el.style.removeProperty('--tp');return 0}
+  for(const p of [10,8,6]){el.style.setProperty('--tp',p+'px');if(fits())return p}
+  el.style.setProperty('--tp','8px');return 8;
+}
+// Tabelle passt in ihren Bereich (kein seitliches Scrollen); halbe Pixel Spielraum wegen gerundeter Breiten
+const tpIn=(sc,tb)=>()=>tb.getBoundingClientRect().width<=sc.getBoundingClientRect().width+0.5;
+// Tabellen ohne stehende Kopie: „Durchschnitt“ und „Was wäre wenn“ (eine Tabelle je .tscroll, --tp am .tscroll)
+function tpSimple(){for(const sc of document.querySelectorAll('#st-avg .tscroll,#calc-out .tscroll')){const tb=sc.querySelector('table');if(tb&&sc.offsetWidth)tpFit(sc,tpIn(sc,tb))}}
 function fitHL(){
   const w=$('hlw');if(!w||!w.offsetWidth)return;
   const ts=[...w.querySelectorAll('table')];
+  // Ab 0.111: Abstand nach Regel A, eine Entscheidung für alle drei Tabellen (sie haben dieselben Spaltenbreiten). Passt = Lm+2Vm ≤ A.
+  let R=null;
+  tpFit(w,()=>(R=hlMeasure(w,ts)).fit);
+  if(!R||R.p!==w.style.getPropertyValue('--tp'))R=hlMeasure(w,ts);
+  const {st,L,v1,v2,T}=R;
+  w.classList.toggle('side',st<3);w.dataset.st=st;
+  for(const t of ts){
+    t.insertAdjacentHTML('afterbegin',`<colgroup><col style="width:${L}px"><col style="width:${v1}px"><col style="width:${v2}px"></colgroup>`);
+    t.style.tableLayout='fixed';t.style.width=T+'px';
+  }
+}
+function hlMeasure(w,ts){
   w.classList.remove('side');
   for(const t of ts){const g=t.querySelector('colgroup');if(g)g.remove();t.style.tableLayout='auto';t.style.width='1px'}
   const lab=()=>{let m=0;for(const t of ts)for(const r of t.rows)m=Math.max(m,r.cells[0].getBoundingClientRect().width);return Math.ceil(m)};
@@ -10918,14 +10956,11 @@ function fitHL(){
   w.classList.remove('hlm');const Lm=lab();
   const Vm=Math.ceil(Math.max(V,V-pad+HL_VGAP)),gap=parseFloat(getComputedStyle(w).getPropertyValue('--hlgap'))||16;
   const third=(w.getBoundingClientRect().width-2*gap)/3,st=Ln+2*Vm<=third?1:Lm+2*Vm<=third?2:3;
-  w.classList.toggle('side',st<3);w.dataset.st=st;
+  w.classList.toggle('side',st<3);
   const A=Math.floor(Math.min(...ts.map(t=>t.parentElement.getBoundingClientRect().width)));
   const T=Math.max(Math.min(A,Math.max(HL_MAX,Ln+2*Vm)),Lm+2*Vm);
   const L=Math.max(Lm,Math.min(Ln,T-2*Vm)),v1=Math.floor((T-L)/2),v2=T-L-v1;
-  for(const t of ts){
-    t.insertAdjacentHTML('afterbegin',`<colgroup><col style="width:${L}px"><col style="width:${v1}px"><col style="width:${v2}px"></colgroup>`);
-    t.style.tableLayout='fixed';t.style.width=T+'px';
-  }
+  return {st,L,v1,v2,T,fit:Lm+2*Vm<=A,p:w.style.getPropertyValue('--tp')};
 }
 // Sprung nach „Pro Woche“: kind 't' (Trade, key = Zeit|Symbol), 'd' (Tag, 'YYYY-MM-DD'), 'w' (Woche, Montag). Klappt Karte, Woche und Tag auf,
 // scrollt die Zeile in die Mitte des freien Bereichs und lässt sie einmal aufleuchten. Gibt es die Zeile nicht, passiert nichts.
@@ -10980,13 +11015,15 @@ function renderCalc(){
     <p class="small" style="margin:8px 0 0">Hochrechnung aus ${D.k===1?'deiner 1 '+gl('ganz','ganzen Woche'):`deinen ${D.k} `+gl('ganz','ganzen Wochen')}, keine Vorhersage.</p>`;
   const nTxt=fmtDec(n,Math.abs(n-Math.round(n))<1e-9?0:1);
   const p=t=>`<p class="small" style="margin:4px 0">${t}</p>`;
-  $('calc-info-b').innerHTML=p(`Wochen-Rendite nach PF, aus ${nW(D.k,'ganzen Woche','ganzen Wochen')} im gewählten Zeitraum. Investition ${usd(I)}, Dauer ${nTxt} ${n===1?'Woche':'Wochen'}, ${c.reinv?'mit':'ohne'} Wiederanlage.`)+
+  // Ab 0.111 (Regel B): „USD“ hängt am Betrag (geschütztes Leerzeichen), rutscht nie allein in die nächste Zeile
+  $('calc-info-b').innerHTML=p(`Wochen-Rendite nach PF, aus ${nW(D.k,'ganzen Woche','ganzen Wochen')} im gewählten Zeitraum. Investition ${usd(I).replace(' USD','&nbsp;USD')}, Dauer ${nTxt} ${n===1?'Woche':'Wochen'}, ${c.reinv?'mit':'ohne'} Wiederanlage.`)+
     p('<b>Vorsichtig:</b> '+GL.vorsichtig.h)+
     p('Die Szenarien beruhen nur auf deinen bisherigen Wochen. Eine Verlustphase, die bisher nicht vorkam, ist darin nicht enthalten. Der Rechner zeigt, was wäre, wenn es so weiterläuft, keine Vorhersage.')+
     (c.reinv?p('<b>Mit Wiederanlage:</b> Annahme, dass du deine Gewinne jede Woche wieder einzahlst und sie genauso vervielfacht werden.'):'')+
     p('Alle Beträge vor Steuer.')+
     (eurC&&ld?p(`Umgerechnet zum EZB-Kurs vom ${dS(ld)}. Wie der Kurs künftig steht, weiß niemand.`):'');
   info.hidden=false;
+  tpSimple(); // ab 0.111: Abstand nach Regel A
 }
 
 
@@ -12016,7 +12053,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.110',VDATE='08.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.111',VDATE='08.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -12050,6 +12087,8 @@ function hcFix(c,retry){
   c.classList.remove('hc');const g=tb.querySelector('colgroup');if(g)g.remove();cp.innerHTML='';cp.style.transform='';
   tb.style.tableLayout='';tb.style.width='';cp.style.tableLayout='';cp.style.width='';
   if(c.id==='acc-card')fitKonten(); // Report-Namen erst ein-, bei Platzmangel zweizeilig, dann messen
+  // Ab 0.111, Regel A: in der Auswertung erst den Abstand wählen (natürliches Layout, Kopfzeile sichtbar), dann die Spalten messen
+  if(c.closest('#s-stats')&&!c.classList.contains('closed')&&sc.offsetWidth)tpFit(c,tpIn(sc,tb));
   if(c.id==='oc-card')ocFit(); // ab 0.101: „In der Liste zeigen“, bei Platzmangel „In Liste zeigen“, dann zweizeilig
   const head=tb.rows[0];
   if(!c.classList.contains('nohc')&&!c.classList.contains('closed')&&sc.offsetWidth&&head){
@@ -12519,6 +12558,8 @@ window.addEventListener('resize',()=>{if(window.innerWidth===lastW)return;lastW=
 if(window.ResizeObserver){let tw=0,q=0;new ResizeObserver(()=>{if(!q)q=requestAnimationFrame(()=>{q=0;const w=$('tiles').clientWidth;if(w&&w!==tw){tw=w;layoutTiles()}})}).observe($('tiles'))}
 // „Hochs und Tiefs“: nebeneinander oder untereinander neu prüfen, wenn sich die Breite der Karte ändert (auch beim Aufklappen)
 if(window.ResizeObserver){let hw=0,q=0;new ResizeObserver(()=>{if(!q)q=requestAnimationFrame(()=>{q=0;const w=$('hlw').clientWidth;if(!w){hw=0;return}if(w!==hw){hw=w;fitHL()}})}).observe($('hlw'))}
+// Ab 0.111: „Durchschnitt“ und „Was wäre wenn“: Abstand nach Regel A neu wählen, wenn sich die Breite der Karte ändert (im nächsten Frame)
+if(window.ResizeObserver){let q=0;const ww=new Map();{const ro=new ResizeObserver(es=>{for(const e of es){const w=e.target.clientWidth;if(w&&w!==ww.get(e.target)){ww.set(e.target,w);if(!q)q=requestAnimationFrame(()=>{q=0;tpSimple()})}}});ro.observe($('st-avg'));ro.observe($('st-calc'))}}
 // Kurze Steuer-Tab-Namen am Handy: nur den Text ändern, kein render()
 TAX_MQ.addEventListener('change',()=>{updateTaxLabel();fitTabs();updateNavH()});
 document.querySelectorAll('.ver').forEach(e=>e.textContent=`${VERSION} vom ${VDATE}`);
