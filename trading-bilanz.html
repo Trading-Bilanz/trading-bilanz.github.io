@@ -396,7 +396,7 @@ button.zlink{border:0;background:none;padding:0;font:inherit;cursor:pointer}
 .har.up{color:var(--pos)} .har.dn{color:var(--neg)}
 @media (max-width:700px){#st-hl .tscroll th,#st-hl .tscroll td{padding-left:6px;padding-right:6px}}
 @media (max-width:520px){#st-hl .tscroll th,#st-hl .tscroll td{padding-left:5px;padding-right:5px}#st-hl table{font-size:var(--fs-s)}#st-hl th{font-size:var(--fs-xs)}}
-/* „Dein echtes Geld“: Beschriftung darf umbrechen, Beträge nur vor „USD“ (erst bei sehr großer Schrift), so passt die Tabelle
+/* „Dein echtes Geld“: Beschriftung darf umbrechen, Beträge nur vor „USD“ bzw. „€“ (erst bei sehr großer Schrift), so passt die Tabelle
    auch am Handy ohne seitliches Scrollen */
 #t-real td{white-space:normal}
 /* Keine echte Tabelle: Beschriftung links, Wert rechts, höchstens 450 px breit und links, damit die Werte nah bei ihren Beschriftungen stehen */
@@ -2567,12 +2567,14 @@ function parseReport(text){
 }
 // Ab 0.51 (6): Rückgabe {n (gelesene Reports), added, dup, upd} für den Toast beim Ziehen
 async function loadFiles(files){
-  const out=[],nw=[];let added=0,dup=0,upd=0,nOk=0;
+  const out=[],nw=[],curBad=[];let added=0,dup=0,upd=0,nOk=0;
   for(const f of files){
     try{
       const txt=await readText(f);
       const r=parseReport(txt);
       if(!r.acc||!(r.deals.length||r.dealHd)){out.push(`<b>${esc(f.name)}</b>: kein MT5-Kontoreport erkannt. Speichere den Report in MT5 als HTML: „Kontohistorie“ → rechte Maustaste → „Bericht“ → „HTML (Internet Explorer)“. Das Tool kann eine PDF- oder Excel-Datei nicht lesen.`);continue;}
+      // Ab 0.114: nur USD-Konten (Tag Markets bietet nur USD-Konten an). Ein Konto in einer anderen Währung lehnt das Tool ab, es legt nichts an.
+      if(r.cur!=='USD'){const t=`Dieses Konto läuft in ${esc(r.cur)}. Die Trading-Bilanz unterstützt nur USD-Konten, wie bei Tag Markets üblich.`;out.push(`<b>${esc(f.name)}</b>: ${t}`);curBad.push(`„${esc(f.name)}“: ${t}`);continue;}
       // Ab 0.61: neu angelegte Konten merken (nw, ohne Trading Benefit: dropFiles springt dorthin)
       if(!S.accounts[r.acc]&&!nw.includes(r.acc))nw.push(r.acc);
       const A=S.accounts[r.acc]||(S.accounts[r.acc]={name:'',factor:null,cur:r.cur,holder:r.holder,company:r.company,repDate:''});
@@ -2604,7 +2606,7 @@ async function loadFiles(files){
   msg('loadmsg',added||dup?'ok':'warn',out.join('<br>'));
   render();
   if(added) autoRates();
-  return {n:nOk,added,dup,upd,nw:nw.filter(a=>S.accounts[a]&&!(S.accounts[a].factor>0))};
+  return {n:nOk,added,dup,upd,curBad,nw:nw.filter(a=>S.accounts[a]&&!(S.accounts[a].factor>0))};
 }
 // Ab 0.51 (6): Text aus Bytes (UTF-16 der MT5-Reports erkennen), auch für das Erkennen gezogener Dateien (fileKind)
 function bufText(buf){let enc='utf-8';if(buf[0]===0xFF&&buf[1]===0xFE)enc='utf-16le';else if(buf[0]===0xFE&&buf[1]===0xFF)enc='utf-16be';else if(buf.length>3&&buf[1]===0&&buf[3]===0)enc='utf-16le';return new TextDecoder(enc).decode(buf)}
@@ -2691,11 +2693,14 @@ function missingRates(o){o=o||{};let n=0,provRd='';const days=new Set(),prov=new
   // Ab 0.72 (1.8): o.tax (mit o.year) = Prüfung für den Reiter Steuer: CFD-Buchungen nur im Jahr und nur von zählenden Konten (taxIn), Krypto-Tage
   // aller Jahre bis 31.12. des Jahres (sie gehen über den Topf in die Rechnung des Jahres ein), solange Krypto in der Steuer zählt. Bank-Zeilen nur im Jahr.
   const cxAll=!!(o.tax&&o.year&&S.ui.cxIncl!==false&&!taxOff()),cxR=d=>cxAll?d<=`${o.year}-12-31`:inR(d);
-  const chk=(d,t,cx)=>{if(!(cx?cxR(d):inR(d)))return;const r=rateInfo(d,t);if(!r){n++;days.add(d)}else if(r.prov){prov.add(d);if(r.rd>provRd)provRd=r.rd}};
+  const chk0=(d,t)=>{const r=rateInfo(d,t);if(!r){n++;days.add(d)}else if(r.prov){prov.add(d);if(r.rd>provRd)provRd=r.rd}};
+  const chk=(d,t,cx)=>{if(cx?cxR(d):inR(d))chk0(d,t)};
   // Ab 0.113: o.inv = auch alle Ein- und Auszahlungen der Konten, unabhängig vom Zeitraum (Investition in Euro, Auswertung)
-  for(const x of Object.values(S.deals)){const cur=(S.accounts[x.a]||{}).cur||'USD';if(cur!=='USD')continue;if(o.accs&&!o.accs.has(x.a))continue;if(o.tax&&!taxIn(x.a))continue;
-    const d=dOf(x.t);if(o.inv&&!inR(d)&&/^(einzahlung|kapitalabzug)$/.test(catOf(x))){const r=rateInfo(d,x.t);if(!r){n++;days.add(d)}else if(r.prov){prov.add(d);if(r.rd>provRd)provRd=r.rd}continue}
-    chk(d,x.t)}
+  // Ab 0.114: o.real = dazu alle Buchungen aller Konten und alle gültigen Tag-Zeilen, unabhängig von Konten und Zeitraum (Karte „Dein echtes Geld“ in Euro)
+  for(const x of Object.values(S.deals)){const sel=!o.accs||o.accs.has(x.a);if(!sel&&!o.real)continue;if(o.tax&&!taxIn(x.a))continue;
+    const d=dOf(x.t);if(!inR(d)||!sel){if(o.real||(o.inv&&sel&&/^(einzahlung|kapitalabzug)$/.test(catOf(x))))chk0(d,x.t);continue}
+    chk0(d,x.t)}
+  if(o.real)for(const t of Object.values(S.tag))if(t.status==='ok')chk0(tagD(t),tagT(t));
   if(!o.deals&&!o.accs){for(const t of Object.values(S.tag)){if(t.status!=='ok'||!t.own)continue;chk(tagD(t),tagT(t),!t.fiat)}
     for(const c of S.cx)if(c.cur==='USD'&&c.date)chk(c.date,'',1);
     // Ab 0.49 (5.1): auch die Tageswerte der Krypto-Rechnung (nur vollständige Einträge, nur wenn Krypto in der Abrechnung zählt): Gebühr in Coins,
@@ -2705,7 +2710,6 @@ function missingRates(o){o=o||{};let n=0,provRd='';const days=new Set(),prov=new
       const p=k==='rueckerst'?S.cx.find(x=>x.id===c.of):null,storno=!!p&&p.kind==='bezahlung'&&!cxMissing(p).length&&!!p.date&&p.date.slice(0,4)===c.date.slice(0,4)&&c.date>=p.date;
       if(k==='gebuehr'||(k==='rueckerst'&&!storno)||(k==='uebertrag'&&c.qtyIn>0&&c.qtyIn<c.qty-1e-9)||(k==='tauschaus'&&!(c.eur>0))||(k==='tausch'&&cxLand()==='DE'))chk(c.date,'',1)}}
   return {n,days:[...days].sort(),prov:[...prov].sort(),provRd}}
-function otherCurrencies(){return Object.entries(S.accounts).filter(([a,x])=>x.cur!=='USD'&&x.cur!=='EUR').map(([a])=>a)}
 const localDay=x=>`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;
 // Eine Adresse abfragen, Antwort als Text. Wartet höchstens RATE_WAIT ms (auch auf den Inhalt), damit bei einem hängenden Dienst der nächste drankommt.
 // Fehlertexte beginnen mit dem Namen des Dienstes (nm), sie stehen in der Meldung „konnten nicht geladen werden (…)“.
@@ -2861,8 +2865,9 @@ function pasteRates(){
 function enrich(){
   RD=null;const rows=[];
   for(const x of Object.values(S.deals)){
-    const A=S.accounts[x.a]||{};const d=dOf(x.t);const cat=catOf(x);
-    const c=A.cur||'USD',ri=c==='EUR'?null:rateInfo(d,x.t),r=c==='EUR'?1:ri?ri.v:null;
+    const d=dOf(x.t);const cat=catOf(x);
+    // Alle Konten laufen in USD (ab 0.114 lehnt das Einlesen andere Kontowährungen ab): Euro = Betrag ÷ EZB-Kurs (USD je EUR) des Tages
+    const ri=rateInfo(d,x.t),r=ri?ri.v:null;
     let amt=0;
     if(cat==='close')amt=x.prof+x.cost;else if(cat==='open')amt=x.cost;else amt=x.prof;
     rows.push({x,a:x.a,d,y:d.slice(0,4),ym:d.slice(0,7),wk:monday(d),cat,amt,rate:r,rd:ri?ri.rd:'',prov:!!(ri&&ri.prov),eur:r?amt/r:NaN});
@@ -3128,17 +3133,16 @@ function pfz(rows){
   for(const r of rows)if(r.cat==='close'||r.cat==='open'){fN-=r.pfE;nN+=r.exE}
   z.fV=z.fee;z.nV=z.tax;z.fN=fN;z.nN=nN;return z;
 }
-// Zeilen für die Auswertung in der gewählten Währung. Bei 'usd' flache Kopien, in denen eur, exE und pfE den Betrag in USD tragen:
-// USD-Konto direkt aus der Kontowährung (amt, exU), EUR-Konto × EZB-Kurs (USD je EUR) des Buchungstags. So rechnen agg(), pfz(), positions(),
+// Zeilen für die Auswertung in der gewählten Währung. Bei 'usd' flache Kopien, in denen eur, exE und pfE den Betrag in USD tragen,
+// direkt aus der Kontowährung (amt, exU; ab 0.114 immer USD). So rechnen agg(), pfz(), positions(),
 // tradeStats() und sumTrades() unverändert in der gewählten Währung. amt, exU und die Investition bleiben, Rendite, Max. Drawdown und
 // Trefferquote ändern sich also nicht. Steuer, Excel und CSV bekommen immer die Originalzeilen (window.__rows).
 // Achtung: gain, loss und costs aus agg() bleiben in Euro, weil sie über r.rate gehen. Werden sie je in der Auswertung angezeigt, müssen sie dort ebenfalls umgerechnet werden.
 function curRows(rows,cur){
   if(cur!=='usd')return rows;
   return rows.map(r=>{
-    const c=(S.accounts[r.a]||{}).cur||'USD';const k=c==='USD'?1:c==='EUR'?(rateFor(r.d,'USD',r.x.t)||NaN):NaN;
-    const u=r.amt*k,o={eur:u};
-    if(r.exU!=null){o.exE=r.exU*k;o.pfE=u-o.exE}
+    const u=r.amt,o={eur:u};
+    if(r.exU!=null){o.exE=r.exU;o.pfE=u-o.exE}
     return Object.assign({},r,o);
   });
 }
@@ -6826,7 +6830,10 @@ function keptText(C,y,flt,neutral){
 }
 // Ab 0.46 (2.3): Euro-Betrag einer Bank-Zahlung: laut Kontoauszug, sonst zum EZB-Kurs (ecb = immer der Kurswert). null ohne Kurs.
 function tagBankEur(t,ecb){if(!ecb&&t.eurBank>0)return t.eurBank;const r=rateFor(tagAT(t).date||t.date,'USD');return r?t.usd/r:null}
-function realMoney(){const z={ein:0,aus:0,fremd:0,n:0};for(const t of Object.values(S.tag)){if(t.status!=='ok')continue;z.n++;if(t.kind==='ein'){if(t.own)z.ein+=t.usd;else z.fremd+=t.usd}else z.aus+=t.usd}return z}
+// Ab 0.114 daneben in Euro (einE, ausE, fremdE): jede Zeile zum EZB-Kurs ihres Tages (rateInfo wie bei den Buchungen der Konten), ohne Kurs NaN
+// (renderStats prüft die Kurse dieser Zeilen, missingRates mit o.real)
+function realMoney(){const z={ein:0,aus:0,fremd:0,einE:0,ausE:0,fremdE:0,n:0};for(const t of Object.values(S.tag)){if(t.status!=='ok')continue;z.n++;
+    const ri=rateInfo(tagD(t),tagT(t)),e=ri?t.usd/ri.v:NaN;if(t.kind==='ein'){if(t.own){z.ein+=t.usd;z.einE+=e}else{z.fremd+=t.usd;z.fremdE+=e}}else{z.aus+=t.usd;z.ausE+=e}}return z}
 // Ab 0.43: neu = am Ende „+ Neue Wallet …“ (Auswahl mit data-wnew, siehe wNewSelOk)
 function walletOpts(sel,v,neu){return S.wallets.filter(w=>!wProv(w)||w===v).map(w=>`<option ${w===v?'selected':''}>${esc(w)}</option>`).join('')+(neu?'<option value="+">+ Neue Wallet …</option><option value="+k">+ Neue Karte …</option>':'')}
 // Ab 0.48 (3.9): das alte „neu“ der Tag-Zeilen (S.tagBatch, t.chk) zählt nicht mehr, siehe vgNew
@@ -9278,6 +9285,8 @@ function xlsxAll(rows,o){
   // Ab 0.100: laufende Woche aller Konten (PF noch nicht gebucht), sie ist keine ganze Woche (wie in der Auswertung)
   const cw=curWeek(rows,accs);
   const capAll=tm=>{let s=0;for(const a of accs){const c=CAP(a,tm);if(c==null)return null;s+=c}return s};
+  // Ab 0.114: dieselbe Investition in Euro (CAPE, wie in der Auswertung in €), leer ohne Kurs
+  const capAllE=tm=>{let s=0;for(const a of accs){const c=CAPE(a,tm);if(c==null)return null;s+=c}return isFinite(s)?s:null};
   const endOf=d=>d.replace(/-/g,'.')+' 23:59:59';
   const miss=retSum(rows,'all',false).miss;
   const ret=(rr,ex)=>miss?'':X.P(retSum(rr,'all',ex).v);
@@ -9293,13 +9302,13 @@ function xlsxAll(rows,o){
     {h:'Ergebnis vor PF EUR',w:14,k:'eI',c:x=>X.E(x.eI)},{h:'Ergebnis vor PF USD',w:14,k:'uI',c:x=>X.N(x.uI)},
     {h:'PF verteilt EUR',w:13,k:'eP',c:x=>X.E(x.eP)},{h:'PF verteilt USD',w:13,k:'uP',c:x=>X.N(x.uP)},
     {h:'Netto-Gewinn EUR',w:14,c:(x,n,L)=>X.F(`${L.eI}${n}+${L.eP}${n}`,x.eI+x.eP,2)},{h:'Netto-Gewinn USD',w:14,c:(x,n,L)=>X.F(`${L.uI}${n}+${L.uP}${n}`,x.uI+x.uP,5)},
-    {h:'Investition USD',w:13,c:x=>{const c=capAll(endOf(x.d));return c==null?'':X.N(c)}},
+    {h:'Investition USD',w:13,c:x=>{const c=capAll(endOf(x.d));return c==null?'':X.N(c)}},{h:'Investition EUR',w:13,c:x=>{const c=capAllE(endOf(x.d));return c==null?'':X.E(c)}},
     {h:'Rendite vor PF',w:12,c:x=>ret(x.rr,false)},{h:'Rendite nach PF',w:12,c:x=>ret(x.rr,true)}],days);
   // Wochen und Monate: bestehende Spalten zuerst (wie in der Jahres-Excel), dann die neuen
   const per=(keys,f,lab)=>{const m=grp(rows,f);return keys.map(k=>{const rr=m.get(k)||[];return Object.assign({k,rr,z:pfz(rr),zu:pfz(u(rr)),n:rr.some(isTrade)?positions(rr).length:0},lab(k))})};
   const newCols=fullH=>[
     {h:'Handelstage',w:11,c:x=>x.td},{h:fullH,w:12,c:x=>x.full?'ja':'nein'},
-    {h:'Investition USD (am Ende)',w:15,c:x=>{const c=capAll(endOf(x.end));return c==null?'':X.N(c)}},
+    {h:'Investition USD (am Ende)',w:15,c:x=>{const c=capAll(endOf(x.end));return c==null?'':X.N(c)}},{h:'Investition EUR (am Ende)',w:15,c:x=>{const c=capAllE(endOf(x.end));return c==null?'':X.E(c)}},
     {h:'Netto-Gewinn PF verteilt',w:15,k:'nE',c:x=>X.E(x.z.nN)},{h:'Rendite vor PF',w:12,c:x=>ret(x.rr,false)},{h:'Rendite nach PF',w:12,c:x=>ret(x.rr,true)},
     {h:'Kumuliert (Netto-Gewinn PF verteilt)',w:16,k:'nEC',c:(x,n,L)=>cumF(L,'nE',n,x.cE)},
     {h:'Max. Drawdown vor PF',w:13,c:x=>dd(x.rr,false)},{h:'Max. Drawdown nach PF',w:13,c:x=>dd(x.rr,true)},
@@ -9315,7 +9324,7 @@ function xlsxAll(rows,o){
   const monate=xSheet('Monate',[{h:'Monat',w:16,c:x=>fM(x.k)},{h:'Trades',w:8,c:x=>x.n},{h:'Ergebnis',w:13,c:x=>X.E(x.z.res)},{h:'Performance Fee',w:15,c:x=>X.E(x.z.fee)},
     {h:XPF,w:18,c:x=>X.E(x.z.tax)},{h:'Gewinnauszahlungen',w:18,c:x=>X.E(x.z.pw)},{h:'Krypto Gewinn/Verlust',w:18,c:x=>X.E(C.byM[x.k]||0)},
     ...newCols('ganzer Monat')],M,()=>{const T=pfz(rows),TU=pfz(RU),cy=Object.values(C.byY).reduce((a,b)=>a+b.gain+b.loss,0);
-      return [[X.B('Summe'),P.length,X.EB(T.res),X.EB(T.fee),X.EB(T.tax),X.EB(T.pw),X.EB(cy),'','','',X.EB(T.nN),ret(rows,false),ret(rows,true),'',dd(rows,false),dd(rows,true),X.N(TU.res),X.N(TU.fee),X.N(TU.pw),X.N(TU.nN),'']]});
+      return [[X.B('Summe'),P.length,X.EB(T.res),X.EB(T.fee),X.EB(T.tax),X.EB(T.pw),X.EB(cy),'','','','',X.EB(T.nN),ret(rows,false),ret(rows,true),'',dd(rows,false),dd(rows,true),X.N(TU.res),X.N(TU.fee),X.N(TU.pw),X.N(TU.nN),'']]});
   // Trades: Positionen (gleiche Schließzeit und gleiches Symbol auf mehreren Konten), dazu Eröffnung und Haltedauer
   const HO=holdOpens(rows);let unclear=0;
   const PU=new Map(positions(RU,'all').map(p=>[p.t+'|'+p.sym,p]));
@@ -9327,7 +9336,7 @@ function xlsxAll(rows,o){
     {h:'Datum',w:11,c:p=>X.D(p.d)},{h:'Wochentag',w:11,c:p=>WDL[wdIdx(p.d)]},{h:'KW',w:5,c:p=>isoWeek(p.d)},{h:'Symbol',w:10,c:p=>p.sym},{h:'Konten',w:7,c:p=>p.accs},
     {h:'Ergebnis gesamt EUR',w:16,k:'e',c:p=>X.E(p.eur)},{h:'PF-Anteil EUR',w:13,k:'f',c:p=>X.E(p.exE-p.eur)},{h:'Netto nach PF EUR',w:15,c:(p,n,L)=>X.F(`${L.e}${n}+${L.f}${n}`,p.exE,2)},
     {h:'Ergebnis gesamt USD',w:16,k:'eu',c:p=>X.N(p.pu.eur)},{h:'PF-Anteil USD',w:13,k:'fu',c:p=>X.N(p.pu.exE-p.pu.eur)},{h:'Netto nach PF USD',w:15,c:(p,n,L)=>X.F(`${L.eu}${n}+${L.fu}${n}`,p.pu.exE,5)},
-    {h:'Investition USD (zum Zeitpunkt)',w:16,c:p=>{const c=capAll(p.t);return c==null?'':X.N(c)}},
+    {h:'Investition USD (zum Zeitpunkt)',w:16,c:p=>{const c=capAll(p.t);return c==null?'':X.N(c)}},{h:'Investition EUR (zum Zeitpunkt)',w:16,c:p=>{const c=capAllE(p.t);return c==null?'':X.E(c)}},
     {h:'Rendite vor PF',w:12,c:p=>p.rMiss?'':X.P(p.rI)},{h:'Rendite nach PF',w:12,c:p=>p.rMiss?'':X.P(p.rX)},
     {h:'PF ausgerechnet',w:10,c:p=>opn.has(p.t+'|'+p.sym)?'ja':'nein'},
     ...accs.map(a=>({h:'Konto '+a,w:15,c:p=>p.by[a]!=null?X.E(p.by[a]):''}))],PS);
@@ -9337,7 +9346,9 @@ function xlsxAll(rows,o){
     {h:'Betrag laut MT5',w:14,k:'b',c:r=>X.N(r.amt)},{h:'Trading Benefit',w:10,k:'f',c:r=>{const f=S.accounts[r.a].factor;return f>0?f:''}},
     {h:'Betrag ÷ Benefit (USD)',w:15,k:'q',c:(r,n,L)=>{const f=S.accounts[r.a].factor;return f>0?X.F(`${L.b}${n}/${L.f}${n}`,r.amt/f,5):''}},
     // Investition unbekannt (fehlender Anfang ohne Notlösung): leer wie ohne Trading Benefit. Mit Notlösung beginnt die erste Zeile des Kontos beim Startwert.
-    {h:'Investition danach (USD)',w:16,c:(r,n,L)=>{const f=S.accounts[r.a].factor;if(!(f>0)||INV[r.a]!=='ok')return '';const i=IV.indexOf(r),same=i>0&&IV[i-1].a===r.a,b0=CAP(r.a,'0');return X.F(same?`${colL(7)}${n-1}+${L.q}${n}`:b0?`${Math.round(b0*1e5)/1e5}+${L.q}${n}`:`${L.q}${n}`,CAP(r.a,r.x.t),5)}}],IV);
+    {h:'Investition danach (USD)',w:16,c:(r,n,L)=>{const f=S.accounts[r.a].factor;if(!(f>0)||INV[r.a]!=='ok')return '';const i=IV.indexOf(r),same=i>0&&IV[i-1].a===r.a,b0=CAP(r.a,'0');return X.F(same?`${colL(7)}${n-1}+${L.q}${n}`:b0?`${Math.round(b0*1e5)/1e5}+${L.q}${n}`:`${L.q}${n}`,CAP(r.a,r.x.t),5)}},
+    // Ab 0.114: daneben in Euro (CAPE: jede Ein- und Auszahlung zum EZB-Kurs ihres Tages), als Wert ohne Formel, leer ohne Kurs
+    {h:'Investition danach (EUR)',w:16,c:r=>{const f=S.accounts[r.a].factor;if(!(f>0)||INV[r.a]!=='ok')return '';const c=CAPE(r.a,r.x.t);return c!=null&&isFinite(c)?X.E(c):''}}],IV);
   // Werte für die Blätter „Durchschnitt“ und „Hochs und Tiefs“
   const AE=avgKz(rows,win,'all',zero,['day','week','month','trade'],cw),AU=avgKz(RU,win,'all',zero,['day','week','month','trade'],cw);
   const GE=glKz(rows,'all',win,AE.week.ps),GU=glKz(RU,'all',win,AU.week.ps);
@@ -9657,7 +9668,7 @@ const TABS=[['reports','Reports'],['rates','Kurse'],['wallet','Wallet'],['stats'
 function status(){
   const accs=Object.keys(S.accounts);const unk=Object.keys(unknownKinds()).length;
   const nofac=accs.filter(a=>!S.accounts[a].factor).length;const mr=missingRates().n;
-  return {reports:accs.length>0&&unk===0&&nofac===0,rates:accs.length>0&&mr===0&&otherCurrencies().length===0,ready:accs.length>0&&unk===0,unk,nofac,mr};
+  return {reports:accs.length>0&&unk===0&&nofac===0,rates:accs.length>0&&mr===0,ready:accs.length>0&&unk===0,unk,nofac,mr};
 }
 const TAX_MQ=window.matchMedia('(max-width:699px)');
 // Ab 0.46 (3.4): mit „Ohne Steuer“: „Steuer (aus)“, am Handy „Steuer aus“
@@ -9728,8 +9739,7 @@ function renderAccounts(rows){
   for(const a of accs){
     const A=S.accounts[a];const rs=rows.filter(r=>r.a===a);
     const f=A.factor,st=INV[a],cap=CAP(a,'9999');
-    // Konto: Nummer, klein der Name aus dem Report (darf zweizeilig werden, fitKonten) und ein Hinweis bei anderer Kontowährung als USD
-    const cur=A.cur&&A.cur!=='USD'?(A.cur==='EUR'?'<span class="sm">Konto in EUR</span>':`<span class="sm neg">${esc(A.cur)}, nicht unterstützt</span>`):'';
+    // Konto: Nummer, klein der Name aus dem Report (darf zweizeilig werden, fitKonten). Ab 0.114 ohne Hinweis zur Kontowährung (nur USD-Konten).
     const hold=A.holder?`<span class="sm hn" data-h="${esc(A.holder)}">${esc(A.holder)}</span>`:'';
     // Investition heute; bei fehlendem Anfang ein Link, der den Hinweis mit der Notlösung wieder zeigt, bei einer Lücke einer zum Lücken-Hinweis
     let inv=cap==null?'–':usd(cap);
@@ -9740,7 +9750,7 @@ function renderAccounts(rows){
     const rep=rd?dS(rd)+(/^\d\d:\d\d$/.test(tm)?`<span class="sm">${tm}</span>`:''):esc(A.repDate||'');
     // Ab 0.58 (7): je Zeile, die nicht passt, Name, gelesen und laut Report (Stände vor 0.58: nur die Summe der Spalte Gewinn)
     const chk=A.check?(A.check.ok?'<span class="chk-ok">✓ stimmt</span>':`<span class="chk-bad">⚠ Abweichung</span>`+(A.check.rows||[{l:'Gewinn',g:A.check.sumProf,r:A.check.repProf}]).filter(x=>!x.ok).map(x=>{const v=y=>x.n?fI.format(y):fN.format(y)+' USD';return `<span class="sm">${x.l}<br>gelesen ${v(x.g)}<br>im Report ${v(x.r)}</span>`}).join('')):'–';
-    h+=`<tr><td>${a}${hold}${cur}</td>
+    h+=`<tr><td>${a}${hold}</td>
     <td><input type="text" data-name="${a}" value="${esc(A.name)}" placeholder="z. B. Hauptkonto" aria-label="Name für Konto ${a}" style="min-width:${Math.min(24,Math.max(10,(A.name||'').length+2))}ch"></td>
     <td>${inv}</td>
     <td><select data-fac="${a}" aria-label="Trading Benefit von Konto ${a}"><option value="">–</option>${[...new Set([...FAC_STD,...(f>0?[f]:[])])].sort((x,y)=>x-y).map(v=>`<option value="${v}" ${f==v?'selected':''}>${facT(v)}</option>`).join('')}<option value="x">andere Zahl …</option></select>${f?'':' <span class="small" style="color:var(--neg)">fehlt</span>'}</td>
@@ -9931,8 +9941,6 @@ function renderRates(){
   if(mr.prov.length)h+=`<p>${provTxt(mr)}</p>`;
   if(gone.length||late.length)h+=rlBtns('',true);
   h+='</div>';
-  const oc=otherCurrencies();
-  if(oc.length)h+=`<div class="msg bad">Konto ${oc.join(', ')} läuft nicht in USD oder EUR. Diese Version rechnet nur USD- und EUR-Konten um.</div>`;
   $('rt-stand').innerHTML=h;
 }
 function guard(id){
@@ -10505,7 +10513,7 @@ ${ECB_CITE}`},
   inv:{t:'Investition',h:'Das Geld, das du selbst eingesetzt hast. In Euro ist jede Ein- und Auszahlung zum EZB-Kurs ihres Tages umgerechnet. Es enthält auch Gewinne, die du wieder eingezahlt hast.'},
   anfang:{t:'am Anfang',h:'Die Investition beim ersten Trade der Periode. Bei einzelnen Trade-Zeilen: die Investition zum Zeitpunkt des Trades.'},
   ende:{t:'am Ende',h:'Die Investition am Ende des gewählten Zeitraums.'},
-  dd:{t:'Max. Drawdown',h:'Der größte zwischenzeitliche Rückgang. Beispiel: Deine Investition ist 100 USD. Nach einigen Gewinnen kommen drei Verluste hintereinander, je 1 USD, also je 1 % deiner Investition. Danach geht es wieder aufwärts. Der Max. Drawdown ist −3 %, gemessen vom Höchststand vor den Verlusten bis zum tiefsten Punkt danach. Spätere Gewinne ändern daran nichts.\n<b>Bei „PF verteilt“ ist er kleiner,</b> weil Tag die PF vom Wochengewinn nach Abzug der Verluste berechnet. Ein Verlust von 1 USD senkt bei 30 % PF die Gebühr um 0,30 USD und kostet dich unterm Strich nur 0,70 USD.\n<b>Andere Werte bei Myfxbook oder im MT5:</b> Diese rechnen mit dem vervielfachten Kontostand (bei ×24 stehen 100 USD als 2.400 USD da). Derselbe Verlust ist dort nur ein Bruchteil so viele Prozent, der Drawdown deshalb viel kleiner als hier. Dafür zählen sie offene Trades mit. Der MT5-Report enthält nur geschlossene Trades, deshalb fehlen sie hier.'},
+  dd:{t:'Max. Drawdown',h:'Der größte zwischenzeitliche Rückgang. Beispiel: Deine Investition ist 100. Nach einigen Gewinnen kommen drei Verluste hintereinander, je 1, also je 1 % deiner Investition. Danach geht es wieder aufwärts. Der Max. Drawdown ist −3 %, gemessen vom Höchststand vor den Verlusten bis zum tiefsten Punkt danach. Spätere Gewinne ändern daran nichts.\n<b>Bei „PF verteilt“ ist er kleiner,</b> weil Tag die PF vom Wochengewinn nach Abzug der Verluste berechnet. Ein Verlust von 1 USD senkt bei 30 % PF die Gebühr um 0,30 USD und kostet dich unterm Strich nur 0,70 USD.\n<b>Andere Werte bei Myfxbook oder im MT5:</b> Diese rechnen mit dem vervielfachten Kontostand (bei ×24 stehen 100 USD als 2.400 USD da). Derselbe Verlust ist dort nur ein Bruchteil so viele Prozent, der Drawdown deshalb viel kleiner als hier. Dafür zählen sie offene Trades mit. Der MT5-Report enthält nur geschlossene Trades, deshalb fehlen sie hier.'},
   hit:{t:'Trefferquote',h:'Der Anteil der Trades mit Gewinn. Gewinn heißt: Ergebnis vor PF über 0. Läuft dieselbe Position auf mehreren Konten, zählt sie als ein Trade.'},
   kum:{t:'Kumuliert',h:'Die laufende Summe ab Anfang des Zeitraums, bei „PF laut MT5“ vor PF, bei „PF verteilt“ der Netto-Gewinn.'},
   avg:{t:'Durchschnitt',h:'Die Summe aller Werte geteilt durch ihre Anzahl. Eine einzelne sehr gute Woche hebt ihn deutlich. Liegen Durchschnitt und Median nah beieinander, war das Ergebnis gleichmäßig.'},
@@ -10528,7 +10536,7 @@ ${ECB_CITE}`},
   ein:{t:'Eingezahlt',h:'Eigenes Geld, das von außen auf deine Tag Wallet kam. Gewinne, die du von der Tag Wallet wieder in ein Konto einzahlst, zählen hier nicht.'},
   aus:{t:'Ausgezahlt',h:'Was du von der Tag Wallet abgezogen hast.'},
   einsatz:{t:'Netto-Einsatz',h:'Eingezahlt minus ausgezahlt.'},
-  nettostart:{t:'Netto-Gewinn seit Start',h:'Alles nach Performance Fee, aus allen Konten, immer in USD.'},
+  nettostart:{t:'Netto-Gewinn seit Start',h:'Alles nach Performance Fee, aus allen Konten. In Euro ist jede Buchung zum EZB-Kurs ihres Tages umgerechnet, wie die Ein- und Auszahlungen.'},
   fremd:{t:'Nicht mitgezählt',h:'Einzahlungen, die nicht dein Geld sind. Sie zählen oben nicht mit.'},
   echt:{t:'Rendite seit Start',h:'Netto-Gewinn seit Start geteilt durch Eingezahlt.\n<b>Warum ist die Rendite in der Auswertung höher?</b> Dort zählt jeder Dollar nur, solange er investiert ist. Hier wird der Gewinn mit allem verglichen, was du je eingezahlt hast, egal wie lange es schon arbeitet. Beispiel: 1.000 USD bringen 100 USD (10 %), danach zahlst du 9.000 USD dazu, die bringen nochmal 900 USD (10 %). In der Auswertung: 10 % + 10 % = 20 %. Hier: 1.000 von 10.000 = 10 %. Außerdem ist die Rendite der Auswertung bei „PF laut MT5“ vor Abzug der Performance Fee und folgt dem Filter, hier steht immer alles nach Fee.'}
 };
@@ -10695,7 +10703,7 @@ function renderStats(rows){
   // PF-Schalter: ex = PF verteilt (PF anteilig bei den Trades, in der laufenden Woche ausgerechnet), sonst PF laut MT5
   const ex=S.ui.flt.pf==='ex',mode=ex?'nach PF':'vor PF',key=ex?'exE':'eur';
   // Währungsschalter: Ab hier tragen eur, exE und pfE den Betrag in der gewählten Währung (curRows)
-  {const r0=fltRange(years(rows)),m=r0.bad?{n:0}:missingRates({accs:selSet,from:r0.from,to:r0.to,inv:true});CUR_MISS=m.n?m:null}
+  {const r0=fltRange(years(rows)),m=r0.bad?{n:0}:missingRates({accs:selSet,from:r0.from,to:r0.to,inv:true,real:Object.values(S.tag).some(t=>t.status==='ok')});CUR_MISS=m.n?m:null}
   CUR_EFF=S.ui.flt.cur==='usd'||CUR_MISS?'usd':'eur';
   $('cur-note').innerHTML=CUR_MISS&&S.ui.flt.cur!=='usd'?`<div class="msg info">Beträge in USD, weil für Euro Kurse fehlen. <button type="button" class="btn" data-rl="cur-rlm" style="padding:3px 10px;margin-left:4px">Kurse laden</button></div><div id="cur-rlm"></div>`:'';
   // Ab 0.58 (4): Hinweis, solange bei einem gewählten Konto der Trading Benefit fehlt, mit dem Sprung zu „Deine Konten“
@@ -10732,12 +10740,13 @@ function renderStats(rows){
   const bankR=k=>{const L=Object.values(S.tag).filter(t=>t.fiat&&t.status==='ok'&&t.kind===k&&(k==='aus'||t.own));if(!L.length)return '';
     const v=L.map(t=>tagBankEur(t)),sum=v.reduce((a,x)=>a+(x||0),0),nb=L.filter(t=>t.eurBank>0).length,miss=v.some(x=>x==null);
     return `<tr class="small"><td>${k==='ein'?'Eingezahlt':'Ausgezahlt'} per Bank</td><td>${fE.format(sum)} <span class="small">(${nb===L.length?'laut Kontoauszug':nb?'teils geschätzt':'geschätzt'}${miss?', Kurs fehlt':''})</span></td></tr>`};
-  if(RM.n){const allTax=agg(rows);$('t-real').innerHTML=`<tr><td>${gl('ein','Eingezahlt')}</td><td>${usd(RM.ein)}</td></tr>${bankR('ein')}
-    <tr><td>${gl('aus','Ausgezahlt')}</td><td>${usd(RM.aus)}</td></tr>${bankR('aus')}
-    <tr class="sum"><td>${gl('einsatz','Netto-Einsatz')}</td><td>${usd(RM.ein-RM.aus)}</td></tr>
-    <tr><td>${gl('nettostart','Netto-Gewinn seit Start')}</td><td>${usd(allTax.resUsd+allTax.feeUsd)}</td></tr>
+  // Ab 0.114: Beträge in der Währung der Auswertung (CUR_EFF; in Euro jede Tag-Zeile und jede Buchung zum EZB-Kurs ihres Tages). Rendite seit Start weiter aus USD.
+  if(RM.n){const allTax=agg(rows),E=CUR_EFF==='eur',m=(u,e)=>mon(E?e:u,false);$('t-real').innerHTML=`<tr><td>${gl('ein','Eingezahlt')}</td><td>${m(RM.ein,RM.einE)}</td></tr>${bankR('ein')}
+    <tr><td>${gl('aus','Ausgezahlt')}</td><td>${m(RM.aus,RM.ausE)}</td></tr>${bankR('aus')}
+    <tr class="sum"><td>${gl('einsatz','Netto-Einsatz')}</td><td>${m(RM.ein-RM.aus,RM.einE-RM.ausE)}</td></tr>
+    <tr><td>${gl('nettostart','Netto-Gewinn seit Start')}</td><td>${mon(allTax.tax,false)}</td></tr>
     <tr><td>${gl('echt','Rendite seit Start')}</td><td>${RM.ein?fP.format((allTax.resUsd+allTax.feeUsd)/RM.ein):'–'}</td></tr>
-    ${RM.fremd?`<tr><td class="small">${gl('fremd','nicht mitgezählt')}</td><td class="small">${usd(RM.fremd)}</td></tr>`:''}`}
+    ${RM.fremd?`<tr><td class="small">${gl('fremd','nicht mitgezählt')}</td><td class="small">${m(RM.fremd,RM.fremdE)}</td></tr>`:''}`}
   // Keine Trades im Zeitraum: ein Satz statt Kacheln und Tabellen
   const empty=rg.bad||!R.some(isTrade);
   $('stats-empty').innerHTML=rg.bad?`<div class="msg warn">${fltBadMsg()}</div>`:empty?'<div class="card"><p style="margin:0">In diesem Zeitraum gibt es bei den gewählten Konten keine Trades.</p></div>':'';
@@ -12075,7 +12084,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.113',VDATE='08.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.114',VDATE='08.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -12458,7 +12467,7 @@ async function dropFiles(files){files=[...(files||[])];if(!files.length)return;
   while(MODAL&&MODAL.id!=='dt-modal'){const M=MODAL;closeModal();if(MODAL===M)break}
   const say=[],pl=(n,a,b)=>`${fI.format(n)} ${n===1?a:b}`;let tb=[];
   const G={rep:[],rate:[],bx:[],wf:[],bk:[],'':[]};files.forEach((f,i)=>G[K[i]].push(f));
-  if(G.rep.length){const r=await loadFiles(G.rep);tb=r.nw;say.push(`${pl(r.n,'Report','Reports')} geladen, ${pl(r.added,'neue Buchung','neue Buchungen')}.`)}
+  if(G.rep.length){const r=await loadFiles(G.rep);tb=r.nw;if(r.n||!r.curBad.length)say.push(`${pl(r.n,'Report','Reports')} geladen, ${pl(r.added,'neue Buchung','neue Buchungen')}.`);say.push(...r.curBad)}
   for(const f of G.rate){const r=await importRates(f)||{};say.push(r.err?`„${f.name}“: ${r.err}`:`EZB-Datei geladen, ${r.nw?pl(r.nw,'neuer Kurs','neue Kurse'):'keine neuen Kurse'}.`)}
   if(G.bx.length){const L=[];for(const f of G.bx){let t='';try{t=await readText(f)}catch(e){}L.push({name:f.name,text:t})}bxQueue(L);
     say.push(G.bx.length===1?`Börsen-Datei „${G.bx[0].name}“: Vorschau in „＋ Daten“.`:`${pl(G.bx.length,'Börsen-Datei','Börsen-Dateien')}: Vorschau in „＋ Daten“, eine nach der anderen.`)}
