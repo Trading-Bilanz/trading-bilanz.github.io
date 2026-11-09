@@ -141,9 +141,18 @@ p.idat{margin:6px 0 0}
 .shint-a:hover{color:var(--ink);border-color:var(--ink2)}
 @media (prefers-reduced-motion:reduce){.shint{transition:none}}
 .sub{color:var(--ink2);margin:0}
-nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+/* Ab 0.116 (Florians Auftrag): Am Handy und Tablet (pointer:coarse) und in sehr niedrigen Fenstern gehen die Reiter beim Hinunterscrollen mit dem
+   Finger aus dem Bild, die Filterzeile bleibt stehen. Ein Wert steuert alles: --tabsoff (0 bis Höhe der Reiter, gesetzt nur in navApply). Die nav
+   wird nicht kleiner, sie klebt um --tabsoff höher (negatives sticky-top statt transform: transform würde die Menüs der Filterzeile, die popPlace
+   mit position:fixed setzt, an die nav binden). Stehende Kartentitel, scroll-margin und Menühöhe lesen denselben Wert. Keine Transition hier.
+   --tabsoff vererbt sich nicht (@property): navApply setzt ihn an genau den Elementen, die ihn lesen (nav, Abschnitte, stehende Titel, Menüs).
+   An :root gesetzt müsste der Browser bei jedem Frame den Stil aller Elemente neu rechnen (gemessen mit „Pro Woche“ ganz aufgeklappt, 23.000
+   Elemente, Handy-CPU: über 100 ms je Frame statt unter 1 ms). Ohne @property (ältere Browser) vererbt er sich, das wirkt gleich, nur langsamer. */
+@property --tabsoff{syntax:'<length>';inherits:false;initial-value:0px}
+nav{position:sticky;top:calc(-1 * var(--tabsoff,0px));z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
 nav .in{max-width:1180px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:8px 16px}
-section{scroll-margin-top:var(--navh,70px)}
+#tabs.tbgone{pointer-events:none}
+section{scroll-margin-top:calc(var(--navh,70px) - var(--tabsoff,0px))}
 /* Reiter: dünner goldener Rahmen bei allen, der aktive Reiter in Kartenfarbe mit leichtem Schatten */
 #tabs button{border:1px solid var(--tab-line);background:transparent;color:var(--ink2);padding:8px 14px;border-radius:8px;font:inherit;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:8px}
 #tabs button:hover{background:var(--card)}
@@ -508,7 +517,7 @@ nav button.fonly,.fpan button.fonly{flex:none;min-height:32px;padding:0 0 0 10px
 #fbar[data-stage="6"] .fsel{max-width:100%}
 #fbar[data-stage="6"] .fsel .ft,#fbar[data-stage="6"] .fsel .fl{white-space:normal;min-width:0}
 /* Menüs: Ragt ein Menü unten aus dem Fenster (Menü im Kartentitel, wenig Höhe, große Schrift), kürzt fpFit() es und es scrollt innen; die Seite scrollt dabei nicht mit */
-.fpan{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:6;width:max-content;min-width:240px;max-width:min(420px,calc(100vw - 32px));background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 10px 28px rgba(0,0,0,.18);padding:12px 16px 14px;max-height:calc(100vh - var(--navh,70px) - 8px);max-height:calc(100dvh - var(--navh,70px) - 8px);overflow:auto;overscroll-behavior:contain}
+.fpan{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:6;width:max-content;min-width:240px;max-width:min(420px,calc(100vw - 32px));background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 10px 28px rgba(0,0,0,.18);padding:12px 16px 14px;max-height:calc(100vh - var(--navh,70px) + var(--tabsoff,0px) - 8px);max-height:calc(100dvh - var(--navh,70px) + var(--tabsoff,0px) - 8px);overflow:auto;overscroll-behavior:contain}
 .fpan.on{display:block}
 .fgrp{margin:0 0 12px}
 .fgrp .fh{font-size:var(--fs-s);font-weight:600;color:var(--ink2);margin:0 0 4px}
@@ -1198,6 +1207,8 @@ details.more .hint{margin-top:6px}
 /* Stehender Titel: Klasse stk am Karten-Element (alle Karten der Auswertung). Zurücknehmen für eine Karte: stk dort entfernen.
    Der Titel (.sthd) sieht dann gleich aus, bleibt aber nicht mehr stehen. */
 .card.stk>.sthd{position:-webkit-sticky;position:sticky;top:var(--navh,70px);z-index:4;background:var(--card);padding-top:8px;margin-top:-8px}
+/* Ab 0.116: in der Seite unter der sichtbaren Unterkante der nav (Reiter ggf. hinausgeschoben, --tabsoff); Fenster haben eigene Regeln */
+main .card.stk>.sthd{top:calc(var(--navh,70px) - var(--tabsoff,0px))}
 .sthd>h2{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 /* Ab 0.47: Zusatz klein unter dem Titel („Dein echtes Geld“), damit der Titel nicht umbricht und das (i) mittig bleibt */
 .sthd>.rlsub{margin:-4px 0 6px 28px;color:var(--muted)}
@@ -1536,7 +1547,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
       <div class="hlw" id="hlw"><div class="hlb"><h3>Trades</h3><div class="tscroll"><table id="t-hl1"></table></div></div><div class="hlb"><h3>Tage und Wochen</h3><div class="tscroll"><table id="t-hl2"></table></div></div><div class="hlb"><h3>Verhältnis</h3><div class="tscroll"><table id="t-hl3"></table></div></div></div>
     </div>
     <div class="card fold stk" data-fold="st-avg" id="st-avg">
-      <div class="sthd"><h2>Durchschnitt <button type="button" class="ib" data-gl="k-avg" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Durchschnitt">i</button></h2></div>
+      <div class="sthd"><h2>Durchschnitt <button type="button" class="ib" data-gl="k-avg" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Durchschnitt">i</button></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
       <div class="tscroll"><table id="t-avg"></table></div>
       <p class="small noprint" style="margin:10px 0 0"><span id="avg-zd"></span> · <button type="button" class="zlink">ändern</button></p>
     </div>
@@ -2973,7 +2984,7 @@ const invM=(v,accs)=>v==null?invDash(accs):isNaN(v)?'–':fCur(v);
 // Ab 0.59 (2): gemeinsamer Sprung in den Reiter Reports: Karte c aufklappen, neu zeichnen, das Element aus find() unter Reiter und stehenden
 // Kartentitel scrollen und einmal aufleuchten lassen (wie jumpTo). Rückgabe: das Element oder null.
 function goUnder(c,find){glClose();closeFpanel();S.ui.tab='reports';unfold(c);save();render();const el=find();if(!el)return null;
-  const top=document.querySelector('nav').getBoundingClientRect().height+c.querySelector('.sthd').getBoundingClientRect().height;
+  const top=navBottom()+c.querySelector('.sthd').getBoundingClientRect().height;
   window.scrollBy(0,el.getBoundingClientRect().top-top-8);el.classList.remove('hl');void el.offsetWidth;el.classList.add('hl');return el}
 // Ab 0.58 (4): Sprung zur ersten Zeile ohne Trading Benefit in „Deine Konten“, Fokus in ihre Auswahl
 function tbGo(){const row=goUnder($('acc-card'),()=>{const L=[...$('acc-table').querySelectorAll('select[data-fac]')],s=L.find(x=>!x.value)||L[0];return s?s.closest('tr'):null});
@@ -5128,7 +5139,7 @@ function vgJump(ref){const t=ref[0],x=ref.slice(2),v=vgBuild(S).find(v=>t==='m'?
   const el=(t==='m'&&row.querySelector(`[data-wk="${CSS.escape(x)}"]`))||row.querySelector('.vgb')||row;
   // Ab 0.57: der Vorgang steht mittig im freien Bereich unter Leiste und stehendem Titel (vorher ganz oben, dort wirkte er verdeckt).
   // Ist er höher als der freie Bereich, steht sein Anfang oben. Zweiter Durchgang im nächsten Bild, falls Leiste oder Titel (z. B. „← Zurück“) sich noch ändern.
-  const mid=()=>{const top=document.querySelector('nav').getBoundingClientRect().height+c.querySelector('.sthd').getBoundingClientRect().height,
+  const mid=()=>{const top=navBottom()+c.querySelector('.sthd').getBoundingClientRect().height,
     r=el.getBoundingClientRect(),free=innerHeight-top;window.scrollBy(0,r.height>free-16?r.top-top-8:r.top+r.height/2-(top+free/2))};
   mid();requestAnimationFrame(mid);
   el.classList.remove('hl');void el.offsetWidth;el.classList.add('hl')}
@@ -7407,7 +7418,7 @@ $('vg-list').addEventListener('click',e=>{
   const b=e.target.closest('.vgb');if(b){const id=b.closest('[data-vg]').dataset.vg;if(VG_OPEN.has(id))VG_OPEN.delete(id);else{VG_OPEN.add(id);const v=vgBuild(S).find(x=>x.id===id);if(v&&vgSeen(v))save()}render();const nb=$('vg-list').querySelector(`[data-vg="${CSS.escape(id)}"] .vgb`);if(nb)nb.focus();return}
   // Ab 0.45 (4.9): Rechenweg ansehen: Karte auf, hinscrollen, aufleuchten
   const rg=e.target.closest('[data-rwgo]');if(rg){RW_FROM=rg.dataset.rwgo;const c=$('rw-card');if(c.classList.contains('closed')){c.classList.remove('closed');S.ui.fold=S.ui.fold||{};S.ui.fold['rw-card']=false;save()}render();
-    const b=$('rw-list').querySelector(`[data-rw="${CSS.escape(rg.dataset.rwgo)}"]`);if(b){const top=document.querySelector('nav').getBoundingClientRect().height;window.scrollBy(0,b.getBoundingClientRect().top-top-8);b.classList.remove('hl');void b.offsetWidth;b.classList.add('hl')}return}
+    const b=$('rw-list').querySelector(`[data-rw="${CSS.escape(rg.dataset.rwgo)}"]`);if(b){const top=navBottom();window.scrollBy(0,b.getBoundingClientRect().top-top-8);b.classList.remove('hl');void b.offsetWidth;b.classList.add('hl')}return}
   const te=e.target.closest('[data-tge]');if(te){openTg(te.dataset.tge);return}
   const ce=e.target.closest('[data-cxe]');if(ce){openCx(+ce.dataset.cxe);return}
   // Ab 0.39 über die feste id. Ist der Eintrag mit einer Bewegung verknüpft, ist sie danach ignoriert (wFix); hängt eine Gebühr aus der Datei daran: Frage.
@@ -9697,8 +9708,12 @@ function renderTabs(st){
     return `<button data-t="${k}" class="${S.ui.tab===k?'on':''}">${dot}<span class="lbl">${lab}</span></button>`});
   $('tabs').innerHTML=`<div class="trow">${btns.slice(0,4).join('')}</div><div class="trow">${btns.slice(4).join('')}</div>`;
   fitTabs();
+  // Ab 0.116: Punkt schlechter (auf „zu tun“ oder „wartet“ aus einem anderen Zustand), während die Reiter (teilweise) weg sind: sie gleiten herein.
+  // Besser werdend nichts; das erste Zeichnen merkt nur den Stand.
+  {const now={};for(const b of $('tabs').querySelectorAll('button[data-t]')){const d=b.querySelector('.dot'),c=d?d.classList:null;now[b.dataset.t]=!c?'':c.contains('todo')?'todo':c.contains('wait')?'wait':c.contains('ok')?'ok':''}
+   if(TAB_ST&&Object.keys(now).some(k=>(now[k]==='todo'||now[k]==='wait')&&TAB_ST[k]!==now[k]))navShow(true);TAB_ST=now}
   // Nur nach oben scrollen, und nur wenn der Anfang des Abschnitts oberhalb des sichtbaren Bereichs liegt
-  $('tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.ui.tab=b.dataset.t;save();render();const sec=$('s-'+b.dataset.t);if(sec.getBoundingClientRect().top<document.querySelector('nav').getBoundingClientRect().height)sec.scrollIntoView({behavior:'auto',block:'start'})});
+  $('tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.ui.tab=b.dataset.t;save();render();const sec=$('s-'+b.dataset.t);if(sec.getBoundingClientRect().top<navBottom())sec.scrollIntoView({behavior:'auto',block:'start'})});
   for(const [k] of TABS){$('s-'+k).classList.toggle('on',S.ui.tab===k);$('s-'+k).classList.toggle('print',S.ui.tab===k)}
 }
 // Ab 0.50 Nachtrag 5 (R1): Rückfrage zu × am Konto nennt die Buchungen mit Zeitraum und deine Angaben, die mit dem Konto wegfallen. Name, Trading
@@ -9812,7 +9827,7 @@ async function facAll(){const p=$('fp-tb'),r=p.querySelector('input[name=ftb]:ch
   const snap=JSON.stringify(S);for(const a of L)S.accounts[a].factor=v;closeFpanel();save();render();
   toastUndo(`Trading Benefit ${facT(v)} bei ${L.length===1?'Konto '+L[0]:fI.format(L.length)+' Konten'} eingetragen.`,snap)}
 // Element unter Reitern und Filterzeile ins Bild scrollen
-function scrollUnder(el){window.scrollBy(0,el.getBoundingClientRect().top-document.querySelector('nav').getBoundingClientRect().height-8)}
+function scrollUnder(el){window.scrollBy(0,el.getBoundingClientRect().top-navBottom()-8)}
 // Karte aufklappen (falls zugeklappt) und merken
 function unfold(c){if(c&&c.classList.contains('closed')){c.classList.remove('closed');S.ui.fold=S.ui.fold||{};S.ui.fold[c.dataset.fold]=false;save()}}
 /* ---------------- Kontostand-Kette: fehlender Anfang, Lücke ----------------
@@ -10967,8 +10982,9 @@ function tpFit(el,fits){
 }
 // Tabelle passt in ihren Bereich (kein seitliches Scrollen); halbe Pixel Spielraum wegen gerundeter Breiten
 const tpIn=(sc,tb)=>()=>tb.getBoundingClientRect().width<=sc.getBoundingClientRect().width+0.5;
-// Tabellen ohne stehende Kopie: „Durchschnitt“ und „Was wäre wenn“ (eine Tabelle je .tscroll, --tp am .tscroll)
-function tpSimple(){for(const sc of document.querySelectorAll('#st-avg .tscroll,#calc-out .tscroll')){const tb=sc.querySelector('table');if(tb&&sc.offsetWidth)tpFit(sc,tpIn(sc,tb))}}
+// Tabellen ohne stehende Kopie: „Was wäre wenn“ (eine Tabelle je .tscroll, --tp am .tscroll). Ab 0.116 hat „Durchschnitt“ die stehende Kopie
+// (HC_CARDS), dort wählt hcFix den Abstand an der Karte (gilt für Tabelle und Kopie).
+function tpSimple(){for(const sc of document.querySelectorAll('#calc-out .tscroll')){const tb=sc.querySelector('table');if(tb&&sc.offsetWidth)tpFit(sc,tpIn(sc,tb))}}
 function fitHL(){
   const w=$('hlw');if(!w||!w.offsetWidth)return;
   const ts=[...w.querySelectorAll('table')];
@@ -11012,7 +11028,7 @@ function jumpTo(kind,key){
   OPEN_W.add(w);if(kind==='t')OPEN_D.add(d);
   weekVis();
   // Zielzeile mittig zwischen Unterkante der stehenden Köpfe (Reiter, Filterzeile, Kopf von „Pro Woche“) und Unterkante des Fensters
-  const top=document.querySelector('nav').getBoundingClientRect().height+(c.classList.contains('stk')?c.querySelector('.sthd').getBoundingClientRect().height:0);
+  const top=navBottom()+(c.classList.contains('stk')?c.querySelector('.sthd').getBoundingClientRect().height:0);
   const vh=window.visualViewport?window.visualViewport.height:window.innerHeight,rb=row.getBoundingClientRect();
   // Wenig Platz unter den stehenden Köpfen (kleiner als zwei Zeilen, z. B. Handy quer mit großer Schrift): Zeile direkt unter den Kopf
   window.scrollBy(0,vh-top<2*rb.height?rb.top-top:rb.top+rb.height/2-(top+(vh-top)/2));
@@ -11800,7 +11816,97 @@ function csv(rows,name){
     lines.push([r.a,A.name||'',r.x.t,fD(r.d),nameOf[r.cat]||'unbekannt',r.x.sym,n2(r.cat==='close'?r.x.prof:r.cat==='open'?0:r.x.prof),n2(r.cat==='close'||r.cat==='open'?r.x.cost:0),n2(r.amt),n2(r.rate),n2(r.eur),r.x.id,(r.x.cmt||'').replace(/;/g,',')].join(';'))}
   download(name,'﻿'+lines.join('\r\n'),'text/csv;charset=utf-8');
 }
-function updateNavH(){const h=document.querySelector('nav').getBoundingClientRect().height;document.documentElement.style.setProperty('--navh',h+'px')}
+function updateNavH(){const h=NAV_EL.getBoundingClientRect().height;document.documentElement.style.setProperty('--navh',h+'px');navMeasure()}
+/* ---------------- Reiter beim Scrollen (ab 0.116, Florians Auftrag) ---------------- */
+// Am Handy und Tablet (pointer:coarse) und in Fenstern bis 500 px Höhe gehen die Reiter (#tabs) beim Hinunterscrollen mit dem Finger aus dem Bild
+// und kommen beim Hinaufscrollen zurück, wie die Adressleiste des Browsers. Die Filterzeile bleibt stehen. Am PC mit Maus bleibt alles wie bis 0.115.
+// Ein Wert steuert alles: NAVOFF (0 bis TABS_H = Höhe der Reiter), als --tabsoff gesetzt nur in navApply, im selben Frame an allen Elementen, die
+// ihn lesen (NAV_TGT: nav, Abschnitte, stehende Kartentitel in main, Menüs; --tabsoff vererbt sich nicht, siehe CSS). Die nav klebt um NAVOFF
+// höher, ihre Höhe bleibt. navBottom() = sichtbare Unterkante der angeklebten nav, für alle Stellen, die etwas unter Reiter und Filterzeile scrollen.
+// - Fingergekoppelt: NAVOFF += Scroll-Differenz, je Frame (scroll passiv, rAF). Zählt nur, wenn die Nutzerin scrollt (Finger, Rad, Tasten,
+//   Scrollbalken, auch der Schwung danach). Scrollt das Tool selbst (scrollBy, scrollTo, scrollIntoView: Sprünge, Zuklappen, Reiterwechsel,
+//   keepAnchor), bleibt der Zustand der Reiter (navProg).
+// - Grenze ganz oben: NAVOFF ist nie größer als die Strecke, die seit dem Ankleben der nav gescrollt wurde (navMax), sonst entstünde eine Lücke
+//   zwischen Filterzeile und Inhalt. Gummiband (iOS) oben und unten zählt nicht (navY).
+// - Einrasten erst, wenn die Seite steht (scrollend oder 140 ms ohne Scrollen, kein Finger auf dem Glas): mehr als halb sichtbar → ganz herein,
+//   sonst ganz hinaus (höchstens bis zur Grenze). 180 ms ease-out auf demselben Wert; neues Scrollen bricht ab. Mit reduzierter Bewegung sofort.
+// - Menü (.fpan) oder Tafel (#glpop, #adpop) offen: NAVOFF wird nicht größer. Fenster (.modal) und Vollbild-Grafik: keine Änderung.
+// - Durchsichtig: Opazität 1 − NAVOFF/TABS_H; mehr als halb weg nicht antippbar (tbgone), per Tastatur erreichbar: Fokus in #tabs holt sie herein.
+// - Wird ein Punkt in den Reitern schlechter (auf „zu tun“ oder „wartet“, renderTabs), gleiten die Reiter herein und bleiben, bis die Nutzerin
+//   wieder selbst scrollt (NAV_PIN). Besser werdend: nichts.
+const NAV_EL=document.querySelector('nav'),NAV_HD=document.querySelector('body>header'),
+  NAV_MQ=[matchMedia('(pointer:coarse)'),matchMedia('(max-height:500px)')],NAV_RM=matchMedia('(prefers-reduced-motion: reduce)');
+let NAVOFF=0,NAV_SET=0,TABS_H=0,NAV_Y=0,NAV_TOUCH=false,NAV_MOVED=false,NAV_USER=false,NAV_RAN=false,NAV_PIN=false,NAV_GL=null,NAV_Q=0,NAV_T=null,TAB_ST=null;
+const navOn=()=>NAV_MQ.some(m=>m.matches);
+const navHold=()=>!!(FP_OPEN||GP||AP);
+const navFrozen=()=>!!(MODAL||GFS);
+function navBottom(){return NAV_EL.getBoundingClientRect().height-NAVOFF}
+// Scrollposition ohne Gummiband (iOS kann über den Anfang und das Ende hinaus scrollen)
+function navY(){const d=document.documentElement;return Math.max(0,Math.min(window.scrollY,d.scrollHeight-window.innerHeight))}
+// Größter erlaubter Versatz bei Scrollposition y: gescrollte Strecke seit dem Ankleben (Unterkante des Kopfs = natürliche Lage der nav)
+function navMax(y){return Math.max(0,Math.min(TABS_H,y-(NAV_HD.getBoundingClientRect().bottom+window.scrollY)))}
+const NAV_TGT='nav,main>section,main .card.stk>.sthd,.fpan';let NAV_TG=null;
+// force: nach dem Neuzeichnen (navMeasure) die Elemente neu suchen, falls welche dazugekommen sind, und den Wert auch bei gleichem Stand setzen
+function navApply(force){
+  const dpr=window.devicePixelRatio||1,v=Math.round(NAVOFF*dpr)/dpr;if(force)NAV_TG=null;if(v===NAV_SET&&!force)return;if(v===0&&NAV_SET===0&&force)return;NAV_SET=v;
+  if(!NAV_TG)NAV_TG=[...document.querySelectorAll(NAV_TGT)];for(const e of NAV_TG)e.style.setProperty('--tabsoff',v+'px');
+  const t=$('tabs');t.style.opacity=v&&TABS_H?String(Math.max(0,1-v/TABS_H)):'';t.classList.toggle('tbgone',v>TABS_H/2);
+  // Offene Menüs und Tafeln wandern mit (sonst nur beim Scrollen, beim Gleiten gibt es kein Scroll-Ereignis)
+  if(FP_OPEN)fpFit();if(GP)glPlace();if(AP)apPlace();
+}
+function navStop(){if(NAV_GL){cancelAnimationFrame(NAV_GL);NAV_GL=null}}
+function navGlide(t){navStop();if(t===NAVOFF)return;
+  if(NAV_RM.matches){NAVOFF=t;navApply();return}
+  const a=NAVOFF,t0=performance.now(),D=180;
+  const step=now=>{const k=Math.min(1,(now-t0)/D);NAVOFF=a+(t-a)*(1-Math.pow(1-k,3));navApply();NAV_GL=k<1?requestAnimationFrame(step):null};
+  NAV_GL=requestAnimationFrame(step);
+}
+// Höhe der Reiter neu messen (aus updateNavH, ResizeObserver, Media-Queries): fitTabs-Stufen, Umbruch, Drehen, Schriftgröße
+function navMeasure(){TABS_H=$('tabs').getBoundingClientRect().height;
+  if(!navOn()){navStop();NAVOFF=0}else NAVOFF=Math.min(NAVOFF,navMax(navY()));
+  if(!NAV_GL)navApply(true);
+}
+function navFrame(){NAV_Q=0;const y=navY(),dy=y-NAV_Y;NAV_Y=y;
+  if(!navOn()){if(NAVOFF){navStop();NAVOFF=0;navApply()}return}
+  if(navFrozen())return;
+  let v=NAVOFF;
+  if(NAV_USER&&!NAV_PIN&&dy){navStop();NAV_RAN=true;if(dy<0||!navHold())v+=dy}
+  v=Math.max(0,Math.min(v,navMax(y)));
+  if(v!==NAVOFF){if(NAV_GL&&v<NAVOFF)navStop();NAVOFF=v;navApply()}
+}
+// Die Seite steht: einrasten (nur nach Scrollen der Nutzerin)
+function navRest(){if(NAV_TOUCH)return;if(NAV_Q){cancelAnimationFrame(NAV_Q);navFrame()}
+  const ran=NAV_RAN;NAV_USER=false;NAV_RAN=false;
+  if(!ran||NAV_PIN||!navOn()||navFrozen()||!TABS_H)return;
+  let t=NAVOFF<TABS_H/2?0:Math.min(TABS_H,navMax(navY()));if(t>NAVOFF&&navHold())t=NAVOFF;
+  navGlide(t);
+}
+function navIdle(){clearTimeout(NAV_T);NAV_T=setTimeout(navRest,140)}
+// Eine Eingabe der Nutzerin, die die Seite scrollen kann (Rad, Taste, Scrollbalken); der Finger zählt erst mit der ersten Bewegung
+function navInput(){NAV_USER=true;NAV_PIN=false;navIdle()}
+// Das Tool scrollt selbst: zählt nicht als Fingerbewegung, bis zur nächsten Eingabe
+function navProg(){NAV_USER=false}
+for(const [o,k] of [[window,'scrollBy'],[window,'scrollTo'],[Element.prototype,'scrollIntoView']]){const f=o[k];if(typeof f==='function')o[k]=function(){navProg();return f.apply(this,arguments)}}
+// Reiter herein (Fokus, schlechterer Status). pin: bleiben, bis die Nutzerin wieder selbst scrollt
+function navShow(pin){if(!navOn())return;if(pin&&NAVOFF>0)NAV_PIN=true;navGlide(0)}
+window.addEventListener('scroll',()=>{if(!NAV_Q)NAV_Q=requestAnimationFrame(navFrame);navIdle()},{passive:true});
+if('onscrollend' in window)window.addEventListener('scrollend',()=>{clearTimeout(NAV_T);navRest()});
+document.addEventListener('touchstart',e=>{NAV_TOUCH=true;NAV_MOVED=false;NAV_PIN=false},{passive:true,capture:true});
+document.addEventListener('touchmove',()=>{NAV_MOVED=true;NAV_USER=true},{passive:true,capture:true});
+{const end=()=>{NAV_TOUCH=false;if(!NAV_MOVED)NAV_USER=false;navIdle()};
+ document.addEventListener('touchend',end,{passive:true,capture:true});document.addEventListener('touchcancel',end,{passive:true,capture:true})}
+document.addEventListener('wheel',navInput,{passive:true,capture:true});
+// Scroll-Tasten der Seite, nicht in Feldern, Auswahllisten und auf Knöpfen (dort tippt bzw. löst die Leertaste aus)
+document.addEventListener('keydown',e=>{if(!/^(PageUp|PageDown|ArrowUp|ArrowDown|Home|End| )$/.test(e.key)||e.altKey||e.ctrlKey||e.metaKey)return;
+  const t=e.target;if(t&&t.closest&&t.closest('input,textarea,select,button,summary,a,[contenteditable],.modal'))return;navInput()},true);
+// Scrollbalken der Seite (Ziel ist html): zählt wie ein Finger, bis die Maus losgelassen wird
+document.addEventListener('pointerdown',e=>{if(e.target===document.documentElement&&e.pointerType==='mouse'){navInput();NAV_TOUCH=true;NAV_MOVED=true;
+  const up=()=>{NAV_TOUCH=false;navIdle();removeEventListener('pointerup',up,true)};addEventListener('pointerup',up,true)}},true);
+// Nur Tastaturfokus (:focus-visible); Tippen auf einen Reiter ändert den Zustand nicht
+$('tabs').addEventListener('focusin',e=>{let k=true;try{k=e.target.matches(':focus-visible')}catch(x){}if(k)navShow(false)});
+NAV_Y=navY();
+for(const m of NAV_MQ)m.addEventListener('change',()=>{NAV_Y=navY();navMeasure()});
+if(window.ResizeObserver){let q=0;new ResizeObserver(()=>{if(!q)q=requestAnimationFrame(()=>{q=0;navMeasure()})}).observe($('tabs'))}
 // Neu zeichnen, nachdem Tab oder Klick den Fokus verschoben hat, und das Feld danach wieder fokussieren
 function renderKeepFocus(){
   setTimeout(()=>{
@@ -11816,7 +11922,7 @@ function renderKeepFocus(){
 // Oberste sichtbare Karte im aktiven Abschnitt und ihr Abstand zum oberen Rand. Nach dem Neuzeichnen bleibt sie an derselben Stelle.
 function scrollAnchor(){
   const sec=document.querySelector('main>section.on');if(!sec)return null;
-  const nh=document.querySelector('nav').getBoundingClientRect().height;
+  const nh=navBottom();
   for(const c of sec.querySelectorAll('.card[id]')){if(c.offsetParent===null)continue;const b=c.getBoundingClientRect();if(b.bottom>nh)return {tab:S.ui.tab,el:c,top:b.top}}
   return null;
 }
@@ -12090,7 +12196,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.115',VDATE='08.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.116',VDATE='09.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -12105,7 +12211,7 @@ let FOLD_DN=null,FOLD_SEL='';document.addEventListener('pointerdown',()=>{FOLD_D
 function initFolds(){document.querySelectorAll('.card.fold').forEach(c=>{const id=c.dataset.fold;S.ui.fold=S.ui.fold||{};if(S.ui.fold[id]!==undefined)c.classList.toggle('closed',!!S.ui.fold[id]);const h2=c.querySelector('h2')||c.querySelector('h3,h4');
   h2.addEventListener('pointerdown',e=>{FOLD_DN=e.button===0&&!e.target.closest('input,select,textarea,button,a,label,.gl')?h2:null;FOLD_SEL=String(getSelection())});
   h2.addEventListener('click',e=>{const s=String(getSelection()),go=e.detail===0||(FOLD_DN===h2&&(!s||s===FOLD_SEL));FOLD_DN=null;if(!go)return;
-    const bx=c.closest('.modal .box'),hd=c.querySelector('.sthd'),top=bx?bx.getBoundingClientRect().top+parseFloat(getComputedStyle(bx).paddingTop)+(hd?parseFloat(getComputedStyle(hd).top)||0:0):document.querySelector('nav').getBoundingClientRect().height;
+    const bx=c.closest('.modal .box'),hd=c.querySelector('.sthd'),top=bx?bx.getBoundingClientRect().top+parseFloat(getComputedStyle(bx).paddingTop)+(hd?parseFloat(getComputedStyle(hd).top)||0:0):navBottom();
     const stuck=c.getBoundingClientRect().top<top-1;const cl=!c.classList.contains('closed');c.classList.toggle('closed',cl);S.ui.fold[id]=cl;save();
     if(cl&&stuck){if(bx)bx.scrollBy(0,c.getBoundingClientRect().top-top);else window.scrollBy(0,c.getBoundingClientRect().top-top)}if(!bx)updateNavH();if(id==='rw-card'&&!cl)render()})})}
 initFolds();
@@ -12114,7 +12220,7 @@ initFolds();
 // hcFix misst die natürlichen Spaltenbreiten der echten Tabelle und gibt sie ihr und der Kopie fest vor (colgroup, table-layout:fixed).
 // hcAlign schiebt die Kopie beim seitlichen Scrollen nur mit (transform), die Kopie scrollt nie selbst.
 // hcCheck vergleicht danach die Spaltenkanten. Mehr als 1 px Abweichung: neu messen. Danach immer noch: Kopie aus, normale Kopfzeile an (nohc).
-const HC_CARDS=['st-acc','st-month','st-week','st-matrix','acc-card','rt-list','cxres-card','oc-card'].map($);   // ab 0.73 entfällt „Pro Monat“ im Reiter Steuer, in der Steuer-Excel bleibt das Blatt
+const HC_CARDS=['st-acc','st-avg','st-month','st-week','st-matrix','acc-card','rt-list','cxres-card','oc-card'].map($);   // ab 0.73 entfällt „Pro Monat“ im Reiter Steuer, in der Steuer-Excel bleibt das Blatt
 const HC_BAR=matchMedia('(hover:hover) and (pointer:fine)');
 const HC_ST=new Map();
 function hcP(c){if(!HC_ST.has(c))HC_ST.set(c,{key:'',raf:0,q:0});const sc=c.querySelector('.tscroll');return {st:HC_ST.get(c),sc,tb:sc.querySelector('table'),cp:c.querySelector('.hcopy'),bar:c.querySelector('.hbar')}}
@@ -12216,7 +12322,7 @@ function goTo(tab,id){
   closeModal();S.ui.tab=tab;save();render();
   const el=id?$(id):null;
   if(el&&(el.tagName==='DETAILS'||el.offsetParent!==null)){if(el.tagName==='DETAILS'){unfold(el.closest('.card'));el.open=true}else unfold(el);updateNavH();scrollUnder(el);return}
-  const sec=$('s-'+tab);if(sec.getBoundingClientRect().top<document.querySelector('nav').getBoundingClientRect().height)sec.scrollIntoView({behavior:'auto',block:'start'});
+  const sec=$('s-'+tab);if(sec.getBoundingClientRect().top<navBottom())sec.scrollIntoView({behavior:'auto',block:'start'});
 }
 // Solange ein Fenster (.modal.on) offen ist, scrollt die Seite nicht (html.mlock), weder mit Rad noch Wischen noch Tasten, und bleibt an ihrer
 // Stelle. Der Scrollbalken der Seite verschwindet dabei; body bekommt rechts seine Breite als Abstand, damit nichts seitlich verrutscht.
@@ -12596,8 +12702,8 @@ window.addEventListener('resize',()=>{if(window.innerWidth===lastW)return;lastW=
 if(window.ResizeObserver){let tw=0,q=0;new ResizeObserver(()=>{if(!q)q=requestAnimationFrame(()=>{q=0;const w=$('tiles').clientWidth;if(w&&w!==tw){tw=w;layoutTiles()}})}).observe($('tiles'))}
 // „Hochs und Tiefs“: nebeneinander oder untereinander neu prüfen, wenn sich die Breite der Karte ändert (auch beim Aufklappen)
 if(window.ResizeObserver){let hw=0,q=0;new ResizeObserver(()=>{if(!q)q=requestAnimationFrame(()=>{q=0;const w=$('hlw').clientWidth;if(!w){hw=0;return}if(w!==hw){hw=w;fitHL()}})}).observe($('hlw'))}
-// Ab 0.111: „Durchschnitt“ und „Was wäre wenn“: Abstand nach Regel A neu wählen, wenn sich die Breite der Karte ändert (im nächsten Frame)
-if(window.ResizeObserver){let q=0;const ww=new Map();{const ro=new ResizeObserver(es=>{for(const e of es){const w=e.target.clientWidth;if(w&&w!==ww.get(e.target)){ww.set(e.target,w);if(!q)q=requestAnimationFrame(()=>{q=0;tpSimple()})}}});ro.observe($('st-avg'));ro.observe($('st-calc'))}}
+// Ab 0.111: „Was wäre wenn“ (bis 0.115 auch „Durchschnitt“, ab 0.116 über HC_CARDS): Abstand nach Regel A neu wählen, wenn sich die Breite der Karte ändert (im nächsten Frame)
+if(window.ResizeObserver){let q=0;const ww=new Map();{const ro=new ResizeObserver(es=>{for(const e of es){const w=e.target.clientWidth;if(w&&w!==ww.get(e.target)){ww.set(e.target,w);if(!q)q=requestAnimationFrame(()=>{q=0;tpSimple()})}}});ro.observe($('st-calc'))}}
 // Kurze Steuer-Tab-Namen am Handy: nur den Text ändern, kein render()
 TAX_MQ.addEventListener('change',()=>{updateTaxLabel();fitTabs();updateNavH()});
 document.querySelectorAll('.ver').forEach(e=>e.textContent=`${VERSION} vom ${VDATE}`);
