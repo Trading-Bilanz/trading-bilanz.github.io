@@ -766,6 +766,10 @@ div.need,span.need{border:0;outline:2px solid var(--sig-r);outline-offset:3px;bo
 /* Ab 0.46 (3.3): Vorschau der Börsen-Datei: Tabellen, Fragen abgesetzt */
 .bxq{border-left:3px solid var(--accent);padding:6px 12px;margin:10px 0}.bxq p{margin:0 0 6px}.bxq .row{margin:0 0 4px}
 .bxh{margin:12px 0 4px}table.bxt td .bxch{display:flex;flex-wrap:wrap;gap:0 10px;justify-content:center}table.bxt tr.bxsub td{border-top:0;padding-top:0}
+/* Ab 0.119: Hinweise und Häkchen unter einer Zeile der Börsen-Vorschau brechen um (die erste Zelle hat sonst nowrap und machte die Tabelle breiter) */
+table.bxt tr.bxsub td{white-space:normal}
+/* Ab 0.119: am Handy wischt die Tabelle seitlich; Hinweise und Häkchen darunter bleiben links im sichtbaren Teil stehen */
+@media (max-width:500px){table.bxt tr.bxsub td .bxsw{position:sticky;left:0;max-width:calc(100vw - 112px)}table.bxt tr.bxsub td .bxsw .bxch{justify-content:flex-start}}
 /* Ab 0.50 (1.4): Tag-Vorschau „Woher und wohin?“ am Handy als Blöcke (Regel 1: festgelegte Ausnahme) */
 table.tpw .tpm{display:none}
 @media (max-width:700px){
@@ -3483,15 +3487,39 @@ function wQty(s){s=String(s==null?'':s).replace(/,/g,'').trim();if(!/^\d+(\.\d+)
 const wKey=(h,c,f,t,v)=>[h,c,f,t,v].join('|').toLowerCase();
 // Ab 0.45: Namen von Token vor jedem Vergleich bereinigen: unsichtbare Zeichen weg (U+200B bis U+200F, U+2060 bis U+206F, U+FEFF, U+00AD),
 // dann NFKC (z. B. Vollbreite), dann ähnlich aussehende Buchstaben aus Lisu, Kyrillisch, Griechisch und Cherokee als lateinische (z. B. „USDꓚ“ → „USDC“)
-const W_LOOK={'ꓚ':'C','ꓔ':'T','ꓢ':'S','ꓓ':'D','ꓴ':'U','ꓑ':'P','ꓮ':'A','ꓰ':'E','ꓳ':'O','ꓝ':'F','ꓖ':'G','ꓧ':'H','ꓲ':'I','ꓗ':'K','ꓡ':'L','ꓟ':'M','ꓠ':'N','ꓣ':'R','ꓦ':'V','ꓪ':'W','ꓫ':'X','ꓬ':'Y','ꓜ':'Z','ꓐ':'B',
-  'С':'C','с':'c','Т':'T','О':'O','о':'o','Ѕ':'S','ѕ':'s','А':'A','а':'a','В':'B','Е':'E','е':'e','Н':'H','К':'K','М':'M','Р':'P','р':'p','Х':'X','х':'x','У':'Y','у':'y','Ԁ':'D','ԁ':'d','І':'I','і':'i','Ј':'J','ј':'j','Ԛ':'Q','Ԝ':'W',
-  'Α':'A','Β':'B','Ε':'E','Ζ':'Z','Η':'H','Ι':'I','Κ':'K','Μ':'M','Ν':'N','Ο':'O','ο':'o','Ρ':'P','Τ':'T','Υ':'Y','Χ':'X','ν':'v','υ':'u','τ':'t',
-  'Ꮪ':'S','Ꭰ':'D','Ꮯ':'C','Ꭲ':'T','Ꭺ':'A','Ꮃ':'W','Ꮇ':'M','Ꮋ':'H','Ꭼ':'E'};
-const wNormName=s=>{let x=String(s==null?'':s).replace(/[​-‏⁠-⁯﻿­]/g,'');try{x=x.normalize('NFKC')}catch(e){}
-  return [...x].map(ch=>W_LOOK[ch]||ch).join('')};
+// Ab 0.119 (falsche Tokens): größere Tabelle gleich aussehender Zeichen anderer Schriften für A bis Z und a bis z (angelehnt an Unicode
+// „confusables“: Griechisch, Kyrillisch, Armenisch, Cherokee, Lisu, Kanadische Silbenschrift, Runen, Äthiopisch, Koptisch, Tifinagh, IPA, Kapitälchen).
+// Bis 0.118 fehlten u. a. ᑌ, Ϲ, Տ, Ս, օ, ո. Abgebildet wird vor und nach NFKC (sonst wird Ϲ zu Σ). Ziffern und Fullwidth-Formen erledigt NFKC.
+const W_LOOK={'Α':'A','А':'A','Ꭺ':'A','ᗅ':'A','ꓮ':'A','Β':'B','В':'B','Ᏼ':'B','ᗷ':'B','ꓐ':'B','Ϲ':'C','С':'C','Ꮯ':'C','ꓚ':'C','ᑕ':'C','Ⲥ':'C','Ꭰ':'D','ꓓ':'D','ᗞ':'D','ᗪ':'D','Ԁ':'D','Ε':'E',
+  'Е':'E','Ꭼ':'E','ꓰ':'E','ⴹ':'E','Ⲉ':'E','Ϝ':'F','ꓝ':'F','ᖴ':'F','Ԍ':'G','Ꮐ':'G','Ᏻ':'G','ꓖ':'G','Η':'H','Н':'H','Ꮋ':'H','ᕼ':'H','ꓧ':'H','Ⲏ':'H','Ι':'I','І':'I','Ӏ':'I','ꓲ':'I',
+  'ǀ':'I','ⵏ':'I','Ⲓ':'I','Ј':'J','Ꭻ':'J','ᒍ':'J','ꓙ':'J','Ϳ':'J','Κ':'K','К':'K','Ꮶ':'K','ᛕ':'K','ꓗ':'K','Ⲕ':'K','Ꮮ':'L','ᒪ':'L','ꓡ':'L','Ⳑ':'L','Μ':'M','М':'M','Ꮇ':'M','ᗰ':'M',
+  'ꓟ':'M','Ϻ':'M','Ⲙ':'M','Ν':'N','ꓠ':'N','Ⲛ':'N','Ο':'O','О':'O','Օ':'O','ⵔ':'O','ꓳ':'O','Ⲟ':'O','Ρ':'P','Р':'P','Ꮲ':'P','ᑭ':'P','ꓑ':'P','Ⲣ':'P','Ԛ':'Q','ⵕ':'Q','Ꭱ':'R','Ꮢ':'R',
+  'ᖇ':'R','ꓣ':'R','Ѕ':'S','Տ':'S','Ꮪ':'S','Ꮥ':'S','ꓢ':'S','Τ':'T','Т':'T','Ꭲ':'T','ꓔ':'T','Ⲧ':'T','Ս':'U','ሀ':'U','ᑌ':'U','ꓴ':'U','Ꮩ':'V','ᐯ':'V','ꓦ':'V','ⴸ':'V','Ԝ':'W','Ꮃ':'W',
+  'Ꮤ':'W','ꓪ':'W','Χ':'X','Х':'X','ᚷ':'X','ꓫ':'X','Ⲭ':'X','ⵝ':'X','Υ':'Y','Ү':'Y','Ꭹ':'Y','Ꮍ':'Y','ꓬ':'Y','Ⲩ':'Y','У':'Y','Ζ':'Z','Ꮓ':'Z','ꓜ':'Z','а':'a','ɑ':'a','α':'a','Ꮟ':'b',
+  'с':'c','ϲ':'c','ᴄ':'c','ⲥ':'c','ԁ':'d','е':'e','ҽ':'e','ɡ':'g','ց':'g','һ':'h','հ':'h','і':'i','ı':'i','ι':'i','ɩ':'i','ӏ':'i','ј':'j','ϳ':'j','ո':'n','о':'o','ο':'o','օ':'o',
+  'ⲟ':'o','р':'p','ρ':'p','ⲣ':'p','ԛ':'q','զ':'q','г':'r','ⲅ':'r','ѕ':'s','υ':'u','ս':'u','ʋ':'u','ν':'v','ѵ':'v','ᴠ':'v','ԝ':'w','ѡ':'w','х':'x','у':'y','ү':'y','γ':'y','ᴢ':'z',
+  'τ':'t'};
+// Ab 0.119: mehr unsichtbare Zeichen (u. a. U+034F, U+061C, U+115F, U+1160, U+17B4, U+17B5, U+180B bis U+180F, U+202A bis U+202E, U+2800, U+3164,
+// U+FE00 bis U+FE0F, U+FFA0, Tag-Zeichen U+E0000 bis U+E007F, Variationszeichen U+E0100 bis U+E01EF); bis 0.118 nur U+200B bis U+200F, U+2060 bis U+206F, U+FEFF, U+00AD
+const W_INVIS=/[\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180F\u200B-\u200F\u202A-\u202E\u2060-\u206F\u2800\u3164\uFE00-\uFE0F\uFEFF\uFFA0\u{E0000}-\u{E007F}\u{E0100}-\u{E01EF}]/gu;
+const wLookMap=x=>[...x].map(ch=>W_LOOK[ch]||ch).join('');
+const wNormName=s=>{let x=wLookMap(String(s==null?'':s).replace(W_INVIS,''));try{x=x.normalize('NFKC')}catch(e){}
+  return wLookMap(x.replace(W_INVIS,''))};
+// Ab 0.119: Name oder Symbol sieht nach einem bekannten Coin aus (nach wNormName, ohne „ERC-20:“, nur Buchstaben und Ziffern) → Kürzel, sonst ''
+const W_COINS=['USDC','USDT','USDBC','USDE','DAI','EURC','PYUSD','FDUSD','TUSD','BUSD','ETH','WETH','STETH','BTC','WBTC','CBBTC','BNB','WBNB','POL','MATIC','ARB','OP','SOL'];
+const W_COIN_NM={USDCOIN:'USDC',TETHER:'USDT',TETHERUSD:'USDT',ETHER:'ETH',ETHEREUM:'ETH',WRAPPEDETHER:'WETH',BITCOIN:'BTC',WRAPPEDBITCOIN:'WBTC',WRAPPEDBTC:'WBTC',POLYGON:'POL',ARBITRUM:'ARB',OPTIMISM:'OP',SOLANA:'SOL',DAISTABLECOIN:'DAI'};
+const wCoinKey=s=>wNormName(s).replace(/^\s*erc-?20\s*:\s*/i,'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const wCoinLike=(sym,name)=>{const a=wCoinKey(sym),b=wCoinKey(name);return W_COINS.includes(a)?a:W_COINS.includes(b)?b:W_COIN_NM[b]||W_COIN_NM[a]||''};
+// Ab 0.119 (Florians Regel für diese Runde): Zeichen außerhalb von a bis z, A bis Z, 0 bis 9, Leerzeichen und üblichen Satzzeichen (im Original, vor dem Bereinigen)
+const wOddChars=s=>/[^A-Za-z0-9 .,\-_:;()\/+&'’!?#*%$@]/.test(String(s||''));
 // Sieht ein Token mit fremder Vertragsadresse aus wie USDC oder USDT? Dann ist er gefälscht (oder auf einem Netzwerk, das das Tool nicht kennt).
 // Ab 0.45 nach dem Bereinigen (wNormName)
-const wFake=(sym,name)=>/usd\s*[ct₮]|usdbc/i.test(wNormName(sym))||/usd\s*coin|tether/i.test(wNormName(name));
+// Ab 0.119: auch ein Token mit dem Namen oder Symbol eines anderen bekannten Coins (ETH, WETH, BTC …), der Zeichen außerhalb von A bis Z, 0 bis 9 und
+// üblichen Satzzeichen enthält (wFakeCoin). Offizielle Vertragsadressen (W_CONTRACTS) gehen immer vor: wFake wird nur bei fremdem Vertrag gefragt.
+const wFakeCoin=(sym,name)=>!!wCoinLike(sym,name)&&(wOddChars(sym)||wOddChars(name));
+const wFake=(sym,name)=>/usd\s*[ct₮]|usdbc/i.test(wNormName(sym))||/usd\s*coin|tether/i.test(wNormName(name))||wFakeCoin(sym,name);
+// Ab 0.119: Name des Coins, nach dem ein gefälschter Token aussieht (für den Einlese-Bericht)
+const wFakeName=(sym,name)=>{const c=wCoinLike(sym,name);if(c)return c==='USDBC'?'USDC':c;const t=wNormName(sym)+' '+wNormName(name);return /usd\s*[t₮]|tether/i.test(t)?'USDT':'USDC'};
 // Ab 0.42: Unbekannter Token, den die Person als USDC zählen kann: fremder Vertrag, nicht gefälscht, „USD“ in Symbol oder Name
 // (z. B. WUSD „Unified USD“, das Guthaben einer Krypto-Karte)
 const wUsdLike=(sym,name)=>/usd/i.test(wNormName(sym))||/usd/i.test(wNormName(name));
@@ -3517,10 +3545,10 @@ function parseWallet(text,fileName){
   if(raw.some(r=>!/^0x[0-9a-f]+$/.test(r.hash)||!(r.ts>0)||!adr(r.from)||!adr(r.to)||isNaN(wQty(r.val))))return {err:W_BAD};
   let addr='',addrSrc='name';const fm=String(fileName||'').match(/0x[0-9a-f]{40}/i);
   if(fm)addr=fm[0].toLowerCase();else{addrSrc='count';const n={};for(const r of raw)for(const a of [r.from,r.to])n[a]=(n[a]||0)+1;addr=Object.keys(n).sort((a,b)=>n[b]-n[a])[0]||''}
-  const rows=[],unk=[],ign={other:0,zero:0,fake:0},seen={};
+  const rows=[],unk=[],ign={other:0,zero:0,fake:0},fakeC={},seen={};
   for(const r of raw){
     const K=W_CONTRACTS[r.con],q=wQty(r.val);
-    if(!K&&wFake(r.sym,r.name)){ign.fake++;continue}
+    if(!K&&wFake(r.sym,r.name)){ign.fake++;const fc=wFakeName(r.sym,r.name);fakeC[fc]=(fakeC[fc]||0)+1;continue}
     if(!K&&(!wUsdLike(r.sym,r.name)||!(q>0))){ign.other++;continue}
     if(!(q>0)){ign.zero++;continue}
     const dir=r.to===addr&&r.from!==addr?'in':r.from===addr&&r.to!==addr?'out':null;
@@ -3538,7 +3566,8 @@ function parseWallet(text,fileName){
   // zum Verwechseln ähnlich sehen
   const real={},look=[],cp=r=>r.from===addr?r.to:r.from;for(const r of [...rows,...unk]){if(r.sus)continue;const a=cp(r),k=wLookKey(a);if(k)(real[k]||(real[k]=new Set())).add(a)}
   const seenL=new Set();for(const r of raw){const a=cp(r),k=wLookKey(a);if(!k||!real[k]||real[k].has(a)||seenL.has(a))continue;seenL.add(a);look.push([a,[...real[k]][0]])}
-  return {addr,addrSrc,rows,unk,ign,look,nets:[...new Set(rows.map(r=>r.net))],from:ds[0]||'',to:ds[ds.length-1]||'',n:raw.length};
+  // Ab 0.119: fakeC = gefälschte Token je Coin, nach dem sie aussehen (z. B. {USDC:4, ETH:1})
+  return {addr,addrSrc,rows,unk,ign,fakeC,look,nets:[...new Set(rows.map(r=>r.net))],from:ds[0]||'',to:ds[ds.length-1]||'',n:raw.length};
 }
 // Abgleich: Bewegung m mit side 'in' (Eingang in eine eigene Wallet, Wallet wTo) oder 'out' (Ausgang, Wallet wFrom), qty, date, time.
 // Kandidat x = {t (Tag-Zeile) oder c (Eintrag), d = Abstand in Sekunden (mit Uhrzeit, wenn beide eine haben, sonst ganze Tage), a = Betragsunterschied}.
@@ -3572,19 +3601,25 @@ function wTagAuto(moves,tags,no){
 // Richtung (Zugang bei Eingang, Abgang bei Ausgang), höchstens 1 Tag auseinander, Menge höchstens 2 USD Unterschied
 // Ab 0.50 (2.2 d): ohne Gebühr-Einträge einer Brücke (brk); sie gehören schon zu ihrem Paar. Vorher hielt so ein Eintrag (gleiche Wallet, gleicher Tag,
 // Abgang) jeden Ausgang dieses Tages als „passt vielleicht“ fest, und der Übertrag zwischen den eigenen Wallets entstand nicht.
+// Ab 0.119 (5c): Menge passt, wenn sie höchstens 10 % der größeren Menge abweicht (mindestens 0,05), für die automatische Frage und für „gehört zu …“.
+// Berechnete Gebühren (brk, ldf, feeOf) gehören schon zu ihrem Vorgang und sind nie ein Vorschlag.
+const wAmtOk=(a,b)=>Math.abs((+a||0)-(+b||0))<=Math.max(0.05,0.1*Math.max(Math.abs(+a||0),Math.abs(+b||0)))+1e-9;
+const wCalcFee=c=>!!(c&&(c.brk||c.ldf!=null||c.feeOf!=null));
 function wCxCands(m,cx){const w=m.side==='in'?m.wTo:m.wFrom,o=[];
-  for(const c of cx){if(c.wk||c.brk||c.ldf!=null||!c.date||!(c.qty>0))continue;
+  for(const c of cx){if(c.wk||wCalcFee(c)||!c.date||!(c.qty>0))continue;
     const k=c.kind,ok=k==='uebertrag'?(m.side==='in'?c.to===w:c.wallet===w):c.wallet===w&&(m.side==='in'?W_ZU:W_AB).includes(k);if(!ok)continue;
     // Ab 0.41: Übertrag mit „Menge angekommen“ vergleicht beim Eingang diese Menge
-    const cq=k==='uebertrag'&&m.side==='in'&&c.qtyIn>0?c.qtyIn:c.qty,D=wDist(m,c.date,c.time||''),a=Math.abs(cq-m.qty);if(D.days>1||a>2+1e-9)continue;o.push({c,d:D.d,a})}
+    const cq=k==='uebertrag'&&m.side==='in'&&c.qtyIn>0?c.qtyIn:c.qty,D=wDist(m,c.date,c.time||''),a=Math.abs(cq-m.qty);if(D.days>1||a>2+1e-9||!wAmtOk(cq,m.qty))continue;o.push({c,d:D.d,a})}
   return o.sort(wCmp)}
-// „gehört zu …“: Tag-Zeilen und Einträge ohne Verknüpfung mit passender Richtung, höchstens 7 Tage auseinander, jeder Betrag, nach Nähe.
+// „gehört zu …“: Tag-Zeilen und Einträge ohne Verknüpfung mit passender Richtung, höchstens 7 Tage auseinander, nach Nähe.
 // Ab 0.42: xs = Überträge, deren Eingangsseite noch frei ist (nur bei einem Eingang, x = Eingangsseite verknüpfen).
-function wPairs(m,tags,cx,xs){const o=[];
-  for(const t of tags){if(m.side==='in'?t.kind!=='aus':t.kind!=='ein')continue;const D=wDist(m,t.date,t.time);if(D.days<=7)o.push({t,d:D.d,a:Math.abs(t.usd-m.qty)})}
-  for(const c of cx){if(c.wk||!c.date)continue;const k=c.kind;if(k!=='uebertrag'&&!(m.side==='in'?W_ZU:W_AB).includes(k))continue;
-    const D=wDist(m,c.date,c.time||'');if(D.days<=7)o.push({c,d:D.d,a:Math.abs((c.qty||0)-m.qty)})}
-  if(m.side==='in')for(const c of xs||[]){const D=wDist(m,c.date,c.time||'');if(D.days<=7)o.push({c,x:1,d:D.d,a:Math.abs((c.qty||0)-m.qty)})}
+// Ab 0.119 (5c): nur mit passender Menge (wAmtOk, bei einem Übertrag auch „Menge angekommen“), ohne berechnete Gebühren. Bis 0.118 jeder Betrag:
+// So bot das Tool eine Weiterleitung über 1,22 USDC mit der Brückengebühr über 0,028 USDC an. Rückerstattungen (r) bleiben bei jedem Betrag.
+function wPairs(m,tags,cx,xs){const o=[],qOk=c=>wAmtOk(c.qty||0,m.qty)||(c.qtyIn>0&&wAmtOk(c.qtyIn,m.qty));
+  for(const t of tags){if(m.side==='in'?t.kind!=='aus':t.kind!=='ein')continue;const D=wDist(m,t.date,t.time);if(D.days<=7&&wAmtOk(t.usd,m.qty))o.push({t,d:D.d,a:Math.abs(t.usd-m.qty)})}
+  for(const c of cx){if(c.wk||!c.date||wCalcFee(c))continue;const k=c.kind;if(k!=='uebertrag'&&!(m.side==='in'?W_ZU:W_AB).includes(k))continue;
+    const D=wDist(m,c.date,c.time||'');if(D.days<=7&&qOk(c))o.push({c,d:D.d,a:Math.abs((c.qty||0)-m.qty)})}
+  if(m.side==='in')for(const c of xs||[]){const D=wDist(m,c.date,c.time||'');if(D.days<=7&&qOk(c))o.push({c,x:1,d:D.d,a:Math.abs((c.qty||0)-m.qty)})}
   // Ab 0.44: Eingang in dieselbe Wallet bis 90 Tage nach einer Zahlung (r = als Rückerstattung zu dieser Zahlung)
   if(m.side==='in')for(const c of cx){if(c.kind!=='bezahlung'||!c.date||c.wallet!==m.wTo)continue;const dd=(wSec(m.date,'')-wSec(c.date,''))/86400;
     if(dd>=0&&dd<=90)o.push({c,r:1,d:wDist(m,c.date,c.time||'').d,a:Math.abs((c.qty||0)-m.qty)})}
@@ -3611,12 +3646,19 @@ const wUserName=x=>x&&(x.fr||x.br&&x.nameMan)?x.name||'':'';
 // Rückgabe false = abgebrochen oder ungültig, sonst {changed}.
 // Ab 0.55 (5): Gehört die Adresse bisher zu einer vorläufigen Wallet („Später zuordnen“), nennt die Rückfrage, dass diese in der neuen aufgeht
 // (provAuto beim nächsten wSync); die Frage nach den Einträgen entfällt dann, weil das Zusammenführen alles umstellt.
-function addrAssign(S,a,to,own,ask,fr){const x=S.addr[a],toTag=to==='tag',toPay=to==='pay',toBr=to==='br',toUnk=to==='unk',toFr=to==='fr',newW=toTag||toPay||toBr||toUnk||toFr?'':to,oldW=x&&!x.tag&&!x.pay&&!x.br&&!x.load?x.wallet:'';
+// Ab 0.119: to 'dfx' = Dienst „DFX.swiss“ (wie 'br' mit Name und Merker dfx). Die Datei bleibt bei der Adresse (imp, impN), auch wenn sie nicht mehr
+// eigene ist (Datei entfernen, 5a). Wird die Adresse Börse oder Dienst, räumt addrAfter auf; die Rückfrage nennt vorher, was wegfällt (auf einer Kopie
+// gezählt, addrAfterPlan), mit „Sicherung speichern“, wenn Bewegungen oder Einträge wegfallen. noPlan = Lauf auf der Kopie. Rückgabe {changed, r}.
+function addrAssign(S,a,to,own,ask,fr,noPlan){const toDx=to==='dfx';if(toDx)to='br';
+  const x=S.addr[a],toTag=to==='tag',toPay=to==='pay',toBr=to==='br',toUnk=to==='unk',toFr=to==='fr',newW=toTag||toPay||toBr||toUnk||toFr?'':to,oldW=x&&!x.tag&&!x.pay&&!x.br&&!x.load?x.wallet:'';
+  const keepF=o=>{if(x&&x.imp)o.imp=x.imp;if(x&&x.impN)o.impN=Object.assign({},x.impN);if(x&&x.two)o.two=x.two;return o};
   const prov=!!newW&&!!oldW&&oldW!==newW&&isProv(S,oldW)&&!!(S.wlater&&S.wlater[oldW]&&S.wlater[oldW].addr===a);
   if(!toTag&&!toPay&&!toBr&&!toUnk&&!toFr&&!S.wallets.includes(newW))return false;
   if(toFr&&!fr)return false;
   const ks=Object.keys(S.wtx).filter(k=>S.wtx[k].from===a||S.wtx[k].to===a),n=ks.length,nm=toTag?'Tag':toPay?'Kartenzahlungen (Abrechnung)':toBr?'Brücke / Dienst':toFr?fr:newW;
-  const changed=toUnk?!!x:toTag?!(x&&x.tag):toPay?!(x&&x.pay):toBr?!(x&&x.br&&!x.auto):toFr?!(x&&x.fr&&x.name===fr):!(x&&!x.tag&&!x.pay&&!x.br&&!x.load&&!x.auto&&x.wallet===newW);
+  const changed=toUnk?!!x:toTag?!(x&&x.tag):toPay?!(x&&x.pay):toDx?!(x&&x.br&&x.dfx&&!x.auto):toBr?!(x&&x.br&&!x.auto):toFr?!(x&&x.fr&&x.name===fr):!(x&&!x.tag&&!x.pay&&!x.br&&!x.load&&!x.auto&&x.wallet===newW&&!!x.own===!!own);
+  // Ab 0.119: was beim Umstellen zu Börse oder Dienst wegfällt (Kopie), für die Rückfrage
+  const toBx=!!newW&&!own,P=!noPlan&&changed&&(toBr||toBx)?addrAfterPlan(S,a,toDx?'dfx':to,own,fr):null,PT=P&&typeof addrDropTxt==='function'?addrDropTxt(P):'';
   // Ab 0.50 Nachtrag 6: Geht ein Name verloren, den du eingetragen hast, fragt das Tool vorher. Beim Wechsel auf Dienst bleibt er (Name des Diensts),
   // bei Fremd tippst du den neuen Namen selbst, beides ohne Frage. Eine Adresse mit Namen ist nie eine eigene, die Fragen unten kommen danach nicht.
   const unm=wUserName(x);
@@ -3627,24 +3669,62 @@ function addrAssign(S,a,to,own,ask,fr){const x=S.addr[a],toTag=to==='tag',toPay=
   // Börse. Ausnahmen: Eine Adresse, die das Adressbuch nicht kennt und nur diese eine Bewegung hat, kommt ohne Frage hinein (wie cxAddrPlan);
   // „Entfernen“ hat seine eigene Rückfrage; nach der Frage zum Namen keine zweite.
   // Ab 0.107 (W-309 entfernt): Eine eigene Adresse wird nie über diesen Weg „Unbekannt“ (das Menü bietet es nicht, × im Fenster der Wallet hat seine eigene Rückfrage), darum keine Frage dazu
-  const mvQ=changed&&n&&!unmQ&&!toUnk&&(x&&x.own||oldW!==newW&&(!!x||n>1));
+  const mvQ=changed&&n&&!unmQ&&!toUnk&&(x&&x.own||oldW!==newW&&(!!x||n>1)||!!PT);
   // Ab 0.50 Nachtrag 6 Zusatz: eigene Adresse wird „Fremd“: sagt wie W17, was mit den Bewegungen passiert (mvGoneTxt), Titel „Adresse ändern“ über askCb
-  if(mvQ){const q=x&&x.own&&toFr?`Adresse ${a.slice(0,6)}…${a.slice(-4)} gehört zur Wallet „${x.wallet}“. Als fremde Adresse „${fr}“ merken?\n\n${mvGoneTxt(S,[a],[a],true)}`:addrMvTxt(S,a,nm);if(!ask(q))return false}
+  // Ab 0.119: beim Umstellen zu Börse oder Dienst darunter die Folgen (addrDropTxt), dann „Fortfahren?“
+  if(mvQ){const q=x&&x.own&&toFr?`Adresse ${a.slice(0,6)}…${a.slice(-4)} gehört zur Wallet „${x.wallet}“. Als fremde Adresse „${fr}“ merken?\n\n${mvGoneTxt(S,[a],[a],true)}`:
+    PT?addrMvTxt(S,a,toDx?DX_NAME+' (Dienst)':nm,P.mv.length).replace(/ Fortfahren\?$/,'')+'\n\n'+PT+'\n\nFortfahren?':addrMvTxt(S,a,toDx?DX_NAME+' (Dienst)':nm);if(!ask(q))return false}
   // Ab 0.56 (1): Einträge und Tag-Zeilen der Bewegungen folgen dem Adressbuch immer (wFix, wTagFollow); die Frage „… Einträge umstellen?“ entfällt
   // Ab 0.54 (2): Zuordnen nimmt die Merkung „von dir entfernt“ zurück
   if(S.addrNo&&S.addrNo[a]){S.addrNo=Object.assign({},S.addrNo);delete S.addrNo[a];if(!Object.keys(S.addrNo).length)delete S.addrNo}
   if(toUnk)delete S.addr[a];
-  else if(toTag)S.addr[a]={own:false,tag:x&&x.tag||{}};
-  else if(toPay)S.addr[a]={own:false,pay:1};
-  else if(toBr)S.addr[a]=Object.assign({own:false,br:1},x&&x.name?{name:x.name}:{},x&&x.nameMan?{nameMan:1}:{},x&&x.fw?{fw:1}:{});
-  else if(toFr)S.addr[a]={own:false,fr:1,name:fr};
-  else{const y=Object.assign({},x,{wallet:newW,own:!!own});delete y.tag;delete y.pay;delete y.br;delete y.load;delete y.auto;delete y.fr;delete y.name;delete y.nameMan;delete y.fw;S.addr[a]=y}
-  return {changed}}
+  else if(toTag)S.addr[a]=keepF({own:false,tag:x&&x.tag||{}});
+  else if(toPay)S.addr[a]=keepF({own:false,pay:1});
+  else if(toDx)S.addr[a]=keepF({own:false,br:1,name:DX_NAME,dfx:1});
+  else if(toBr)S.addr[a]=keepF(Object.assign({own:false,br:1},x&&x.name&&!x.own&&!x.wallet?{name:x.name}:{},x&&x.nameMan?{nameMan:1}:{},x&&x.fw?{fw:1}:{},x&&x.dfx&&x.br?{dfx:1}:{}));
+  else if(toFr)S.addr[a]=keepF({own:false,fr:1,name:fr});
+  else{const y=Object.assign({},x,{wallet:newW,own:!!own});delete y.tag;delete y.pay;delete y.br;delete y.load;delete y.auto;delete y.fr;delete y.name;delete y.nameMan;delete y.fw;delete y.dfx;S.addr[a]=y}
+  const r=changed&&(toBr||toBx)?addrAfter(S,a,{oldW}):null;
+  return r&&(r.mv.length||r.cx.length||r.hand.length||r.pend.length||r.open.length)?{changed,r}:{changed}}
+// Ab 0.119: Folgen einer Umstellung zu Börse oder Dienst auf einer Kopie zählen (für die Rückfrage)
+function addrAfterPlan(S,a,to,own,fr){const C=JSON.parse(JSON.stringify(S));const r=addrAssign(C,a,to,own,()=>true,fr,1);return r&&r.r||null}
+// Ab 0.119 (DFX.swiss nachbessern): Adresse ist Börse oder Dienst geworden (Punkt 1 bis 3 der Runde). Danach gilt:
+// - Bewegungen, an denen keine eigene Adresse (Wallet oder Karte) mehr beteiligt ist, fallen weg (aus S.wtx und S.wign), wie beim Entfernen einer Datei:
+//   Einträge, die das Tool daraus angelegt hat, fallen mit, Einträge von Hand und Tag-Zeilen verlieren nur die Verknüpfung.
+// - Dienst: Überträge aus der Datei zur bisherigen Wallet der Adresse (z. B. zur Börse „DFX.swiss“) über diese Adresse fallen weg, die Bewegungen sind
+//   wieder offen; Überträge von Hand verlieren nur die Verknüpfung. Überträge über einen Dienst (via) bleiben.
+// - Dienst DFX.swiss: „von dir entfernt“ (addrNo) fällt weg; ignorierte Abgänge an die Adresse werden wieder offen (ohne DFX-Zeile danach „Ausstehend
+//   bei DFX.swiss“, Florians Antwort zur Runde), ebenso ignorierte Bewegungen mit dem Hash eines DFX.swiss-Eintrags (dxLink verknüpft sie).
+// Danach wSync (Aufrufer). Rückgabe {mv (weggefallene Bewegungen), cx (gelöschte Einträge), hand (entkoppelte Einträge), pend (wieder offene Abgänge ohne
+// DFX-Zeile), open (wieder offene Bewegungen mit Hash)}
+function addrAfter(S,a,o){o=o||{};const x=S.addr[a],r={mv:[],cx:[],hand:[],pend:[],open:[]};if(!x||x.own||x.tag||x.pay||x.fr||x.load||!(x.br||x.wallet))return r;
+  const mine=m=>rOwn(S,m.from)||rOwn(S,m.to),drop=c=>{S.cx=S.cx.filter(y=>y.id!==c.id&&y.feeOf!==c.id)};
+  const del=new Set(Object.keys(S.wtx).filter(k=>{const m=S.wtx[k];return (m.from===a||m.to===a)&&!mine(m)}));
+  for(const k of del){const m=S.wtx[k];r.mv.push({hash:m.hash,qty:m.qty,coin:m.coin,date:m.date});
+    if(m.st==='tag'&&S.tag[m.ref])delete S.tag[m.ref].wk;
+    else if(m.st==='cx'){const c=S.cx.find(c=>c.id===m.ref);
+      if(c&&c.src==='datei'){for(const kk of [c.wk,c.wkIn])if(kk&&kk!==k&&S.wtx[kk]&&!del.has(kk)){const y=S.wtx[kk];y.st='open';y.ref='';delete y.xin}drop(c);r.cx.push(c)}
+      else if(c){if(c.wk===k)delete c.wk;if(c.wkIn===k)delete c.wkIn;c.src='hand';r.hand.push(c)}}
+    for(const p of [m.brg,m.swap])if(p&&S.wtx[p]&&!del.has(p)){const y=S.wtx[p];delete y.brg;delete y.swap;if(y.st==='int')y.st='open'}
+    if(m.brg)S.cx=S.cx.filter(c=>!(c.brk&&c.brk.includes(k)));
+    delete S.wtx[k]}
+  for(const [k,m] of Object.entries(S.wign||{}))if((m.from===a||m.to===a)&&!mine(m))delete S.wign[k];
+  if(x.br&&o.oldW)for(const c of S.cx.slice()){if(c.kind!=='uebertrag'||c.via||(c.wallet!==o.oldW&&c.to!==o.oldW))continue;
+    const ks=[c.wk,c.wkIn].filter(k=>k&&S.wtx[k]&&(S.wtx[k].from===a||S.wtx[k].to===a));if(!ks.length)continue;
+    for(const k of [c.wk,c.wkIn]){const y=k&&S.wtx[k];if(y&&y.st==='cx'&&y.ref===c.id){y.st='open';y.ref='';delete y.xin;delete y.pend}}
+    if(c.src==='datei'){drop(c);r.cx.push(c)}else{delete c.wk;delete c.wkIn;c.src='hand';r.hand.push(c)}}
+  if(x.br&&dxAddr(S,a)){if(S.addrNo&&S.addrNo[a]){S.addrNo=Object.assign({},S.addrNo);delete S.addrNo[a];if(!Object.keys(S.addrNo).length)delete S.addrNo}
+    const H=new Set(S.cx.filter(c=>c.dx&&(c.kind==='kauf'||c.kind==='verkauf')).map(c=>c.dx));
+    for(const m of Object.values(S.wtx)){if(m.st!=='ign'||m.sus)continue;
+      if(m.to===a&&rOwn(S,m.from)&&!rOwn(S,m.to)){m.st='open';m.ref='';delete m.pend;(H.has(m.hash)?r.open:r.pend).push({hash:m.hash,qty:m.qty,coin:m.coin,date:m.date})}
+      else if(m.from===a&&rOwn(S,m.to)&&!rOwn(S,m.from)&&H.has(m.hash)){m.st='open';m.ref='';delete m.pend;r.open.push({hash:m.hash,qty:m.qty,coin:m.coin,date:m.date})}}}
+  return r}
 // Ab 0.56 (1): ein Satz für jede Stelle, die einer Adresse eine Wallet zuordnet: „Alle 5 Bewegungen der Adresse 0xea06…ea06 gehören dann zu „Exodus“.“,
 // bei einer vorläufigen Wallet dazu „Die vorläufige Wallet „…“ geht in „Exodus“ auf.“, am Ende „Fortfahren?“
-function addrMvTxt(S,a,nm){const n=Object.values(S.wtx).filter(m=>m.from===a||m.to===a).length,x=S.addr[a],oldW=x&&!x.tag&&!x.pay&&!x.br&&!x.load?x.wallet:'',ad=`${a.slice(0,6)}…${a.slice(-4)}`;
+// Ab 0.119: gone = Bewegungen, die beim Umstellen wegfallen (zählen hier nicht mit, die Rückfrage nennt sie eigens)
+function addrMvTxt(S,a,nm,gone){const n=Object.values(S.wtx).filter(m=>m.from===a||m.to===a).length-(gone||0),x=S.addr[a],oldW=x&&!x.tag&&!x.pay&&!x.br&&!x.load?x.wallet:'',ad=`${a.slice(0,6)}…${a.slice(-4)}`;
   const prov=!!oldW&&oldW!==nm&&isProv(S,oldW)&&!!(S.wlater&&S.wlater[oldW]&&S.wlater[oldW].addr===a);
-  return (n===1?`Die Bewegung der Adresse ${ad} gehört dann zu „${nm}“.`:`Alle ${n} Bewegungen der Adresse ${ad} gehören dann zu „${nm}“.`)+(prov?` Die vorläufige Wallet „${oldW}“ geht in „${nm}“ auf.`:'')+' Fortfahren?'}
+  return (n<=0?`Die Adresse ${ad} gehört dann zu „${nm}“.`:n===1?`Die Bewegung der Adresse ${ad} gehört dann zu „${nm}“.`:`Alle ${n} Bewegungen der Adresse ${ad} gehören dann zu „${nm}“.`)+(prov?` Die vorläufige Wallet „${oldW}“ geht in „${nm}“ auf.`:'')+' Fortfahren?'}
 // Ab 0.55 (5): vorläufige Wallet aus „Später zuordnen“ (S.wmeta[w].prov, Datei in S.wlater[w])
 function isProv(S,w){return !!(S.wmeta&&S.wmeta[w]&&S.wmeta[w].prov)}
 // Echte Wallet, zu der die Datei einer vorläufigen Wallet p schon gehört: laut Adressbuch (Adresse der Datei) oder laut Einträgen, die aus Bewegungen
@@ -3717,6 +3797,8 @@ function cxSync(S,c){let ch=false;
 // Eigene Adresse, deren Datei für dieses Netzwerk eingelesen ist (impN, bis 0.40 nur imp). Nur solche Adressen zählen für „laut Datei“ und
 // belegen die Eingangsseite eines Übertrags. Eine eigene Adresse ohne eigene Datei (z. B. die Einzahlungsadresse einer Karte) zählt so nicht doppelt.
 function wFileOf(S,a,net){const x=S.addr[a];if(!x||!x.own||x.tag||x.pay||x.br)return false;return x.impN?!!x.impN[net]:!!x.imp}
+// Ab 0.119 (5a): Datei der Adresse für dieses Netzwerk, auch wenn die Adresse inzwischen Börse, Dienst oder fremd ist (die Datei bleibt bei ihr)
+function wFileHas(S,a,net){const x=S.addr[a];if(!x||x.tag||x.pay)return false;return x.impN?!!x.impN[net]:!!x.imp}
 // Token: Schlüssel Netzwerk|Vertrag. S.tok[k] = {sym, name, net, c: 'usdc' (zählt als USDC) oder 'ign' (ignoriert)}. S.wign = Bewegungen
 // unbekannter Token mit „USD“ im Namen, die (noch) nicht zählen, gleich aufgebaut wie S.wtx (Coin USDC, iss 'unbekannt', tok {sym, name}).
 const tokKey=(net,c)=>net+'|'+c;
@@ -4478,10 +4560,12 @@ function vgTimeline(S,ks,F){const M=ks.map(k=>S.wtx[k]).filter(Boolean).sort((a,
   return {lines,notes,pre:!!pre}}
 /* ---------------- Ab 0.44: eingelesene Dateien (je eigene Adresse und Netzwerk eine Datei) ---------------- */
 // Liste [{a, net, w, d (Tag des Einlesens), n (Bewegungen), files (Dateinamen)}], nach Wallet, Adresse, Netzwerk
+// Ab 0.119 (5a): auch Dateien von Adressen, die inzwischen Börse oder Dienst sind (Wallet z. B. „DFX.swiss (Dienst)“); bis 0.118 fehlten sie in der Liste
 function wFileList(S){const out=[];
-  for(const [a,x] of Object.entries(S.addr)){if(!x.own||x.tag||!x.impN)continue;
+  for(const [a,x] of Object.entries(S.addr)){if(x.tag||x.pay||!x.impN)continue;
     for(const [net,d] of Object.entries(x.impN)){const L=Object.values(S.wtx).filter(m=>m.net===net&&(m.from===a||m.to===a)),U=Object.values(S.wign||{}).filter(m=>m.net===net&&(m.from===a||m.to===a));
-      out.push({a,net,w:rAW(S,a)||x.wallet||'',d,n:L.length+U.length,files:[...new Set([...L,...U].map(m=>m.file).filter(Boolean))]})}}
+      const w=x.own?rAW(S,a)||x.wallet||'':x.br?`${x.name||'Dienst'} (Dienst)`:x.fr?`${x.name||''} (fremd)`:x.wallet||'';
+      out.push({a,net,w,d,n:L.length+U.length,files:[...new Set([...L,...U].map(m=>m.file).filter(Boolean))]})}}
   return out.sort((p,q)=>p.w<q.w?-1:p.w>q.w?1:p.a<q.a?-1:p.a>q.a?1:p.net<q.net?-1:1)}
 // Datei entfernen (Adresse a, Netzwerk net): Bewegungen dieser Datei weg. Steht auf der anderen Seite eine eigene Adresse mit Datei für dieses
 // Netzwerk, bleibt die Bewegung (sie steht auch in deren Datei). Einträge, die das Tool daraus angelegt hat (src 'datei'), fallen mit ihren
@@ -4489,7 +4573,9 @@ function wFileList(S){const out=[];
 function wFileDrop(S,a,net){const r={mv:0,kept:0,cx:0,hand:0,tag:0},x=S.addr[a];if(!x)return r;
   const other=m=>m.from===a?m.to:m.from,del=new Set(),F=new Set(Object.entries(S.wtx).filter(([,m])=>m.net===net&&(m.from===a||m.to===a)).map(([k])=>k));
   for(const [k,m] of Object.entries(S.wtx)){if(m.net!==net||(m.from!==a&&m.to!==a))continue;const o=other(m);
-    if(o!==a&&wFileOf(S,o,net)){r.kept++;continue}del.add(k)}
+    // Ab 0.119 (5a): Die Bewegung bleibt, wenn sie auch in einer anderen Datei steht (wFileHas, auch bei einer Adresse, die nicht mehr eigene ist),
+    // und fällt weg, wenn sie nur aus dieser Datei stammt, auch wenn ihre Adresse inzwischen umgestellt ist
+    if(o!==a&&wFileHas(S,o,net)){r.kept++;continue}del.add(k)}
   for(const k of del){const m=S.wtx[k];
     if(m.st==='tag'&&S.tag[m.ref]){delete S.tag[m.ref].wk;r.tag++}
     else if(m.st==='cx'){const c=S.cx.find(c=>c.id===m.ref);
@@ -4927,6 +5013,17 @@ function dxMvOf(S,r){if(!r.hash)return '';for(const [k,m] of Object.entries(S.wt
     if(r.type==='buy'?(rOwn(S,m.to)&&!rOwn(S,m.from)):(rOwn(S,m.from)&&!rOwn(S,m.to)))return k}return ''}
 const dxMvW=(S,k,r)=>{const m=S.wtx[k];return m?(r.type==='buy'?rAW(S,m.to)||m.wTo:rAW(S,m.from)||m.wFrom)||'':''};
 const dxKindOf=r=>r.type==='buy'?'kauf':'verkauf';
+// Ab 0.119 (Punkt 1): Widerspruch „Adresse von DFX.swiss steht als eigene Wallet, Karte oder Börse im Adressbuch“. Gesucht sind Bewegungen mit dem
+// Hash eines DFX.swiss-Eintrags (dx) oder einer Zeile der Vorschau (rows), deren DFX-Seite (Verkauf: Empfänger, Kauf: Absender) eine eigene Adresse
+// oder eine Adresse der Börse ist, während die andere Seite eine eigene Adresse ist. Rückgabe [{a, w (Wallet laut Adressbuch), n (Bewegungen)}]
+function dxConflicts(S,rows){const H=new Map();
+  for(const c of S.cx||[])if(c.dx&&/^0x[0-9a-f]{64}$/.test(c.dx)&&(c.kind==='kauf'||c.kind==='verkauf'))H.set(c.dx+'|'+c.coin,c.kind==='kauf'?'buy':'sell');
+  for(const r of rows||[])if(r.hash)H.set(r.hash+'|'+r.coin,r.type);
+  const A=new Map();
+  for(const m of Object.values(S.wtx||{})){const t=H.get(m.hash+'|'+m.coin);if(!t||m.sus||!(m.qty>0))continue;
+    const a=t==='buy'?m.from:m.to,o=t==='buy'?m.to:m.from,x=S.addr[a];if(!x||x.br||x.tag||x.pay||x.fr||x.load||!(x.own||x.wallet)||!rOwn(S,o))continue;
+    A.set(a,(A.get(a)||0)+1)}
+  return [...A.entries()].map(([a,n])=>({a,n,w:S.addr[a].wallet||''}))}
 // Gegenseite einer verknüpften Bewegung als Dienst „DFX.swiss“ merken (nicht, wenn sie schon eigene Adresse, Börse, Tag, Karte, Fremd ist oder entfernt wurde)
 function dxAddrLearn(S,a){if(!a||/^0x0{40}$/.test(a)||(S.addrNo&&S.addrNo[a]))return false;const x=S.addr[a];
   if(x&&(x.own||x.wallet||x.tag||x.pay||x.load||x.fr))return false;
@@ -4942,7 +5039,9 @@ function dxLinkMv(S,c,k){const m=S.wtx[k];if(!m)return false;const out=c.kind!==
 function dxPlan(S,P,wOf){const items=[],used=new Set(),fmt=v=>String(+(+v).toFixed(8));
   P.rows.forEach((r,i)=>{const t=dxKindOf(r),k=dxMvOf(S,r),mw=k?dxMvW(S,k,r):'',sel=wOf?wOf(i):'',w=mw||sel,x={r,t,w,k:k||null,diffs:[]};
     if(mw&&sel&&lcW(mw)!==lcW(sel))x.other=mw;
-    const done=S.cx.find(c=>c.dx===r.id);if(done){x.done=1;x.c=done;items.push(x);return}
+    // Ab 0.119 (5b): Die Bewegung mit diesem Hash ist ignoriert: Frage „Ignorieren aufheben und verknüpfen?“ (x.ign), auch bei „schon eingelesen“
+    const m0=k&&S.wtx[k];if(m0&&m0.st==='ign')x.ign=1;
+    const done=S.cx.find(c=>c.dx===r.id);if(done){x.done=1;x.c=done;if(done.wk)delete x.ign;items.push(x);return}
     const m=k&&S.wtx[k];
     if(m&&m.st==='cx'){const c=S.cx.find(c=>c.id===m.ref);if(c){x.dup=c;x.mv=1;used.add(c.id)}}
     else if(m&&m.st==='int'&&m.dxb){x.back=1;x.dup={id:null,kind:'rueckb'}}
@@ -4956,8 +5055,17 @@ function dxPlan(S,P,wOf){const items=[],used=new Set(),fmt=v=>String(+(+v).toFix
   return {items}}
 // Übernehmen. ch[i] = Wahl bei „schon da“: 'replace' (Vorgabe), 'keep', 'both' (nicht bei einem Eintrag, der mit der Bewegung verknüpft ist).
 // Rückgabe {neu, ersetzt, behalten, skip, link (mit Bewegung verknüpft), wallets (neu angelegt)}
-function dxApply(S,plan,ch){const st={neu:0,ersetzt:0,behalten:0,skip:0,link:0,wallets:0};
-  plan.items.forEach((x,i)=>{const r=x.r,c=ch&&ch[i]||'replace';if(x.done){st.skip++;return}if(!x.w){st.skip++;return}
+// Ab 0.119 (5b): un[i] === false = Ignorieren nicht aufheben; sonst wird eine ignorierte Bewegung mit diesem Hash wieder offen und verknüpft. Ihre Gegenseite
+// wird Dienst „DFX.swiss“ (deine Bestätigung zählt, auch nach „von dir entfernt“), danach räumt addrAfter auf (st.after). st.unign = aufgehobene.
+function dxUnIgn(S,x,st){const m=S.wtx[x.k];if(!m||m.st!=='ign')return false;m.st='open';m.ref='';delete m.pend;st.unign++;
+  const a=x.r.type==='buy'?m.from:m.to,y=S.addr[a];if(S.addrNo&&S.addrNo[a]){S.addrNo=Object.assign({},S.addrNo);delete S.addrNo[a];if(!Object.keys(S.addrNo).length)delete S.addrNo}
+  if(!y||(y.br&&!dxAddr(S,a))){if(dxAddrLearn(S,a)&&S.addr[a])delete S.addr[a].auto;const r=addrAfter(S,a,{});st.after.push(r)}
+  else if(dxAddr(S,a))st.after.push(addrAfter(S,a,{}));
+  return true}
+function dxApply(S,plan,ch,un){const st={neu:0,ersetzt:0,behalten:0,skip:0,link:0,wallets:0,unign:0,after:[]};
+  plan.items.forEach((x,i)=>{const r=x.r,c=ch&&ch[i]||'replace';
+    if(x.ign&&!(un&&un[i]===false))dxUnIgn(S,x,st);
+    if(x.done){if(x.ign&&!(un&&un[i]===false)&&x.c&&!x.c.wk&&x.k&&S.wtx[x.k]&&S.wtx[x.k].st==='open'){dxLinkMv(S,x.c,x.k);st.link++}else st.skip++;return}if(!x.w){st.skip++;return}
     if(!S.wallets.includes(x.w)){S.wallets.push(x.w);st.wallets++}
     const e={date:r.date,time:r.time,kind:x.t,wallet:x.w,to:'',coin:r.coin,coin2:'',qty:r.qty,qty2:0,eur:r.val,est:false,note:r.note||'',dx:r.id};
     if(x.t==='kauf'&&r.fee>0)e.feeIn=r.fee;if(x.t==='verkauf'&&r.fee>0)e.fee=r.fee;
@@ -5046,6 +5154,20 @@ function naAfterDrop(o,act){let n=naDrop(S,o);
 const cxFeeTxt=(id,bei)=>{const F=S.cx.filter(c=>c.feeOf===id),n=F.length,L=F.map(c=>fmtNum(c.qty)+' '+c.coin+' bei '+c.wallet).join(', ');if(!n)return '';
   return bei?`Bei „Löschen“ ${n===1?'wird die Gebühr':'werden die Gebühren'} aus der Wallet-Datei (${L}) mit gelöscht.`:`${n===1?'Die Gebühr':'Die Gebühren'} aus der Wallet-Datei (${L}) ${n===1?'gehört dazu und wird':'gehören dazu und werden'} mit gelöscht.`};
 // Ab 0.50 Nachtrag 3: danach Antworten aufräumen (inRec = mitten in einer gemerkten Aktion, „Verknüpfung lösen“ räumt danach selbst auf)
+// Ab 0.119 (Florians Ergänzung 4): Löschen eines verknüpften Eintrags fragt, was mit der Bewegung geschieht: „wieder offen“ (Vorgabe) oder „ignorieren“.
+// Bis 0.118 machte wFix sie still zu „ignoriert“. Ausgenommen sind Abgänge an DFX.swiss (sie sind danach „Ausstehend bei DFX.swiss“, ohne Frage).
+// „wieder offen“ merkt wie „Verknüpfung lösen“, dass das Tool diese Bewegung nicht mehr von selbst mit diesem Eintrag bzw. aus der Datei verknüpft.
+let CXD_HOW='open';
+const cxDelMvs=id=>Object.keys(S.wtx).filter(k=>{const m=S.wtx[k];return m.st==='cx'&&m.ref===id&&!dxPendOk(S,m)});
+function cxDelQ(id,q){const ks=cxDelMvs(id);if(!ks.length)return {text:q};const one=ks.length===1,r=(v,t)=>`<label class="fopt"><input type="radio" name="cxdmv" value="${v}" ${CXD_HOW===v?'checked':''}><span>${t}</span></label>`;
+  return {text:q,html:`<p>${esc(q).replace(/\n\n/g,'</p><p>')}</p><p>${one?'Die Bewegung dazu':'Die Bewegungen dazu'}: wieder offen lassen oder ignorieren?</p><div class="row">${r('open','wieder offen')}${r('ign','ignorieren')}</div>`}}
+$('ask-body').addEventListener('change',e=>{if(e.target.name==='cxdmv')CXD_HOW=e.target.value});
+function cxDelMv(id){const c=cxById(id);if(!c)return;for(const k of cxDelMvs(id)){const m=S.wtx[k];
+    if(CXD_HOW==='ign'){m.st='ign';m.ref='';delete m.xin;delete m.pend;continue}
+    // „wieder offen“ heißt: bleibt offen, auch die Automatiken (Übertrag zur Börse 'xo', Einzahlung von der Börse 'ex', Tag und Überträge 'auto') verknüpfen
+    // sie nicht von selbst; sonst legte das Tool z. B. nach dem Löschen eines Verkaufs sofort einen Übertrag zur Börse an
+    m.noAsk=Array.isArray(m.noAsk)?m.noAsk:[];m.noAsk.push('c:'+id,'auto','xo','ex');if(c.src==='datei'){const o=k===c.wk?c.wkIn:c.wk;if(o&&S.wtx[o])m.noAsk.push('b:'+o,'tx')}
+    m.st='open';m.ref='';delete m.xin;delete m.pend}}
 function cxDel(id,inRec){const act=inRec?null:keepActive();
   S.cx=S.cx.filter(c=>c.id!==id&&c.feeOf!==id);if(!inRec)naAfterDrop({},act)}
 const wOwn=a=>!!(S.addr[a]&&S.addr[a].own);
@@ -5215,7 +5337,8 @@ function wPairMap(){const ms=Object.keys(S.wtx).filter(k=>{const m=S.wtx[k];retu
 function wAsk(k,pair){const m=S.wtx[k];if(!m||m.st!=='open')return null;const M=wMv(k),no=x=>m.noAsk.includes(x);
   if(m.pend){const id=m.pend.slice(2);
     if(m.pend[0]==='t'){const t=S.tag[id];if(t&&!t.wk)return {ty:'tagfix',t,diff:wTagDiff(t,m)}}
-    else{const c=cxById(+id);if(c&&!c.wk)return {ty:'cx',c}}
+    // Ab 0.119 (5c): kein gemerkter Vorschlag mit einer berechneten Gebühr oder unpassender Menge (Sicherungen vom 09.11.: pend c:102)
+    else{const c=cxById(+id);if(c&&!c.wk&&!wCalcFee(c)&&(wAmtOk(c.qty||0,m.qty)||(c.qtyIn>0&&wAmtOk(c.qtyIn,m.qty))))return {ty:'cx',c}}
     delete m.pend}
   if(m.sus)return {ty:'sus'};
   if(M.side!=='in'&&M.side!=='out')return null;
@@ -5352,17 +5475,33 @@ const wfWs=D=>[...new Set(D.files.filter(wfUse).map(wfWallet).filter(Boolean))];
 const wfNet=f=>f.P.nets[0]||f.net||'';
 // Dateien ohne echte USDC/USDT und ohne unbekannte Token brauchen keine Wallet und kommen nicht ins Adressbuch. Ab 0.44 auch nicht verwendete.
 const wfReady=D=>D.files.every(f=>!wfUse(f)||(wfWallet(f)&&(!f.P.unk.length||wfNet(f))));
+function wfImportX(f,st){const nm=String(f.newName||'').trim(),bx=f.xk==='boerse',td=todayLocal(),x=S.addr[f.addr]||{},oldW=x.wallet||'';if(!nm)return;
+  if(bx&&!S.wallets.includes(nm)){wNewWallet(nm);S.wmeta=Object.assign({},S.wmeta,{[nm]:Object.assign({},(S.wmeta||{})[nm],{kind:'boerse'})})}
+  const impN=Object.assign({},x.impN);for(const r of f.P.rows)impN[r.net]=td;if(f.P.unk.length&&wfNet(f))impN[wfNet(f)]=td;
+  S.addr[f.addr]=bx?{wallet:nm,own:false,imp:td,impN}:Object.assign({own:false,br:1,name:nm,imp:td,impN},/^dfx(\.swiss)?$/i.test(nm)?{dfx:1}:{nameMan:1});
+  if(S.addrNo&&S.addrNo[f.addr]){S.addrNo=Object.assign({},S.addrNo);delete S.addrNo[f.addr];if(!Object.keys(S.addrNo).length)delete S.addrNo}
+  const net=wfNet(f);
+  for(const r of f.P.rows){const o=r.from===f.addr?r.to:r.from;if(!rOwn(S,o)){st.notOwn++;continue}
+    if(S.wtx[r.key]){st.known++;continue}
+    S.wtx[r.key]=Object.assign({hash:r.hash,net:r.net,contract:r.contract,coin:r.coin,bridged:r.br,iss:r.iss,from:r.from,to:r.to,qty:r.qty,ts:r.ts,date:r.date,time:r.time,
+      wFrom:rAW(S,r.from),wTo:rAW(S,r.to),st:'open',ref:'',sus:r.sus,file:f.name,noAsk:[]},r.card?{tok:r.tok,card:1}:{});st.neu.push(r.key)}
+  for(const r of f.P.unk){if(!net)continue;const o=r.from===f.addr?r.to:r.from;if(!rOwn(S,o)){st.notOwn++;continue}if(S.wtx[r.key]){st.known++;continue}if(!S.wign[r.key])S.wign[r.key]=tokMove(r,net,rAW(S,o),f.name)}
+  st.after.push(addrAfter(S,f.addr,{oldW}))}
 // Bewegungen speichern, eigene Adressen ins Adressbuch, Abgleich. Ergebnis für Vorschau und Meldung.
 // Ab 0.42: Zeilen unbekannter Token kommen nach S.wign; D.tok[k] = Wahl in der Vorschau ('usdc' oder 'ign'). Bestätigte Token (auch früher
 // bestätigte) wandern nach S.wtx. st.offer = angebotene Token, st.own = fremde Adressen derselben Wallet, die jetzt eigene sind.
-function wImport(D){const st={neu:[],known:0,ign:{other:0,zero:0,fake:0},own:[]};
-  for(const f of D.files){for(const k of ['other','zero','fake'])st.ign[k]+=f.P.ign[k];if(!wfUse(f))continue;
+function wImport(D){const st={neu:[],known:0,ign:{other:0,zero:0,fake:0},fakeC:{},own:[],notOwn:0,after:[]};
+  for(const f of D.files){for(const k of ['other','zero','fake'])st.ign[k]+=f.P.ign[k];for(const [c,n] of Object.entries(f.P.fakeC||{}))st.fakeC[c]=(st.fakeC[c]||0)+n;if(!wfUse(f))continue;
+    // Ab 0.119 (Punkt 2): „Nicht meine Adresse (Börse oder Dienst)“: Die Adresse kommt als Börse bzw. Dienst ins Adressbuch, mit der Datei (impN). Übernommen
+    // werden nur Bewegungen mit einer deiner Adressen auf der anderen Seite (st.notOwn zählt die anderen), danach räumt addrAfter auf.
+    if(f.wallet==='+x'){wfImportX(f,st);continue}
     const w=wfWallet(f);if(!S.wallets.includes(w))wNewWallet(w,W_NEWK(f.wallet));
     if(f.later){S.wmeta=Object.assign({},S.wmeta,{[w]:Object.assign({},(S.wmeta||{})[w],{prov:1})});S.wlater=Object.assign({},S.wlater,{[w]:{name:f.name,addr:f.addr,text:f.text||''}})}
     // Ab 0.42: Adresse der Datei stand als fremde Adresse derselben Wallet im Adressbuch, jetzt eigene (ohne Rückfrage, mit Meldung)
     const A0=S.addr[f.addr];if(A0&&!A0.own&&!A0.tag&&!A0.pay&&A0.wallet===w)st.own.push({a:f.addr,w});
     // Ab 0.41: Tag des Einlesens auch je Netzwerk der Datei (impN, für den Stand)
-    wImpN(S);const td=todayLocal(),net=wfNet(f);wAddrSet(f.addr,w,true,td);const A=S.addr[f.addr];A.impN=Object.assign({},A.impN);for(const r of f.P.rows)A.impN[r.net]=td;
+    // Ab 0.119: Eine Börse als Wallet der Datei macht die Adresse zur Adresse der Börse (bis 0.118 wurde sie eigene Adresse); „Ja, auch meine“ merkt two
+    wImpN(S);const td=todayLocal(),net=wfNet(f);wAddrSet(f.addr,w,wKindOf(w)!=='boerse',td);const A=S.addr[f.addr];if(f.twoOk)A.two=1;A.impN=Object.assign({},A.impN);for(const r of f.P.rows)A.impN[r.net]=td;
     if(f.P.unk.length&&net)A.impN[net]=td;
     // Ab 0.45 (1.14): Lockadressen merken (Adresse → echte Gegenseite)
     // Ab 0.52 (4): nicht nach „Keine Lockadresse“ (S.lookNo)
@@ -5427,7 +5566,7 @@ function wfPrevH(){
   // Vorauswahl „Nicht verwenden“, auf Wunsch doch verwenden (dann Netzwerk von Hand, ohne Vorgabe); Token-Frage je Datei
   // Ab 0.56 (2): Auch eine Adresse, die schon eine Wallet hat (auch eine vorläufige aus „Später zuordnen“), bekommt das Menü, vorbelegt mit ihr
   const perH=(f,i)=>{const P=f.P,WS=wfpWallets(S,D,i);if(f.cur&&!WS.includes(f.cur)&&S.wallets.includes(f.cur))WS.unshift(f.cur);
-    const sel=f.later?`<b>noch nicht zugeordnet</b> <button type="button" class="zlink" data-wfunlater="${i}">jetzt zuordnen</button>`:`<select data-wfw="${i}" aria-label="Wallet zu dieser Adresse"><option value="">bitte wählen</option>${WS.map(w=>`<option value="${esc(w)}"${w===f.wallet?' selected':''}>${esc(w)}</option>`).join('')}<option value="+" ${f.wallet==='+'?'selected':''}>+ Neue Wallet …</option><option value="+k" ${f.wallet==='+k'?'selected':''}>+ Neue Karte …</option></select>${W_NEWV(f.wallet)?` <input type="text" data-wfn="${i}" value="${esc(f.newName)}" placeholder="${f.wallet==='+k'?'Name, z. B. Meine Karte':'Name, z. B. Bix'}" aria-label="${W_PH(f.wallet)}" style="width:16ch">`:''}`;
+    const sel=f.later?`<b>noch nicht zugeordnet</b> <button type="button" class="zlink" data-wfunlater="${i}">jetzt zuordnen</button>`:`<select data-wfw="${i}" aria-label="Wallet zu dieser Adresse"><option value="">bitte wählen</option>${WS.map(w=>`<option value="${esc(w)}"${w===f.wallet?' selected':''}>${esc(w)}</option>`).join('')}<option value="+" ${f.wallet==='+'?'selected':''}>+ Neue Wallet …</option><option value="+k" ${f.wallet==='+k'?'selected':''}>+ Neue Karte …</option><option value="+x" ${f.wallet==='+x'?'selected':''}>Nicht meine Adresse (Börse oder Dienst) …</option></select>${W_NEWV(f.wallet)?` <input type="text" data-wfn="${i}" value="${esc(f.newName)}" placeholder="${f.wallet==='+k'?'Name, z. B. Meine Karte':f.wallet==='+x'?'Name, z. B. DFX.swiss':'Name, z. B. Bix'}" aria-label="${W_PH(f.wallet)}" style="width:16ch">`:''}${f.wallet==='+x'?` <select data-wfxk="${i}" aria-label="Börse oder Dienst"><option value="br" ${f.xk!=='boerse'?'selected':''}>Dienst</option><option value="boerse" ${f.xk==='boerse'?'selected':''}>Börse</option></select><br><span class="small">Das Tool übernimmt aus dieser Datei nur Bewegungen mit einer deiner Adressen.</span>`:''}`;
     const nets=P.nets.map(wNet).join(', '),use=wfUse(f);
     // Ab 0.42: Datei nur mit unbekannten Token: Netzwerk wählen (aus der Datei nicht erkennbar)
     const nsel=use&&P.unk.length&&!P.nets.length?`<p>${gl('netzwerk','Netzwerk')} dieser Datei: <select data-wfnet="${i}" aria-label="Netzwerk dieser Datei"><option value="">bitte wählen</option>${Object.keys(W_NET).map(n=>`<option value="${n}" ${n===f.net?'selected':''}>${W_NET[n].n}</option>`).join('')}</select></p>`:'';
@@ -5478,7 +5617,9 @@ function wfPrevH(){
     const bl=ER.length||NO.length?`<details class="wfd" open><summary>${pl(ER.length,'Vorgang','Vorgänge')} über eine Brücke oder einen Dienst erkannt</summary><ul>${ER.map(x=>`<li>${x.t} ${rb(x.v,'rückgängig')}</li>`).join('')}${NO.map(x=>`<li class="small">Nicht übernommen: ${x.t} ${rb(x.v,'doch übernehmen')}</li>`).join('')}</ul></details>`:'';
     D.ER=ER;
     const nets=[...new Set(Dx.files.flatMap(f=>f.P.nets))];
-    const fake=ig.fake?(nets.length?`${pl(ig.fake,'gefälschter Token','gefälschte Token')} mit Namen USDC oder USDT`:`${pl(ig.fake,'Token','Token')} mit Namen USDC oder USDT, aber unbekannter Vertragsadresse (gefälscht oder auf einem Netzwerk, das das Tool nicht kennt)`):'';
+    // Ab 0.119: die Namen kommen aus den gefundenen Coins (st.fakeC), z. B. „USDC oder ETH“; ohne Angabe wie bis 0.118 „USDC oder USDT“
+    const FN=Object.keys(st.fakeC||{}).sort(),fnm=FN.length?(FN.length===1?FN[0]:FN.slice(0,-1).join(', ')+' oder '+FN[FN.length-1]):'USDC oder USDT';
+    const fake=ig.fake?(nets.length?`${pl(ig.fake,'gefälschter Token','gefälschte Token')} mit Namen ${fnm}`:`${pl(ig.fake,'Token','Token')} mit Namen ${fnm}, aber unbekannter Vertragsadresse (gefälscht oder auf einem Netzwerk, das das Tool nicht kennt)`):'';
     res=`${own}${tk}<p><b>${pl(st.neu.length,'neue Bewegung','neue Bewegungen')}</b>${st.known?` · ${fI.format(st.known)} schon bekannt`:''}</p>
       ${st.neu.length?`<ul class="wfl"><li>${pl(st.tag.length,'zu Tag zugeordnet','zu Tag zugeordnet')}</li><li>${pl(st.tr,'Übertrag zwischen deinen Wallets','Überträge zwischen deinen Wallets')}</li>${st.xin.length?`<li>${pl(st.xin.length,'Eingang zu einem Übertrag zugeordnet','Eingänge zu Überträgen zugeordnet')} (zweite Seite)</li>`:''}${st.swap?`<li>${fI.format(st.swap)} ${gl('umtausch','Umtausch')} in derselben Wallet</li>`:''}${st.int?`<li>${fI.format(st.int)} ${gl('intern','intern')} (beide Seiten in derselben Wallet)</li>`:''}${st.br.length||st.xp.length||st.ch.length||st.tx.length?`<li>${pl(st.br.length+st.xp.length+st.ch.length+st.tx.length,'Vorgang über eine Brücke','Vorgänge über eine Brücke')} (Liste unten)</li>`:''}${st.pay?`<li>${pl(st.pay,'Kartenzahlung','Kartenzahlungen')} (Vorschlag: Zahlung)</li>`:''}<li>${pl(st.sug,'Vorschlag zu einem Eintrag von Hand','Vorschläge zu Einträgen von Hand')}</li><li>${fI.format(st.open-st.sug)} offen${st.ask?`, davon ${fI.format(st.ask)} mit Frage`:''}</li>${st.sus?`<li>${pl(st.sus,'verdächtige','verdächtige')} (${gl('verdaechtig','unter 0,01')})</li>`:''}</ul>`:''}${bl}${xl}${tl}
       ${ig.other?`<p class="small">${pl(ig.other,'Bewegung anderer Token','Bewegungen anderer Token')} ignoriert. Das Tool rechnet nur USDC und USDT.</p>`:''}
@@ -5508,6 +5649,20 @@ function provOpen(){if(!Object.keys(S.wlater||{}).some(p=>provTarget(S,p)))retur
 function wlReopen(w){const x=(S.wlater||{})[w];if(!x)return;const P=parseWallet(x.text,x.name);if(P.err)return;
   WFP={files:[{name:x.name,text:x.text,P,addr:P.addr,wallet:'',newName:'',net:'',skip:0}],tok:{},ask:null,mode:'all',done:[],re:w};needReset($('wfprev'));
   tdOver();msg('wfmsg','','');dtOpen('wf');renderWfPrev()}
+// Ab 0.119 (Punkt 2): Vorbelegung für „Nicht meine Adresse“: Dienst „DFX.swiss“, wenn die Adresse schon DFX.swiss ist oder ein Hash der Datei zu einem
+// DFX.swiss-Eintrag passt oder eine Bewegung an eine Adresse von DFX.swiss geht; Börse, wenn die Adresse schon zu einer Börse gehört; sonst Dienst ohne Name
+function wfXGuess(f){const x=S.addr[f.addr],H=new Set(S.cx.filter(c=>c.dx).map(c=>c.dx));
+  if(dxAddr(S,f.addr)||f.P.rows.some(r=>H.has(r.hash)||dxAddr(S,r.from)||dxAddr(S,r.to)))return {newName:DX_NAME,xk:'br'};
+  if(x&&x.wallet&&wKindOf(x.wallet)==='boerse')return {newName:x.wallet,xk:'boerse'};return {newName:x&&x.br&&x.name||'',xk:'br'}}
+// Ab 0.119 (Punkt 2): Wallet oder Karte hat auf demselben Netzwerk schon eine andere eigene Adresse mit Datei: Rückfrage (null = keine). sent = deine Wallet
+// hat an diese Adresse Geld geschickt (dann der Satz zur Einzahlungsadresse). Gilt nicht beim erneuten Einlesen und nach „Ja, auch meine“ (S.addr[a].two).
+function wfTwo(f){const w=wfWallet(f),x=S.addr[f.addr];if(!wfUse(f)||f.wallet==='+x'||f.later||f.twoOk||!w||!S.wallets.includes(w)||wKindOf(w)==='boerse')return null;
+  if(x&&(x.two||(x.own&&x.wallet===w)))return null;const nets=f.P.nets.length?f.P.nets:[wfNet(f)].filter(Boolean);
+  const o=Object.keys(S.addr).find(a=>{const y=S.addr[a];return a!==f.addr&&y.own&&!y.tag&&y.wallet===w&&nets.some(n=>y.impN?y.impN[n]:y.imp)});if(!o)return null;
+  const mine=new Set(Object.keys(S.addr).filter(a=>S.addr[a].own&&S.addr[a].wallet===w));
+  const sent=Object.values(S.wtx).some(m=>m.to===f.addr&&mine.has(m.from))||f.P.rows.some(r=>r.to===f.addr&&mine.has(r.from));
+  const net=nets.find(n=>{const y=S.addr[o];return y.impN?y.impN[n]:y.imp})||nets[0];
+  return {o,sent,txt:`„${w}“ hat auf ${wNet(net)} schon die Adresse ${wShort(o)}. Ist ${wShort(f.addr)} wirklich auch deine?${sent?' Wenn deine Wallet dorthin Geld geschickt hat, ist es vermutlich die Einzahlungsadresse einer Börse oder eines Diensts.':''}`}}
 let WF_NMOK=false,WF_MVOK=false;
 function wfSave(){
   // Ab 0.43: eine Wallet nach der anderen: nur die Dateien der aktuellen Wallet, danach Ergebnis und „Nächste Wallet?“, Fokus auf diese Wallet
@@ -5522,12 +5677,21 @@ function wfSave(){
   // Ab 0.56 (2): Hat die Adresse schon eine Wallet (auch eine vorläufige) und ist eine andere gewählt, fragt das Tool wie überall beim Zuordnen
   // (addrMvTxt). Abbrechen lässt die Vorschau offen und ändert nichts. Danach schreibt wImport die Adresse ins Adressbuch, wSync löst eine vorläufige Wallet auf.
   if(!WF_MVOK){const seen=new Set(),L=Dx.files.filter(f=>{const cur=rAW(S,f.addr),w=wfWallet(f);return wfUse(f)&&!!cur&&!!w&&w!==cur&&!seen.has(f.addr)&&seen.add(f.addr)});
-    if(L.length){askBox({title:'Adresse zuordnen',text:L.map(f=>addrMvTxt(S,f.addr,wfWallet(f))).join('\n\n'),ok:'Zuordnen'})
+    // Ab 0.119 (Punkt 2, Ergänzung 1): „Nicht meine Adresse“ nennt, was dabei wegfällt; dann roter Knopf und „Sicherung speichern“
+    const PX=L.map(f=>f.wallet==='+x'?addrAfterPlan(S,f.addr,'br',false):null),bad=PX.some(addrDropBad);
+    if(L.length){askBox(Object.assign({title:'Adresse zuordnen',text:L.map((f,j)=>{const T=addrDropTxt(PX[j]);return T?addrMvTxt(S,f.addr,wfWallet(f),PX[j].mv.length).replace(/ Fortfahren\?$/,'')+'\n\n'+T+'\n\nFortfahren?':addrMvTxt(S,f.addr,wfWallet(f))}).join('\n\n'),ok:'Zuordnen'},bad?{danger:true,more:ASK_BK}:{}))
       .then(v=>{if(!v||WFP!==D)return;WF_MVOK=true;try{wfSave()}finally{WF_MVOK=false}});return}}
+  // Ab 0.119 (Punkt 2): zweite Adresse derselben Wallet oder Karte auf demselben Netzwerk: „Ja, auch meine“ · „Nein, Börse oder Dienst“ · „Abbrechen“
+  for(const f of Dx.files){const q=wfTwo(f);if(!q)continue;
+    askBox({title:'Adresse prüfen',text:q.txt,ok:'Ja, auch meine',alt:'Nein, Börse oder Dienst',no:'Abbrechen'}).then(v=>{if(WFP!==D)return;
+      if(v===true){f.twoOk=1;wfSave();return}if(v==='alt'){f.wallet='+x';delete f.later;Object.assign(f,wfXGuess(f));renderWfPrev();const n=$('wfprev').querySelector(`[data-wfn="${D.files.indexOf(f)}"]`);if(n)n.focus()}});return}
   // Ab 0.48 (3.9): alles, was dieses Einlesen anlegt, ist neu
   const n0=nwSnap(),st=wImport(Dx);nwMark(n0);if(st.neu.length)S.ui.lastLoad=new Date().toISOString();
   if(cur){D.done.push(cur);D.last={w:cur,n:st.neu.length,open:st.neu.filter(k=>S.wtx[k]&&S.wtx[k].st==='open').length};WZ_FOCUS=cur}else WFP=null;save();
   const parts=[...st.own.map(x=>`Adresse ${wShort(x.a)} war als fremde Adresse von ${esc(x.w)} gespeichert. Sie ist jetzt deine eigene.`),`${fI.format(st.neu.length)} ${st.neu.length===1?'neue Bewegung':'neue Bewegungen'} übernommen${st.known?`, ${fI.format(st.known)} ${st.known===1?'war':'waren'} schon da`:''}.`];
+  // Ab 0.119 (Punkt 2): Datei einer fremden Adresse
+  if(st.notOwn)parts.push(`${fI.format(st.notOwn)} ${st.notOwn===1?'Bewegung':'Bewegungen'} ohne deine Adresse nicht übernommen.`);
+  {const g=st.after.reduce((n,r)=>n+r.mv.length,0);if(g)parts.push(`${fI.format(g)} ${g===1?'Bewegung ohne deine Adresse ist':'Bewegungen ohne deine Adresse sind'} weggefallen.`)}
   if(st.tag.length||st.tr)parts.push(`${fI.format(st.tag.length)} zu Tag zugeordnet, ${fI.format(st.tr)} ${st.tr===1?'Übertrag':'Überträge'}.`);
   {const nl=Dx.files.filter(f=>f.later&&wfUse(f)).length;if(nl)parts.push(`${fI.format(nl)} ${nl===1?'Datei':'Dateien'} später zuordnen. Du findest ${nl===1?'sie':'sie'} in „Noch offen“.`)}
   if(st.xin.length)parts.push(`${fI.format(st.xin.length)} ${st.xin.length===1?'Eingang':'Eingänge'} zu ${st.xin.length===1?'einem Übertrag':'Überträgen'} zugeordnet.`);
@@ -5544,11 +5708,13 @@ function wfSave(){
 }
 $('wfprev').addEventListener('change',e=>{const i=e.target.dataset.wfw;
   // Ab 0.44: Ein Name, der bei einer früheren Datei neu eingetippt wurde, steht direkt als Wallet (wImport legt sie an)
-  if(i!=null&&WFP){const f=WFP.files[+i],v=e.target.value;f.wallet=v;if(W_NEWV(v)){f.newName='';delete f.later}
+  if(i!=null&&WFP){const f=WFP.files[+i],v=e.target.value;f.wallet=v;if(W_NEWV(v)){f.newName='';delete f.later}if(v==='+x')Object.assign(f,wfXGuess(f))
     renderWfPrev();const n=$('wfprev').querySelector(`[data-wfn="${i}"]`);(n||$('wfprev').querySelector(`[data-wfw="${i}"]`)).focus()}
   // Ab 0.43 nur bei geändertem Namen neu aufbauen (sonst baut das Verlassen des Felds die Vorschau ein zweites Mal um, während das Feld schon weg ist).
   // Ab 0.44 übernimmt schon das Tippen den Namen (input), deshalb baut das Verlassen des Felds nichts mehr um: Ein Klick auf „Weiter“ reicht.
   const j=e.target.dataset.wfn;if(j!=null&&WFP&&e.target.isConnected&&WFP.files[+j].newName!==e.target.value){WFP.files[+j].newName=e.target.value;renderWfPrev()}
+  // Ab 0.119 (Punkt 2): Börse oder Dienst
+  const xk=e.target.dataset.wfxk;if(xk!=null&&WFP){WFP.files[+xk].xk=e.target.value;renderWfPrev();const s=$('wfprev').querySelector(`[data-wfxk="${xk}"]`);if(s)s.focus()}
   const nt=e.target.dataset.wfnet;if(nt!=null&&WFP){WFP.files[+nt].net=e.target.value;renderWfPrev();const s=$('wfprev').querySelector(`[data-wfnet="${nt}"]`);if(s)s.focus()}
   const u=e.target.dataset.wfuse;if(u!=null&&WFP){const f=WFP.files[+u];f.skip=e.target.checked?0:1;if(!f.skip)f.net='';renderWfPrev();const c=$('wfprev').querySelector(`[data-wfuse="${u}"]`);if(c)c.focus()}});
 $('wfprev').addEventListener('input',e=>{const j=e.target.dataset.wfn;if(j==null||!WFP)return;
@@ -5660,7 +5826,7 @@ function bxLoadText(name,t,pre){const M=pre?[pre]:[];let bad=0;BXP=null;needRese
   for(let x={name,text:t};x;x=!BXP&&BX_Q.length?BX_Q.shift():null){const F=bxFmt(x.text)||BX_FMT[0],P=F.parse(x.text);
     if(P.err){M.push(`<b>${esc(x.name)}</b>: ${P.err}`);bad=1;continue}
     // Ab 0.51 (1, ersetzt 0.46 3.3): gibt es keine Wallet mit dem erkannten Namen, ist „+ Neue Wallet …“ mit ihm vorbelegt (z. B. „Bitvavo“)
-    const w=F.w(S,P);BXP=F.dx?{P,fn:F.n,dx:1,name:x.name,w:w||'+',nn:'',rw:{},ch:{}}:{P,fn:F.n,name:x.name,w:S.wallets.includes(w)?w:'+',nn:S.wallets.includes(w)?'':w,ch:{},aw:{},ew:{}}}
+    const w=F.w(S,P);BXP=F.dx?{P,fn:F.n,dx:1,name:x.name,w:w||'+',nn:'',rw:{},ch:{},un:{}}:{P,fn:F.n,name:x.name,w:S.wallets.includes(w)?w:'+',nn:S.wallets.includes(w)?'':w,ch:{},aw:{},ew:{}}}
   const q=BX_Q.length,rest=q===1?`die Börsen-Datei „${esc(BX_Q[0].name)}“`:`${fI.format(q)} Börsen-Dateien`;
   if(BXP&&pre!=null)M.push(`Nächste Börsen-Datei: „${esc(BXP.name)}“.${q?` Danach ${q===1?'kommt':'kommen'} noch ${rest}.`:''}`);
   else if(BXP&&q)M.push(`Danach ${q===1?'kommt':'kommen'} noch ${rest}.`);
@@ -5730,34 +5896,70 @@ const dxTop=()=>BXP?(W_NEWV(BXP.w)?BXP.nn.trim():BXP.w):'';
 const dxRowW=i=>BXP&&BXP.rw[i]!=null?BXP.rw[i]:dxTop();
 // Regel B in eigenen Texten: Einheit und Coin-Name hinter einer Zahl mit geschütztem Leerzeichen
 const rbH=h=>String(h).replace(/(\d) (€|USD|%|[A-Z][A-Z0-9]{1,9}\b)/g,'$1&nbsp;$2');
+// Ab 0.119 (Punkt 1): Frage „Als Dienst „DFX.swiss“ führen?“ in der Vorschau und in „Noch offen“. dxFixPlan spielt die Umstellung auf einer Kopie durch
+// (addrAssign mit 'dfx', danach wSync): neu verknüpfte Einträge, ausstehende Coins, was wegfällt (addrAfter). Später = nur in dieser Vorschau ausblenden.
+function dxFixPlan(a){return wSim(()=>{const pre=new Set(S.cx.filter(c=>c.dx&&c.wk).map(c=>c.id)),P=addrAfterPlan(S,a,'dfx',false);
+  addrAssign(S,a,'dfx',false,()=>true,'',1);wSync();
+  const lk=S.cx.filter(c=>c.dx&&c.wk&&!pre.has(c.id)).map(c=>c.kind),pd={};for(const o of Object.values(dxPendBo(S))){const k=o.w+'|'+o.coin;pd[k]=(pd[k]||0)+o.qty}
+  return {P,lk,pd}})}
+function dxFixLines(F){const l=[],K=[...new Set(F.lk)];
+  if(F.lk.length)l.push(K.length===2?'Kauf und Verkauf werden verknüpft.':F.lk.length===1?(K[0]==='kauf'?'Der Kauf wird verknüpft.':'Der Verkauf wird verknüpft.'):`${fI.format(F.lk.length)} ${K[0]==='kauf'?'Käufe':'Verkäufe'} werden verknüpft.`);
+  for(const [k,q] of Object.entries(F.pd)){const i=k.lastIndexOf('|');l.push(`${fmtNum(q)} ${k.slice(i+1)} ${q===1?'steht':'stehen'} dann als „Ausstehend bei DFX.swiss“ (aus ${k.slice(0,i)}).`)}
+  const t=addrDropTxt(Object.assign({},F.P,{pend:[]}));if(t)l.push(...t.split('\n'));return l}
+const dxFixQ=a=>`Die Adresse ${wShort(a)} ist die Einzahlungsadresse von DFX.swiss, nicht deine. Als Dienst „DFX.swiss“ führen?`;
+let DX_LATER=new Set();
+function dxFixH(x){if(BXP&&DX_LATER.has(x.a))return '';const F=dxFixPlan(x.a),L=dxFixLines(F),own=S.addr[x.a]&&S.addr[x.a].own;
+  return `<div class="msg warn dxfix"><p><b>${esc(dxFixQ(x.a))}</b></p><p class="small">Bisher steht sie bei „${esc(x.w)}“ als ${own?'eigene Adresse':'Adresse der Börse'}. Der Hash einer Zeile von DFX.swiss passt zu ${x.n===1?'einer Bewegung':fI.format(x.n)+' Bewegungen'} mit ihr.</p>${L.length?`<ul class="small">${L.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:''}<div class="row"><button type="button" class="btn primary" data-dxfix="${esc(x.a)}">Als Dienst führen</button>${BXP?`<button type="button" class="btn" data-dxlater="${esc(x.a)}">Später</button>`:''}</div></div>`}
+function dxFixGo(a){const F=dxFixPlan(a),L=dxFixLines(F),go=()=>{const snap=JSON.stringify(S),w=(S.addr[a]||{}).wallet||'';
+    addrAssign(S,a,'dfx',false,()=>true,'',1);wSync();save();render();if(BXP)renderBxPrev();
+    const left=w&&S.wallets.includes(w)&&!Object.values(S.addr).some(y=>y&&y.wallet===w)&&!S.cx.some(c=>c.wallet===w||c.to===w);
+    toastUndo(`Die Adresse ${wShort(a)} ist jetzt der Dienst „DFX.swiss“.${left?` Die Wallet „${w}“ hat keine Adressen und Einträge mehr, du kannst sie unter „Adressen“ entfernen.`:''}`,snap)};
+  if(!addrDropBad(F.P)){go();return}
+  askBox({title:'Adresse ändern',text:dxFixQ(a)+'\n\n'+L.join('\n'),ok:'Als Dienst führen',danger:true,more:ASK_BK}).then(v=>{if(v)go()})}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-dxfix],[data-dxlater]');if(!b)return;
+  if(b.dataset.dxlater){DX_LATER.add(b.dataset.dxlater);renderBxPrev();return}dxFixGo(b.dataset.dxfix)});
 function renderDxPrev(){const box=$('bxprev'),D=BXP,P=D.P,top=dxTop(),pl=(n,a,b)=>`${fI.format(n)} ${n===1?a:b}`,q=v=>fmtNum(v),t5=r=>r.time?' '+r.time.slice(0,5):'';
   const WL=dxWallets(S),extra=W_NEWV(D.w)&&top&&!WL.includes(top)?[top]:[];
   const sel=`<select data-dxw aria-label="Wallet für DFX.swiss">${WL.map(x=>`<option ${x===D.w?'selected':''}>${esc(x)}</option>`).join('')}<option value="+" ${D.w==='+'?'selected':''}>+ Neue Wallet …</option><option value="+k" ${D.w==='+k'?'selected':''}>+ Neue Karte …</option></select>${W_NEWV(D.w)?` <input type="text" data-bxn value="${esc(D.nn)}" placeholder="${W_PH(D.w)}" aria-label="${W_PH(D.w)}" style="width:16ch">`:''}`;
   let h=`<div class="tprev"><p><b>Vorschau:</b> ${esc(D.name)}${P.from?` · ${dS(P.from)}${P.to!==P.from?DS+dS(P.to):''}`:''}</p><div class="bxq"><p><b>In welche Wallet gehen deine DFX.swiss-Käufe und -Verkäufe?</b> ${sel}</p><p class="small">Die Datei von DFX.swiss nennt die Wallet nicht. Du kannst jede Zeile unten einzeln ändern.</p></div>`;
+  // Ab 0.119 (Punkt 1): Adresse von DFX.swiss als eigene Wallet, Karte oder Börse: Frage „Als Dienst „DFX.swiss“ führen?“
+  h+=dxConflicts(S,P.rows).map(dxFixH).join('');
   const plan=dxPlan(S,P,dxRowW),it=plan.items;
   const rad=(i,v,t)=>`<label class="fopt"><input type="radio" name="bxc-${i}" value="${v}" data-bxc="${i}" ${(D.ch[i]||'replace')===v?'checked':''}><span>${t}</span></label>`;
   const dv=(f,v)=>/^\d+(\.\d+)?$/.test(v)?(f==='Wert'||f==='Gebühr'?fE.format(+v):fmtNum(+v)):f==='Art'?esc(KIND[v]||v):esc(v);
   if(it.length){h+=`<p class="bxh"><b>Käufe und Verkäufe (${fI.format(it.length)})</b></p><div class="bxw"><table class="bxt"><tr><th class="l">Datum</th><th>Art</th><th>Menge</th><th>Euro</th></tr>${it.map((x,i)=>{const r=x.r;
-      const st=x.done?'schon eingelesen':x.back?'schon da (Rückbuchung von DFX.swiss)':x.dup&&x.mv?'schon da (mit der Bewegung verknüpft)':x.dup?'schon da'+(x.diffs.length?'':' (gleich)'):x.k?'neu, mit der Wallet-Datei verknüpft':'neu';
+      const st=x.done&&x.ign?'schon eingelesen, Bewegung ignoriert':x.done?'schon eingelesen':x.back?'schon da (Rückbuchung von DFX.swiss)':x.dup&&x.mv?'schon da (mit der Bewegung verknüpft)':x.dup?'schon da'+(x.diffs.length?'':' (gleich)'):x.k?'neu, mit der Wallet-Datei verknüpft':'neu';
       const eu=x.t==='kauf'?`${fE.format(r.val)}${r.fee>0?`<br><span class="small">davon Gebühr ${fE.format(r.fee)}</span>`:''}`:`${fE.format(r.erl)}<br><span class="small">ausbezahlt ${fE.format(r.val)}${r.fee>0?`, Gebühr ${fE.format(r.fee)}`:''}</span>`;
       const rw=dxRowW(i),opts=[...WL,...extra],ws=`<label class="small">Wallet: <select data-dxr="${i}" aria-label="Wallet der Zeile vom ${dS(r.date)}">${(opts.includes(rw)?opts:[rw,...opts]).filter(Boolean).map(w=>`<option ${w===rw?'selected':''}>${esc(w)}</option>`).join('')}</select></label>`;
       const hints=[x.other?`Laut Wallet-Datei gehört diese Zeile zu „${esc(x.other)}“. Beim Übernehmen wird verknüpft, der Eintrag steht dann bei ${esc(x.other)}.`:'',
         r.chk!=null?(x.t==='verkauf'?`Laut Datei ist der Erlös ${fE.format(r.chk)}, gerechnet ${fE.format(r.erl)}. Prüfe die Zeile.`:`Laut Datei ist der Wert ${fE.format(r.chk)}, bezahlt ${fE.format(r.val)}. Prüfe die Zeile.`):'',
-        r.note?esc(r.note):'',x.dup&&x.diffs.length?'Abweichungen: '+x.diffs.map(([f,a,b])=>`${f} ${dv(f,a)} → ${dv(f,b)}`).join(', '):''].filter(Boolean);
-      const ch=x.dup&&!x.done?`<div class="bxch">${rad(i,'replace','ersetzen')}${rad(i,'keep','behalten')}${x.mv||x.back?'':rad(i,'both','beide')}</div>`:'';
-      return `<tr><td class="l">${dS(r.date)}${t5(r)}</td><td>${x.t==='kauf'?'Kauf':'Verkauf'}<br><span class="small">${st}</span></td><td><b>${q(r.qty)}</b> ${esc(r.coin)}</td><td>${eu}</td></tr><tr class="bxsub"><td colspan="4">${x.done?'':ws}${hints.map(t=>`<br><span class="small">${t}</span>`).join('')}${ch}</td></tr>`}).join('')}</table></div>`}
+        r.note?esc(r.note):'',x.dup&&x.diffs.length?'Abweichungen: '+x.diffs.map(([f,a,b])=>`${f} ${dv(f,a)} → ${dv(f,b)}`).join(', '):'',
+        // Ab 0.119 (5b): ignorierte Bewegung mit diesem Hash
+        x.ign?`Diese Bewegung hast du ignoriert. Laut DFX.swiss-Datei gehört sie zu deinem ${x.t==='kauf'?'Kauf':'Verkauf'}.`:''].filter(Boolean);
+      const ch=(x.dup&&!x.done?`<div class="bxch">${rad(i,'replace','ersetzen')}${rad(i,'keep','behalten')}${x.mv||x.back?'':rad(i,'both','beide')}</div>`:'')+
+        (x.ign?`<div class="bxch"><label class="fopt"><input type="checkbox" data-bxun="${i}" ${D.un[i]===false?'':'checked'}><span>Ignorieren aufheben und verknüpfen</span></label></div>`:'');
+      return `<tr><td class="l">${dS(r.date)}${t5(r)}</td><td>${x.t==='kauf'?'Kauf':'Verkauf'}<br><span class="small">${st}</span></td><td><b>${q(r.qty)}</b> ${esc(r.coin)}</td><td>${eu}</td></tr><tr class="bxsub"><td colspan="4"><div class="bxsw">${x.done?'':ws}${hints.map((t,j)=>`${j||!x.done?'<br>':''}<span class="small">${t}</span>`).join('')}${ch}</div></td></tr>`}).join('')}</table></div>`}
   else h+='<p class="small">In der Datei steht kein Kauf und kein Verkauf, den das Tool übernehmen kann.</p>';
+  // Ab 0.119 (5b, Florians Ergänzung 1): Folgen von „Ignorieren aufheben“ (neuer Dienst DFX.swiss, was wegfällt), auf einer Kopie durchgespielt
+  {const A=dxUnPlan(plan,D);if(A.txt)h+=`<div class="msg ${A.bad?'warn':'info'}"><p>Beim Übernehmen:</p><p>${esc(A.txt).replace(/\n/g,'<br>')}</p></div>`}
   const ne=P.eur.deposit+P.eur.withdrawal;
   h+=`${ne?`<p class="small">${pl(ne,'Ein- oder Auszahlung in Euro','Ein- und Auszahlungen in Euro')} nicht übernommen (Bank, kein Krypto).</p>`:''}${Object.entries(P.other).map(([c,n])=>`<p class="small">${pl(n,'Zeile','Zeilen')} ${esc(c)} nicht übernommen. ${/^ETH/.test(c)?'Das Tool rechnet ETH noch nicht.':'Das Tool rechnet nur USDC und USDT.'}</p>`).join('')}${Object.entries(P.unk).map(([c,n])=>`<p class="small">${pl(n,'Zeile','Zeilen')} „${esc(c)}“ nicht übernommen. Diese Art kennt das Tool noch nicht.</p>`).join('')}`;
   box.innerHTML=rbH(h)+`<div class="row" data-act style="margin-top:10px"><button type="button" class="btn primary" id="btn-bxsave">Übernehmen</button><button type="button" class="btn" id="btn-bxcancel">Abbrechen</button></div></div>`;needRe(box)}
-function dxSave(){const D=BXP;if(!D)return;const top=dxTop(),plan=dxPlan(S,D.P,dxRowW);
+// Ab 0.119: Folgen von „Ignorieren aufheben“ beim Übernehmen (Kopie): Text und ob etwas wegfällt (bad, dann Rückfrage mit „Sicherung speichern“)
+function dxUnPlan(plan,D){if(!plan.items.some((x,i)=>x.ign&&D.un[i]!==false))return {txt:'',bad:false};
+  return wSim(()=>{const st={unign:0,after:[]};plan.items.forEach((x,i)=>{if(x.ign&&D.un[i]!==false)dxUnIgn(S,x,st)});
+    const P=st.after.reduce((o,r)=>{for(const k of Object.keys(o))o[k]=o[k].concat(r[k]);return o},{mv:[],cx:[],hand:[],pend:[],open:[]});
+    return {txt:addrDropTxt(Object.assign({},P,{open:[]})),bad:addrDropBad(P)}})}
+function dxSave(ok){const D=BXP;if(!D)return;const top=dxTop(),plan=dxPlan(S,D.P,dxRowW);
   if(plan.items.some((x,i)=>!x.done&&!x.w))return needMark($('bxprev'),[['[data-bxn]',W_NEED(D.w)]]);
+  if(!ok){const A=dxUnPlan(plan,D);if(A.bad){askBox({title:'Übernehmen',text:'Ignorieren aufheben und verknüpfen?\n\n'+A.txt,ok:'Übernehmen',danger:true,more:ASK_BK}).then(v=>{if(v&&BXP===D)dxSave(1)});return}}
   if(W_NEWV(D.w)&&top&&!S.wallets.includes(top))wNewWallet(top,W_NEWK(D.w));
   const pre=new Set(S.cx.filter(c=>!c.dx).map(c=>c.id)),n0=nwSnap(),td0=new Map(todoItems(cryptoCalc()).map(x=>[x.id,x.lv]));
-  const st=dxApply(S,plan,D.ch);if(top)S.ui.dxW=top;bxFileAdd(S,D.P,D.name,DX_NAME,pre,todayLocal());BXP=null;S.ui.lastLoad=new Date().toISOString();const n=wSync();nwMark(n0);save();render();
+  const st=dxApply(S,plan,D.ch,D.un);if(top)S.ui.dxW=top;bxFileAdd(S,D.P,D.name,DX_NAME,pre,todayLocal());BXP=null;S.ui.lastLoad=new Date().toISOString();const n=wSync();nwMark(n0);save();render();
   const pl=(n,a,b)=>`${fI.format(n)} ${n===1?a:b}`,I1=todoItems(cryptoCalc()),nu=I1.filter(x=>!td0.has(x.id)).length,pend=Object.values(S.wtx).filter(m=>m.st==='dfx').length;
   const T=[st.neu?pl(st.neu,'neuer Eintrag','neue Einträge'):'',st.ersetzt?pl(st.ersetzt,'Eintrag ersetzt','Einträge ersetzt'):'',st.behalten?pl(st.behalten,'Eintrag behalten','Einträge behalten'):'',
-    st.link?pl(st.link,'Eintrag mit der Wallet-Datei verknüpft','Einträge mit der Wallet-Datei verknüpft'):''].filter(Boolean).join(' · ').replace(/^$/,'Nichts Neues, alles schon da')+'.'+
+    st.link?pl(st.link,'Eintrag mit der Wallet-Datei verknüpft','Einträge mit der Wallet-Datei verknüpft'):'',st.unign?pl(st.unign,'Bewegung nicht mehr ignoriert','Bewegungen nicht mehr ignoriert'):''].filter(Boolean).join(' · ').replace(/^$/,'Nichts Neues, alles schon da')+'.'+
+    (()=>{const A=st.after.reduce((o,r)=>({mv:o.mv+r.mv.length,cx:o.cx+r.cx.length}),{mv:0,cx:0});return A.mv?` ${A.mv===1?'1 Bewegung ohne deine Adresse ist':fI.format(A.mv)+' Bewegungen ohne deine Adresse sind'} weggefallen.`:''})()+
     (pend?` ${pend===1?'1 Abgang ist':fI.format(pend)+' Abgänge sind'} ausstehend bei DFX.swiss.`:'')+(nu===1?' Dadurch steht 1 neuer Punkt in „Noch offen“.':nu?` Dadurch stehen ${fI.format(nu)} neue Punkte in „Noch offen“.`:'');
   if(BX_Q.length){const x=BX_Q.shift();bxLoadText(x.name,x.text,T)}else{msg('bxmsg','ok',T+dtWaitH('bx'));dtRe()}}
 function bxSave(){const D=BXP,w=bxW();if(!D)return;if(D.dx)return dxSave();if(!w)return needMark($('bxprev'),[['[data-bxn]','Gib der Börse einen Namen ein, z. B. Bitvavo.']]);const plan=bvPlan(S,D.P,w,D.aw);
@@ -5787,6 +5989,8 @@ $('bxprev').addEventListener('change',e=>{if(!BXP)return;const t=e.target;
   if(t.matches('[data-dxr]')){BXP.rw[+t.dataset.dxr]=t.value;renderBxPrev();const s=$('bxprev').querySelector(`[data-dxr="${t.dataset.dxr}"]`);if(s)s.focus();return}
   if(t.matches('[data-bxw]')){BXP.w=t.value;renderBxPrev();const n=$('bxprev').querySelector('[data-bxn]');(n||$('bxprev').querySelector('[data-bxw]')).focus();return}
   if(t.matches('[data-bxc]')){BXP.ch[+t.dataset.bxc]=t.value;return}
+  // Ab 0.119 (5b): Häkchen „Ignorieren aufheben und verknüpfen“
+  if(t.matches('[data-bxun]')){BXP.un[+t.dataset.bxun]=t.checked;return}
   // Ab 0.74 (3.2): Antwort auf „Woher kamen die …?“
   if(t.matches('[data-bxe]')){BXP.ew[t.dataset.bxe]=t.value;renderBxPrev();return}
   // „+ Neue Wallet …“: das Namensfeld daneben (select[data-wnew]) legt die Wallet an und meldet sich danach mit dem Namen
@@ -6123,7 +6327,8 @@ function renderWalletList(){const C=cryptoCalc(),nc=WL_MOB.matches?4:5;
       <div class="row" style="margin-top:8px"><button type="button" class="btn primary" data-wls="${i}">Speichern</button><button type="button" class="btn" data-wlc>Abbrechen</button><button type="button" class="btn danger" data-wd="${i}">Wallet löschen</button></div></td></tr>`;
     const open=WL_OPEN.has(w)||(!!ADDR_Q&&A.some(([a])=>a.includes(ADDR_Q)));
     return `<tr data-wlr="${esc(w)}"><td class="l"><b>${esc(w)}</b><span class="small wkm">${WK_TXT[k]}</span></td><td class="wkc">${WK_TXT[k]}</td><td>${A.length?`<button type="button" class="zlink" data-wlx="${esc(w)}" aria-expanded="${open}">${A.length===1?'1 Adresse':fI.format(A.length)+' Adressen'} ${open?'▴':'▾'}</button>`:'<span class="small">keine</span>'}</td><td>${bal(w)}<br><button type="button" class="zlink small" data-wlkb="${esc(w)}">Kontostand</button></td><td class="abt"><button type="button" class="btn sm" data-wle="${i}" aria-label="Wallet ${esc(w)} bearbeiten">✎</button></td></tr>`+
-      (open?A.map(([a,x])=>`<tr class="wlsub"><td class="l"><span class="small">${wlAT(x)}</span></td><td colspan="3"><span class="nw">${wAdr(a)}${cpBtn(a)}</span><span class="small">${esc(apNets(a).map(wNet).join(', '))} · ${fI.format(wNMoves(a))} ${wNMoves(a)===1?'Bewegung':'Bewegungen'}</span>${addrNaH(a)}</td><td class="wkc"></td></tr>`).join(''):'')}).join('');
+      // Ab 0.119 (Punkt 3): „umstellen“ öffnet das kurze Feld mit „Gehört zu:“ (jede Gruppe, auch Börse → Dienst)
+      (open?A.map(([a,x])=>`<tr class="wlsub"><td class="l"><span class="small">${wlAT(x)}</span></td><td colspan="3"><span class="nw">${wAdr(a)}${cpBtn(a)}</span><span class="small">${esc(apNets(a).map(wNet).join(', '))} · ${fI.format(wNMoves(a))} ${wNMoves(a)===1?'Bewegung':'Bewegungen'} · <button type="button" class="zlink" data-ap="${esc(a)}" aria-expanded="false" aria-label="Adresse ${wShort(a)} umstellen">umstellen</button></span>${addrNaH(a)}</td><td class="wkc"></td></tr>`).join(''):'')}).join('');
   $('t-wl').innerHTML=`<tr><th class="l">Name</th><th class="wkc">Art</th><th>Adressen</th><th>Bestand</th><th aria-label="Knöpfe"></th></tr>`+(rows||`<tr><td colspan="${nc}" class="l small">Nichts gefunden.</td></tr>`);wlHcAll()}
 WL_MOB.addEventListener&&WL_MOB.addEventListener('change',()=>{if(MODAL&&MODAL.id==='wl-modal')renderWalletList()});
 // Ab 0.52 (5.2): k = gewählte Art. Art und Merker Karte speichert das Tool erst, wenn der Name gültig ist (und nach dem Ja beim Zusammenführen).
@@ -6165,14 +6370,40 @@ function wlDrop(w){for(const k of Object.keys(S.wbal||{}))if(k.slice(0,k.lastInd
 // Ab 0.49 (2.5): Jede Wallet ohne Vorgänge lässt sich löschen, auch die erste. Tag-Zeilen ohne eigene Wallet (Geschenk, weiß ich noch nicht, Euro) zählen nicht.
 function wlDel(i){const w=S.wallets[i],nt=Object.values(S.tag).filter(t=>t.wallet===w&&!t.wq&&!t.fiat).length,nc=S.cx.filter(c=>c.wallet===w||c.to===w).length,ad=wlDelAd(w);
   const pl=(n,a,b)=>`${fI.format(n)} ${n===1?a:b}`;
-  if(nt||nc){msg('walletmsg','warn',`„${esc(w)}“ wird noch verwendet: ${[nt?pl(nt,'Tag-Zeile','Tag-Zeilen'):'',nc?pl(nc,'Eintrag','Einträge'):'',ad.length?pl(ad.length,'Adresse','Adressen'):''].filter(Boolean).join(', ')}. Ändere zuerst dort die Wallet oder lösche die Einträge.`);return}
-  {const bx=wlBxMsg(w);if(bx){msg('walletmsg','warn',bx);return}}
+  // Ab 0.119 (Punkt 4): Statt „wird noch verwendet“ eine Rückfrage mit „Umhängen auf …“ und „Mitlöschen“ (wlDelUse), auch für Börsen-Dateien und offene Zeilen
+  if(nt||nc||wlBxMsg(w)){wlDelUse(i);return}
   if(ad.length){const others=S.wallets.filter(x=>x!==w);
     $('walletmsg').innerHTML=`<div class="msg warn">„${esc(w)}“ steht nur noch im Adressbuch (${pl(ad.length,'Adresse','Adressen')}).<div class="row"><button type="button" class="btn" data-wdx="${i}">${ad.length===1?'Adresse auch entfernen':'Adressen auch entfernen'}</button><span>oder zuordnen zu</span><select data-wdt aria-label="Andere Wallet">${others.map(x=>`<option>${esc(x)}</option>`).join('')}</select><button type="button" class="btn" data-wdm="${i}">Zuordnen und Wallet löschen</button></div></div>`;return}
   // Ab 0.50 Nachtrag 5 (W16): Rückfrage mit „Sicherung speichern“
   askBox({title:'Wallet löschen',text:`Wallet „${w}“ löschen?\n\nSie hat keine Vorgänge und keine Adressen.${wbalTxt(w)?' '+wbalTxt(w):''}`,ok:'Löschen',danger:true,more:ASK_BK}).then(v=>{if(!v||S.wallets[i]!==w)return;
     for(const t of Object.values(S.tag))if(t.wallet===w&&(t.wq||t.fiat))t.wallet='';if(S.w0===w)S.w0='';
     {const act=keepActive();S.wallets.splice(i,1);naAfterDrop({w},act)}wlDrop(w);msg('walletmsg','','');save();render()})}
+// Ab 0.119 (Punkt 4): Wallet, Börse oder Karte mit Einträgen löschen. Was daran hängt: Einträge (Wallet oder „nach Wallet“), Tag-Zeilen, Börsen-Dateien
+// dieser Börse (nicht die Datei von DFX.swiss, deren Einträge in deinen Wallets stehen), offene Zeilen, Adressen.
+// „Umhängen auf …“: alles geht an die gewählte Wallet. „Mitlöschen“: Einträge gelöscht (mit ihren Gebühren), ihre Bewegungen sind danach wieder offen
+// (nicht ignoriert), Tag-Zeilen verlieren nur die Wallet, Börsen-Dateien und offene Zeilen der Börse fallen weg, Adressen werden entfernt.
+// Einträge aus einer Börsen-Datei fallen aus deren Liste (bxFileN zählt danach richtig). Danach ist die Wallet gelöscht. Rückgabe {cx, mv, tag, bx, open, ad}
+function wlDelPlan(w){const E=S.cx.filter(c=>c.wallet===w||c.to===w),ids=new Set(E.map(c=>c.id));for(const c of S.cx)if(c.feeOf!=null&&ids.has(c.feeOf))ids.add(c.id);
+  const mv=Object.keys(S.wtx).filter(k=>{const m=S.wtx[k];return m.st==='cx'&&ids.has(m.ref)});
+  return {E,ids,mv,tag:Object.values(S.tag).filter(t=>t.wallet===w&&!t.wq&&!t.fiat),bx:(S.bxF||[]).filter(f=>f.w===w&&f.w!==DX_NAME),open:Object.keys(S.bxOpen||{}).filter(k=>S.bxOpen[k]&&S.bxOpen[k].w===w),ad:wlDelAd(w)}}
+function wlDelApply(i,how,to){const w=S.wallets[i],P=wlDelPlan(w);if(!w||(how==='move'&&(!S.wallets.includes(to)||to===w)))return false;
+  if(how==='move'){for(const c of P.E){if(c.wallet===w)c.wallet=to;if(c.to===w)c.to=to}for(const t of P.tag)t.wallet=to;for(const f of P.bx)f.w=to;
+    for(const k of P.open)S.bxOpen[k].w=to;for(const o of Object.values(S.bxW||{}))if(o&&o.w===w)o.w=to;
+    for(const a of P.ad){const y=S.addr[a];if(!y)continue;if(y.load===w)y.load=to;else y.wallet=to}}
+  else{for(const k of P.mv){const m=S.wtx[k];m.st='open';m.ref='';delete m.xin;delete m.pend}
+    S.cx=S.cx.filter(c=>!P.ids.has(c.id));for(const t of P.tag)t.wallet='';
+    const gone=new Set(P.bx);S.bxF=(S.bxF||[]).filter(f=>!gone.has(f));for(const k of P.open)delete S.bxOpen[k];for(const [k,o] of Object.entries(S.bxW||{}))if(o&&o.w===w)delete S.bxW[k];
+    for(const a of P.ad)delete S.addr[a]}
+  if(S.w0===w)S.w0='';{const act=keepActive();S.wallets.splice(i,1);naAfterDrop({w,addr:how==='move'?[]:P.ad},act)}wlDrop(w);return true}
+function wlDelUse(i){const w=S.wallets[i],P=wlDelPlan(w),pl=(n,a,b)=>`${fI.format(n)} ${n===1?a:b}`,others=S.wallets.filter(x=>x!==w&&!wProv(x));
+  const what=[P.E.length?pl(P.E.length,'Eintrag','Einträge'):'',P.tag.length?pl(P.tag.length,'Tag-Zeile','Tag-Zeilen'):'',P.bx.length?pl(P.bx.length,'Börsen-Datei','Börsen-Dateien'):'',P.open.length?pl(P.open.length,'offene Zeile einer Börse','offene Zeilen einer Börse'):''].filter(Boolean);
+  const n=P.E.length+P.tag.length+P.bx.length+P.open.length,li=P.E.slice(0,8).map(c=>`<li>${esc(kindL(c)||c.kind)} ${fmtNum(c.qty)}&nbsp;${esc(c.coin)} (${dm(c.date)})</li>`).join('')+(P.E.length>8?`<li>… und ${fI.format(P.E.length-8)} weitere</li>`:'');
+  const html=`<p>An „${esc(w)}“ ${n===1?'hängt':'hängen'} ${what.length>1?what.slice(0,-1).join(', ')+' und '+what[what.length-1]:what[0]}.</p>${li?`<ul class="small">${li}</ul>`:''}`+
+    (others.length?`<p><label>Umhängen auf <select id="ask-wlto" aria-label="Wallet, an die alles geht">${others.map(x=>`<option>${esc(x)}</option>`).join('')}</select></label></p>`:'')+
+    `<p class="small">„Mitlöschen“ löscht ${P.E.length===1?'den Eintrag':'die Einträge'}${P.mv.length?`. ${P.mv.length===1?'Die Bewegung aus der Wallet-Datei ist':pl(P.mv.length,'Bewegung','Bewegungen')+' aus Wallet-Dateien sind'} danach wieder offen`:''}${P.tag.length?'. Tag-Zeilen verlieren nur die Wallet':''}${P.bx.length?`. ${P.bx.length===1?'Die Börsen-Datei fällt':'Die Börsen-Dateien fallen'} weg`:''}${P.ad.length?`. ${P.ad.length===1?'Die Adresse wird':pl(P.ad.length,'Adresse','Adressen')+' werden'} entfernt`:''}.${wbalTxt(w)?' '+wbalTxt(w):''}</p>`;
+  askBox({title:'Wallet löschen',html,ok:'Mitlöschen',alt:others.length?'Umhängen':'',danger:true,more:ASK_BK}).then(v=>{if(!v||S.wallets[i]!==w)return;
+    const to=v==='alt'?(document.getElementById('ask-wlto')||{}).value:'';const snap=JSON.stringify(S);
+    if(!wlDelApply(i,v==='alt'?'move':'del',to))return;msg('walletmsg','ok',v==='alt'?`„${esc(w)}“ ist gelöscht, alles gehört jetzt zu „${esc(to)}“.`:`„${esc(w)}“ ist gelöscht.`);wSync();save();render()})}
 // Ab 0.46: Klicks in „Deine Wallets“: Adressen auf- und zuklappen, ✎, Speichern (Name und Art), Adresse hinzufügen, Abbrechen, Wallet entfernen
 $('t-wl').addEventListener('click',e=>{
   const x=e.target.closest('[data-wlx]');if(x){const w=x.dataset.wlx;if(WL_OPEN.has(w))WL_OPEN.delete(w);else WL_OPEN.add(w);renderWalletList();const b=$('t-wl').querySelector(`[data-wlx="${CSS.escape(w)}"]`);if(b)b.focus();return}
@@ -6276,11 +6507,23 @@ function reclick(b){const at=b&&[...b.attributes].find(x=>x.name.startsWith('dat
   return ()=>{const n=b&&b.isConnected?b:sel&&document.querySelector(sel);if(n)n.click()}}
 // Ab 0.50 Nachtrag 5: „… Trotzdem entfernen?“ (eigene Adresse unbekannt machen) mit Titel, rotem Knopf und „Sicherung speichern“
 // Ab 0.50 Nachtrag 6: ebenso „… Der Name „…“ geht dabei verloren.“ (zuordnen oder aus dem Adressbuch entfernen); Zusatz: „Als fremde Adresse „…“ merken?“
-const askCb=(key,again,o)=>q=>askOk(key,q,again,Object.assign({both:/umstellen\?$/.test(q)},/ Als fremde Adresse „[^“]*“ merken\?\n/.test(q)?{title:'Adresse ändern',ok:'Als fremd merken',danger:true,more:ASK_BK}:
+const askCb=(key,again,o)=>q=>askOk(key,q,again,Object.assign({both:/umstellen\?$/.test(q)},
+  // Ab 0.119: fallen beim Umstellen Bewegungen oder Einträge weg (addrDropTxt), roter Knopf und „Sicherung speichern“
+  / gehör(t|en) dann zu „.*“\./.test(q)&&/(Eintrag fällt weg:|Einträge fallen weg:|ohne deine Adresse (fällt|fallen) weg)/.test(q)?{title:'Adresse zuordnen',ok:'Zuordnen',danger:true,more:ASK_BK}:/ Als fremde Adresse „[^“]*“ merken\?\n/.test(q)?{title:'Adresse ändern',ok:'Als fremd merken',danger:true,more:ASK_BK}:
   /entfernen\?( Der Name „.*“ geht dabei verloren\.)?$/.test(q)?{title:'Adresse entfernen',ok:'Entfernen',danger:true,more:ASK_BK}:
   / zuordnen\? Der Name „.*“ geht dabei verloren\.$/.test(q)?{title:'Adresse zuordnen',ok:'Zuordnen',danger:true,more:ASK_BK}:
   // Ab 0.57: addrMvTxt mit Titel und Knopf wie im Formular und an der Tag-Zeile
   / gehör(t|en) dann zu „.*“\.( Die vorläufige Wallet „.*“ geht in „.*“ auf\.)? Fortfahren\?$/.test(q)?{title:'Adresse zuordnen',ok:'Zuordnen'}:{},o||{}));
+// Ab 0.119: Sätze zu den Folgen einer Umstellung zu Börse oder Dienst (addrAfter auf einer Kopie), je Art eine Zeile, nur was es gibt
+function addrDropTxt(P){if(!P)return '';const n=x=>fI.format(x),q=L=>{const c=[...new Set(L.map(m=>m.coin))];return L.map(m=>fmtNum(m.qty)).join(L.length===2?' und ':', ')+(c.length===1?' '+c[0]:'')};
+  const cx=P.cx.filter(c=>c.feeOf==null),l=[];
+  if(cx.length)l.push(`${cx.length===1?'1 Eintrag fällt':n(cx.length)+' Einträge fallen'} weg: ${cx.map(c=>`${kindL(c)||c.kind} ${fmtNum(c.qty)} ${c.coin} (${dm(c.date)})`).join(', ')}.`);
+  if(P.mv.length)l.push(`${P.mv.length===1?'1 Bewegung ohne deine Adresse fällt':n(P.mv.length)+' Bewegungen ohne deine Adresse fallen'} weg (${q(P.mv)}).`);
+  if(P.hand.length)l.push(`${P.hand.length===1?'1 Eintrag von Hand bleibt':n(P.hand.length)+' Einträge von Hand bleiben'}, nur die Verknüpfung fällt weg.`);
+  if(P.pend.length)l.push(`${P.pend.length===1?'1 ignorierter Abgang zählt':n(P.pend.length)+' ignorierte Abgänge zählen'} dann als „Ausstehend bei DFX.swiss“ (${q(P.pend)}).`);
+  if(P.open.length)l.push(`${P.open.length===1?'1 ignorierte Bewegung wird':n(P.open.length)+' ignorierte Bewegungen werden'} mit ${P.open.length===1?'ihrem':'ihren'} Eintrag von DFX.swiss verknüpft.`);
+  return l.join('\n')}
+const addrDropBad=P=>!!P&&(P.mv.length>0||P.cx.length>0);
 // Für Regeln mit Rückfrage-Rückruf (ask): erst ohne Zustimmung prüfen, ob gefragt wird; dann das Fenster; bei „Ja“ noch einmal mit Zustimmung.
 // fn(ask) muss vor jeder Änderung fragen (wie addrAssign). Ergebnis: Promise mit dem Ergebnis von fn oder false.
 async function askRun(fn,o){let q=null;const r=fn(t=>{q=t;return false});if(q==null)return r;if(!(await askBox(Object.assign({text:q},o||{}))))return false;return fn(()=>true)}
@@ -6295,12 +6538,13 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
    Adresse gehört; die Wahl gilt sofort (apAssign, mit den Rückfragen von addrAssign). apWhoOpts baut Gruppen und Wahlen für alle Stellen,
    auch für „Wer ist 0x…?“ in „Noch offen“. „Unbekannt“ ist keine Wahl: Unbekannt ist, was übrig bleibt, der Weg zurück ist „Entfernen“. */
 // Heutige Zuordnung als Wert des Menüs: w:<Wallet>, pay, tag, br, fr; load = Ladeadresse (keine eigene Wahl), '' = nicht im Adressbuch
-function apWhoCur(a){const x=S.addr[a];if(!x)return '';if(x.fr)return 'fr';if(x.tag)return 'tag';if(x.pay)return 'pay';if(x.br)return 'br';if(x.load)return 'load';
+function apWhoCur(a){const x=S.addr[a];if(!x)return '';if(x.fr)return 'fr';if(x.tag)return 'tag';if(x.pay)return 'pay';if(x.br)return dxAddr(S,a)?'dfx':'br';if(x.load)return 'load';
   return x.wallet&&S.wallets.includes(x.wallet)&&!wProv(x.wallet)?'w:'+x.wallet:'x'}
 // Gruppen in dieser Reihenfolge (Art der Wallet über wKindOf, vorläufige Wallets nicht). Eine Gruppe ohne Wallet zeigt nur ihre feste Wahl.
 const AP_GR=[['wallet','Meine Wallets (eigene Adresse)'],['karte','Karte'],['boerse','Börsen (Adresse der Börse)']];
 const AP_FIX={wallet:[['+w','+ Neue Wallet …']],karte:[['+k','+ Neue Karte …'],['pay','Kartenzahlungen (Abrechnung)']],boerse:[['+ex','+ Neue Börse …']]};
-const AP_OTHER=[['tag','Tag'],['br','Brücke / Dienst'],['fr','Fremd (Person oder Händler) …']];
+// Ab 0.119: „DFX.swiss (Dienst)“ als eigene Wahl (Dienst mit Name DFX.swiss, danach räumt addrAfter auf)
+const AP_OTHER=[['tag','Tag'],['br','Brücke / Dienst'],['dfx','DFX.swiss (Dienst)'],['fr','Fremd (Person oder Händler) …']];
 // Ab 0.55 (5): own = nur eigene Wallets, Karten und Börsen samt „+ Neue Wallet …“ und „+ Neue Börse …“ (Datei einer vorläufigen Wallet), ohne
 // „Kartenzahlungen (Abrechnung)“ und ohne „Andere“, oben „– noch nicht zugeordnet –“
 function apWhoOpts(a,op){const own=!!(op&&op.own),cur=own?'':apWhoCur(a),x=S.addr[a],W=S.wallets.filter(w=>!wProv(w));
@@ -6309,7 +6553,7 @@ function apWhoOpts(a,op){const own=!!(op&&op.own),cur=own?'':apWhoCur(a),x=S.add
   return top+AP_GR.map(([k,l])=>`<optgroup label="${esc(l)}">${W.filter(w=>wKindOf(w)===k).map(w=>o('w:'+w,w)).join('')}${AP_FIX[k].filter(([v])=>!own||v!=='pay').map(([v,t])=>o(v,t)).join('')}</optgroup>`).join('')+
     (own?'':`<optgroup label="Andere">${AP_OTHER.map(([v,t])=>o(v,t)).join('')}</optgroup>`)}
 // Name eines Ziels für Toast und Texte
-const apToT=(to,nm)=>to==='tag'?'Tag':to==='pay'?'Kartenzahlungen (Abrechnung)':to==='br'?'Brücke / Dienst':to==='fr'?nm:to;
+const apToT=(to,nm)=>to==='tag'?'Tag':to==='pay'?'Kartenzahlungen (Abrechnung)':to==='br'?'Brücke / Dienst':to==='dfx'?'DFX.swiss (Dienst)':to==='fr'?nm:to;
 // Menü mit Namensfeld (für „+ Neue Wallet …“, „+ Neue Börse …“, „Fremd …“). k = Bewegung (für den Fokus danach), lock = gesperrt
 // Ab 0.55 (5): op.own = „Diese Wallet-Datei gehört zu:“ (Datei einer vorläufigen Wallet, apWhoOpts mit own)
 function apWhoH(a,k,lock,op){const A=esc(a),own=!!(op&&op.own);
@@ -6412,7 +6656,7 @@ function cpmOwn(a,to){if(!S.wallets.includes(to))return false;const x=S.addr[a];
 function apAssign(a,v,nm,o){o=o||{};const snap=JSON.stringify(S),nw=v==='+w'||v==='+ex'||v==='+k';let to=v;
   if(nw){to=String(nm||'').trim();if(!to)return false}
   else if(v.startsWith('w:'))to=v.slice(2);
-  if(!to||!(to==='fr'||to==='tag'||to==='pay'||to==='br'||nw||S.wallets.includes(to)))return false;
+  if(!to||!(to==='fr'||to==='tag'||to==='pay'||to==='br'||to==='dfx'||nw||S.wallets.includes(to)))return false;
   const go=()=>{const had=S.wallets.includes(to);if(nw){wNewWallet(to);S.wmeta=S.wmeta||{};S.wmeta[to]=Object.assign({},S.wmeta[to],{kind:v==='+ex'?'boerse':v==='+k'?'karte':'wallet'},v==='+k'?{card:true}:{})}
     const r=to==='fr'?addrAssign(S,a,'fr',false,askCb('apf:'+a,go),nm):addrAssign(S,a,to,cpmOwn(a,to),askCb('apw:'+a,go));if(!r){if(nw&&!had)S=JSON.parse(snap);save();render();return}
     const n=wSync();save();render();
@@ -7674,9 +7918,9 @@ $('vg-list').addEventListener('click',e=>{
   // Ab 0.47 (Regel 9): Rückfragen im eigenen Fenster
   const cd=e.target.closest('[data-cxd]');if(cd){const id=+cd.dataset.cxd;{const k=cxCalcFee(cxById(id));if(k){toast(CALC_FEE_TXT[k]);return}}const run=()=>{const c=cxById(id);if(!c)return;
       // Ab 0.50 Nachtrag 5: Die Gebühr aus der Wallet-Datei geht immer mit, die Rückfrage sagt das („Diesen Übertrag löschen?“)
-      const fq=cxFeeTxt(id),q=[fq?'Diesen Übertrag löschen?':'Diesen Eintrag löschen?',[fq,c.wk?'Die Bewegung aus der Datei ist danach „ignoriert“. Mit „wieder öffnen“ holst du sie zurück.':''].filter(Boolean).join('\n')].filter(Boolean).join('\n\n');
-      if(!askOk('del:'+id,q,run,{title:'Eintrag löschen',ok:'Löschen',danger:true,more:ASK_BK}))return;
-      cxDel(id);if(EDIT===id)EDIT=null;msg('cxmsg2','','');wSync();save();render()};run()}});
+      const fq=cxFeeTxt(id),q=[fq?'Diesen Übertrag löschen?':'Diesen Eintrag löschen?',fq].filter(Boolean).join('\n\n'),Q=cxDelQ(id,q);
+      if(!askOk('del:'+id,q,run,{title:'Eintrag löschen',ok:'Löschen',danger:true,more:ASK_BK,html:Q.html}))return;
+      cxDelMv(id);cxDel(id);if(EDIT===id)EDIT=null;msg('cxmsg2','','');wSync();save();render()};CXD_HOW='open';run()}});
 // Ab 0.48 (Nachtrag 1, 1.2): „Mit Euro“ blendet die Spalten Euro und Gewinn/Verlust ein (S.ui.vgEur); ein Klick klappt die Karte nicht zu
 $('vg-eur-l').addEventListener('click',e=>e.stopPropagation());
 $('vg-eur').addEventListener('change',e=>{S.ui.vgEur=e.target.checked;save();render();$('vg-eur').focus()});
@@ -8353,6 +8597,10 @@ function todoItems(C){
   // Gefälschte Token, die schon als USDC zählen (1.10)
   for(const x of wTokFake(S))I.push({id:'f:'+x.k,lv:'y',kind:'tokfake',t:0,eur:0,ref:'',big:`Gefälschter Token? „${esc(wNormName(x.sym))}“ (${esc(x.name||'')}) sieht aus wie USDC oder USDT.`,
     why:`Er kommt nicht vom echten Vertrag. Bisher zählt er als USDC (${x.n===1?'1 Bewegung':fI.format(x.n)+' Bewegungen'}).`,body:`<div class="row"><button type="button" class="btn primary" data-tokd="${esc(x.k)}">nicht mehr zählen</button></div>`,li:{d:'',w:'',what:'gefälschter Token?',q:''}});
+  // Ab 0.119 (Punkt 1): Adresse von DFX.swiss als eigene Wallet, Karte oder Börse, solange der Widerspruch besteht
+  for(const x of dxConflicts(S)){const own=S.addr[x.a]&&S.addr[x.a].own;I.push({id:'dxa:'+x.a,lv:'y',kind:'dxaddr',t:0,eur:0,ref:'',big:esc(dxFixQ(x.a)),
+    why:`Bisher steht sie bei „${esc(x.w)}“ als ${own?'eigene Adresse':'Adresse der Börse'}. Der Hash einer Zeile von DFX.swiss passt zu ${x.n===1?'einer Bewegung':fI.format(x.n)+' Bewegungen'} mit ihr.`,
+    body:(()=>{const L=dxFixLines(dxFixPlan(x.a));return `${L.length?`<ul class="small">${L.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:''}<div class="row"><button type="button" class="btn primary" data-dxfix="${esc(x.a)}">Als Dienst führen</button></div>`})(),li:{d:'',w:x.w,what:'Adresse von DFX.swiss?',q:''}})}
   // Lockadressen (1.14). Ab 0.47 (1.7): „Verstanden“ merkt die Adresse (S.lookOk), der Hinweis kommt für sie nie wieder
   // Ab 0.52 (4): je echter Adresse eine Karte mit den Lockadressen, die noch nicht abgehakt sind. „Verstanden“ merkt jede einzeln,
   // „Keine Lockadresse“ nimmt eine Adresse heraus (S.lookNo)
@@ -8485,7 +8733,10 @@ function tdProvH(x){if(x.kind==='later')return '';const m=x.mv&&S.wtx[x.mv];
   return w?`<div class="tdprov">${apWhoH(S.wlater[w].addr,'',false,{own:1})}</div>`:''}
 // Ab 0.45 (4.10): Bewegung aus einer Wallet-Datei löschen geht nicht: Satz mit Grund, Ignorieren und „Ganze Datei entfernen …“
 function mvDelH(k){const m=S.wtx[k];if(!m)return '';const w=wOwnW(wMv(k))||m.wFrom||m.wTo||'',K=esc(k);
-  return `<div class="tddel"><p class="small">Kommt aus der Datei von ${esc(w)}. Deshalb kannst du sie nicht löschen, beim nächsten Einlesen wäre sie wieder da.</p><div class="row">${m.st==='ign'?`<button type="button" class="btn" data-wa="reopen" data-k="${K}">wieder öffnen</button>`:`<button type="button" class="btn" data-wa="ign" data-k="${K}">Ignorieren</button>`}${(()=>{const a=wFileOf(S,m.to,m.net)?m.to:wFileOf(S,m.from,m.net)?m.from:'';return `<button type="button" class="btn" data-dtfiles="${a?esc(a+'|'+m.net):''}">Ganze Datei entfernen …</button>`})()}</div></div>`}
+  return `<div class="tddel"><p class="small">Kommt aus der Datei von ${esc(w)}. Deshalb kannst du sie nicht löschen, beim nächsten Einlesen wäre sie wieder da.</p><div class="row">${m.st==='ign'?`<button type="button" class="btn" data-wa="reopen" data-k="${K}">wieder öffnen</button>`:`<button type="button" class="btn" data-wa="ign" data-k="${K}">Ignorieren</button>`}${(()=>{
+    // Ab 0.119 (5a): Steht die Bewegung in zwei Dateien, öffnet der Knopf „Eingelesene Dateien“ (bis 0.118 nahm er die Datei der eigenen Seite, so fiel
+    // in Florians Sicherung die Base-Datei von DFX-Connect weg statt der Datei der DFX-Adresse); sonst die eine Datei, auch die einer fremden Adresse
+    const ti=wFileHas(S,m.to,m.net),fi=wFileHas(S,m.from,m.net),a=ti&&fi?'':ti?m.to:fi?m.from:'';return `<button type="button" class="btn" data-dtfiles="${a?esc(a+'|'+m.net):''}">Ganze Datei entfernen …</button>`})()}</div></div>`}
 function tdTitle(x){const d=document.createElement('div');d.innerHTML=x.big||x.h||'';let t=d.textContent.replace(/\s+/g,' ').trim();
   if(x.id.startsWith('m:')){const m=S.wtx[x.id.slice(2)],s=wSide(m);t=`${dm(m.date)} ${fmtNum(m.qty)} ${wCoinT(m)} ${s==='in'?'rein, '+(m.wTo||''):'raus, '+(m.wFrom||'')}`}
   return t.length>90?t.slice(0,88)+' …':t}
@@ -8957,7 +9208,7 @@ function cxHelp(){
   // Ab 0.45 (4.10): Löschen nur beim Bearbeiten; bei einem Eintrag aus einer Datei mit dem Satz, was danach mit der Bewegung ist
   {const c=EDIT!=null?cxById(EDIT):null,del=!!c||!!EDIT_TAG;$('btn-cxdel').hidden=!del||!!CX_EMB;
    // Ab 0.50 Nachtrag 5: dazu der Satz, dass die Gebühr aus der Wallet-Datei mit gelöscht wird
-   const fh=c?cxFeeTxt(c.id):'';$('cx-delhint').hidden=!(c&&(c.wk||c.wkIn||fh));$('cx-delhint').textContent=c&&(c.wk||c.wkIn||fh)?'Löschen: '+[c.wk||c.wkIn?'Die Bewegung aus der Datei ist danach „ignoriert“. Mit „wieder öffnen“ holst du sie zurück.':'',fh].filter(Boolean).join(' '):''}
+   const fh=c?cxFeeTxt(c.id):'';$('cx-delhint').hidden=!(c&&(c.wk||c.wkIn||fh));$('cx-delhint').textContent=c&&(c.wk||c.wkIn||fh)?'Löschen: '+[c.wk||c.wkIn?'Das Tool fragt dann, ob die Bewegung aus der Datei wieder offen ist oder ignoriert wird.':'',fh].filter(Boolean).join(' '):''}
   // Ab 0.45: Uhrzeit, bei einer Bewegung aus der Datei nur zum Lesen
   {const lk=!!(CX_META&&CX_META.time)||!!(EDIT!=null&&(cxById(EDIT)||{}).wk);$('cx-time').disabled=lk;$('cx-time').title=lk?'Die Uhrzeit kommt aus der Wallet-Datei.':''}
   const H=CX_HELP[k]||{b:'Wähle zuerst bei „Was?“, was es war. Danach zeigt das Formular die passenden Felder.'};$('cx-help').innerHTML=(H.b||'')+(H[L]||'')+(H.tail||'');
@@ -12252,8 +12503,10 @@ for(const id of ['cx-unkp','cx-unkd','cx-kest','cx-nft','cx-date','cx-gd'])$(id)
 $('btn-cx').onclick=()=>addCx();
 $('btn-cxdel').onclick=()=>{
   if(EDIT_TAG){const id=EDIT_TAG;if(!S.tag[id]||!askOk('del:t'+id,'Diese Tag-Zeile löschen?',reclick($('btn-cxdel')),{title:'Tag-Zeile löschen',ok:'Löschen',danger:true,more:ASK_BK}))return;{const act=keepActive();delete S.tag[id];naAfterDrop({},act)}endEdit();wSync();save();closeModal();render();toast('Gelöscht.');return}
-  const id=EDIT,c=cxById(id),fq=c?cxFeeTxt(id):'';if(!c||!askOk('del:'+id,[fq?'Diesen Übertrag löschen?':'Diesen Eintrag löschen?',[fq,c.wk||c.wkIn?'Die Bewegung aus der Datei ist danach „ignoriert“. Mit „wieder öffnen“ holst du sie zurück.':''].filter(Boolean).join('\n')].filter(Boolean).join('\n\n'),reclick($('btn-cxdel')),{title:'Eintrag löschen',ok:'Löschen',danger:true,more:ASK_BK}))return;
-  cxDel(id);endEdit();wSync();save();closeModal();render();toast('Gelöscht.')};
+  // Ab 0.119 (Ergänzung 4): Wahl zur Bewegung („wieder offen“ oder „ignorieren“) in derselben Rückfrage
+  const id=EDIT,c=cxById(id),fq=c?cxFeeTxt(id):'';if(c&&!ASK_ANS.size)CXD_HOW='open';const q=[fq?'Diesen Übertrag löschen?':'Diesen Eintrag löschen?',fq].filter(Boolean).join('\n\n');
+  if(!c||!askOk('del:'+id,q,reclick($('btn-cxdel')),{title:'Eintrag löschen',ok:'Löschen',danger:true,more:ASK_BK,html:cxDelQ(id,q).html}))return;
+  cxDelMv(id);cxDel(id);endEdit();wSync();save();closeModal();render();toast('Gelöscht.')};
 $('btn-cxnext').onclick=async()=>{CX_NEXT=true;try{await addCx()}finally{CX_NEXT=false}};
 $('cx-sess').addEventListener('click',e=>{const b=e.target.closest('[data-cxse]');if(!b)return;const r=b.dataset.cxse;if(r[0]==='c')openCx(+r.slice(2));else openCxTag(r.slice(2));$('cx-qty').focus()});
 $('btn-estval').onclick=()=>estValue();
@@ -12460,7 +12713,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.118',VDATE='09.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.119',VDATE='09.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -13001,8 +13254,9 @@ if(!BOOT_BAD)autoRates();
 const RB_U=/(\S)[ \t](€|USD|%)(?![A-Za-zÄÖÜäöüß0-9])/g,RB_C=/(\d)[ \t]([A-Z][A-Z0-9.]{1,9})(?![A-Za-zÄÖÜäöüß0-9])/g;
 const regelBTxt=s=>String(s).replace(RB_U,'$1 $2').replace(RB_C,(a,d,u)=>/^(USD|EUR|[A-Z]{2,6}[A-Z0-9]?)$/.test(u.replace(/\.$/,''))?d+' '+u:a);
 const RB_LEAD=/^[ \t](€|USD|%|[A-Z][A-Z0-9]{1,9})(?![A-Za-zÄÖÜäöüß0-9])/;
-function regelB(root){if(!root||!document.createTreeWalker)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentNode;
-    return p&&/^(SCRIPT|STYLE|TEXTAREA|OPTION)$/.test(p.nodeName)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT}});
+// Ab 0.119: ohne SVG (Grafiken brechen nie um, ihre Texte bleiben unverändert) und ohne die Druckseite der Zusammenfassung (#s-print)
+function regelB(root){if(!root||!document.createTreeWalker||(root.closest&&root.closest(RB_SKIP)))return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentNode;
+    return !p||/^(SCRIPT|STYLE|TEXTAREA|OPTION)$/.test(p.nodeName)||p.namespaceURI==='http://www.w3.org/2000/svg'||(p.closest&&p.closest(RB_SKIP))?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT}});
   const N=[];for(let n=tw.nextNode();n;n=tw.nextNode())if(n.nodeValue)N.push(n);
   const unitAfter=(i,d)=>{for(let j=i+1;j<N.length;j++){const v=N[j].nodeValue;if(!/\S/.test(v))continue;const m=/^(€|USD|%|[A-Z][A-Z0-9]{1,9})(?![A-Za-zÄÖÜäöüß0-9])/.exec(v);return !!m&&(d||/^(€|USD|%)$/.test(m[1]))}return false};
   let pv='';
@@ -13012,10 +13266,14 @@ function regelB(root){if(!root||!document.createTreeWalker)return;const tw=docum
       else if(/^[ \t]+$/.test(w)&&unitAfter(i,/\d$/.test(pv)))w='\u00a0'}
     if(/[ \t]$/.test(w)&&/\S/.test(w)&&unitAfter(i,/\d[ \t]$/.test(w)))w=w.slice(0,-1)+'\u00a0';
     if(w!==v)n.nodeValue=w;if(/\S/.test(w))pv=w.replace(/\s+$/,'')})}
-const RB_ROOT='#s-wallet,.modal,#cptoast,#glpop,#dt-panes,#bxprev,#wtodo';
+// Ab 0.119 (Florians Auftrag): Regel B in allen Reitern (auch Auswertung, dort nur der Umbruch), Kopf, Reiterleiste, Fuß, Fenster und Hinweise.
+// Die Warteschlange nimmt nicht mehr den ganzen Reiter, sondern das kleinste Stück um die Änderung (Karte, Fenster, Vorschau, Toast, Begriff), sonst den
+// Bereich selbst. Der Beobachter hört nur auf childList und characterData, nicht auf Attribute: Scrollen (--tabsoff, Deckkraft, Klassen) kostet nichts.
+const RB_ROOT='header,nav,main>section,footer,.modal,#cptoast,#glpop,#adpop,#dt-panes,#bxprev,#wtodo',RB_SKIP='#s-print',RB_UNIT='.card,.modal .box,.tprev,.msg,#cptoast,#glpop,#adpop,#wtodo';
 let RB_Q=new Set(),RB_T=0;
-function rbRun(){RB_T=0;const L=[...RB_Q];RB_Q.clear();for(const el of L)if(el.isConnected)regelB(el);if(RB_OBS)RB_OBS.takeRecords()}
-const RB_OBS=typeof window!=='undefined'&&window.MutationObserver&&typeof document!=='undefined'&&document.createTreeWalker?new MutationObserver(R=>{for(const r of R){const t=r.target.nodeType===3?r.target.parentNode:r.target;const el=t&&t.closest&&t.closest(RB_ROOT);if(el)RB_Q.add(el)}
+function rbRun(){RB_T=0;const L=[...RB_Q];RB_Q.clear();for(const el of L)if(el.isConnected&&!L.some(o=>o!==el&&o.isConnected&&o.contains(el)))regelB(el);if(RB_OBS)RB_OBS.takeRecords()}
+const RB_OBS=typeof window!=='undefined'&&window.MutationObserver&&typeof document!=='undefined'&&document.createTreeWalker?new MutationObserver(R=>{for(const r of R){const t=r.target.nodeType===3?r.target.parentNode:r.target;const root=t&&t.closest&&t.closest(RB_ROOT);
+    if(!root||t.closest(RB_SKIP))continue;const u=t.closest(RB_UNIT);RB_Q.add(u&&root.contains(u)?u:root)}
   if(RB_Q.size&&!RB_T)RB_T=typeof requestAnimationFrame==='function'?requestAnimationFrame(rbRun):setTimeout(rbRun,0)}):null;
 try{if(RB_OBS&&document.body&&document.body.nodeType===1){RB_OBS.observe(document.body,{childList:true,subtree:true,characterData:true});for(const el of document.querySelectorAll(RB_ROOT))regelB(el)}}catch(e){}
 </script>
