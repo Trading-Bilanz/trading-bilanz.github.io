@@ -145,13 +145,15 @@ p.idat{margin:6px 0 0}
    Finger aus dem Bild, die Filterzeile bleibt stehen. Ein Wert steuert alles: --tabsoff (0 bis Höhe der Reiter, gesetzt nur in navApply). Die nav
    wird nicht kleiner, sie klebt um --tabsoff höher (negatives sticky-top statt transform: transform würde die Menüs der Filterzeile, die popPlace
    mit position:fixed setzt, an die nav binden). Stehende Kartentitel, scroll-margin und Menühöhe lesen denselben Wert. Keine Transition hier.
+   Ab 0.118 (Florians Auftrag): kein Einrasten, die Reiter bleiben beim Stillstand, wo der Finger sie hingeschoben hat. Antippbar ist jeder
+   Reiter-Knopf für sich, solange mindestens die Hälfte seiner Höhe sichtbar ist (Klasse tboff sonst, statt tbgone für die ganze Fläche bis 0.117).
    --tabsoff vererbt sich nicht (@property): navApply setzt ihn an genau den Elementen, die ihn lesen (nav, Abschnitte, stehende Titel, Menüs).
    An :root gesetzt müsste der Browser bei jedem Frame den Stil aller Elemente neu rechnen (gemessen mit „Pro Woche“ ganz aufgeklappt, 23.000
    Elemente, Handy-CPU: über 100 ms je Frame statt unter 1 ms). Ohne @property (ältere Browser) vererbt er sich, das wirkt gleich, nur langsamer. */
 @property --tabsoff{syntax:'<length>';inherits:false;initial-value:0px}
 nav{position:sticky;top:calc(-1 * var(--tabsoff,0px));z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
 nav .in{max-width:1180px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:8px 16px}
-#tabs.tbgone{pointer-events:none}
+#tabs button.tboff{pointer-events:none}
 section{scroll-margin-top:calc(var(--navh,70px) - var(--tabsoff,0px))}
 /* Reiter: dünner goldener Rahmen bei allen, der aktive Reiter in Kartenfarbe mit leichtem Schatten */
 #tabs button{border:1px solid var(--tab-line);background:transparent;color:var(--ink2);padding:8px 14px;border-radius:8px;font:inherit;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:8px}
@@ -9961,6 +9963,8 @@ function renderTabs(st){
     return `<button data-t="${k}" class="${S.ui.tab===k?'on':''}">${dot}<span class="lbl">${lab}</span></button>`});
   $('tabs').innerHTML=`<div class="trow">${btns.slice(0,4).join('')}</div><div class="trow">${btns.slice(4).join('')}</div>`;
   fitTabs();
+  // Ab 0.118: neue Knöpfe sofort messen und sperren bzw. freigeben (Antippen je Knopf, navApply), nicht erst mit updateNavH
+  navMeasure();
   // Ab 0.116: Punkt schlechter (auf „zu tun“ oder „wartet“ aus einem anderen Zustand), während die Reiter (teilweise) weg sind: sie gleiten herein.
   // Besser werdend nichts; das erste Zeichnen merkt nur den Stand.
   {const now={};for(const b of $('tabs').querySelectorAll('button[data-t]')){const d=b.querySelector('.dot'),c=d?d.classList:null;now[b.dataset.t]=!c?'':c.contains('todo')?'todo':c.contains('wait')?'wait':c.contains('ok')?'ok':''}
@@ -12083,15 +12087,19 @@ function updateNavH(){const h=NAV_EL.getBoundingClientRect().height;document.doc
 //   keepAnchor), bleibt der Zustand der Reiter (navProg).
 // - Grenze ganz oben: NAVOFF ist nie größer als die Strecke, die seit dem Ankleben der nav gescrollt wurde (navMax), sonst entstünde eine Lücke
 //   zwischen Filterzeile und Inhalt. Gummiband (iOS) oben und unten zählt nicht (navY).
-// - Einrasten erst, wenn die Seite steht (scrollend oder 140 ms ohne Scrollen, kein Finger auf dem Glas): mehr als halb sichtbar → ganz herein,
-//   sonst ganz hinaus (höchstens bis zur Grenze). 180 ms ease-out auf demselben Wert; neues Scrollen bricht ab. Mit reduzierter Bewegung sofort.
+// - Kein Einrasten (ab 0.118, Florians Auftrag; bis 0.117 Hälfte-Regel mit Gleiten): Ohne Finger, Rad, Tasten oder Scrollbalken bewegen sich die
+//   Reiter nicht, sie bleiben in jeder Zwischenstellung stehen, ohne Schwelle und ohne Rundung (außer auf Gerätepixel). Steht die Seite
+//   (scrollend oder 140 ms ohne Scrollen, kein Finger auf dem Glas), endet nur die Eingabe (navRest), damit spätere Verschiebungen durch Browser
+//   oder Tool (Scroll-Anchoring) die Reiter nicht bewegen.
 // - Menü (.fpan) oder Tafel (#glpop, #adpop) offen: NAVOFF wird nicht größer. Fenster (.modal) und Vollbild-Grafik: keine Änderung.
-// - Durchsichtig: Opazität 1 − NAVOFF/TABS_H; mehr als halb weg nicht antippbar (tbgone), per Tastatur erreichbar: Fokus in #tabs holt sie herein.
-// - Wird ein Punkt in den Reitern schlechter (auf „zu tun“ oder „wartet“, renderTabs), gleiten die Reiter herein und bleiben, bis die Nutzerin
-//   wieder selbst scrollt (NAV_PIN). Besser werdend: nichts.
+// - Deckkraft (ab 0.118): voll bis drei Viertel draußen, im letzten Viertel linear blasser bis unsichtbar (navOp). Antippbar ist jeder Knopf für sich,
+//   solange mindestens die Hälfte seiner Höhe unter der Oberkante des Fensters liegt (navTap, Klasse tboff). Per Tastatur erreichbar: Fokus in
+//   #tabs holt sie herein.
+// - Wird ein Punkt in den Reitern schlechter (auf „zu tun“ oder „wartet“, renderTabs), gleiten die Reiter herein (180 ms ease-out, mit reduzierter
+//   Bewegung sofort) und bleiben, bis die Nutzerin wieder selbst scrollt (NAV_PIN). Besser werdend: nichts.
 const NAV_EL=document.querySelector('nav'),NAV_HD=document.querySelector('body>header'),
   NAV_MQ=[matchMedia('(pointer:coarse)'),matchMedia('(max-height:500px)')],NAV_RM=matchMedia('(prefers-reduced-motion: reduce)');
-let NAVOFF=0,NAV_SET=0,TABS_H=0,NAV_Y=0,NAV_TOUCH=false,NAV_MOVED=false,NAV_USER=false,NAV_RAN=false,NAV_PIN=false,NAV_GL=null,NAV_Q=0,NAV_T=null,TAB_ST=null;
+let NAVOFF=0,NAV_SET=0,TABS_H=0,NAV_Y=0,NAV_TOUCH=false,NAV_MOVED=false,NAV_USER=false,NAV_PIN=false,NAV_BT=[],NAV_GL=null,NAV_Q=0,NAV_T=null,TAB_ST=null;
 const navOn=()=>NAV_MQ.some(m=>m.matches);
 const navHold=()=>!!(FP_OPEN||GP||AP);
 const navFrozen=()=>!!(MODAL||GFS);
@@ -12105,10 +12113,15 @@ const NAV_TGT='nav,main>section,main .card.stk>.sthd,.fpan';let NAV_TG=null;
 function navApply(force){
   const dpr=window.devicePixelRatio||1,v=Math.round(NAVOFF*dpr)/dpr;if(force)NAV_TG=null;if(v===NAV_SET&&!force)return;if(v===0&&NAV_SET===0&&force)return;NAV_SET=v;
   if(!NAV_TG)NAV_TG=[...document.querySelectorAll(NAV_TGT)];for(const e of NAV_TG)e.style.setProperty('--tabsoff',v+'px');
-  const t=$('tabs');t.style.opacity=v&&TABS_H?String(Math.max(0,1-v/TABS_H)):'';t.classList.toggle('tbgone',v>TABS_H/2);
+  const t=$('tabs'),op=navOp(v);t.style.opacity=op<1?String(op):'';
+  for(const b of NAV_BT)b.el.classList.toggle('tboff',!navTap(b,v));
   // Offene Menüs und Tafeln wandern mit (sonst nur beim Scrollen, beim Gleiten gibt es kein Scroll-Ereignis)
   if(FP_OPEN)fpFit();if(GP)glPlace();if(AP)apPlace();
 }
+// Deckkraft bei Versatz v: voll bis drei Viertel der Reiterhöhe, dann linear bis 0 bei ganz draußen
+function navOp(v){return TABS_H&&v>0.75*TABS_H?Math.max(0,(TABS_H-v)/(0.25*TABS_H)):1}
+// Knopf antippbar: mindestens die Hälfte seiner Höhe sichtbar. Ist v > 0, klebt die nav bei −v (Grenze navMax), der Knopf liegt bei b.top − v.
+function navTap(b,v){return v<=b.top+b.h/2}
 function navStop(){if(NAV_GL){cancelAnimationFrame(NAV_GL);NAV_GL=null}}
 function navGlide(t){navStop();if(t===NAVOFF)return;
   if(NAV_RM.matches){NAVOFF=t;navApply();return}
@@ -12118,6 +12131,7 @@ function navGlide(t){navStop();if(t===NAVOFF)return;
 }
 // Höhe der Reiter neu messen (aus updateNavH, ResizeObserver, Media-Queries): fitTabs-Stufen, Umbruch, Drehen, Schriftgröße
 function navMeasure(){TABS_H=$('tabs').getBoundingClientRect().height;
+  const nt=NAV_EL.getBoundingClientRect().top;NAV_BT=[...$('tabs').querySelectorAll('button')].map(el=>{const r=el.getBoundingClientRect();return {el,top:r.top-nt,h:r.height}});
   if(!navOn()){navStop();NAVOFF=0}else NAVOFF=Math.min(NAVOFF,navMax(navY()));
   if(!NAV_GL)navApply(true);
 }
@@ -12125,17 +12139,12 @@ function navFrame(){NAV_Q=0;const y=navY(),dy=y-NAV_Y;NAV_Y=y;
   if(!navOn()){if(NAVOFF){navStop();NAVOFF=0;navApply()}return}
   if(navFrozen())return;
   let v=NAVOFF;
-  if(NAV_USER&&!NAV_PIN&&dy){navStop();NAV_RAN=true;if(dy<0||!navHold())v+=dy}
+  if(NAV_USER&&!NAV_PIN&&dy){navStop();if(dy<0||!navHold())v+=dy}
   v=Math.max(0,Math.min(v,navMax(y)));
   if(v!==NAVOFF){if(NAV_GL&&v<NAVOFF)navStop();NAVOFF=v;navApply()}
 }
-// Die Seite steht: einrasten (nur nach Scrollen der Nutzerin)
-function navRest(){if(NAV_TOUCH)return;if(NAV_Q){cancelAnimationFrame(NAV_Q);navFrame()}
-  const ran=NAV_RAN;NAV_USER=false;NAV_RAN=false;
-  if(!ran||NAV_PIN||!navOn()||navFrozen()||!TABS_H)return;
-  let t=NAVOFF<TABS_H/2?0:Math.min(TABS_H,navMax(navY()));if(t>NAVOFF&&navHold())t=NAVOFF;
-  navGlide(t);
-}
+// Die Seite steht: die Eingabe der Nutzerin ist zu Ende. Die Reiter bleiben, wo sie sind (kein Einrasten ab 0.118).
+function navRest(){if(NAV_TOUCH)return;if(NAV_Q){cancelAnimationFrame(NAV_Q);navFrame()}NAV_USER=false}
 function navIdle(){clearTimeout(NAV_T);NAV_T=setTimeout(navRest,140)}
 // Eine Eingabe der Nutzerin, die die Seite scrollen kann (Rad, Taste, Scrollbalken); der Finger zählt erst mit der ersten Bewegung
 function navInput(){NAV_USER=true;NAV_PIN=false;navIdle()}
@@ -12451,7 +12460,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.117',VDATE='09.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.118',VDATE='09.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
