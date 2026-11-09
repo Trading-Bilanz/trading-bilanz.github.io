@@ -3579,7 +3579,7 @@ function parseWallet(text,fileName){
 // Abgleich: Bewegung m mit side 'in' (Eingang in eine eigene Wallet, Wallet wTo) oder 'out' (Ausgang, Wallet wFrom), qty, date, time.
 // Kandidat x = {t (Tag-Zeile) oder c (Eintrag), d = Abstand in Sekunden (mit Uhrzeit, wenn beide eine haben, sonst ganze Tage), a = Betragsunterschied}.
 // Reihenfolge: nächstes Datum, dann nächster Betrag.
-const W_ZU=['kauf','eingang','hatte','tauschein','rueckerst'],W_AB=['verkauf','bezahlung','weg','verloren','tauschaus','gebuehr'];
+const W_ZU=['kauf','bzein','eingang','hatte','tauschein','rueckerst'],W_AB=['verkauf','bezahlung','weg','verloren','tauschaus','gebuehr'];
 const wSec=(d,tm)=>Date.UTC(+d.slice(0,4),+d.slice(5,7)-1,+d.slice(8,10))/1000+(tm?(+tm.slice(0,2))*3600+(+tm.slice(3,5))*60+(+tm.slice(6,8)||0):0);
 function wDist(m,d,tm){const days=Math.abs(wSec(m.date,'')-wSec(d,''))/86400;return {days,d:m.time&&tm?Math.abs(wSec(m.date,m.time)-wSec(d,tm)):days*86400}}
 const wCmp=(x,y)=>x.d-y.d||x.a-y.a;
@@ -4477,9 +4477,9 @@ const wTxUrl=m=>W_NET[m.net]&&m.hash?`https://${W_NET[m.net].x}/tx/${m.hash}`:''
 // gehören: Gebühren (feeOf, brk), eine Brücke oder ein Tausch an der Einzahlungsadresse (Ausgang 0 bis 3 Std. nach dem Übertrag, gleiche Menge)
 // bzw. eine Kette (chain) = „Aufladung“, wenn ein Karten-Token ankommt; ein Tausch in derselben Transaktion = „Rückbuchung“. Übrige Bewegungen:
 // Brücke, intern, offen oder ignoriert. Rückgabe [{id, k, art, d, tm, from, to, coin, qOut, qIn, fee, feeW (Wallet der Gebühr), cx, tag, mv}]
-const VG_ART={kauf:'Kauf',eingang:'Geschenk erhalten',hatte:'Hatte ich schon',tauschein:'Aus anderem Coin getauscht',verkauf:'Verkauf',bezahlung:'Zahlung',
+const VG_ART={kauf:'Kauf',bzein:'Bezahlung erhalten',eingang:'Geschenk erhalten',hatte:'Hatte ich schon',tauschein:'Aus anderem Coin getauscht',verkauf:'Verkauf',bezahlung:'Zahlung',
   weg:'Verschenkt',verloren:'Verloren oder gestohlen',tauschaus:'In anderen Coin getauscht',gebuehr:'Gebühr',uebertrag:'Übertrag',tausch:'Tausch',rueckerst:'Rückerstattung'};
-const VG_IN=['kauf','eingang','hatte','tauschein','rueckerst'];
+const VG_IN=['kauf','bzein','eingang','hatte','tauschein','rueckerst'];
 function vgBuild(S){const V=[],used=new Set(),W=S.wtx,r8=x=>+(+x).toFixed(8),own=a=>rOwn(S,a);
   const add=(v,...ks)=>{for(const k of ks)if(k&&W[k]&&!used.has(k)){used.add(k);v.mv.push(k)}};
   const fees=S.cx.filter(c=>c.feeOf!=null||c.brk||c.ldf!=null),cxO=S.cx.filter(c=>c.feeOf==null&&!c.brk&&c.ldf==null);
@@ -7019,7 +7019,9 @@ const CX_OTHER='Das Tool rechnet nur USDC und USDT. Andere Coins wie BTC oder ET
    (Kaufdatum, Menge, Einkaufswert), verbraucht nach FIFO (BMF 06.03.2025, Rn. 61), auch für die Haltefrist (§ 23 EStG).
    Gerechnet wird immer mit allen Einträgen; Filter ändern nur die Anzeige. */
 // Arten der eigenen Einträge („Woher kamen deine Coins?“). Ab 0.37: hatte, tauschein, weg, tauschaus; ab 0.38: verloren. Die Schlüssel bleiben.
-const KIND={kauf:'Kauf',eingang:'Geschenk erhalten',hatte:'Hatte ich schon',tauschein:'Aus anderem Coin getauscht',
+// Ab 0.120 (Florians Auftrag): bzein = „Bezahlung erhalten“ (Coins direkt als Bezahlung für eine Leistung). Wert = Tageswert am Eingangstag,
+// wie eine Gebühr in Coins (mv in kxEvents), Kaufdatum = Eingangstag; AT in den Ø-Topf, DE FIFO wie ein Kauf. Zählt nicht zur Investition (MT5).
+const KIND={kauf:'Kauf',bzein:'Bezahlung erhalten',eingang:'Geschenk erhalten',hatte:'Hatte ich schon',tauschein:'Aus anderem Coin getauscht',
   verkauf:'Verkauf',bezahlung:'Zahlung',weg:'Verschenkt oder weitergegeben',tauschaus:'In anderen Coin getauscht',gebuehr:'Gebühr',verloren:'Verloren oder gestohlen',
   uebertrag:'Übertrag',tausch:'Tausch (USDC ↔ USDT)',rueckerst:'Rückerstattung'};
 // Felder je Art: to = nach Wallet, coin2/qty2 = Tausch USDC ↔ USDT, other = anderer Coin (Freitext „in“/„aus“), eur = Wert in Euro,
@@ -7030,6 +7032,8 @@ const KIND={kauf:'Kauf',eingang:'Geschenk erhalten',hatte:'Hatte ich schon',taus
 const CX_FIELDS={
   // Ab 0.59 (Nachtrag): ≈ auch bei Kauf, Verkauf und „Aus anderem Coin getauscht“ (nur bei €), wenn der genaue Euro-Wert fehlt
   kauf:     {eur:true, cur:true, feeIn:true, est:true},
+  // Ab 0.120: kein Wertfeld, der Wert ist immer der Tageswert am Eingangstag
+  bzein:    {},
   eingang:  {eur:true, gift:true},
   hatte:    {eur:true, est:true, pos:true},
   // Ab 0.74 (1.1): usd = Ersatzwert (Tageswert) als USD-Betrag cur 'USD', usd = Menge, wird zum Kurs des Tages umgerechnet. Kein ≈ mehr (2.1). otherQ = „Menge hergegeben“ (2.2)
@@ -7066,7 +7070,7 @@ function cxMissing(c){
 // wandern mit), t0 = Tausch steuerneutral (Einkaufswert geht über), tv = Tausch als Verkauf und neuer Kauf zum Marktwert,
 // x = in anderen Coin getauscht, steuerneutral, der Einkaufswert geht auf den neuen Coin über (AT; mit NFT-Häkchen ein Verkauf).
 // Gebühr in Coins: in beiden Ländern ein Verkauf zum Marktwert am Tag (AT: EStR Rz 6178v, Tausch gegen eine Transaktionsdienstleistung; Gebühren beim Tausch Krypto gegen Krypto zählen nicht, Rz 6178ad, ab 0.95 mit einem node-Test bestätigt).
-const KX_ART={tagaus:{AT:'k',DE:'k'},tagein:{AT:'v',DE:'v'},kauf:{AT:'k',DE:'k'},hatte:{AT:'k',DE:'k'},tauschein:{AT:'k',DE:'k'},
+const KX_ART={tagaus:{AT:'k',DE:'k'},tagein:{AT:'v',DE:'v'},kauf:{AT:'k',DE:'k'},bzein:{AT:'k',DE:'k'},hatte:{AT:'k',DE:'k'},tauschein:{AT:'k',DE:'k'},
   eingang:{AT:'g',DE:'g'},verkauf:{AT:'v',DE:'v'},bezahlung:{AT:'v',DE:'v'},gebuehr:{AT:'v',DE:'v'},weg:{AT:'w',DE:'w'},verloren:{AT:'w',DE:'w'},
   uebertrag:{AT:'u',DE:'u'},tausch:{AT:'t0',DE:'tv'},tauschaus:{AT:'x',DE:'v'},
   // Ab 0.44: r = Rückerstattung im selben Jahr wie die Zahlung (Storno: die Coins kommen mit dem Einkaufswert zurück, den die Zahlung
@@ -7116,6 +7120,8 @@ function kxEvents(tag,cx,rf,bo){
     const fe=()=>{if(!(c.fee>0))return 0;if(c.cur!=='USD')return c.fee;const r=rf(c.date,'');return r?c.fee/r:NaN};
     const k=c.kind;
     if(k==='kauf'||k==='hatte')ev.push(Object.assign(b,{label:KIND[k]+nt,val:kxEur(c,rf)}));
+    // Ab 0.120: Bezahlung erhalten, Einkaufswert = Tageswert (Menge ÷ EZB-Kurs USD je EUR des Tages), bz = für die Jahressumme (bzSum)
+    else if(k==='bzein')ev.push(Object.assign(b,{label:KIND[k]+nt,val:mv(),bz:1}));
     else if(k==='tauschein')ev.push(Object.assign(b,{label:`Getauscht aus ${c.other}`+nt,val:kxEur(c,rf)}));
     else if(k==='eingang')ev.push(Object.assign(b,{label:KIND[k]+nt,val:c.eur,kd:c.gd||c.date,estD:!!c.estD,noGd:!c.gd}));
     else if(k==='verkauf'||k==='bezahlung'){const f=fe();ev.push(Object.assign(b,{label:KIND[k]+nt,val:kxEur(c,rf)+f,fee:f},k==='verkauf'&&c.kest?{kest:true,kestEur:+c.kestEur||0}:{},RQ[i]?{rq:Math.min(RQ[i],c.qty)}:{}))}
@@ -7461,20 +7467,21 @@ $('btn-kb').addEventListener('click',e=>{e.stopPropagation();e.preventDefault();
    Vorgangs in einem Rahmen. Filter: S.ui.cf.vg (Art, Wallet; gespeichert sind die abgewählten Werte), S.ui.vgSt (Status), S.ui.vgTax (nur
    steuerlich wichtig), Zeitraum wie bisher. WZ_FOCUS = nur eine Wallet (nach dem Einlesen einer Datei, nicht gespeichert). */
 const VG_OPEN=new Set();let WZ_FOCUS=null;
-const VG_GRP={rueckerst:'rueckerst',kauf:'kauf',hatte:'kauf',tauschein:'kauf',verkauf:'verkauf',tauschaus:'verkauf',eingang:'geschenk',weg:'geschenk',bezahlung:'bezahlung',gebuehr:'gebuehr',bruecke:'gebuehr',
+const VG_GRP={rueckerst:'rueckerst',kauf:'kauf',bzein:'bzein',hatte:'kauf',tauschein:'kauf',verkauf:'verkauf',tauschaus:'verkauf',eingang:'geschenk',weg:'geschenk',bezahlung:'bezahlung',gebuehr:'gebuehr',bruecke:'gebuehr',
   tausch:'tausch',tagein:'tag',tagaus:'tag',uebertrag:'uebertrag',verloren:'verloren',int:'intern',open:'offen',ign:'offen',dfx:'offen'};
-const VG_GRPN={kauf:'Kauf',verkauf:'Verkauf',geschenk:'Geschenk',bezahlung:'Zahlung',rueckerst:'Rückerstattung',tausch:'Tausch (auch Aufladung mit Tausch)',gebuehr:'Gebühr',verloren:'Verloren oder gestohlen',tag:'Tag',uebertrag:'Übertrag (auch Aufladung, Rückbuchung)',intern:'intern'};
+const VG_GRPN={kauf:'Kauf',bzein:'Bezahlung erhalten',verkauf:'Verkauf',geschenk:'Geschenk',bezahlung:'Zahlung',rueckerst:'Rückerstattung',tausch:'Tausch (auch Aufladung mit Tausch)',gebuehr:'Gebühr',verloren:'Verloren oder gestohlen',tag:'Tag',uebertrag:'Übertrag (auch Aufladung, Rückbuchung)',intern:'intern'};
 // Ab 0.45 (4.8): zwei Gruppen der Art, je mit einem Häkchen für die ganze Gruppe
 // Ab 0.48 (Nachtrag 1, 2.2): Menü „Art“: je Wort in „Was“ ein Eintrag mit seinem Zeichen, in Gruppen (nur Überschriften).
 // [Gruppe, [[Schlüssel, Wort, Farbe, Zeichen]]]. Die Schlüssel vergibt vgArtK.
 // Ab 0.49 (2.1): 12 Einträge in fester Reihenfolge, ohne Gruppen, je mit Zeichen und Begriff (GL 'va'+Schlüssel). [Schlüssel, Wort, Farbe, Zeichen].
 // Ein Vorgang kann zu zwei Einträgen gehören (vgArtKs), z. B. Aufladung mit Tausch oder ein Geschenk über Tag.
-const VG_ARTS=[['tagein','Einzahlung zu Tag','tag','tagein'],['tagaus','Auszahlung von Tag','tag','tagaus'],['kauf','Kauf','in','kauf'],['verkauf','Verkauf','out','verkauf'],
+// Ab 0.120: 13 Einträge, „Bezahlung erhalten“ nach „Kauf“
+const VG_ARTS=[['tagein','Einzahlung zu Tag','tag','tagein'],['tagaus','Auszahlung von Tag','tag','tagaus'],['kauf','Kauf','in','kauf'],['bzein','Bezahlung erhalten','in','bzein'],['verkauf','Verkauf','out','verkauf'],
   ['zw','Zwischen deinen Wallets','mu','uebertrag'],['tausch','Tausch','sw','swap'],['bezahlung','Zahlung','out','karte'],['rueckerst','Rückerstattung','in','rueck'],
   ['gebuehr','Gebühr','out','pct'],['geschenk','Geschenk','in','gift'],['verloren','Verloren oder gestohlen','out','warn'],['offen','Noch nicht zugeordnet','mu','oout']];
 const VG_ARTN=Object.fromEntries(VG_ARTS.map(([k,l])=>[k,l]));
 // Genaue Art (vgArtK) → Einträge im Menü
-const VG_ART2={tagein:['tagein'],tagaus:['tagaus'],kauf:['kauf'],hatte:['kauf'],verkauf:['verkauf'],tausch:['tausch'],tauschbr:['tausch'],aufltausch:['zw','tausch'],tauschein:['tausch'],tauschaus:['tausch'],
+const VG_ART2={tagein:['tagein'],tagaus:['tagaus'],kauf:['kauf'],bzein:['bzein'],hatte:['kauf'],verkauf:['verkauf'],tausch:['tausch'],tauschbr:['tausch'],aufltausch:['zw','tausch'],tauschein:['tausch'],tauschaus:['tausch'],
   bezahlung:['bezahlung'],rueckerst:['rueckerst'],gebuehr:['gebuehr'],geschin:['geschenk'],geschout:['geschenk'],verloren:['verloren'],uebertrag:['zw'],aufladung:['zw'],rueckb:['zw'],bruecke:['zw'],tauschsk:['zw'],intern:['zw'],
   ausgang:['offen'],eingang:['offen'],bxein:['offen'],bxaus:['offen']};
 function vgArtKs(v){if(v.k==='open'||v.k==='ign'||v.k==='dfx')return ['offen'];const L=(VG_ART2[vgArtK(v)]||['zw']).slice();
@@ -7487,8 +7494,8 @@ function vgArtK(v){
   if(v.k==='uebertrag')return v.art==='Aufladung'?'aufladung':v.art==='Rückbuchung'?'rueckb':'uebertrag';
   if(v.k==='eingang')return 'geschin';if(v.k==='weg')return 'geschout';
   return VG_ART2[v.k]?v.k:'intern'}
-const VG_ARTG=[['tax','Zählt für die Steuer',['kauf','verkauf','geschenk','bezahlung','rueckerst','tausch','gebuehr','verloren','tag']],['zw','Zwischen deinen Wallets',['uebertrag','intern']]];
-const VG_TAX=new Set(['kauf','verkauf','geschenk','bezahlung','rueckerst','gebuehr','tausch','tag','verloren']);
+const VG_ARTG=[['tax','Zählt für die Steuer',['kauf','bzein','verkauf','geschenk','bezahlung','rueckerst','tausch','gebuehr','verloren','tag']],['zw','Zwischen deinen Wallets',['uebertrag','intern']]];
+const VG_TAX=new Set(['kauf','bzein','verkauf','geschenk','bezahlung','rueckerst','gebuehr','tausch','tag','verloren']);
 // Ab 0.45 (4.5): Zustand (fertig, offen, Wert fehlt, geschätzt, Vorschlag, ignoriert, sonst „fehlt: …“) und darunter grau die Herkunft
 // Ab 0.117: dfx = Ausstehend bei DFX.swiss
 const VG_STN={all:'alle',open:'offen',ok:'fertig',est:'geschätzt',inc:'Wert fehlt',sug:'Vorschlag',ign:'ignoriert',rate:'Kurs fehlt',dfx:'Ausstehend bei DFX.swiss'};
@@ -7606,7 +7613,7 @@ function vgStH0(v,st){const o=`<span class="small vgor">${vgOrigL(v).map(srcH).j
   if(st==='open'){const m=S.wtx[v.mv[0]],su=!!(m&&m.sus);return `<span class="vgsz vgs-${su?'sus':'open'}">${su?'verdächtig':'offen'}</span>${o}`}
   return `<span class="vgsz vgs-${st}">${st==='inc'?esc(vgMiss(v)):VG_STT[st]}</span>${st==='rate'?'':kf}${o}`}
 // Ab 0.45 (4.2): Farbe je Art (in grün-türkis, out koralle, sw violett, tag blau, mu grau), bei offenen Vorgängen die Signalfarbe
-const VG_KC={kauf:'in',eingang:'in',hatte:'in',tauschein:'sw',rueckerst:'in',verkauf:'out',bezahlung:'out',weg:'out',gebuehr:'out',verloren:'out',tauschaus:'sw',tausch:'sw',tagein:'tag',tagaus:'tag',uebertrag:'mu',int:'mu',bruecke:'mu'};
+const VG_KC={kauf:'in',bzein:'in',eingang:'in',hatte:'in',tauschein:'sw',rueckerst:'in',verkauf:'out',bezahlung:'out',weg:'out',gebuehr:'out',verloren:'out',tauschaus:'sw',tausch:'sw',tagein:'tag',tagaus:'tag',uebertrag:'mu',int:'mu',bruecke:'mu'};
 const vgKc=v=>VG_KC[v.k]||'mu';
 // Kleine Zeichen je Farbe (Inline-SVG, keine Schrift nötig)
 const VG_ICO={in:'<path d="M8 2v9M4 7l4 4 4-4"/>',out:'<path d="M8 14V5M4 9l4-4 4 4"/>',sw:'<path d="M3 5h9M9 2l3 3-3 3M13 11H4M7 8l-3 3 3 3"/>',tag:'<path d="M3 3h10v10H3zM6 6h4"/>',mu:'<path d="M2 8h11M9 4l4 4-4 4"/>'};
@@ -7626,15 +7633,17 @@ const VG_AI={kauf:'<path d="M1.5 2.5h2l1.8 7.5h7l1.7-5.5H4.2"/><circle cx="6.3" 
   rueckb:'<path d="M12.5 14V6H4M7 3L4 6l3 3"/>',
   intern:'<circle cx="8" cy="8" r="5"/>',
   hatte:'<circle cx="8" cy="8" r="6"/><path d="M8 5v6M5 8h6"/>',
+  // Ab 0.120: Bezahlung erhalten (Geldschein)
+  bzein:'<rect x="1.5" y="4" width="13" height="8" rx="1.5"/><circle cx="8" cy="8" r="2"/><path d="M4 8h.01M12 8h.01"/>',
   oin:'<path d="M8 2v9M4 7l4 4 4-4"/>',oout:'<path d="M8 14V5M4 9l4-4 4 4"/>'};
 // Art eines Vorgangs für das Zeichen
 function vgAk(v){if(v.mv.length===1&&(v.k==='open'||v.k==='ign'||v.k==='dfx')){const s=wSide(S.wtx[v.mv[0]]);return s==='in'?'oin':s==='out'?'oout':'intern'}
   if(v.art==='Rückbuchung')return 'rueckb';if(v.art==='Aufladung'||v.k==='tausch'||v.k==='tauschein'||v.k==='tauschaus')return 'swap';
-  return {kauf:'kauf',hatte:'hatte',eingang:'gift',weg:'gift',rueckerst:'rueck',rueckerstx:'rueck',verkauf:'verkauf',bezahlung:'karte',gebuehr:'pct',verloren:'warn',tagein:'tagein',tagaus:'tagaus',uebertrag:'uebertrag',bxein:'uebertrag',bxaus:'uebertrag'}[v.k]||'intern'}
+  return {kauf:'kauf',bzein:'bzein',hatte:'hatte',eingang:'gift',weg:'gift',rueckerst:'rueck',rueckerstx:'rueck',verkauf:'verkauf',bezahlung:'karte',gebuehr:'pct',verloren:'warn',tagein:'tagein',tagaus:'tagaus',uebertrag:'uebertrag',bxein:'uebertrag',bxaus:'uebertrag'}[v.k]||'intern'}
 const vgIcoK=a=>`<svg class="vgi" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${VG_AI[a]||VG_AI.intern}</svg>`;
 const vgIcoA=v=>vgIcoK(vgAk(v));
 // Legende: Zeichen in der Farbe ihrer Familie
-const VG_LEG=[['in','kauf','Kauf'],['in','gift','Geschenk erhalten'],['in','rueck','Rückerstattung'],['out','verkauf','Verkauf'],['out','karte','Zahlung'],['out','gift','Geschenk gemacht'],['out','pct','Gebühr'],['out','warn','Verloren oder gestohlen'],
+const VG_LEG=[['in','kauf','Kauf'],['in','bzein','Bezahlung erhalten'],['in','gift','Geschenk erhalten'],['in','rueck','Rückerstattung'],['out','verkauf','Verkauf'],['out','karte','Zahlung'],['out','gift','Geschenk gemacht'],['out','pct','Gebühr'],['out','warn','Verloren oder gestohlen'],
   ['sw','swap','Tausch, Aufladung mit Tausch'],['tag','tagein','Einzahlung zu Tag'],['tag','tagaus','Auszahlung von Tag'],['mu','uebertrag','Übertrag'],['mu','swap','Aufladung'],['mu','rueckb','Rückbuchung'],['mu','intern','intern, Umtausch']];
 // Euro fett nur bei Kauf, Verkauf, Zahlung und Tausch (4.3)
 const VG_EB=new Set(['kauf','verkauf','bezahlung','tausch']);
@@ -9161,11 +9170,15 @@ function askDots(fields,box,go){
     const x=box.querySelector('[data-dx]');if(x)x.onclick=()=>{box.innerHTML='';el.focus();el.select()};
     return false}
   return true}
+const BZ_HINT='Der Wert beim Erhalt ist Einkommen. Du versteuerst ihn gesondert.';
 const CX_CARD=' Zum Beispiel eine Karte, auf die du USDC lädst und auf der dann Dollar liegen: Aufladen ist ein Verkauf, Zurücktauschen in USDC ein Kauf. Tauscht deine Karte erst beim Bezahlen (es liegen weiter Coins drauf), ist jede Kartenzahlung eine Zahlung mit Krypto.';
 // Hilfetexte je Art und Land (ab 0.38). Ein Text für beide Länder steht unter b, sonst AT und DE getrennt.
 const CX_HELP={
   kauf:{b:'<b>Kauf</b> an einer Börse. Wert = bezahlter Betrag <b>inklusive</b> Gebühr, siehe deine Kaufbestätigung. Bei Bitvavo z. B. „Bezahlt 1.980,00 €“ inkl. 1,98 € Gebühr → 1980 eintragen. Hast du in Dollar bezahlt, wähle USD: Das Tool rechnet zum EZB-Kurs des Tages in Euro um.',
     DE:' In Deutschland zählt das Datum für die Haltefrist: Ein Jahr nach dem Kauf ist ein Verkauf dieser Coins steuerfrei.',tail:CX_CARD},
+  // Ab 0.120
+  bzein:{b:'<b>Bezahlung erhalten</b>: Coins, die du direkt als Bezahlung für eine Leistung bekommen hast. Einen Wert trägst du nicht ein: Das Tool nimmt den Tageswert am Eingangstag als Einkaufswert.',
+    AT:' Die Coins gehen mit diesem Wert in den Ø-Preis der Wallet.',DE:' An diesem Tag beginnt die Haltefrist.'},
   eingang:{AT:'<b>Geschenk erhalten</b>: Trage ein, was die schenkende Person für die Coins bezahlt hat und wann sie sie gekauft hat. Frage sie danach. Du übernimmst ihren Einkaufswert (§ 27a Abs. 4 Z 1 EStG), er geht am Tag des Geschenks in deinen Ø-Preis ein. Weißt du den Betrag nicht, setze das Häkchen: Das Tool nimmt den Tageswert am Geschenktag (Menge ÷ EZB-Kurs) und markiert ihn als geschätzt. Weißt du das Datum nicht, gilt der Geschenktag, deine Coins zählen dann als Neuvermögen.',
     DE:'<b>Geschenk erhalten</b>: Trage ein, was die schenkende Person für die Coins bezahlt hat und wann sie sie gekauft hat. Frage sie danach. Du übernimmst beides (§ 23 Abs. 1 Satz 3 EStG): Die Haltefrist läuft ab ihrem Kauf weiter. Weißt du den Betrag nicht, setze das Häkchen: Das Tool nimmt den Tageswert am Geschenktag (Menge ÷ EZB-Kurs) und markiert ihn als geschätzt. Weißt du das Datum nicht, beginnt die Haltefrist am Geschenktag.'},
   hatte:{AT:'<b>Hatte ich schon</b>: Coins, die du schon hattest, bevor du mit dem Tool angefangen hast. Datum = wann du sie bekommen hast. Rechnerisch ein Kauf, der eigene Name zeigt dir und deiner Steuerberatung, was gemeint ist. Kennst du den Wert nicht, klicke auf <b>≈</b>.',
@@ -9238,7 +9251,8 @@ function cxHelp(){
   // Altvermögen (nur Österreich)
   const d=$('cx-date').value,gd=$('cx-gd').value;
   const alt=!DE&&((k==='hatte'&&d&&d<AT_ALT)||(k==='eingang'&&!$('cx-unkd').checked&&gd&&gd<AT_ALT));
-  $('cx-hint').innerHTML=(alt?`<div class="msg info">Kaufdatum vor dem 01.03.2021: ${ALT_TXT}</div>`:'')+
+  // Ab 0.120 (Florians Wortlaut): grauer Hinweis bei „Bezahlung erhalten“
+  $('cx-hint').innerHTML=(k==='bzein'?`<p class="small">${BZ_HINT}</p>`:'')+(alt?`<div class="msg info">Kaufdatum vor dem 01.03.2021: ${ALT_TXT}</div>`:'')+
     // Ab 0.39: Kauf aus einer Bewegung der Wallet-Datei ist oft ein Übertrag von einer Börse
     (CX_META&&k==='kauf'?`<div class="msg info">Kam das von einer Börse? Dann lege die Börse als Wallet an, trage dort den Kauf ein und wähle hier „Übertrag“. Der Tag des Übertrags ist nicht dein Kaufdatum. Das ist für die Haltefrist in Deutschland wichtig und für den richtigen Einkaufswert.</div>`:'');
 }
@@ -9312,7 +9326,7 @@ function openCxTag(id){const t=S.tag[id];if(!t)return;openCx(null,{kind:t.kind==
 // „Einkauf fehlt“, Einzahlung bei der Börse) nur „Coins kamen dazu“, '' (von Hand, Bearbeiten) alle Gruppen. „Seltener“ immer zuletzt.
 // Namen: zuerst der Begriff, die Erklärung in Klammern.
 const CX_MENU=[['out','Coins gingen weg',[['bezahlung','Zahlung (Ware oder Leistung mit Coins bezahlt)'],['verkauf','Verkauf/Abhebung (Coins gegen Euro, auch am Bankomaten)'],['uebertrag','Übertrag (an eine eigene Wallet)','out'],['tagein','Einzahlung zu Tag'],['weg','Geschenk gemacht'],['gebuehr','Gebühr (z. B. fürs Netzwerk)'],['verloren','Verloren oder gestohlen']]],
-  ['in','Coins kamen dazu',[['kauf','Kauf (mit Euro)'],['uebertrag','Übertrag (von einer eigenen Wallet)','in'],['tagaus','Auszahlung von Tag'],['eingang','Geschenk erhalten'],['rueckerst','Rückerstattung (einer Zahlung)'],['hatte','Hatte ich schon (vor dem Start)']]],
+  ['in','Coins kamen dazu',[['kauf','Kauf (mit Euro)'],['bzein','Bezahlung erhalten'],['uebertrag','Übertrag (von einer eigenen Wallet)','in'],['tagaus','Auszahlung von Tag'],['eingang','Geschenk erhalten'],['rueckerst','Rückerstattung (einer Zahlung)'],['hatte','Hatte ich schon (vor dem Start)']]],
   ['','Seltener',[['tausch','Tausch (USDC ↔ USDT)'],['tauschein','Aus anderem Coin getauscht (z. B. BTC)'],['tauschaus','In anderen Coin getauscht (z. B. BTC)']]]];
 let CX_DIR='',CX_CTX=null;
 const CX_PHO='<option value="" disabled data-ph>bitte wählen</option>',CX_PH=/<option value="" disabled(="")? data-ph(="")?>bitte wählen<\/option>/;
@@ -9639,6 +9653,8 @@ function exportXlsx(year){
   const giveX=f=>!f.give?'':DE?' (Zum Weitergeben: '+f.give.map(x=>`${fmtNum(x.q)} ${f.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join('; ')+')':` (Zum Weitergeben: ${fmtNum(f.give.q)} ${f.coin}, Ø-Preis ${fDec(f.give.avg,4)} €)`;
   const kr=[[X.B('Datum'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Coins rein/raus'),X.B(DE?'Euro-Wert (Veräußerungspreis)':'Euro-Wert (Erlös)'),X.B(DE?'Werbungskosten':'Gebühr'),X.B('Einkaufswert der Coins'),X.B('Gewinn/Verlust'),...(DE?[X.B('davon steuerpflichtig')]:[]),X.B('Coins danach'),X.B('Einkaufswert danach'),...(DE?[]:[X.B('Ø-Preis danach (EUR je Coin)')])]];
   for(const f of fl)kr.push([X.D(f.d),f.label+(f.miss?' (Einkauf fehlt)':'')+(f.kest?' (KESt abgezogen'+(f.kestEur>0?' '+fE.format(f.kestEur):'')+')':'')+(f.xfer!=null?` (Einkaufswert ${fE.format(f.xfer)} geht auf ${f.other} über)`:'')+giveX(f),wDispW(f.w),f.coin,X.N(f.q),f.eur!=null&&isFinite(f.eur)?X.E(f.eur):'',f.fee>0?X.E(f.fee):'',f.ak!=null?X.E(f.ak):'',f.gain!=null?X.E(f.gain):'',...(DE?[f.taxGain!=null?X.E(f.taxGain):'']:[]),X.N(f.qa),X.E(f.aka),...(DE?[]:[f.avg?X.R(f.avg):''])]);
+  // Ab 0.120: je Jahr die Summe der erhaltenen Bezahlungen (Wert beim Erhalt), neutral benannt (ohne Steuerbezug, GESTALTUNG Abschnitt 13)
+  {const bzY=bzYears(C).filter(y=>!year||y===year);if(bzY.length){kr.push([]);for(const y of bzY)kr.push(['',`Bezahlungen erhalten ${y} (Summe, Wert beim Erhalt)`,'','','',X.E(bzSum(C,y))])}}
   // DE: Verkäufe nach FIFO, je verbrauchter Posten eine Zeile (gesonderte Aufstellung zur Anlage SO)
   const ff=[[X.B('Verkauf am'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Kaufdatum'),X.B('Menge'),X.B('Einkaufswert'),X.B('Veräußerungspreis'),X.B('Werbungskosten'),X.B('Haltedauer (Tage)'),X.B('steuerpflichtig'),X.B('Gewinn/Verlust')]];
   if(DE){const sm={vp:0,ak:0,wk:0,g:0};
@@ -9672,11 +9688,13 @@ function exportXlsx(year){
   const cx=[[X.B('Datum'),X.B('Was'),X.B('Wallet'),X.B('nach Wallet'),X.B('Coin'),X.B('Menge'),...(QI?[X.B('Menge angekommen')]:[]),X.B('in Coin'),X.B('Menge erhalten'),X.B('anderer Coin (in/aus)'),...(OQ?[X.B('Menge hergegeben')]:[]),X.B('Währung'),X.B('Betrag USD'),X.B('Euro'),X.B('Euro geschätzt'),X.B('Einkaufswert übertragen'),
     X.B('Kaufdatum der schenkenden Person'),X.B('Kaufdatum geschätzt'),X.B('Gebühr'),X.B('KESt abgezogen'),X.B('KESt EUR'),X.B('keine Kryptowährung (NFT)'),X.B('Zum Weitergeben (Verschenkt)'),X.B('Notiz'),...(HW?[X.B('Herkunft')]:[])]];
   const gv={};for(const f of C0.flow)if(f.give&&f.cx!=null)gv[f.cx]=f;
+  // Ab 0.120: „Bezahlung erhalten“ mit dem Wert beim Erhalt (Tageswert aus der Rechnung) in der Spalte „Euro“
+  const bzE={};for(const f of C0.flow)if(f.k==='bzein'&&f.cx!=null&&isFinite(f.eur))bzE[f.cx]=f.eur;
   // Ab 0.74 (4): xes = weitergegebener Einkaufswert enthält geschätzte Werte
   const xf={},xes={};for(const f of C0.flow)if(f.xfer!=null&&f.cx!=null){xf[f.cx]=f.xfer;if(f.estV)xes[f.cx]=1}
   S.cx.map((c,i)=>Object.assign({i},c)).filter(c=>!year||c.date.slice(0,4)===year).sort((a,b)=>a.date<b.date?-1:1).forEach(c=>{const ev=CX_FIELDS[c.kind]&&CX_FIELDS[c.kind].eur,ve=ev?cxEur(c):null;
     const g=gv[c.i],gt=!g?'':DE?g.give.map(x=>`${fmtNum(x.q)} ${c.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join('; '):`${fmtNum(g.give.q)} ${c.coin}, Ø-Preis ${fmtDec(g.give.avg,4)} €, Einkaufswert ${fE.format(g.give.q*g.give.avg)}`;
-    cx.push([X.D(c.date),kindL(c),c.wallet,c.to||'',c.coin,X.N(c.qty),...(QI?[c.kind==='uebertrag'&&c.qtyIn>0?X.N(c.qtyIn):'']:[]),c.coin2||'',c.qty2?X.N(c.qty2):'',c.other||'',...(OQ?[c.kind==='tauschein'&&c.otherQ>0?c.otherQ:'']:[]),ev?(c.cur==='USD'?'USD':'EUR'):'',c.cur==='USD'&&c.usd!=null?X.N(c.usd):'',ev&&isFinite(ve)&&!cxMissing(c).length?X.E(ve):(c.kind==='tauschaus'&&c.eur>0?X.E(c.eur):''),c.est||xes[c.i]?'ja':'',xf[c.i]!=null?X.E(xf[c.i]):'',
+    cx.push([X.D(c.date),kindL(c),c.wallet,c.to||'',c.coin,X.N(c.qty),...(QI?[c.kind==='uebertrag'&&c.qtyIn>0?X.N(c.qtyIn):'']:[]),c.coin2||'',c.qty2?X.N(c.qty2):'',c.other||'',...(OQ?[c.kind==='tauschein'&&c.otherQ>0?c.otherQ:'']:[]),ev?(c.cur==='USD'?'USD':'EUR'):bzE[c.i]!=null?'EUR':'',c.cur==='USD'&&c.usd!=null?X.N(c.usd):'',ev&&isFinite(ve)&&!cxMissing(c).length?X.E(ve):bzE[c.i]!=null?X.E(bzE[c.i]):(c.kind==='tauschaus'&&c.eur>0?X.E(c.eur):''),c.est||xes[c.i]?'ja':'',xf[c.i]!=null?X.E(xf[c.i]):'',
       c.gd?X.D(c.gd):'',c.kind==='eingang'&&c.estD?'ja':'',c.fee>0?(c.cur==='USD'?X.N(c.fee):X.E(c.fee)):'',c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,c.note||'',...(HW?[cxOrigN(c)]:[])])});
   // Ab 0.39: Bewegungen aus der Wallet-Datei (Jahres-Excel: nur die des Jahres)
   const wb=[[X.B('Datum'),X.B('Zeit'),X.B('Netzwerk'),X.B('Wallet von'),X.B('Wallet nach'),X.B('rein/raus'),X.B('Coin'),X.B('ausgegeben von'),X.B('Menge'),X.B('Gegenseite'),X.B('Hash'),X.B('Status'),X.B('zugeordnet zu')]];
@@ -10107,11 +10125,19 @@ function printSummary(){
 // Vorgang im Steuer-Excel: Broker statt „Tag“, ohne Vorgangsnummer, ohne Notiz; Gebühren in Coins mit kurzem Namen (4.2, 4.5, 4.11)
 function txLab(f){let l=f.label||'';
   if(f.k==='tagein')return 'Einzahlung beim Broker';if(f.k==='tagaus')return 'Auszahlung vom Broker';
+  // Ab 0.120: Zugang wie ein Kauf, mit dem Hinweis auf den Wert
+  if(f.k==='bzein')return 'Bezahlung erhalten (Wert beim Erhalt)';
   if(f.src==='tag'&&f.k==='eingang')return 'Geschenk erhalten (direkt beim Broker eingezahlt)';if(f.src==='tag'&&f.k==='weg')return 'Geschenk gemacht (direkt vom Broker ausgezahlt)';
   const c=f.cx!=null?S.cx[f.cx]:null;
   if(c&&c.note){if(f.k==='gebuehr'&&!f.xfee&&c.kind==='gebuehr')return c.note===LDF_NOTE?'Gebühr des Kartenanbieters (in Coins)':c.note===BRK_NOTE?'Brückengebühr (in Coins)':/^Gebühr des Diensts/.test(c.note)?'Gebühr des Diensts (in Coins)':'Gebühr in Coins';
     l=l.split(': '+c.note).join('')}
   return l.replace('Hatte ich schon','Bestand von früher')}
+// Ab 0.120: Summe der erhaltenen Bezahlungen (Wert beim Erhalt) im Jahr y; bzAny = es gibt Einträge „Bezahlung erhalten“
+const bzSum=(C,y)=>C.flow.filter(f=>f.k==='bzein'&&String(f.d).slice(0,4)===String(y)&&isFinite(f.eur)).reduce((a,f)=>a+f.eur,0);
+const bzYears=C=>[...new Set(C.flow.filter(f=>f.k==='bzein').map(f=>String(f.d).slice(0,4)))].sort();
+const bzAny=()=>S.cx.some(c=>c.kind==='bzein');
+const BZ_TAX='bezahlungen in Coins versteuerst du gesondert. Bei Coins rechnet das Tool nur, was danach mit ihnen passiert';
+const bzLine=(C,y)=>{const v=bzSum(C,y);return v>0?`<p class="sigl">Bezahlungen in Coins erhalten ${y}: ${fE.format(v)} (Wert beim Erhalt).</p>`:''};
 const txKind=k=>k==='hatte'?'Bestand von früher':KIND[k];
 function taxXlsx(y){
   const Z=taxCtx(y),{B,R,T,DE,ds}=Z,L=DE?'DE':'AT',cxOn=S.ui.cxIncl!==false,C0=Z.C,C=cxOn?C0:{flow:[],byY:{},byM:{},n:0,short:[],sales:[],fees:[],pots:[]};
@@ -10152,6 +10178,8 @@ function taxXlsx(y){
   const giveX=f=>!f.give?'':DE?' (Zum Weitergeben: '+f.give.map(x=>`${fmtNum(x.q)} ${f.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join(', ')+')':` (Zum Weitergeben: ${fmtNum(f.give.q)} ${f.coin}, Ø-Preis ${fDec(f.give.avg,4)} €)`;
   const kr=[[X.B('Datum'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Coins rein/raus'),X.B('Euro-Wert'),X.B(DE?'Werbungskosten':'Gebühr'),X.B('Einkaufswert der Coins'),X.B('Gewinn/Verlust'),...(DE?[X.B('davon steuerpflichtig')]:[]),X.B('Coins danach'),X.B('Einkaufswert danach'),...(DE?[]:[X.B('Ø-Preis danach (EUR je Coin)')])]];
   for(const f of fl)kr.push([X.D(f.d),txLab(f)+(f.miss?' (Einkauf fehlt)':'')+(f.kest?' (KESt abgezogen'+(f.kestEur>0?' '+fE.format(f.kestEur):'')+')':'')+(f.xfer!=null?` (Einkaufswert ${fE.format(f.xfer)} geht auf ${f.other} über)`:'')+giveX(f),wDispW(f.w),f.coin,X.N(f.q),f.eur!=null&&isFinite(f.eur)?X.E(f.eur):'',f.fee>0?X.E(f.fee):'',f.ak!=null?X.E(f.ak):'',f.gain!=null?X.E(f.gain):'',...(DE?[f.taxGain!=null?X.E(f.taxGain):'']:[]),X.N(f.qa),X.E(f.aka),...(DE?[]:[f.avg?X.R(f.avg):''])]);
+  // Ab 0.120 (Florians Antwort im Plan): Summen- und Einkommenszeile der erhaltenen Bezahlungen, die Zugänge stehen oben wie ein Kauf
+  {const bz=bzSum(C,y);if(bz>0){kr.push([]);kr.push(['',`Summe Bezahlungen in Coins erhalten ${y} (Einkommen, gesondert zu versteuern, Wert beim Erhalt)`,'','','',X.E(bz)])}}
   const ff=[[X.B('Verkauf am'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Kaufdatum'),X.B('Menge'),X.B('Einkaufswert'),X.B('Veräußerungspreis'),X.B('Werbungskosten'),X.B('Haltedauer (Tage)'),X.B('steuerpflichtig'),X.B('Gewinn/Verlust')]];
   if(DE){const sm={vp:0,ak:0,wk:0,g:0};
     for(const s of C.sales.filter(s=>yr(s.d)===y))for(const x of s.parts||[]){
@@ -10175,6 +10203,8 @@ function taxXlsx(y){
     tg.push([X.D(a.date),...(TZ?[t.tz==='datei'?'':t.time||'',a.time]:[t.time]),t.kind==='ein'?'Einzahlung':'Auszahlung',X.N(t.usd),t.coin,X.N(t.qty),tw(t),t.status==='ok'?'durchgeführt':'nicht durchgeführt',X.D(rateDateFor(tagD(t),'USD',tagT(t))),r?X.R(r):'',r?X.F(TZ?`E${n}/K${n}`:`D${n}/J${n}`,t.usd/r,2):'',...(HW?[t.wk&&S.wtx[t.wk]?S.wtx[t.wk].hash:'']:[])])});
   // Eigene Krypto-Einträge: ohne Notiz, eine Spalte nur, wenn im Jahr etwas darin steht (4.5, 4.7)
   const gv={};for(const f of C0.flow)if(f.give&&f.cx!=null)gv[f.cx]=f;
+  // Ab 0.120: „Bezahlung erhalten“ mit dem Wert beim Erhalt (Tageswert aus der Rechnung) in der Spalte „Euro“
+  const bzE={};for(const f of C0.flow)if(f.k==='bzein'&&f.cx!=null&&isFinite(f.eur))bzE[f.cx]=f.eur;
   // Ab 0.74 (4): xes = weitergegebener Einkaufswert enthält geschätzte Werte
   const xf={},xes={};for(const f of C0.flow)if(f.xfer!=null&&f.cx!=null){xf[f.cx]=f.xfer;if(f.estV)xes[f.cx]=1}
   const CH=['Datum','Was','Wallet','nach Wallet','Coin','Menge','Menge angekommen','in Coin','Menge erhalten','anderer Coin (in/aus)','Währung','Betrag USD','Euro','Euro geschätzt','Einkaufswert übertragen',
@@ -10182,7 +10212,7 @@ function taxXlsx(y){
   const CW=[11,28,14,14,6,12,12,7,13,14,8,12,12,9,16,14,10,10,9,10,10,40,11];
   const crows=S.cx.map((c,i)=>Object.assign({i},c)).filter(c=>yr(c.date)===y).sort((a,b)=>a.date<b.date?-1:1).map(c=>{const ev=CX_FIELDS[c.kind]&&CX_FIELDS[c.kind].eur,ve=ev?cxEur(c):null;
     const g=gv[c.i],gt=!g?'':DE?g.give.map(x=>`${fmtNum(x.q)} ${c.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join(', '):`${fmtNum(g.give.q)} ${c.coin}, Ø-Preis ${fmtDec(g.give.avg,4)} €, Einkaufswert ${fE.format(g.give.q*g.give.avg)}`;
-    return [X.D(c.date),txKind(c.kind),c.wallet,c.to||'',c.coin,X.N(c.qty),c.kind==='uebertrag'&&c.qtyIn>0?X.N(c.qtyIn):'',c.coin2||'',c.qty2?X.N(c.qty2):'',c.other||'',ev?(c.cur==='USD'?'USD':'EUR'):'',c.cur==='USD'&&c.usd!=null?X.N(c.usd):'',ev&&isFinite(ve)&&!cxMissing(c).length?X.E(ve):(c.kind==='tauschaus'&&c.eur>0?X.E(c.eur):''),cxEst(c)||xes[c.i]?'ja':'',xf[c.i]!=null?X.E(xf[c.i]):'',
+    return [X.D(c.date),txKind(c.kind),c.wallet,c.to||'',c.coin,X.N(c.qty),c.kind==='uebertrag'&&c.qtyIn>0?X.N(c.qtyIn):'',c.coin2||'',c.qty2?X.N(c.qty2):'',c.other||'',ev?(c.cur==='USD'?'USD':'EUR'):bzE[c.i]!=null?'EUR':'',c.cur==='USD'&&c.usd!=null?X.N(c.usd):'',ev&&isFinite(ve)&&!cxMissing(c).length?X.E(ve):bzE[c.i]!=null?X.E(bzE[c.i]):(c.kind==='tauschaus'&&c.eur>0?X.E(c.eur):''),cxEst(c)||xes[c.i]?'ja':'',xf[c.i]!=null?X.E(xf[c.i]):'',
       c.gd?X.D(c.gd):'',c.kind==='eingang'&&(c.estD||(DE&&!c.gd))?'ja':'',c.fee>0?(c.cur==='USD'?X.N(c.fee):X.E(c.fee)):'',c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,...(HW?[cxOrigN(c)]:[])]});
   const keep=CH.map((h,j)=>j<2||j===2||j===4||j===5||crows.some(r=>r[j]!==''&&r[j]!=null));
   const cx=[CH.filter((h,j)=>keep[j]).map(h=>X.B(h)),...crows.map(r=>r.filter((v,j)=>keep[j]))],cxW=CW.filter((w,j)=>keep[j]);
@@ -10596,7 +10626,7 @@ const VG_ST_OPTS=()=>Object.entries(VG_STN).filter(([v])=>v!=='all');
 // Ab 0.48 (3.10): Filtermenüs im Reiter Wallet wie die Konto-Auswahl der Auswertung: oben „Alle“, je Eintrag ein Häkchen und rechts „nur diese“
 const fltAll=k=>`<div class="row" style="gap:6px;margin:0 0 6px"><button type="button" class="btn fall" data-cfall="${k}">Alle</button></div>`;
 const fltOpt=(k,v,l,cls,h)=>`<div class="facc${cls?' '+cls:''}"><label class="fopt"><input type="checkbox" data-cf="${k}" value="${esc(v)}"><span>${h||esc(l)}</span></label><button type="button" class="fonly" data-cfonly="${k}|${esc(v)}">nur diese</button></div>`;
-const CX_GRP={zu:['kauf','eingang','hatte','tauschein'],weg:['verkauf','bezahlung','weg','verloren','tauschaus','gebuehr'],zw:['uebertrag','tausch']};
+const CX_GRP={zu:['kauf','bzein','eingang','hatte','tauschein'],weg:['verkauf','bezahlung','weg','verloren','tauschaus','gebuehr'],zw:['uebertrag','tausch']};
 const CX_GRPN={zu:'Coins kamen dazu',weg:'Coins gingen weg',zw:'Zwischen deinen Wallets'};
 const cxGrp=k=>Object.keys(CX_GRP).find(g=>CX_GRP[g].includes(k));
 function cfGroups(w){const ws=S.wallets.map(x=>[x,x]);
@@ -10949,11 +10979,12 @@ ${ECB_CITE}`},
   tagwallet:{t:'Wallet',h:'Wohin die Coins gingen bzw. woher sie kamen.'},
   meingeld:{t:'Mein Geld',h:'Nimm das Häkchen weg, wenn eine Einzahlung nicht dein Geld war (z. B. geborgt oder für jemand anderen). Sie zählt dann nirgends.'},
   'k-cx':{t:'Woher kamen deine Coins?',h:'Damit der Gewinn oder Verlust stimmt, braucht das Tool den Einkaufswert deiner Coins. Trage hier ein, was nicht bei Tag passiert ist: Käufe an einer Börse, Geschenke, Verkäufe, Überträge zwischen deinen Wallets, Tausch. Alles ist optional. Fehlt ein Einkauf, rechnet das Tool diesen Teil ohne Gewinn oder Verlust.\n<b>Andere Coins:</b> '+CX_OTHER},
-  cxwas:{t:'Was?',h:'<b>Coins gingen weg</b>\nZahlung: Du hast mit Coins Ware oder eine Leistung bezahlt. Steuerlich ein Verkauf.\nVerkauf/Abhebung: Coins gegen Euro, an einer Börse oder am Bankomaten. Auch eine Abhebung am Bankomaten ist steuerlich ein Verkauf.\nÜbertrag (an eine eigene Wallet): kein Verkauf, der Einkaufswert wandert mit.\nEinzahlung zu Tag: Coins aus einer Wallet zu Tag geschickt.\nGeschenk gemacht: ohne Gegenleistung an eine andere Person.\nGebühr: Coins gingen als Gebühr weg, z. B. fürs Netzwerk.\nVerloren oder gestohlen: weg, ohne dass du etwas dafür bekommen hast.\n<b>Coins kamen dazu</b>\nKauf: mit Euro, an einer Börse oder über eine Karte.\nÜbertrag (von einer eigenen Wallet): kein Kauf.\nAuszahlung von Tag: Tag hat dir Coins in eine Wallet geschickt.\nGeschenk erhalten: Du übernimmst den Einkaufswert der schenkenden Person.\nRückerstattung: Coins aus einer Zahlung kamen zurück.\nHatte ich schon: Coins, die du schon vor dem Start hattest. Rechnerisch ein Kauf.\n<b>Seltener</b>\nTausch USDC ↔ USDT, Tausch aus einem oder in einen anderen Coin (z. B. BTC).'},
+  cxwas:{t:'Was?',h:'<b>Coins gingen weg</b>\nZahlung: Du hast mit Coins Ware oder eine Leistung bezahlt. Steuerlich ein Verkauf.\nVerkauf/Abhebung: Coins gegen Euro, an einer Börse oder am Bankomaten. Auch eine Abhebung am Bankomaten ist steuerlich ein Verkauf.\nÜbertrag (an eine eigene Wallet): kein Verkauf, der Einkaufswert wandert mit.\nEinzahlung zu Tag: Coins aus einer Wallet zu Tag geschickt.\nGeschenk gemacht: ohne Gegenleistung an eine andere Person.\nGebühr: Coins gingen als Gebühr weg, z. B. fürs Netzwerk.\nVerloren oder gestohlen: weg, ohne dass du etwas dafür bekommen hast.\n<b>Coins kamen dazu</b>\nKauf: mit Euro, an einer Börse oder über eine Karte.\nÜbertrag (von einer eigenen Wallet): kein Kauf.\nAuszahlung von Tag: Tag hat dir Coins in eine Wallet geschickt.\nBezahlung erhalten: Coins direkt als Bezahlung für eine Leistung. Einkaufswert ist der Tageswert am Eingangstag.\nGeschenk erhalten: Du übernimmst den Einkaufswert der schenkenden Person.\nRückerstattung: Coins aus einer Zahlung kamen zurück.\nHatte ich schon: Coins, die du schon vor dem Start hattest. Rechnerisch ein Kauf.\n<b>Seltener</b>\nTausch USDC ↔ USDT, Tausch aus einem oder in einen anderen Coin (z. B. BTC).'},
   umtausch:{t:'Umtausch',h:'Gleicher Coin in anderer Form, zum Beispiel Kartenguthaben (WUSD) und USDC. Zählt nicht für die Steuer.'},
   vatagein:{t:'Einzahlung zu Tag',h:'Coins, die du bei Tag eingezahlt hast, auch als Geschenk von jemandem.'},
   vatagaus:{t:'Auszahlung von Tag',h:'Coins, die du dir von Tag ausgezahlt hast, auch als Geschenk an jemanden.'},
   vakauf:{t:'Kauf',h:'Käufe, auch „Hatte ich schon“.'},
+  vabzein:{t:'Bezahlung erhalten',h:'Coins, die du direkt als Bezahlung für eine Leistung bekommen hast.'},
   vaverkauf:{t:'Verkauf',h:'Verkäufe gegen Euro oder eine andere Währung.'},
   vazw:{t:'Zwischen deinen Wallets',h:'Übertrag, Aufladung (auch mit Tausch), Rückbuchung, Brücke, Umtausch und intern. Die Coins bleiben bei dir.'},
   vatausch:{t:'Tausch',h:'Jeder Wechsel des Coins: Tausch, Tausch über Brücke, Aufladung mit Tausch, aus und in einen anderen Coin getauscht.'},
@@ -12177,7 +12208,8 @@ function renderTax(rows){
   glSet('tx-salcx',`Aus ${CY.n===1?'1 Verkauf':fI.format(CY.n)+' Verkäufen'} (Einzahlungen bei Tag, Verkäufe, Zahlungen).`);
   glSet('k-taxat',hasCxData?'<b>Krypto:</b> '+GL['k-atcx'].h+(payN(C,y)?'\n'+PAY_ANN.AT:''):'');
   $('t-taxparts').innerHTML=taxTabH({c:{y,cfd:R.length>0,cx:hasCx,opt:!!S.ui.opt},T,R,cy:CY,DE:false},hasCxData,cxIncl);
-  $('taxcx-warn').innerHTML=hasCxData&&!cxIncl?'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung, Excel und Steuerschätzung). Krypto-Gewinne sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>':hasCxData?taxCxNote(C,y):'';
+  // Ab 0.120: Jahressumme „Bezahlungen in Coins erhalten“ (grau, nur über 0) nach dem Satz zum Herausnehmen
+  $('taxcx-warn').innerHTML=(hasCxData&&!cxIncl?'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung, Excel und Steuerschätzung). Krypto-Gewinne sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>':hasCxData?taxCxNote(C,y):'')+(hasCxData?bzLine(C,y):'');
   $('tx-not-l').innerHTML=taxNotList('AT');
   // Schätzung
   if(document.activeElement!==$('other'))$('other').value=S.ui.other;
@@ -12292,6 +12324,8 @@ function taxCxNote(C,y){const L=S.ui.country==='DE'?'DE':'AT',fx=s=>s.e.t==='v'|
 // Ab 0.72 (1.6, 3.10): Punkte von „Was das Tool nicht rechnet“ (Karte im Reiter; ohne tab die Liste für Zusammenfassung und Excel, ohne „Steuer geschätzt“)
 function taxNotItems(L,tab){const o=[{id:'n-coins',t:'andere Kryptowährungen als USDC und USDT (z. B. BTC, ETH)'},{id:'n-netfee',t:'Netzwerkgebühren, die in anderen Coins bezahlt wurden (z. B. ETH, BNB)'},
     {id:'n-kap',t:'andere Kapitalerträge (z. B. Zinsen, Dividenden) und der Verlustausgleich mit ihnen'}];
+  // Ab 0.120 (Florians Wortlaut): nur im Reiter und nur, wenn es Einträge „Bezahlung erhalten“ gibt
+  if(tab&&bzAny())o.push({id:'n-bz',t:BZ_TAX});
   if(tab)o.push({id:'n-est',t:L==='DE'?'bei „Steuer geschätzt“: die Günstigerprüfung':'bei „Steuer geschätzt“: Absetzbeträge und Sonderausgaben'});
   if(L==='DE'&&!String(S.ui.deOther||'').trim())o.push({id:'n-so',t:'andere private Veräußerungsgeschäfte, solange keine eingetragen sind'});
   return o}
@@ -12342,7 +12376,8 @@ function renderTaxDECx(y){
   const X=DECX=deCx(y),{C,Y}=X,inc=S.ui.cxIncl!==false;
   // Ab 0.73 (2.1, 2.6): Krypto in der Tabelle der Jahresabrechnung (taxTabH); hier das Feld, die Sätze darunter und das (i) der Karte (auch „Eintragen: Anlage SO …“)
   $('de-cx-body').style.display=X.has&&inc?'':'none';
-  $('de-cx-warn').innerHTML=!X.has?'':inc?taxCxNote(C,y):'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung und Excel). Gewinne aus Coins, die du höchstens ein Jahr gehalten hast, sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>';
+  // Ab 0.120: Jahressumme „Bezahlungen in Coins erhalten“ (grau, nur über 0)
+  $('de-cx-warn').innerHTML=!X.has?'':(inc?taxCxNote(C,y):'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung und Excel). Gewinne aus Coins, die du höchstens ein Jahr gehalten hast, sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>')+bzLine(C,y);
   const form=FORM_SO[y]?`Eintragen: Anlage SO, Abschnitt „Kryptowerte“ (Formular ${y}): ${FORM_SO[y].ja} „Ja“, ${FORM_SO[y].bez} Bezeichnung (z. B. „USDC/USDT, siehe Aufstellung“), ${FORM_SO[y].zeit} Zeitpunkte laut Aufstellung, ${FORM_SO[y].vp} bis ${FORM_SO[y].wk} die Summen oben, ${FORM_SO[y].g} Gewinn/Verlust, Übertrag in ${FORM_SO[y].zur}. Als gesonderte Aufstellung dient das Excel-Blatt „Verkäufe nach FIFO“. Ob alle Verkäufe in einer Zeile stehen dürfen oder in ${FORM_SO[y].weitere}, klärst du mit deiner Steuerberatung.`:
     `Trag Verkäufe von USDC und USDT im Abschnitt Kryptowerte der Anlage SO ein. Fass sie zusammen und leg eine Aufstellung bei. Prüf die Zeilennummern im aktuellen Formular. Als gesonderte Aufstellung dient das Excel-Blatt „Verkäufe nach FIFO“.`;
   glSet('k-taxde',X.has?'<b>Krypto:</b> '+GL['k-decx'].h+(payN(C,y)?'\n'+PAY_ANN.DE:'')+'\n'+form:'');
