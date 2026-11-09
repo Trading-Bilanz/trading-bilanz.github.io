@@ -11908,7 +11908,14 @@ function renderGrafChart(points,opts,tgt){
     box.innerHTML=s+'<div class="tip" id="graf-tip"></div>';
     const tip=$('graf-tip');
     // Dritte Zeile: eigene Zeile des Punkts (p.sub, z. B. „6 von 7 Trades“), sonst die PF-Stellung
-    const show=(i,x,yy)=>{const p=points[i];tip.innerHTML=`${esc(p.label)}<br><b>${opts.tipfmt(p.v)}</b><br>${esc(p.sub!=null?p.sub:opts.mode||'')}`;tip.style.display='block';const b=box.getBoundingClientRect();let lx=x-b.left+12;if(lx>b.width-200)lx-=220;if(lx<0)lx=0;tip.style.left=lx+'px';tip.style.top=(yy-b.top-10)+'px'};
+    // Ab 0.120 (Florians Regel, GESTALTUNG Abschnitt 22): Das Info-Feld steht neben dem Balken bzw. Punkt, nicht an der Maus. Rechts mit 8 px Abstand;
+    // passt es dort nicht, links mit demselben Abstand (rechte Kante 8 px vor dem Balken). Immer innerhalb der Grafikfläche (svg), auch nach oben
+    // und unten. Bis 0.119 klappte es fest um 220 px nach links (für ein 200 px breites Feld gedacht), ein schmales Feld stand dann weit weg vom Balken.
+    const show=(i,x,yy)=>{const p=points[i];tip.innerHTML=`${esc(p.label)}<br><b>${opts.tipfmt(p.v)}</b><br>${esc(p.sub!=null?p.sub:opts.mode||'')}`;tip.style.display='block';
+      const b=box.getBoundingClientRect(),sv=box.querySelector('svg'),r=sv?sv.getBoundingClientRect():b,k=r.width/w||1,G=8,tw=tip.offsetWidth,th=tip.offsetHeight;
+      const half=(opts.kind==='line'?Math.min(3.5,Math.max(1.5,bw*0.45)):bar/2)*k,c=r.left-b.left+cx(i)*k,L0=r.left-b.left,R0=r.right-b.left,T0=r.top-b.top,B0=r.bottom-b.top;
+      let lx=c+half+G;if(lx+tw>R0)lx=c-half-G-tw;if(lx<L0)lx=Math.max(L0,Math.min(R0-tw,c+half+G));
+      const ty=Math.max(T0,Math.min(B0-th,yy-b.top-10));tip.style.left=lx+'px';tip.style.top=ty+'px'};
     box.querySelectorAll('.hit').forEach(r=>{
       r.addEventListener('mousemove',ev=>show(+r.dataset.i,ev.clientX,ev.clientY));
       r.addEventListener('mouseleave',()=>tip.style.display='none');
@@ -12713,7 +12720,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.119',VDATE='09.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.120',VDATE='09.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
