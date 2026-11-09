@@ -10220,8 +10220,9 @@ function renderTabs(st){
   // Besser werdend nichts; das erste Zeichnen merkt nur den Stand.
   {const now={};for(const b of $('tabs').querySelectorAll('button[data-t]')){const d=b.querySelector('.dot'),c=d?d.classList:null;now[b.dataset.t]=!c?'':c.contains('todo')?'todo':c.contains('wait')?'wait':c.contains('ok')?'ok':''}
    if(TAB_ST&&Object.keys(now).some(k=>(now[k]==='todo'||now[k]==='wait')&&TAB_ST[k]!==now[k]))navShow(true);TAB_ST=now}
-  // Nur nach oben scrollen, und nur wenn der Anfang des Abschnitts oberhalb des sichtbaren Bereichs liegt
-  $('tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.ui.tab=b.dataset.t;save();render();const sec=$('s-'+b.dataset.t);if(sec.getBoundingClientRect().top<navBottom())sec.scrollIntoView({behavior:'auto',block:'start'})});
+  // Ab 0.120 (Florians Auftrag): Klick auf einen Reiter, auch den offenen, springt sofort ganz nach oben (Titel, Untertitel, „Erste Schritte“ und
+  // alle Reiter sichtbar), die Reiter sind danach ganz da (tabTop). Bis 0.119 nur bis unter die Kopfzeile, wenn der Abschnitt oben weggescrollt war.
+  $('tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.ui.tab=b.dataset.t;save();render();tabTop()});
   for(const [k] of TABS){$('s-'+k).classList.toggle('on',S.ui.tab===k);$('s-'+k).classList.toggle('print',S.ui.tab===k)}
 }
 // Ab 0.50 Nachtrag 5 (R1): Rückfrage zu × am Konto nennt die Buchungen mit Zeitraum und deine Angaben, die mit dem Konto wegfallen. Name, Trading
@@ -12409,6 +12410,8 @@ function navInput(){NAV_USER=true;NAV_PIN=false;navIdle()}
 // Das Tool scrollt selbst: zählt nicht als Fingerbewegung, bis zur nächsten Eingabe
 function navProg(){NAV_USER=false}
 for(const [o,k] of [[window,'scrollBy'],[window,'scrollTo'],[Element.prototype,'scrollIntoView']]){const f=o[k];if(typeof f==='function')o[k]=function(){navProg();return f.apply(this,arguments)}}
+// Ab 0.120: ganz nach oben, ohne Gleiten, die Reiter sofort ganz sichtbar (Reiterwechsel, vor dem Sprung nach dem Einlesen)
+function tabTop(){navStop();NAV_PIN=false;window.scrollTo(0,0);NAV_Y=navY();if(NAVOFF){NAVOFF=0;navApply()}}
 // Reiter herein (Fokus, schlechterer Status). pin: bleiben, bis die Nutzerin wieder selbst scrollt
 function navShow(pin){if(!navOn())return;if(pin&&NAVOFF>0)NAV_PIN=true;navGlide(0)}
 window.addEventListener('scroll',()=>{if(!NAV_Q)NAV_Q=requestAnimationFrame(navFrame);navIdle()},{passive:true});
