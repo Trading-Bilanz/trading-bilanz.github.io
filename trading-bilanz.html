@@ -7382,7 +7382,7 @@ function wWlB(m){return m.st==='int'?apWT(m.wFrom||m.wTo):m.side==='zw'?`${apWT(
 function vgMvSt(m,kurz){if(m.st==='tag')return 'zu Tag';if(m.st==='cx'){const c=cxById(m.ref);return c?`Eintrag „${esc(kindL(c)||c.kind)}“${m.xin?' (Eingang)':''}`:'Eintrag'}
   if(m.st==='ign')return gl('zurueckholen','ignoriert');
   // Ab 0.117: ausstehend bei DFX.swiss, Rückbuchung von DFX.swiss
-  if(m.st==='dfx')return `${DX_PEND}${kurz?'':`<span class="small">${DX_PENDT}</span>`}`;
+  if(m.st==='dfx')return DX_PEND;
   if(m.st==='int'&&m.dxb)return 'Rückbuchung von DFX.swiss';
   if(m.st==='int')return (m.swap?gl('umtausch','Umtausch'):gl('intern','intern'))+(kurz?'':m.swap?`<span class="small">${esc(wSwapTxt(m))}</span>`:m.brg||m.chain?`<span class="small">${esc(wBrTxt(m))}</span>`:m.idiff>0?`<span class="small">${fmtNum(m.idiff)} ${m.coin} Unterschied zwischen Aus- und Eingang</span>`:'');
   return m.sus?gl('verdaechtig','verdächtig'):'offen'}
@@ -9212,7 +9212,7 @@ async function addCx(){
     if(Math.abs(entry.qtyIn-entry.qty)<1e-9)delete entry.qtyIn}
   // Ab 0.39: feste id; beim Bearbeiten bleiben Herkunft, Verknüpfung, Uhrzeit und Gebühr-Bezug. Neu zu einer Bewegung: Herkunft „aus Datei“.
   let idx=wasEdit?S.cx.findIndex(x=>x.id===EDIT):-1;const tmIn=cxTimeIn();
-  if(idx>=0){const o=S.cx[idx];entry.id=o.id;for(const f of ['src','wk','time','feeOf','wkIn','brk','rest','how','xk','via','bv','dupOk','ld','ldf'])if(o[f]!=null)entry[f]=o[f];
+  if(idx>=0){const o=S.cx[idx];entry.id=o.id;for(const f of ['src','wk','time','feeOf','wkIn','brk','rest','how','xk','via','bv','dx','dxNo','dxb','dupOk','ld','ldf'])if(o[f]!=null)entry[f]=o[f];
     // Ab 0.74 (2.4): bestätigter Ersatzwert (eOk) gilt, solange es ein Ersatzwert bleibt
     if(ersatz&&o.eOk)entry.eOk=1;
     // Ab 0.45: Uhrzeit von Hand (ohne Bewegung aus der Datei)
@@ -12451,7 +12451,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.116',VDATE='09.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.117',VDATE='09.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
