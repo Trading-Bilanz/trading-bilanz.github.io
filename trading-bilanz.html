@@ -5541,7 +5541,7 @@ async function wfLoad(files){
     try{const t=await readText(f);if(bxFmt(t)){bxQueue([{name:f.name,text:t}]);continue}
       const P=parseWallet(t,f.name);if(P.err){errs.push(`<b>${esc(f.name)}</b>: ${P.err}`);if(P.err===W_BAD)wBadLink=1;continue}
       // Ab 0.56 (2): cur = Wallet der Adresse laut Adressbuch beim Einlesen (auch eine vorläufige); die Vorschau bietet die Wahl, vorbelegt mit ihr
-      const A=S.addr[P.addr],cur=A&&!A.tag&&!A.pay&&S.wallets.includes(A.wallet)?A.wallet:'';fs.push({name:f.name,text:t,P,addr:P.addr,wallet:cur,cur,newName:'',net:'',skip:P.rows.length?0:1})}
+      const A=S.addr[P.addr],cur=A&&!A.tag&&!A.pay&&S.wallets.includes(A.wallet)?A.wallet:'',fix=wfFixOf(S,P.addr);fs.push(Object.assign({name:f.name,text:t,P,addr:P.addr,wallet:fix?'':cur,cur,newName:'',net:'',skip:P.rows.length?0:1},fix?{fix}:{}))}
     catch(e){errs.push(`<b>${esc(f.name)}</b>: Die Datei ließ sich nicht lesen. Lade sie neu herunter und versuche es noch einmal.`)}}
   // Ab 0.61: Wartet noch eine Vorschau (nichts davon übernommen), kommen ihre Dateien dazu (ohne die gleichnamigen neuen), statt verloren zu gehen
   if(fs.length&&WFP&&!WFP.stored&&!WFP.re&&!(WFP.done||[]).length){const nm=new Set(fs.map(f=>f.name));fs.push(...WFP.files.filter(f=>!nm.has(f.name)))}
@@ -5551,7 +5551,31 @@ async function wfLoad(files){
   msg('wfmsg',errs.length?'bad':'',errs.join('<br>')+(wBadLink?W_GUIDE:''));renderWfPrev();
   const b=$('wfprev').querySelector('.tprev');if(b&&b.getBoundingClientRect().bottom>window.innerHeight)b.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
-const wfWallet=f=>W_NEWV(f.wallet)?f.newName.trim():f.wallet;
+const wfWallet=f=>W_NEWV(f.wallet)?f.newName.trim():f.wallet==='+f'?(f.fix?f.fix.w:'+f'):f.wallet;
+/* Ab 0.120 (Phase 3): Die Datei ist der Export einer Adresse, die im Adressbuch schon fix etwas anderem zugeordnet ist und keine eigene ist: mit Namen
+   (Dienst, Fremd) oder Merkmal (Börse, Tag, Kartenzahlungen, Brücke oder Dienst, Weiterleitung, Ladeadresse einer Karte), auch wenn das Tool sie selbst
+   erkannt hat. Dann fragt die Vorschau zuerst (f.fix, Antwort f.fixA): „Nur Bewegungen von und zu meinen Wallets“ (Wahl '+f', wfImportF: der Eintrag im
+   Adressbuch bleibt, wie er ist, Bewegungen zwischen zwei fremden Adressen kommen nicht dazu), „Als eigenes Wallet anlegen“ (die bisherige Auswahl mit
+   „+ Neue Wallet …“) oder „Abbrechen“. Eine unbekannte Adresse (kein Eintrag, oder einer ohne Namen und Merkmal) bekommt kein f.fix: Für sie läuft alles
+   wie bis 0.119. Rückgabe {l (Satzteil nach „schon als“), t (kurz für die Zeile nach der Antwort)} oder null */
+function wfFixOf(S,a){const r=wfFix0(S,a);if(r)r.w=r.w||r.t;return r}
+function wfFix0(S,a){const x=S.addr[a];if(!x||x.own)return null;const q=n=>`„${n}“`;
+  if(x.name&&(x.br||x.fr))return {l:q(x.name),t:q(x.name),w:x.name};
+  if(x.tag)return {l:'Adresse von Tag',t:'Tag'};if(x.pay)return {l:'Adresse für Kartenzahlungen',t:'Kartenzahlungen'};
+  if(x.fw)return {l:'Weiterleitung',t:'Weiterleitung'};if(x.load)return {l:`Ladeadresse der Karte ${q(x.load)}`,t:`Ladeadresse von ${q(x.load)}`};
+  if(x.br)return {l:'Brücke oder Dienst',t:'Brücke oder Dienst'};if(x.fr)return {l:'fremde Adresse',t:'fremd'};
+  // Börse nur, wenn die Wallet ausdrücklich eine Börse ist (Art „Börse“, ohne Art der Name einer Börse). Eine fremde Adresse einer gewöhnlichen Wallet aus alten Ständen (W-223) macht die Wallet sonst erst zur Börse (wKindOf) und bleibt wie bisher.
+  const bxW=w=>((S.wmeta||{})[w]||{}).kind==='boerse'||(!((S.wmeta||{})[w]||{}).kind&&/bitvavo|börse|boerse|binance|kraken|coinbase|bitpanda|bybit|okx|kucoin|dfx/i.test(w));
+  if(x.wallet&&S.wallets.includes(x.wallet)&&bxW(x.wallet))return {l:`Adresse der Börse ${q(x.wallet)}`,t:`Börse ${q(x.wallet)}`,w:x.wallet};
+  return null}
+// Ab 0.120 (Phase 3): „Nur Bewegungen von und zu meinen Wallets“: Datei vermerken (imp, impN, impF), den Eintrag der Adresse sonst nicht ändern; nur
+// Bewegungen mit einer eigenen Adresse auf der anderen Seite (st.notOwn zählt die anderen)
+function wfImportF(f,st){const td=todayLocal(),x=S.addr[f.addr];if(!x)return;const net=wfNet(f);x.imp=td;x.impN=Object.assign({},x.impN);x.impF=Object.assign({},x.impF);
+  for(const r of f.P.rows){x.impN[r.net]=td;x.impF[r.net]=f.name}if(f.P.unk.length&&net){x.impN[net]=td;x.impF[net]=f.name}
+  for(const r of f.P.rows){const o=r.from===f.addr?r.to:r.from;if(S.wdel&&S.wdel[r.key]){st.del++;continue}if(!rOwn(S,o)){st.notOwn++;continue}if(S.wtx[r.key]){st.known++;continue}
+    S.wtx[r.key]=Object.assign({hash:r.hash,net:r.net,contract:r.contract,coin:r.coin,bridged:r.br,iss:r.iss,from:r.from,to:r.to,qty:r.qty,ts:r.ts,date:r.date,time:r.time,
+      wFrom:rAW(S,r.from),wTo:rAW(S,r.to),st:'open',ref:'',sus:r.sus,file:f.name,noAsk:[]},r.card?{tok:r.tok,card:1}:{});st.neu.push(r.key)}
+  for(const r of f.P.unk){if(!net)continue;const o=r.from===f.addr?r.to:r.from;if(S.wdel&&S.wdel[r.key]){st.del++;continue}if(!rOwn(S,o)){st.notOwn++;continue}if(S.wtx[r.key]){st.known++;continue}if(!S.wign[r.key])S.wign[r.key]=tokMove(r,net,rAW(S,o),f.name)}}
 // Ab 0.50 Nachtrag 2 (4.2): vorläufige Wallet aus „Später zuordnen“
 const wProv=w=>!!(S.wmeta&&S.wmeta[w]&&S.wmeta[w].prov);
 // Ab 0.44: Datei wird verwendet (nicht „Diese Datei nicht verwenden“ und mit Bewegungen)
@@ -5583,6 +5607,7 @@ function wImport(D){const st={neu:[],known:0,del:0,ign:{other:0,zero:0,fake:0},f
     // Ab 0.119 (Punkt 2): „Nicht meine Adresse (Börse oder Dienst)“: Die Adresse kommt als Börse bzw. Dienst ins Adressbuch, mit der Datei (impN). Übernommen
     // werden nur Bewegungen mit einer deiner Adressen auf der anderen Seite (st.notOwn zählt die anderen), danach räumt addrAfter auf.
     if(f.wallet==='+x'){wfImportX(f,st);continue}
+    if(f.wallet==='+f'){wfImportF(f,st);continue}
     const w=wfWallet(f);if(!S.wallets.includes(w))wNewWallet(w,W_NEWK(f.wallet));
     if(f.later){S.wmeta=Object.assign({},S.wmeta,{[w]:Object.assign({},(S.wmeta||{})[w],{prov:1})});S.wlater=Object.assign({},S.wlater,{[w]:{name:f.name,addr:f.addr,text:f.text||''}})}
     // Ab 0.42: Adresse der Datei stand als fremde Adresse derselben Wallet im Adressbuch, jetzt eigene (ohne Rückfrage, mit Meldung)
@@ -5644,6 +5669,8 @@ function wSim(fn){const keep=JSON.stringify(S),pl=PROV_LAST;try{return fn()}fina
 function renderWfPrev(){wfPrevH();needRe($('wfprev'))}
 // Ab 0.51 (2): fehlende Angaben der Dateien idx (Wallet, Name einer neuen Wallet, Netzwerk) für needMark, wie wfReady
 function wfNeed(idx){const L=[];for(const i of idx){const f=WFP.files[i];if(!wfUse(f))continue;
+    // Ab 0.120 (Phase 3): offene Frage zur schon zugeordneten Adresse: der erste Knopf der Frage wird markiert
+    if(f.fix&&!f.fixA){L.push([`[data-wffix="mine"][data-i="${i}"]`,'Wähle, wie das Tool diese Datei einliest.']);continue}
     if(!wfWallet(f))L.push(W_NEWV(f.wallet)?[`[data-wfn="${i}"]`,W_NEED(f.wallet)]:[`[data-wfw="${i}"]`,'Wähle die Wallet zu dieser Adresse.']);
     if(f.P.unk.length&&!wfNet(f))L.push([`[data-wfnet="${i}"]`,'Wähle das Netzwerk dieser Datei.'])}
   return L}
@@ -5660,7 +5687,10 @@ function wfPrevH(){
     const nsel=use&&P.unk.length&&!P.nets.length?`<p>${gl('netzwerk','Netzwerk')} dieser Datei: <select data-wfnet="${i}" aria-label="Netzwerk dieser Datei"><option value="">bitte wählen</option>${Object.keys(W_NET).map(n=>`<option value="${n}" ${n===f.net?'selected':''}>${W_NET[n].n}</option>`).join('')}</select></p>`:'';
     const none=!P.rows.length?`<div class="msg info">Diese Datei enthält kein USDC oder USDT, das das Tool kennt. Vermutlich brauchst du sie nicht.${P.unk.length?`<div class="row"><label class="fopt"><input type="checkbox" data-wfuse="${i}" ${f.skip?'':'checked'}><span>Trotzdem verwenden (${pl(P.unk.length,'Bewegung','Bewegungen')} mit unbekanntem Token)</span></label></div>`:''}</div>`:f.skip?`<div class="msg info">Diese Datei wird nicht verwendet. <button type="button" class="zlink" data-wfunskip="${i}">doch verwenden</button></div>`:'';
     const tk=use&&wfNet(f)?tokOffer(S,P.unk.map(r=>tokMove(r,wfNet(f),wfWallet(f),f.name))).map(o=>tokRowH(o,f)).join(''):'';
-    return `<div class="wff"><p class="wfn"><b>${esc(f.name)}</b></p>${none}${use?`<p>Adresse ${wAdr(f.addr)} gehört zu Wallet: ${sel}</p>`:`<p>Adresse ${wAdr(f.addr)}</p>`}${nsel}${P.addrSrc==='count'?'<p class="small">Die Adresse stammt nicht aus dem Dateinamen, sondern ist die häufigste in der Datei. Prüfe, ob das deine Adresse ist.</p>':''}
+    // Ab 0.120 (Phase 3): schon fix zugeordnete Adresse: zuerst die Frage, nach „Nur Bewegungen …“ ein Satz mit „ändern“, nach „Als eigenes Wallet anlegen“ das Menü
+    const fq=use&&f.fix&&!f.fixA?`<div class="msg info wffix"><p>Diese Adresse ist schon als ${esc(f.fix.l)} gespeichert, nicht als dein Wallet.</p><div class="row"><button type="button" class="btn primary" data-wffix="mine" data-i="${i}">Nur Bewegungen von und zu meinen Wallets</button><button type="button" class="btn" data-wffix="own" data-i="${i}">Als eigenes Wallet anlegen</button><button type="button" class="btn" data-wffix="no" data-i="${i}">Abbrechen</button></div></div>`:'';
+    const fm=use&&f.fixA==='mine'?`<p>Adresse ${wAdr(f.addr)} bleibt ${esc(f.fix.t)}. Übernommen werden nur Bewegungen von und zu deinen Wallets. <button type="button" class="zlink" data-wffix="" data-i="${i}">ändern</button></p>`:'';
+    return `<div class="wff"><p class="wfn"><b>${esc(f.name)}</b></p>${none}${fq?`<p>Adresse ${wAdr(f.addr)}</p>${fq}`:fm||(use?`<p>Adresse ${wAdr(f.addr)} gehört zu Wallet: ${sel}</p>`:`<p>Adresse ${wAdr(f.addr)}</p>`)}${nsel}${P.addrSrc==='count'?'<p class="small">Die Adresse stammt nicht aus dem Dateinamen, sondern ist die häufigste in der Datei. Prüfe, ob das deine Adresse ist.</p>':''}
       <p class="small">${nets?gl('netzwerk','Netzwerk')+': '+nets:'Keine echten USDC oder USDT gefunden'}${P.from?` · ${dS(P.from)}${P.to!==P.from?DS+dS(P.to):''}`:''} · ${pl(P.rows.length,'Bewegung','Bewegungen')} mit USDC oder USDT</p>${tk}</div>`};
   // Ab 0.42 (ab 0.44 je Datei, mit Herkunft): Frage zu einem unbekannten Token, gedrückt = aria-pressed
   const tokRowH=(o,f)=>{const v=D.tok[o.k]||'',K=esc(o.k),b=(x,t)=>`<button type="button" class="btn${v===x?' primary':''}" data-wftok="${x}" data-k="${K}" aria-pressed="${v===x}">${t}</button>`;
@@ -5744,7 +5774,7 @@ function wfXGuess(f){const x=S.addr[f.addr],H=new Set(S.cx.filter(c=>c.dx).map(c
   if(x&&x.wallet&&wKindOf(x.wallet)==='boerse')return {newName:x.wallet,xk:'boerse'};return {newName:x&&x.br&&x.name||'',xk:'br'}}
 // Ab 0.119 (Punkt 2): Wallet oder Karte hat auf demselben Netzwerk schon eine andere eigene Adresse mit Datei: Rückfrage (null = keine). sent = deine Wallet
 // hat an diese Adresse Geld geschickt (dann der Satz zur Einzahlungsadresse). Gilt nicht beim erneuten Einlesen und nach „Ja, auch meine“ (S.addr[a].two).
-function wfTwo(f){const w=wfWallet(f),x=S.addr[f.addr];if(!wfUse(f)||f.wallet==='+x'||f.later||f.twoOk||!w||!S.wallets.includes(w)||wKindOf(w)==='boerse')return null;
+function wfTwo(f){const w=wfWallet(f),x=S.addr[f.addr];if(!wfUse(f)||f.wallet==='+x'||f.wallet==='+f'||f.later||f.twoOk||!w||!S.wallets.includes(w)||wKindOf(w)==='boerse')return null;
   if(x&&(x.two||(x.own&&x.wallet===w)))return null;const nets=f.P.nets.length?f.P.nets:[wfNet(f)].filter(Boolean);
   const o=Object.keys(S.addr).find(a=>{const y=S.addr[a];return a!==f.addr&&y.own&&!y.tag&&y.wallet===w&&nets.some(n=>y.impN?y.impN[n]:y.imp)});if(!o)return null;
   const mine=new Set(Object.keys(S.addr).filter(a=>S.addr[a].own&&S.addr[a].wallet===w));
@@ -5823,6 +5853,11 @@ $('wfprev').addEventListener('click',e=>{if(e.target.closest('#btn-wfcancel')){W
   if(WFP&&e.target.closest('[data-wfback]')){WFP.ask=Math.max(0,WFP.ask-1);renderWfPrev();const s=$('wfprev').querySelector('[data-wfw],[data-wfask]');if(s)s.focus();return}
   const ul=e.target.closest('[data-wfunlater]');if(ul&&WFP){const f=WFP.files[+ul.dataset.wfunlater];delete f.later;f.wallet='';f.newName='';renderWfPrev();const s=$('wfprev').querySelector(`[data-wfw="${ul.dataset.wfunlater}"]`);if(s)s.focus();return}
   const us=e.target.closest('[data-wfunskip]');if(us&&WFP){WFP.files[+us.dataset.wfunskip].skip=0;renderWfPrev();return}
+  // Ab 0.120 (Phase 3): Antwort auf die Frage zur schon zugeordneten Adresse. „Abbrechen“: eine Datei allein verwirft die Vorschau, sonst wird diese Datei nicht verwendet
+  const fx=e.target.closest('[data-wffix]');if(fx&&WFP){const i=+fx.dataset.i,f=WFP.files[i],a=fx.dataset.wffix;if(!f)return;
+    if(a==='no'){if(WFP.files.length===1){WFP=null;needReset($('wfprev'));renderWfPrev();wfEnd();dtRe();return}f.skip=1;f.wallet='';delete f.fixA;if(WFP.ask===i){WFP.ask++}renderWfPrev();return}
+    if(a==='mine'){f.fixA='mine';f.wallet='+f';delete f.later}else if(a==='own'){f.fixA='own';f.wallet='+';f.newName='';delete f.later}else{delete f.fixA;f.wallet='';f.newName=''}
+    renderWfPrev();const n=$('wfprev').querySelector(a==='own'?`[data-wfn="${i}"]`:`[data-wffix][data-i="${i}"],#btn-wfsave,[data-wfask]`);if(n)n.focus();return}
   const md=e.target.closest('[data-wfmode]');if(md&&WFP){WFP.mode=md.dataset.wfmode;renderWfPrev();const b=$('wfprev').querySelector('#btn-wfsave');if(b)b.focus();return}
   if(WFP&&e.target.closest('[data-wfnext]')){WFP.last=null;renderWfPrev();return}
   if(WFP&&e.target.closest('[data-wfrest]')){WFP.files=WFP.files.filter(f=>!WFP.done.includes(wfWallet(f)));WFP.mode='all';WFP.last=null;WZ_FOCUS=null;render();return}
