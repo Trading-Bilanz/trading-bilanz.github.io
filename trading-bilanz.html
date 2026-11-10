@@ -5262,6 +5262,10 @@ function dxLost(S,k){const o=S.wtx[k];if(!o)return null;if(o.st!=='dfx'&&o.st!==
   const e={id:++S.cxNo,date:o.date,time:o.time,kind:'verloren',wallet:w,to:'',coin:o.coin,coin2:'',qty:o.qty,qty2:0,eur:0,est:false,note:'',src:'verknüpft',wk:k,dxNo:1};
   S.cx.push(e);o.st='cx';o.ref=e.id;return e}
 // Name der Art eines Eintrags in Listen: „Nicht zurückerhalten“ und „Rückbuchung von DFX.swiss“ statt der Art
+// Ab 0.122: Name des Diensts für „Ausstehend bei …“ in „Bestand jetzt“: der aktuelle Name aus dem Adressbuch der Adressen, an die die ausstehenden Coins
+// von Wallet|Coin k gingen (mehrere verschiedene mit „ und “), sonst „DFX.swiss“
+function dxPendName(k){const i=k.lastIndexOf('|'),w=k.slice(0,i),c=k.slice(i+1),N=[...new Set(Object.values(S.wtx).filter(m=>m.st==='dfx'&&(rAW(S,m.from)||m.wFrom)===w&&m.coin===c).map(m=>wSvcName(S,m.to)))];
+  return N.length?N.join(' und '):'DFX.swiss'}
 const DX_LOST='Nicht zurückerhalten',DX_BACK='Rückbuchung von DFX.swiss',DX_PEND='Ausstehend bei DFX.swiss',DX_PENDT='Bei DFX.swiss angekommen, noch nicht in deiner DFX-Datei.';
 const kindL=c=>c&&c.dxNo?DX_LOST:c&&c.dxb&&c.kind!=='gebuehr'?DX_BACK:KIND[c&&c.kind]||'';
 /*BOERSE-LESER-ENDE*/
@@ -5788,7 +5792,7 @@ function wfPrevH(){
     res=`${own}${tk}<p><b>${pl(st.neu.length,'neue Bewegung','neue Bewegungen')}</b>${st.known?` · ${fI.format(st.known)} schon bekannt`:''}</p>${st.del?`<p class="small">${fI.format(st.del)} ${st.del===1?'Bewegung hast du gelöscht, sie bleibt':'Bewegungen hast du gelöscht, sie bleiben'} weg.</p>`:''}
       ${st.neu.length?`<ul class="wfl"><li>${pl(st.tag.length,'zu Tag zugeordnet','zu Tag zugeordnet')}</li><li>${pl(st.tr,'Übertrag zwischen deinen Wallets','Überträge zwischen deinen Wallets')}</li>${st.xin.length?`<li>${pl(st.xin.length,'Eingang zu einem Übertrag zugeordnet','Eingänge zu Überträgen zugeordnet')} (zweite Seite)</li>`:''}${st.swap?`<li>${fI.format(st.swap)} ${gl('umtausch','Umtausch')} in derselben Wallet</li>`:''}${st.int?`<li>${fI.format(st.int)} ${gl('intern','intern')} (beide Seiten in derselben Wallet)</li>`:''}${st.br.length||st.xp.length||st.ch.length||st.tx.length?`<li>${pl(st.br.length+st.xp.length+st.ch.length+st.tx.length,'Vorgang über eine Brücke','Vorgänge über eine Brücke')} (Liste unten)</li>`:''}${st.pay?`<li>${pl(st.pay,'Kartenzahlung','Kartenzahlungen')} (Vorschlag: Zahlung)</li>`:''}<li>${pl(st.sug,'Vorschlag zu einem Eintrag von Hand','Vorschläge zu Einträgen von Hand')}</li><li>${fI.format(st.open-st.sug)} offen${st.ask?`, davon ${fI.format(st.ask)} mit Frage`:''}</li>${st.sus?`<li>${pl(st.sus,'verdächtige','verdächtige')} (${gl('verdaechtig','unter 0,01')})</li>`:''}</ul>`:''}${bl}${xl}${tl}
       ${ig.other?`<p class="small">${pl(ig.other,'Bewegung anderer Token','Bewegungen anderer Token')} ignoriert. Das Tool rechnet nur USDC und USDT.</p>`:''}
-      ${bad?`<div class="msg warn">Ignoriert: ${[ig.zero?pl(ig.zero,'Bewegung von 0','Bewegungen von 0'):'',fake].filter(Boolean).join(', ')}. Das ist meist ein Betrugsversuch mit ${gl('lockadr','Lockadressen')}. ${W_POISON}</div>`:''}
+      ${bad?`<div class="msg warn">Ignoriert: ${[ig.zero?pl(ig.zero,'Bewegung ohne Betrag','Bewegungen ohne Betrag'):'',fake].filter(Boolean).join(', ')}. Das ist meist ein Betrugsversuch mit ${gl('lockadr','Lockadressen')}. ${W_POISON}</div>`:''}
       ${(()=>{const nl=Dx.files.filter(f=>f.later&&wfUse(f)).length;return nl?`<p class="small">${pl(nl,'Datei','Dateien')} später zuordnen. Bis dahin zählen ${nl===1?'ihre':'deren'} Bewegungen vorläufig unter „Noch nicht zugeordnet“.</p>`:''})()}
       ${st.neu.length?'<p class="small">Unklares steht danach in „Noch offen“. Du musst nichts sofort entscheiden.</p>':''}`}
   else res=`<p class="small">Wähle zuerst die Wallet zu jeder Adresse${Dx.files.some(f=>f.P.unk.length&&!wfNet(f))?' und das Netzwerk':''}. Dann zeigt die Vorschau, was das Tool zuordnet.</p>`;
@@ -6172,7 +6176,7 @@ function dxFixPlan(a){return wSim(()=>{const pre=new Set(S.cx.filter(c=>c.dx&&c.
   return {P,lk,pd}})}
 function dxFixLines(F){const l=[],K=[...new Set(F.lk)];
   if(F.lk.length)l.push(K.length===2?'Kauf und Verkauf werden verknüpft.':F.lk.length===1?(K[0]==='kauf'?'Der Kauf wird verknüpft.':'Der Verkauf wird verknüpft.'):`${fI.format(F.lk.length)} ${K[0]==='kauf'?'Käufe':'Verkäufe'} werden verknüpft.`);
-  for(const [k,q] of Object.entries(F.pd)){const i=k.lastIndexOf('|');l.push(`${fmtNum(q)} ${k.slice(i+1)} ${q===1?'steht':'stehen'} dann als „Ausstehend bei DFX.swiss“ (aus ${k.slice(0,i)}).`)}
+  for(const [k,q] of Object.entries(F.pd)){const i=k.lastIndexOf('|');l.push(`${fmtNum(q)} ${k.slice(i+1)} ${q===1?'steht':'stehen'} dann als „ausstehend“ (aus ${k.slice(0,i)}).`)}
   const t=addrDropTxt(Object.assign({},F.P,{pend:[]}));if(t)l.push(...t.split('\n'));return l}
 const dxFixQ=a=>`Die Adresse ${wShort(a)} ist die Einzahlungsadresse von DFX.swiss, nicht deine. Als Dienst „DFX.swiss“ führen?`;
 let DX_LATER=new Set();
@@ -6380,7 +6384,8 @@ const wIsCardW=w=>!!(S.wmeta&&S.wmeta[w]&&S.wmeta[w].card);
 // Ausnahme (Florians Regel), nur solange die Bewegung verknüpft ist: Einzahlungsadressen von Tag (Bewegung mit einer Tag-Zeile verknüpft) und
 // Verträge hinter einem erkannten Tausch (gleicher Hash) oder Umtausch, auch die Nulladresse. Offen oder ignoriert stehen sie wie jede andere da.
 // Ab 0.54 (5): Die kleine Zeile nennt den Betrag des letzten Eintrags bzw. der letzten Bewegung („Zahlung am 28.09.26 · 14,00 USDC“), als HTML.
-const AG_FR=new Set(['bezahlung','eingang','weg','rueckerst']),AG_EX=new Set(['kauf','verkauf','hatte']);
+// Ab 0.122: auch „Bezahlung erhalten“ (Florians Bestätigung von Vorschlag 4 aus 0.120; ändert seine Wahl aus 0.56)
+const AG_FR=new Set(['bezahlung','bzein','eingang','weg','rueckerst']),AG_EX=new Set(['kauf','verkauf','hatte']);
 const agAmt=(q,c)=>`<span class="nw">${fmtNum(q)} ${esc(c||'')}</span>`;
 // Bewegung m mit Gegenseite c, die nicht zur Regel zählt (siehe oben)
 const agSkip=(m,c)=>m.st==='tag'||(m.st==='int'&&!!m.swap)||((c===W_ZERO||!!(W_CONTRACTS[c]&&W_CONTRACTS[c].card))&&m.st!=='open'&&m.st!=='ign')||
@@ -6790,7 +6795,7 @@ function addrDropTxt(P){if(!P)return '';const n=x=>fI.format(x),q=L=>{const c=[.
   if(cx.length)l.push(`${cx.length===1?'1 Eintrag fällt':n(cx.length)+' Einträge fallen'} weg: ${cx.map(c=>`${kindL(c)||c.kind} ${fmtNum(c.qty)} ${c.coin} (${dm(c.date)})`).join(', ')}.`);
   if(P.mv.length)l.push(`${P.mv.length===1?'1 Bewegung ohne deine Adresse fällt':n(P.mv.length)+' Bewegungen ohne deine Adresse fallen'} weg (${q(P.mv)}).`);
   if(P.hand.length)l.push(`${P.hand.length===1?'1 Eintrag von Hand bleibt':n(P.hand.length)+' Einträge von Hand bleiben'}, nur die Verknüpfung fällt weg.`);
-  if(P.pend.length)l.push(`${P.pend.length===1?'1 ignorierter Abgang zählt':n(P.pend.length)+' ignorierte Abgänge zählen'} dann als „Ausstehend bei DFX.swiss“ (${q(P.pend)}).`);
+  if(P.pend.length)l.push(`${P.pend.length===1?'1 ignorierter Abgang zählt':n(P.pend.length)+' ignorierte Abgänge zählen'} dann als „ausstehend“ (${q(P.pend)}).`);
   if(P.open.length)l.push(`${P.open.length===1?'1 ignorierte Bewegung wird':n(P.open.length)+' ignorierte Bewegungen werden'} mit ${P.open.length===1?'ihrem':'ihren'} Eintrag von DFX.swiss verknüpft.`);
   return l.join('\n')}
 const addrDropBad=P=>!!P&&(P.mv.length>0||P.cx.length>0);
@@ -7670,7 +7675,8 @@ function renderWallet(){
   const kh=end?'':`<th class="wbc">${gl('wabgl','Ab&shy;gleich')}</th>`;
   $('btn-kb').hidden=!!end;
   // Ab 0.117: ausstehend bei DFX.swiss als eigene Zeile (nicht im Bestand, kein steuerlicher Vorgang)
-  {const P=end?{}:dxPendSum(S),L=Object.entries(P).filter(([,q])=>q>0);$('wdfx').innerHTML=L.length?`<p class="small">${L.map(([k,q])=>{const i=k.lastIndexOf('|');return `${gl('dxpend',DX_PEND)}: ${fmtNum(q)}&nbsp;${esc(k.slice(i+1))} (aus ${esc(k.slice(0,i))})`}).join('<br>')}</p>`:''}
+  // Ab 0.122: „Ausstehend bei <Name>“ mit dem aktuellen Namen des Diensts aus dem Adressbuch (wSvcName der Adressen, an die die Coins gingen)
+  {const P=end?{}:dxPendSum(S),L=Object.entries(P).filter(([,q])=>q>0);$('wdfx').innerHTML=L.length?`<p class="small">${L.map(([k,q])=>{const i=k.lastIndexOf('|');return `${gl('dxpend','Ausstehend bei '+esc(dxPendName(k)))}: ${fmtNum(q)}&nbsp;${esc(k.slice(i+1))} (aus ${esc(k.slice(0,i))})`}).join('<br>')}</p>`:''}
   // Ab 0.46 (5.2): „Ø-Preis“ mit klein „€ je Coin“ darunter, wie die kleinen Zusätze in der Auswertung
   // Ab 0.50 (1.5): am Handy keine Spalte „Coin“ (Klasse pcn), der Coin steht klein unter der Wallet (pcm)
   const pw=p=>`<td class="l">${esc(p.w)}<span class="small pcm">${p.c}</span></td>`;
@@ -7777,9 +7783,9 @@ function vgArtK(v){
 const VG_ARTG=[['tax','Zählt für die Steuer',['kauf','bzein','verkauf','geschenk','bezahlung','rueckerst','tausch','gebuehr','verloren','tag']],['zw','Zwischen deinen Wallets',['uebertrag','intern']]];
 const VG_TAX=new Set(['kauf','bzein','verkauf','geschenk','bezahlung','rueckerst','gebuehr','tausch','tag','verloren']);
 // Ab 0.45 (4.5): Zustand (fertig, offen, Wert fehlt, geschätzt, Vorschlag, ignoriert, sonst „fehlt: …“) und darunter grau die Herkunft
-// Ab 0.117: dfx = Ausstehend bei DFX.swiss
-const VG_STN={all:'alle',open:'offen',ok:'fertig',est:'geschätzt',inc:'Wert fehlt',sug:'Vorschlag',ign:'ignoriert',rate:'Kurs fehlt',dfx:'Ausstehend bei DFX.swiss'};
-const VG_STT={ok:'fertig',open:'offen',est:'geschätzt',inc:'Wert fehlt',sug:'Vorschlag',ign:'ignoriert',rate:'Kurs fehlt',dfx:'Ausstehend bei DFX.swiss'};
+// Ab 0.117: dfx = Ausstehend bei DFX.swiss. Ab 0.122 heißt der Status überall nur „ausstehend“ (klein wie die anderen Status, Florians Antwort)
+const VG_STN={all:'alle',open:'offen',ok:'fertig',est:'geschätzt',inc:'Wert fehlt',sug:'Vorschlag',ign:'ignoriert',rate:'Kurs fehlt',dfx:'ausstehend'};
+const VG_STT={ok:'fertig',open:'offen',est:'geschätzt',inc:'Wert fehlt',sug:'Vorschlag',ign:'ignoriert',rate:'Kurs fehlt',dfx:'ausstehend'};
 let VG_SUGK=new Set();
 // Ab 0.48 (1.4): Geschenk über Tag (Einzahlung) ist geschätzt, bis Einkaufswert und Kaufdatum der schenkenden Person eingetragen sind
 const tagGiftEst=t=>!!t&&t.wq==='g'&&t.kind==='ein'&&t.status==='ok'&&!t.fiat&&!(tagGE(t)&&t.gd);
@@ -7952,7 +7958,7 @@ function wWlB(m){return m.st==='int'?apWT(m.wFrom||m.wTo):m.side==='zw'?`${apWT(
 function vgMvSt(m,kurz){if(m.st==='tag')return 'zu Tag';if(m.st==='cx'){const c=cxById(m.ref);return c?`Eintrag „${esc(kindL(c)||c.kind)}“${m.xin?' (Eingang)':''}`:'Eintrag'}
   if(m.st==='ign')return gl('zurueckholen','ignoriert');
   // Ab 0.117: ausstehend bei DFX.swiss, Rückbuchung von DFX.swiss
-  if(m.st==='dfx')return DX_PEND;
+  if(m.st==='dfx')return gl('dxpend','ausstehend');
   if(m.st==='int'&&m.dxb)return 'Rückbuchung von DFX.swiss';
   if(m.st==='int')return (m.swap?gl('umtausch','Umtausch'):gl('intern','intern'))+(kurz?'':m.swap?`<span class="small">${esc(wSwapTxt(m))}</span>`:m.brg||m.chain?`<span class="small">${esc(wBrTxt(m))}</span>`:m.idiff>0?`<span class="small">${fmtNum(m.idiff)} ${m.coin} Unterschied zwischen Aus- und Eingang</span>`:'');
   return m.sus?gl('verdaechtig','verdächtig'):'offen'}
@@ -8230,8 +8236,9 @@ function renderVg(C,DEw,rg){VG_R=[C,DEw,rg];const card=$('vg-card');
   vgFitQ();
   // Ab 0.45 (4.6): Summenzeile (Anzahl, Euro nur Kauf, Verkauf, Zahlung, Tausch, Gewinn/Verlust); Legende der Farben (4.2)
   // Ab 0.48 (3.6): Käufe getrennt von Verkäufen, Zahlungen und Tausch; Teile ohne Inhalt im Filter fallen weg
-  {let ek=0,ev=0,g=0,nk=0,nv=0,ng=0;for(const v of L){const fl=vgFl(v,F);if(VG_EB.has(v.k))for(const f of fl)if(f.move!=='in'&&!f.aux&&f.eur!=null&&isFinite(f.eur)){if(v.k==='kauf'){ek+=f.eur;nk++}else{ev+=f.eur;nv++}}for(const f of fl)if(f.gain!=null&&isFinite(f.gain)){g+=f.gain;ng++}}
-   $('vg-sum').innerHTML=L.length?[`<b>${fI.format(L.length)} ${L.length===1?'Vorgang':'Vorgänge'}</b>`,nk?`Käufe <b>${fE.format(ek)}</b>`:'',nv?`Verkäufe, Zahlungen, Tausch <b>${fE.format(ev)}</b>`:'',ng?`${gl('gewinnverlust','Gewinn/Verlust')} ${eur(g)}`:''].filter(Boolean).map(x=>`<span class="nw">${x}</span>`).join(' · '):''}
+  // Ab 0.122: „Bezahlungen erhalten“ (Summe der Werte beim Erhalt) nach „Käufe“, nur wenn es welche gibt
+  {let ek=0,ev=0,g=0,nk=0,nv=0,ng=0,eb=0,nb=0;for(const v of L){const fl=vgFl(v,F);if(v.k==='bzein')for(const f of fl)if(f.k==='bzein'&&f.eur!=null&&isFinite(f.eur)){eb+=f.eur;nb++}if(VG_EB.has(v.k))for(const f of fl)if(f.move!=='in'&&!f.aux&&f.eur!=null&&isFinite(f.eur)){if(v.k==='kauf'){ek+=f.eur;nk++}else{ev+=f.eur;nv++}}for(const f of fl)if(f.gain!=null&&isFinite(f.gain)){g+=f.gain;ng++}}
+   $('vg-sum').innerHTML=L.length?[`<b>${fI.format(L.length)} ${L.length===1?'Vorgang':'Vorgänge'}</b>`,nk?`Käufe <b>${fE.format(ek)}</b>`:'',nb?`Bezahlungen erhalten <b>${fE.format(eb)}</b>`:'',nv?`Verkäufe, Zahlungen, Tausch <b>${fE.format(ev)}</b>`:'',ng?`${gl('gewinnverlust','Gewinn/Verlust')} ${eur(g)}`:''].filter(Boolean).map(x=>`<span class="nw">${x}</span>`).join(' · '):''}
   // Ab 0.46 (5.3): Legende mit den Zeichen je Art in ihrer Farbe
   $('vg-legend').innerHTML=`<span class="vglg">${VG_LEG.map(([c,a,t])=>`<span class="k-${c}">${vgIcoK(a)} ${t}</span>`).join('')}<span class="k-open"><span class="vglb"></span> offen</span></span> <span class="small">Klick auf eine Zeile zeigt die einzelnen Bewegungen und die Knöpfe. Uhrzeiten in mitteleuropäischer Zeit (wie in Wien und Berlin).</span>`;
   // Ab 0.47 (3.5): die Legende steht im Begriff „Was“ (Spaltenkopf), unter der Liste nicht mehr
@@ -11241,7 +11248,7 @@ const CX_KURS='Das Tool setzt 1 USDC und 1 USDT mit 1 USD an. Das passt, solange
 const EST_SUM='<b>Geschätzte Werte</b> (z. B. ein Tageswert statt des Kaufpreises) stehen als Frage in der Zusammenfassung für die Steuerberatung.';
 const GL={
   // Ab 0.117: DFX.swiss
-  dxpend:{t:'Ausstehend bei DFX.swiss',h:'Bei DFX.swiss angekommen, noch nicht in deiner DFX-Datei.\nLies die DFX-Datei neu ein, sobald DFX.swiss fertig ist.\nDie Coins zählen nicht mehr zum Bestand der Wallet, damit er zur Blockchain passt. Steuerlich ist das noch kein Vorgang. Sobald eine DFX-Datei den Verkauf mit diesem Hash zeigt, verknüpft das Tool ihn. In „Alle Vorgänge“ wählst du bei der Bewegung, wie es ausgegangen ist.'},
+  dxpend:{t:'Ausstehend',h:'Bei DFX.swiss angekommen, noch nicht in deiner DFX-Datei.\nLies die DFX-Datei neu ein, sobald DFX.swiss fertig ist.\nDie Coins zählen nicht mehr zum Bestand der Wallet, damit er zur Blockchain passt. Steuerlich ist das noch kein Vorgang. Sobald eine DFX-Datei den Verkauf mit diesem Hash zeigt, verknüpft das Tool ihn. In „Alle Vorgänge“ wählst du bei der Bewegung, wie es ausgegangen ist.'},
   'k-ov':{t:'Überblick',h:'Die wichtigsten Zahlen für den gewählten Zeitraum und die gewählten Konten. Mit „Rendite ▾“ oder „Betrag ▾“ wechselst du, ob die Kacheln Prozent oder Beträge zeigen.'},
   'k-hl':{t:'Hochs und Tiefs',h:'Die besten und schwächsten Trades, Tage und Wochen, dazu Serien am Stück. Ein Datum führt dich zur Stelle in „Pro Woche“.'},
   'k-avg':{t:'Durchschnitt',h:'Was ein Handelstag, eine Woche, ein Monat und ein Trade im Schnitt gebracht haben, als Durchschnitt und als Median.'},
