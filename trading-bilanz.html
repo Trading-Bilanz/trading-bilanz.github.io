@@ -984,7 +984,9 @@ button.adb[data-apw]{white-space:normal;text-align:inherit}
 .vgsz{display:block}.vgor{display:block;color:var(--muted)}
 /* Ab 0.46 (5.3): Art (Zeichen und Wort) in der Farbe der Art, Statuswort farbig */
 .vgr.k-in .c-w,.vgg.k-in .c-w{color:var(--k-in)}.vgr.k-out .c-w,.vgg.k-out .c-w{color:var(--k-out)}.vgr.k-sw .c-w,.vgg.k-sw .c-w{color:var(--k-sw)}.vgr.k-tag .c-w,.vgg.k-tag .c-w{color:var(--k-tag)}.vgr.k-mu .c-w,.vgg.k-mu .c-w{color:var(--k-mu)}
-.vgs-ok{color:var(--pos)}.vgs-open,.vgs-inc{color:var(--sig-r)}.vgs-sug,.vgs-est{color:var(--sig-y-txt)}.vgs-ign,.vgs-sus,.vgs-rate,.vgs-dfx{color:var(--muted)}
+.vgs-ok{color:var(--pos)}.vgs-open,.vgs-inc{color:var(--sig-r)}.vgs-sug,.vgs-est{color:var(--sig-y-txt)}.vgs-ign,.vgs-sus,.vgs-rate{color:var(--muted)}
+/* Ab 0.120 (Phase 4): „ausstehend“ gelb wie „Vorschlag“ (Signalfarbe gelb = bitte prüfen) */
+.vgs-dfx{color:var(--sig-y-txt)}
 .vgbtns{display:inline-flex;gap:6px;flex:none;white-space:nowrap}
 .wpq{align-items:center;gap:6px 10px;margin:2px 0}
 .kbrow{margin:2px 0 6px}.kbrow[hidden]{display:none}#btn-kb[hidden]{display:none}
@@ -7005,6 +7007,8 @@ $('wtodo').addEventListener('click',e=>{
     const pre={kind:k,date:o.date,time:o.time||'',coin:o.coin,qty:o.qty,bxo:id,wallet:o.w};if(k==='uebertrag'){if(ein){pre.to=o.w;pre.wallet=oth||o.w}else pre.to=oth}
     endEdit();openCx(null,pre);if(!ein&&k==='uebertrag'&&o.qi>0&&o.qi<o.qty-1e-9)$('cx-qin').value=f8(o.qi);return}
   if(e.target.closest('[data-bxwf]')){tdOver();dtOpen('wf');return}
+  // Ab 0.120 (Phase 4): „DFX-Datei einlesen“ aus dem Punkt „ausstehend“
+  if(e.target.closest('[data-bxload]')){tdOver();dtOpen('bx');return}
   const kp=e.target.closest('[data-keep]');if(kp){if(!S.cxKeep.includes(kp.dataset.keep))S.cxKeep.push(kp.dataset.keep);save();render();return}
   const ce=e.target.closest('[data-cxe2]');if(ce){openCx(+ce.dataset.cxe2);return}
   // Ab 0.72 Nachtrag 2 (2): Bitvavo-Gebühr in fremder Währung „Menge stimmt“
@@ -7543,7 +7547,12 @@ function tagDT(t,a){if(!a.time)return fD(a.date);
   return `${fD(a.date)} <button type="button" class="adb small" data-tip="${esc(tt)}" aria-expanded="false" aria-label="Uhrzeit ${a.time.slice(0,5)}: Herkunft zeigen">${a.time.slice(0,5)}</button>`}
 // Ab 0.45 (1.13): Einkaufswert unbekannt, weil der Kurs eines Tages fehlt (nanD aus kxRun)
 // Ab 0.45 (4.6): je Coin eine fette Zeile „Summe USDC“ über alle Wallets
-function potSum(P,end,DE){return ['USDC','USDT'].filter(c=>P.some(p=>p.c===c)).map(c=>{const L=P.filter(p=>p.c===c),q=L.reduce((s,p)=>s+p.q,0),ak=L.reduce((s,p)=>s+p.ak,0);
+// Ab 0.120 (Phase 4): Reihenfolge in „Bestand jetzt“ (nur die Anzeige; C.pots und damit Excel bleiben, wie sie sind): Coins USDC, USDT, dann andere
+// alphabetisch; je Coin die Wallets alphabetisch ohne Rücksicht auf Groß- und Kleinschreibung; die Summe des Coins direkt unter seinen Zeilen (potSum mit cs)
+const POT_CO=c=>c==='USDC'?'0':c==='USDT'?'1':'2'+c;
+const potOrd=L=>L.slice().sort((p,q)=>POT_CO(p.c)<POT_CO(q.c)?-1:POT_CO(p.c)>POT_CO(q.c)?1:p.w.localeCompare(q.w,'de',{sensitivity:'base'})||(p.w<q.w?-1:p.w>q.w?1:0));
+function potGroups(P,extra){const R=potOrd([...P,...extra]),G=[];for(const p of R){const g=G[G.length-1];if(g&&g.c===p.c)g.L.push(p);else G.push({c:p.c,L:[p]})}return G}
+function potSum(P,end,DE,cs){return (cs||['USDC','USDT']).filter(c=>['USDC','USDT'].includes(c)&&P.some(p=>p.c===c)).map(c=>{const L=P.filter(p=>p.c===c),q=L.reduce((s,p)=>s+p.q,0),ak=L.reduce((s,p)=>s+p.ak,0);
   return `<tr class="psum"><td class="l"><b>Summe ${c}</b></td><td class="pcn">${c}</td>${DE?'<td></td>':''}<td><b>${fmtNum(q)}</b></td>${end?'':'<td></td>'}<td><b>${eur(ak,false)}</b></td><td>${q>1e-9?fDec(ak/q,4):'–'}</td>${DE?'<td></td>':''}</tr>`}).join('')}
 const potNan=p=>p&&p.nanD&&!isFinite(p.ak)?`<br><span class="small">Kurs vom ${fD(p.nanD)} fehlt</span>`:'';
 // Ab 0.46 (2.9): Bestand zum Stichtag end: Überträge, die bis dahin weggingen (sie zählen schon beim Ziel), aber erst danach ankamen
@@ -7607,14 +7616,16 @@ function renderWallet(){
   // Ab 0.46 (5.2): „Ø-Preis“ mit klein „€ je Coin“ darunter, wie die kleinen Zusätze in der Auswertung
   // Ab 0.50 (1.5): am Handy keine Spalte „Coin“ (Klasse pcn), der Coin steht klein unter der Wallet (pcm)
   const pw=p=>`<td class="l">${esc(p.w)}<span class="small pcm">${p.c}</span></td>`;
-  if(!DEw)$('t-pots').innerHTML=`<tr><th class="l">Wallet</th><th class="pcn">Coin</th><th>Menge</th>${kh}<th>${gl('einkaufswert','Einkaufs&shy;wert')}</th><th>${gl('opreis','Ø-Preis')}${smx('€ je Coin')}</th></tr>`+(CE.pots.length||extra.length?CE.pots.map(p=>
-    `<tr>${pw(p)}<td class="pcn">${p.c}</td><td>${fmtNum(p.q)}${potUw(p,end)}</td>${chk(p)}<td>${eur(p.ak)}${potNan(p)}</td><td>${p.q?fDec(p.ak/p.q,4):'–'}</td></tr>`).join('')+
-    extra.map(p=>`<tr>${pw(p)}<td class="pcn">${p.c}</td><td>${fmtNum(0)}</td>${chk(p)}<td>–</td><td>–</td></tr>`).join('')+potSum(CE.pots,end,false):`<tr><td colspan="${end?5:6}" class="small">Kein Bestand.</td></tr>`);
+  // Ab 0.120 (Phase 4): je Coin seine Zeilen (Bestand und Zeilen mit Menge 0), darunter gleich seine Summe (potGroups, potSum mit dem einen Coin)
+  const PG=potGroups(CE.pots,extra),isX=p=>extra.includes(p);
+  if(!DEw)$('t-pots').innerHTML=`<tr><th class="l">Wallet</th><th class="pcn">Coin</th><th>Menge</th>${kh}<th>${gl('einkaufswert','Einkaufs&shy;wert')}</th><th>${gl('opreis','Ø-Preis')}${smx('€ je Coin')}</th></tr>`+(CE.pots.length||extra.length?PG.map(g=>g.L.map(p=>isX(p)?
+    `<tr>${pw(p)}<td class="pcn">${p.c}</td><td>${fmtNum(0)}</td>${chk(p)}<td>–</td><td>–</td></tr>`:
+    `<tr>${pw(p)}<td class="pcn">${p.c}</td><td>${fmtNum(p.q)}${potUw(p,end)}</td>${chk(p)}<td>${eur(p.ak)}${potNan(p)}</td><td>${p.q?fDec(p.ak/p.q,4):'–'}</td></tr>`).join('')+potSum(CE.pots,end,false,[g.c])).join(''):`<tr><td colspan="${end?5:6}" class="small">Kein Bestand.</td></tr>`);
   // DE: je Wallet und Coin eine Summenzeile, darunter die offenen Posten
-  else $('t-pots').innerHTML=`<tr><th class="l">Wallet</th><th class="pcn">Coin</th><th>${gl('kaufdatum','Kaufdatum')}</th><th>Menge</th>${kh}<th>${gl('einkaufswert','Einkaufswert')}</th><th>je Coin${smx('€')}</th><th>${gl('freiab','steuerfrei ab')}</th></tr>`+(CE.pots.length||extra.length?CE.pots.map(p=>
+  else $('t-pots').innerHTML=`<tr><th class="l">Wallet</th><th class="pcn">Coin</th><th>${gl('kaufdatum','Kaufdatum')}</th><th>Menge</th>${kh}<th>${gl('einkaufswert','Einkaufswert')}</th><th>je Coin${smx('€')}</th><th>${gl('freiab','steuerfrei ab')}</th></tr>`+(CE.pots.length||extra.length?PG.map(g=>g.L.map(p=>isX(p)?
+    `<tr class="pp">${pw(p)}<td class="pcn">${p.c}</td><td></td><td>${fmtNum(0)}</td>${chk(p)}<td>–</td><td>–</td><td></td></tr>`:
     `<tr class="pp">${pw(p)}<td class="pcn">${p.c}</td><td class="small">${p.lots.length===1?'1 '+gl('posten','Posten'):p.lots.length+' '+gl('posten','Posten')}</td><td>${fmtNum(p.q)}${potUw(p,end)}</td>${chk(p)}<td>${eur(p.ak)}${potNan(p)}</td><td>${p.q?fDec(p.ak/p.q,4):'–'}</td><td></td></tr>`+
-    p.lots.map(l=>`<tr class="pl"><td class="l"></td><td class="pcn"></td><td>${fD(l.kd)}</td><td>${fmtNum(l.q)}</td>${end?'':'<td></td>'}<td>${eur(l.ak)}${potNan(l)}</td><td>${l.q?fDec(l.ak/l.q,4):'–'}</td><td>${fD(l.frei)}${l.frei<=ref?' <span class="small">✓ schon steuerfrei</span>':''}</td></tr>`).join('')).join('')+
-    extra.map(p=>`<tr class="pp">${pw(p)}<td class="pcn">${p.c}</td><td></td><td>${fmtNum(0)}</td>${chk(p)}<td>–</td><td>–</td><td></td></tr>`).join('')+potSum(CE.pots,end,true):`<tr><td colspan="${end?7:8}" class="small">Kein Bestand.</td></tr>`);
+    p.lots.map(l=>`<tr class="pl"><td class="l"></td><td class="pcn"></td><td>${fD(l.kd)}</td><td>${fmtNum(l.q)}</td>${end?'':'<td></td>'}<td>${eur(l.ak)}${potNan(l)}</td><td>${l.q?fDec(l.ak/l.q,4):'–'}</td><td>${fD(l.frei)}${l.frei<=ref?' <span class="small">✓ schon steuerfrei</span>':''}</td></tr>`).join('')).join('')+potSum(CE.pots,end,true,[g.c])).join(''):`<tr><td colspan="${end?7:8}" class="small">Kein Bestand.</td></tr>`);
   if($('kb-modal').classList.contains('on'))kbRender();
   // Ab 0.47 (2.8): Rest bei Wallets ohne eigene Datei steht als Punkt in „Noch offen“ (Regel 3), nicht mehr im Überblick
   $('wrest').innerHTML='';
@@ -7766,6 +7777,8 @@ function vgFrN(v){for(const k of v.mv){const m=S.wtx[k];if(!m)continue;const s=w
 const vgAr=(a,b)=>`${a} <span class="nw">→ ${b}</span>`;
 const vgGiftN=v=>{if(v.k!=='eingang'&&v.k!=='weg')return '';const c=cxById(v.cx[0]);return c&&c.pn||''};
 function vgFT(v){if(v.mv.length===1&&(v.k==='open'||v.k==='ign'||v.k==='int'||v.k==='dfx')){const m=S.wtx[v.mv[0]],s=wSide(m),w=wOwnW(wMv(v.mv[0]))||'',cp=s==='in'?m.from:s==='out'?m.to:'',cn=esc(vgCpN(m)),cb=cp&&frName(cp)?`<b>${cn}</b>`:cn;
+    // Ab 0.120 (Phase 4): keine Seite ist eine eigene Wallet: die Namen aus dem Adressbuch („DFX.swiss → DFX.swiss“), unbekannt „?“; die Adressen stehen darunter
+    if(!s&&!m.wFrom&&!m.wTo){const n=a=>{const x=S.addr[a];return wIsTag(a)?'Tag':wIsPay(a)?'Kartenzahlungen':wIsBr(a)?cpNm(a):frName(a)?`<b>${esc(frName(a))}</b>`:x&&x.wallet?`<b>${nmH(x.wallet)}</b>`:'?'};return vgAr(n(m.from),n(m.to))}
     return s==='in'?vgAr(cb,`<b>${nmH(w)}</b>`):s==='out'?vgAr(`<b>${nmH(w)}</b>`,cb):m.wFrom&&m.wTo&&m.wFrom!==m.wTo?vgAr(`<b>${nmH(m.wFrom)}</b>`,`<b>${nmH(m.wTo)}</b>`):`<b>${nmH(m.wFrom||m.wTo||'')}</b>`}
   if(v.from&&v.to&&v.from!==v.to)return vgAr(`<b>${nmH(v.from)}</b>`,`<b>${nmH(v.to)}</b>`);
   const fn=vgGiftN(v)||vgFrN(v);if(fn)return v.from?vgAr(`<b>${nmH(v.from)}</b>`,`<b>${nmH(fn)}</b>`):vgAr(`<b>${nmH(fn)}</b>`,`<b>${nmH(v.to)}</b>`);
@@ -7810,9 +7823,10 @@ const srcFH=(x,M)=>{const N=M&&M.get(x),i=x.startsWith('Datei ')?x.indexOf(' ',6
   return x==='Datei'?`<span class="nw">${glFile([...N])}</span>`:`<span class="nw">${glFile([...N])}${i<0?esc(x.slice(5)):esc(x.slice(5,i))}</span>${i<0?'':nmH(x.slice(i))}`};
 function vgStH0(v,st){const SF=vgSrcFiles(v),o=`<span class="small vgor">${vgOrigL(v).map(x=>srcFH(x,SF)).join(' + ')}</span>`,T=VG_TD.get(v.id),kf=VG_RATE.has(v.id)?'<span class="small vgss">Kurs fehlt</span>':'';
   // Ab 0.47 (3.4): Status aus „Noch offen“ (offen, Vorschlag mit kleinem Text darunter, doppelt?, Einkauf fehlt …), außer der Eintrag ist unvollständig
+  // Ab 0.120 (Phase 4): ausstehend bei DFX.swiss: nur das Wort „ausstehend“ in Gelb, als Begriff (Erklärung in der Tafel), darunter die Herkunft. Vor dem
+  // Status aus „Noch offen“, damit das Wort gleich bleibt (der Punkt dort hat dasselbe Wort)
+  if(st==='dfx')return `<span class="vgsz vgs-dfx">${gl('dxpend','ausstehend')}</span>${o}`;
   if(T&&st!=='inc')return `<span class="vgsz vgs-${T.c}">${esc(T.w)}</span>${T.s?`<span class="small vgss">${esc(T.s)}</span>`:''}${kf}${o}`;
-  // Ab 0.117: ausstehend bei DFX.swiss mit Erklärung darunter
-  if(st==='dfx')return `<span class="vgsz vgs-dfx">${VG_STT.dfx}</span><span class="small vgss">${DX_PENDT}</span>${o}`;
   if(st==='open'){const m=S.wtx[v.mv[0]],su=!!(m&&m.sus);return `<span class="vgsz vgs-${su?'sus':'open'}">${su?'verdächtig':'offen'}</span>${o}`}
   return `<span class="vgsz vgs-${st}">${st==='inc'?esc(vgMiss(v)):VG_STT[st]}</span>${st==='rate'?'':kf}${o}`}
 // Ab 0.45 (4.2): Farbe je Art (in grün-türkis, out koralle, sw violett, tag blau, mu grau), bei offenen Vorgängen die Signalfarbe
@@ -8032,6 +8046,14 @@ function vgEdit(v){const cx=v.cx.filter(id=>{const c=cxById(id);return !(c&&(c.b
 const vgEH=v=>{const T=VG_TD.get(v.id),dn=!!(T&&T.done),nm=`${esc(vgWas(v))}${v.d?' vom '+fD(v.d):''}`;let [t,x,l]=vgEdit(v);
   if(dn&&(t==='d'||t==='x')){t='o';x=v.id;l='Bewegung ansehen'}
   return `${dn?`<button type="button" class="btn sm vgdo" data-vtd="${esc(T.it.id)}" aria-label="Erledigen: ${nm}">Erledigen</button>`:''}<button type="button" class="vge" data-vge="${t}:${esc(String(x))}" aria-label="${l}: ${nm}">✎</button>`};
+// Ab 0.120 (Phase 4): Sortierschlüssel einer Zeile: Datum und die Zeit, die in der Zeile steht (Uhrzeit, sonst die geschätzte „ca.“). Ohne beides wie in
+// der Rechnung (kxRun): Zugänge (Kauf, Geschenk erhalten, Rückerstattung, Auszahlung von Tag) 00:00:00, Abgänge (Verkauf, Zahlung, Gebühr, Geschenk
+// gemacht, Verloren oder gestohlen, Einzahlung zu Tag) 23:59:59, alles andere (Übertrag, Tausch, Bewegungen) 23:59:58. Steuer, Zusammenfassung, Excel
+// und CSV nutzen diese Reihenfolge nicht.
+const VG_T0=v=>v.k==='tagaus'||VG_KC[v.k]==='in'?'00:00:00':v.k==='tagein'||VG_KC[v.k]==='out'?'23:59:59':'23:59:58';
+function vgSortK(v,F){const e=v.tm?null:vgFl(v,F).find(f=>f.tmE);return (v.d||'')+' '+(v.tm?(v.tm+':00').slice(0,8):e?e.tmE:VG_T0(v))}
+// Liste L (älteste zuerst) nach vgSortK, stabil (gleiche Zeit: Reihenfolge aus vgBuild)
+function vgSortL(L,F){const K=new Map(L.map(v=>[v,vgSortK(v,F)]));return L.sort((a,b)=>{const x=K.get(a),y=K.get(b);return x<y?-1:x>y?1:0})}
 // Ab 0.47 (1.4): ohne Uhrzeit, aber im Tag eingeordnet (kxPlace): „ca. 04:18 (geschätzt)“
 const vgTmE=fl=>{const f=fl.find(f=>f.tmE);return f?`<span class="small vgte">ca. ${f.tmE.slice(0,5)} (${gl('tmgesch','geschätzt')})</span>`:''};
 // Ab 0.47 (3.4): jeder Punkt aus „Noch offen“ steht auch als Status an seiner Zeile. VG_TD: Zeile → {w (Wort), c (Farbe 'open' rot | 'sug' gelb),
@@ -8048,7 +8070,7 @@ function vgSugShort(it){const s=it.sug;
 function vgTdMap(V){const M=new Map(),by={m:{},c:{},t:{},b:{}};
   for(const v of V){for(const k of v.mv)by.m[k]=v.id;for(const id of v.cx)by.c[id]=v.id;for(const id of v.tag)by.t[id]=v.id;if(v.bxo)by.b[v.bxo]=v.id}
   // Mehrere Punkte an einer Zeile: Status nach Rang (offen, Vorschlag, doppelt?, Einkauf fehlt, vertippt?, Reihenfolge, prüfen), alle in o.all
-  const RK=['offen','verdächtig','Vorschlag','doppelt?','Einkauf fehlt','vertippt?','Reihenfolge','prüfen'];
+  const RK=['offen','verdächtig','Vorschlag','doppelt?','Einkauf fehlt','vertippt?','Reihenfolge','prüfen','ausstehend'];
   const put=(rid,o)=>{if(!rid)return;const x=M.get(rid);if(!x){M.set(rid,Object.assign(o,{all:[o]}));return}x.all.push(o);
     if(RK.indexOf(o.w)<RK.indexOf(x.w)){const all=x.all;M.set(rid,Object.assign(o,{all}))}},ref=r=>{if(!r)return '';const i=r.indexOf(':');return (by[r.slice(0,i)]||{})[r.slice(i+1)]||(r[0]==='c'?(by.c[+r.slice(2)]||''):'')};
   for(const it of TD_ITEMS){const sm=vgSugShort(it);
@@ -8060,6 +8082,7 @@ function vgTdMap(V){const M=new Map(),by={m:{},c:{},t:{},b:{}};
     else if(it.kind==='typo')put(ref(it.ref),{w:'vertippt?',c:'sug',s:'',it});
     else if(it.kind==='order')put(ref(it.ref),{w:'Reihenfolge',c:'sug',s:'',it});
     else if(it.kind==='bxein'||it.kind==='bxaus')put(ref(it.ref),{w:'offen',c:'open',s:'',it,done:true});
+    else if(it.kind==='dfx')put(ref(it.ref),{w:'ausstehend',c:'sug',s:'',it,done:true});
     else if(it.kind==='tagq')put(ref(it.ref),{w:sm?'Vorschlag':'offen',c:sm?'sug':'open',s:sm,it,done:true});
     else if(it.kind==='tagw')put(ref(it.ref),{w:'prüfen',c:'sug',s:'Wallet vom Tool gewählt',it});
     else if(it.kind==='swapland')put(ref(it.ref),{w:'prüfen',c:'sug',s:'Wert aus dem anderen Land',it})}
@@ -8116,6 +8139,8 @@ function renderVg(C,DEw,rg){VG_R=[C,DEw,rg];const card=$('vg-card');
   $('vg-hd').innerHTML=`<span>${gl('vgdatum','Datum')}</span><span>${gl('vgwas','Was')}</span><span>Von → Nach</span><span>Menge</span><span>Euro</span><span>Gewinn/Verlust</span><span>${gl('vgstatus','Status')}<span class="small vghk">${gl('herkunft','Herkunft')}</span></span>`;
   $('vg-focus').innerHTML=WZ_FOCUS?`<span class="small">Nur ${esc(WZ_FOCUS)}</span> <button type="button" class="zlink" data-vgall>alle zeigen</button>`:'';
   $('cx-empty').style.display=V.length?'none':'';
+  // Ab 0.120 (Phase 4): sortiert nach der Zeit, die in der Zeile steht (vgSortK), in beiden Richtungen; bis 0.119 nach der Uhrzeit allein (leer = ganz früh)
+  vgSortL(L,F);
   const LS=S.ui.vgSort==='old'?L:L.slice().reverse();
   // Ab 0.45 (4.9): Rechenwege aller Vorgänge im Zeitraum, vorwärts, nur gezeichnet, wenn die Karte offen ist
   {const R=P.map(v=>[v,vgFl(v,F)]).filter(([,fl])=>fl.length),rc=$('rw-card');rc.style.display=R.length?'':'none';
@@ -8823,6 +8848,12 @@ function todoItems(C){
      li:{d:'',w:'',what:'Kurse noch nicht geladen',q:''}})}
   // Ab 0.47 (2.8): Rest bei Wallets ohne eigene Datei (z. B. Börse), bisher ein Satz im Überblick
   // Ab 0.47 (Nachtrag 2, 4): „So lassen“ merkt diesen Rest (Wallet, Coin, Menge) in S.cxKeep, der Punkt kommt für ihn nicht wieder
+  // Ab 0.120 (Phase 4, Florians Antwort): ausstehend bei DFX.swiss zählt in „Noch offen“ als gelber Punkt. Er sagt, was zu tun ist (DFX-Datei neu einlesen,
+  // sobald DFX.swiss fertig ist), mit „DFX-Datei einlesen“ und dem Menü „Wie ist es ausgegangen?“. Er verschwindet, sobald die Bewegung nicht mehr ausstehend ist.
+  for(const [k,m] of Object.entries(S.wtx))if(m.st==='dfx'&&fW(k)){const w=rAW(S,m.from)||m.wFrom||'';
+    I.push({id:'d:'+k,lv:'y',kind:'dfx',t:mt(m),eur:0,ref:'m:'+k,hk:k,big:`${fmtNum(m.qty)} ${wCoinT(m)} aus ${esc(w)} sind bei DFX.swiss, aber noch nicht in deiner DFX-Datei.`,
+      why:`Lies die DFX-Datei neu ein, sobald DFX.swiss fertig ist. Dann verknüpft das Tool den Verkauf von selbst. ${gl('dxpend','Was heißt das?')}`,
+      body:`<div class="row"><button type="button" class="btn primary" data-bxload>DFX-Datei einlesen</button></div>${dxMenuH(k)}`,li:{d:m.date,w,what:'ausstehend bei DFX.swiss',q:mq(m)}})}
   const restK=r=>'rest|'+r.w+'|'+r.coin+'|'+r.q;
   for(const r of wRest(S,C.pots).filter(r=>!S.cxKeep.includes(restK(r))))I.push({id:'r:'+r.w+'|'+r.coin,lv:'y',kind:'rest',t:0,eur:0,ref:'',big:`Rest bei ${esc(r.w)}: ${fmtNum(r.q)} ${r.coin}. Gebühren?`,why:gl('restgeb','Was heißt das?'),
     body:`<div class="row"><button type="button" class="btn" data-rsplit="${esc(r.w)}">Auf ${r.xs.length===1?'den Übertrag':'die '+fI.format(r.xs.length)+' Überträge'} verteilen</button><button type="button" class="btn" data-rfee="${esc(r.w)}">Als eine Gebühr buchen</button><button type="button" class="btn" data-keep="${esc(restK(r))}">So lassen</button></div>`,
@@ -11088,7 +11119,7 @@ const CX_KURS='Das Tool setzt 1 USDC und 1 USDT mit 1 USD an. Das passt, solange
 const EST_SUM='<b>Geschätzte Werte</b> (z. B. ein Tageswert statt des Kaufpreises) stehen als Frage in der Zusammenfassung für die Steuerberatung.';
 const GL={
   // Ab 0.117: DFX.swiss
-  dxpend:{t:'Ausstehend bei DFX.swiss',h:'Bei DFX.swiss angekommen, noch nicht in deiner DFX-Datei. Die Coins zählen nicht mehr zum Bestand der Wallet, damit er zur Blockchain passt. Steuerlich ist das noch kein Vorgang. Sobald eine DFX-Datei den Verkauf mit diesem Hash zeigt, verknüpft das Tool ihn. In „Alle Vorgänge“ wählst du bei der Bewegung, wie es ausgegangen ist.'},
+  dxpend:{t:'Ausstehend bei DFX.swiss',h:'Bei DFX.swiss angekommen, noch nicht in deiner DFX-Datei.\nLies die DFX-Datei neu ein, sobald DFX.swiss fertig ist.\nDie Coins zählen nicht mehr zum Bestand der Wallet, damit er zur Blockchain passt. Steuerlich ist das noch kein Vorgang. Sobald eine DFX-Datei den Verkauf mit diesem Hash zeigt, verknüpft das Tool ihn. In „Alle Vorgänge“ wählst du bei der Bewegung, wie es ausgegangen ist.'},
   'k-ov':{t:'Überblick',h:'Die wichtigsten Zahlen für den gewählten Zeitraum und die gewählten Konten. Mit „Rendite ▾“ oder „Betrag ▾“ wechselst du, ob die Kacheln Prozent oder Beträge zeigen.'},
   'k-hl':{t:'Hochs und Tiefs',h:'Die besten und schwächsten Trades, Tage und Wochen, dazu Serien am Stück. Ein Datum führt dich zur Stelle in „Pro Woche“.'},
   'k-avg':{t:'Durchschnitt',h:'Was ein Handelstag, eine Woche, ein Monat und ein Trade im Schnitt gebracht haben, als Durchschnitt und als Median.'},
