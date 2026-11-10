@@ -6373,11 +6373,12 @@ function dxSave(ok){const D=BXP;if(!D)return;const top=dxTop(),plan=dxPlan(S,D.P
   if(W_NEWV(D.w)&&top&&!S.wallets.includes(top))wNewWallet(top,W_NEWK(D.w));
   const pre=new Set(S.cx.filter(c=>!c.dx).map(c=>c.id)),n0=nwSnap(),td0=new Map(todoItems(cryptoCalc()).map(x=>[x.id,x.lv]));
   const st=dxApply(S,plan,D.ch,D.un);if(top)S.ui.dxW=top;bxFileAdd(S,D.P,D.name,DX_NAME,pre,todayLocal());BXP=null;S.ui.lastLoad=new Date().toISOString();const n=wSync();nwMark(n0);save();render();
+  // Ab 0.127 (GESTALTUNG Abschnitt 5, Zahl und Wort): auch „1 neuer Punkt“, „{n} neue Punkte“, „1 Bewegung“, „{n} Abgänge“ mit geschütztem Leerzeichen
   const pl=(n,a,b)=>`${fI.format(n)}\u00a0${n===1?a:b}`,I1=todoItems(cryptoCalc()),nu=I1.filter(x=>!td0.has(x.id)).length,pend=Object.values(S.wtx).filter(m=>m.st==='dfx').length;
   const T=[st.neu?pl(st.neu,'neuer Eintrag','neue Einträge'):'',st.ersetzt?pl(st.ersetzt,'Eintrag ersetzt','Einträge ersetzt'):'',st.behalten?pl(st.behalten,'Eintrag behalten','Einträge behalten'):'',
     st.link?`${pl(st.link,'Eintrag','Einträge')} mit ${mvDatei((st.linkK||[]).map(k=>S.wtx[k]),'Wallet-Datei')} verknüpft`:'',st.unign?pl(st.unign,'Bewegung nicht mehr ignoriert','Bewegungen nicht mehr ignoriert'):''].filter(Boolean).join(' · ').replace(/^$/,'Nichts Neues, alles schon da')+'.'+
-    (()=>{const A=st.after.reduce((o,r)=>({mv:o.mv+r.mv.length,cx:o.cx+r.cx.length}),{mv:0,cx:0});return A.mv?` ${A.mv===1?'1 Bewegung ohne deine Adresse ist':fI.format(A.mv)+' Bewegungen ohne deine Adresse sind'} weggefallen.`:''})()+
-    (pend?` ${pend===1?'1 Abgang ist':fI.format(pend)+' Abgänge sind'} ausstehend bei DFX.swiss.`:'')+(nu===1?' Dadurch steht 1 neuer Punkt in „Noch offen“.':nu?` Dadurch stehen ${fI.format(nu)} neue Punkte in „Noch offen“.`:'');
+    (()=>{const A=st.after.reduce((o,r)=>({mv:o.mv+r.mv.length,cx:o.cx+r.cx.length}),{mv:0,cx:0});return A.mv?` ${A.mv===1?'1\u00a0Bewegung ohne deine Adresse ist':fI.format(A.mv)+'\u00a0Bewegungen ohne deine Adresse sind'} weggefallen.`:''})()+
+    (pend?` ${pend===1?'1\u00a0Abgang ist':fI.format(pend)+'\u00a0Abgänge sind'} ausstehend bei DFX.swiss.`:'')+(nu===1?' Dadurch steht 1\u00a0neuer Punkt in „Noch offen“.':nu?` Dadurch stehen ${fI.format(nu)}\u00a0neue Punkte in „Noch offen“.`:'');
   if(BX_Q.length){const x=BX_Q.shift();bxLoadText(x.name,x.text,T)}else{msg('bxmsg','ok',T+dtWaitH('bx'));dtRe()}}
 function bxSave(){const D=BXP,w=bxW();if(!D)return;if(D.dx)return dxSave();if(!w)return needMark($('bxprev'),D.w===''?[['[data-bxw]','Wähle die Wallet der Börse.']]:[['[data-bxn]','Gib der Börse einen Namen ein, z. B. Bitvavo.']]);const plan=bvPlan(S,D.P,w,D.aw);
   // Ab 0.47 (Nachtrag 2, 7): die Datei für „Eingelesene Dateien“ merken (pre = Einträge ohne Merker der Börse vor dem Einlesen)
@@ -6392,8 +6393,9 @@ function bxSave(){const D=BXP,w=bxW();if(!D)return;if(D.dx)return dxSave();if(!w
     [cnt('rest'),`Rest bei ${w}, den die Käufe und Auszahlungen nicht erklären`,`Reste bei ${w}, die die Käufe und Auszahlungen nicht erklären`],[cnt('gap'),'fehlender Einkauf','fehlende Einkäufe']],nk0=nk.reduce((a,x)=>a+x[0],0),nw=nu.length-nk0;
   // Ab 0.85 (Fund 5 aus 0.84): genau ein neuer Punkt ohne Aufschlüsselung. Bei mehreren heißt ein einzelner Rest mit seinem Namen aus „Alle Punkte“
   // („der Punkt „Gebühr prüfen““) statt „1 weiterer Punkt“. Ohne bekannte Art (nur Rest) keine Aufschlüsselung, sie würde nur die Zahl wiederholen.
+  // Ab 0.127 (GESTALTUNG Abschnitt 5, Zahl und Wort): auch „1 neuer Punkt“, „{n} neue Punkte“ und die Aufschlüsselung („2 Auszahlungen …“) mit geschütztem Leerzeichen
   const nw1=nw===1?nu.find(x=>!['bxaus','bxein','rest','gap'].includes(x.kind)):null,nw1n=nw1&&nw1.li&&nw1.li.what?String(nw1.li.what):'';
-  const neu=nu.length===1?' Dadurch steht 1 neuer Punkt in „Noch offen“.':nu.length?` Dadurch stehen ${fI.format(nu.length)} neue Punkte in „Noch offen“${nk0?`: ${und([...nk.filter(x=>x[0]).map(x=>(x[0]===1&&/^(Rest|fehlender)/.test(x[1])?'ein ':fI.format(x[0])+' ')+(x[0]===1?x[1]:x[2])),...(nw?[nw1n?`der Punkt „${nw1n}“`:pl(nw,'weiterer Punkt','weitere Punkte')]:[])])}`:''}.`:'';
+  const neu=nu.length===1?' Dadurch steht 1\u00a0neuer Punkt in „Noch offen“.':nu.length?` Dadurch stehen ${fI.format(nu.length)}\u00a0neue Punkte in „Noch offen“${nk0?`: ${und([...nk.filter(x=>x[0]).map(x=>(x[0]===1&&/^(Rest|fehlender)/.test(x[1])?'ein ':fI.format(x[0])+'\u00a0')+(x[0]===1?x[1]:x[2])),...(nw?[nw1n?`der Punkt „${nw1n}“`:pl(nw,'weiterer Punkt','weitere Punkte')]:[])])}`:''}.`:'';
   const tsT=ts?` Zu ${pl(ts,'Tag-Zeile','Tag-Zeilen')} gibt es jetzt einen Vorschlag.`:'';
   const T=[st.neu?pl(st.neu,'neuer Eintrag','neue Einträge'):'',st.ersetzt?pl(st.ersetzt,'Eintrag ersetzt','Einträge ersetzt'):'',st.behalten?pl(st.behalten,'Eintrag behalten','Einträge behalten'):'',
     st.xfer?pl(st.xfer,'Übertrag neu','Überträge neu'):'',st.xferUpd?pl(st.xferUpd,'Übertrag ergänzt','Überträge ergänzt'):'',st.dep?pl(st.dep,'Einzahlung zugeordnet','Einzahlungen zugeordnet'):'',
@@ -6853,10 +6855,11 @@ $('walletmsg').addEventListener('click',e=>{
 // Ab 0.50 Nachtrag 6: dazu der eingetragene Kontostand, der wegfällt, und wie viele der Bewegungen danach offen in „Noch offen“ stehen (Stand „offen“,
 // der Stand ändert sich beim Entfernen nicht)
 // Ab 0.50 Nachtrag 6 Zusatz: die Sätze zu den Bewegungen aus mvGoneTxt (wie bei „Als fremd merken“), n wird dort gezählt (jede Bewegung einmal)
+// Ab 0.127 (GESTALTUNG Abschnitt 5, Zahl und Wort): „ihre 2 Adressen“ mit geschütztem Leerzeichen, auf beiden Wegen
 function wlDelTxt(w,ad,own,n,to){const na=ad.length,kt=wbalTxt(w);
-  if(to)return `Wallet „${w}“ löschen?\n\n${na===1?'Ihre Adresse gehört':`Ihre ${fI.format(na)} Adressen gehören`} danach zu „${to}“.${kt?' '+kt:''}`;
+  if(to)return `Wallet „${w}“ löschen?\n\n${na===1?'Ihre Adresse gehört':`Ihre ${fI.format(na)}\u00a0Adressen gehören`} danach zu „${to}“.${kt?' '+kt:''}`;
   const b=[mvGoneTxt(S,own,ad,own.length===1),kt].filter(Boolean).join(' ');
-  return `Wallet „${w}“ löschen und ${na===1?'ihre Adresse':`ihre ${fI.format(na)} Adressen`} entfernen?`+(b?'\n\n'+b:'')}
+  return `Wallet „${w}“ löschen und ${na===1?'ihre Adresse':`ihre ${fI.format(na)}\u00a0Adressen`} entfernen?`+(b?'\n\n'+b:'')}
 // Kurze Meldung unten (ab 0.41 auch nach einer Änderung im Menü der Gegenseite). ms gilt ab 0.54 nicht mehr (Dauer aus toastMs).
 // Ab 0.54 (7): Jeder Toast steht mindestens 6 s, längere Texte länger (bis 10 s). Solange die Maus darüber ist oder er den Fokus hat, bleibt er stehen,
 // danach läuft die Restzeit (mindestens 2 s). Ein × schließt ihn. Vorlesen wie bisher (role="status", aria-live="polite").
@@ -13316,7 +13319,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.126',VDATE='10.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.127',VDATE='10.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
