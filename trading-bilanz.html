@@ -969,7 +969,7 @@ button.vge:hover,button.vge:focus-visible{background:var(--accent-soft)}
 /* Ab 0.55 (6): „Erledigen“ mit eigenem Platz. PC: Knopfspalte aller Zeilen und Kopf so breit wie „Erledigen“ (--vgbw aus vgFitQ). Handy: eigene Zeile
    rechts unter der Zeile, die Zeile behält die Breite der Zeilen mit ✎. */
 .vgrw>.vgdo{flex:none;align-self:center;padding:4px 8px;white-space:nowrap}
-/* Ab 0.120 (Phase 2): Zeilen mit „Erledigen“ haben daneben den ✎. --vgbw = „Erledigen“ + Abstand + ✎; in den anderen Zeilen steht der ✎ rechts in dieser Breite */
+/* Ab 0.121 (Phase 2): Zeilen mit „Erledigen“ haben daneben den ✎. --vgbw = „Erledigen“ + Abstand + ✎; in den anderen Zeilen steht der ✎ rechts in dieser Breite */
 #vg-card.vgbw button.vge{width:var(--vgbw);padding:0 0 0 calc(var(--vgbw) - 2.4em)}#vg-card.vgbw .vgrw.vgrd>button.vge{width:2.4em;padding:0}
 #vg-card.vgbw .vghd{padding-right:calc(var(--vgbw) + 10px)}
 /* Ab 0.55 (6): Wallet-Namen dürfen umbrechen (Adressen nicht, dafür steht „(0x…)“ in nw) */
@@ -985,7 +985,7 @@ button.adb[data-apw]{white-space:normal;text-align:inherit}
 /* Ab 0.46 (5.3): Art (Zeichen und Wort) in der Farbe der Art, Statuswort farbig */
 .vgr.k-in .c-w,.vgg.k-in .c-w{color:var(--k-in)}.vgr.k-out .c-w,.vgg.k-out .c-w{color:var(--k-out)}.vgr.k-sw .c-w,.vgg.k-sw .c-w{color:var(--k-sw)}.vgr.k-tag .c-w,.vgg.k-tag .c-w{color:var(--k-tag)}.vgr.k-mu .c-w,.vgg.k-mu .c-w{color:var(--k-mu)}
 .vgs-ok{color:var(--pos)}.vgs-open,.vgs-inc{color:var(--sig-r)}.vgs-sug,.vgs-est{color:var(--sig-y-txt)}.vgs-ign,.vgs-sus,.vgs-rate{color:var(--muted)}
-/* Ab 0.120 (Phase 4): „ausstehend“ gelb wie „Vorschlag“ (Signalfarbe gelb = bitte prüfen) */
+/* Ab 0.121 (Phase 4): „ausstehend“ gelb wie „Vorschlag“ (Signalfarbe gelb = bitte prüfen) */
 .vgs-dfx{color:var(--sig-y-txt)}
 .vgbtns{display:inline-flex;gap:6px;flex:none;white-space:nowrap}
 .wpq{align-items:center;gap:6px 10px;margin:2px 0}
@@ -1002,7 +1002,7 @@ table.kbt th{position:-webkit-sticky;position:sticky;top:0;z-index:2}
 /* Ab 0.47 (Nachtrag 2, 7): Börsen-Dateien unter den Wallet-Dateien */
 .dfbx{margin:16px 0 4px}
 table.dfbt td.l{white-space:normal;overflow-wrap:anywhere;min-width:10ch}
-/* Ab 0.120 (Phase 2): Dateiname mit Adresse darunter, zweite Zeile je Datei (Einträge aufklappen, gelöschte Einträge) */
+/* Ab 0.121 (Phase 2): Dateiname mit Adresse darunter, zweite Zeile je Datei (Einträge aufklappen, gelöschte Einträge) */
 table.dft td.dfn{white-space:normal;overflow-wrap:anywhere;min-width:12ch;max-width:26em}.dfa{display:block}
 table.dft tr.dfmain>td{border-bottom:0;padding-bottom:2px}table.dft tr.dfsub>td{text-align:left;white-space:normal;padding-top:0}
 .dfent>summary{cursor:pointer;color:var(--accent);font-size:13px;width:max-content;max-width:100%}.dfdel{margin:4px 0 2px}.dfloose{margin-top:14px}
@@ -1038,7 +1038,7 @@ tr.hl{animation:hl 2.2s ease-out}
 .rwb{border-top:1px solid var(--line);padding:6px 0}
 .rwbk{margin:4px 0 0}.rwb.hl{animation:hl 2.2s ease-out}.rwh{margin:2px 0}
 .tddel{border-top:1px dashed var(--line);margin-top:10px;padding-top:6px}
-/* Ab 0.120: Dateinamen sind lang und ohne Leerzeichen, sie brechen an jeder Stelle um (Fenster „Bewegung“, Rückfragen, Wahl der Datei) */
+/* Ab 0.121: Dateinamen sind lang und ohne Leerzeichen, sie brechen an jeder Stelle um (Fenster „Bewegung“, Rückfragen, Wahl der Datei) */
 .tddel p.small,#ask-body p,#ask-body .fdsel span{overflow-wrap:anywhere}
 .psum td{border-top:2px solid var(--line)}
 .vgad{color:var(--muted);font-size:var(--fs-xs)}
@@ -1112,7 +1112,7 @@ table.vgtb{width:100%;border-collapse:collapse;font-size:var(--fs-s);margin:4px 
   .vgrw{align-items:stretch}
   .vgrw>.vgb{grid-template-columns:3.6em minmax(0,1fr) var(--vgq,7em);grid-template-areas:"d w q" "d f eg" "d f s";gap:0 4px;column-gap:8px;align-items:start;text-align:left;padding:7px 4px}
   button.vge{width:1.7em}
-  /* Ab 0.120 (Phase 2): erste Zeile wie die anderen Zeilen (Zeile + ✎), „Erledigen“ rechts darunter */
+  /* Ab 0.121 (Phase 2): erste Zeile wie die anderen Zeilen (Zeile + ✎), „Erledigen“ rechts darunter */
   .vgrw.vgrd{flex-wrap:wrap;row-gap:0}.vgrw.vgrd>.vgb{flex:1 1 calc(100% - 44px)}.vgrw.vgrd>.vge{order:1}.vgrw.vgrd>.vgdo{order:2;margin:0 0 6px auto}
   .c-d .dl{display:none}.c-d .ds{display:inline}
   .vgb .c-d{white-space:nowrap;font-size:var(--fs-xs)}.vgb>span.c-w{overflow-wrap:normal;word-break:normal;font-size:var(--fs-xs)}.vgb>span.c-s{overflow-wrap:normal;word-break:normal;font-size:var(--fs-s)}.vgb .vgad{display:none}.vgb>span.c-q{overflow-wrap:normal;word-break:normal;font-size:var(--fs-s)}.vgb .c-q .nw b{white-space:nowrap}.vgb .c-q .vgqi{display:none}
@@ -4576,7 +4576,7 @@ function vgTimeline(S,ks,F){const M=ks.map(k=>S.wtx[k]).filter(Boolean).sort((a,
 /* ---------------- Ab 0.44: eingelesene Dateien (je eigene Adresse und Netzwerk eine Datei) ---------------- */
 // Liste [{a, net, w, d (Tag des Einlesens), n (Bewegungen), files (Dateinamen)}], nach Wallet, Adresse, Netzwerk
 // Ab 0.119 (5a): auch Dateien von Adressen, die inzwischen Börse oder Dienst sind (Wallet z. B. „DFX.swiss (Dienst)“); bis 0.118 fehlten sie in der Liste
-// Ab 0.120 (Phase 1): Name der Wallet-Datei einer Adresse auf einem Netzwerk: beim Einlesen gemerkt (impF). Stände bis 0.119 haben den Merker nicht; dort
+// Ab 0.121 (Phase 1): Name der Wallet-Datei einer Adresse auf einem Netzwerk: beim Einlesen gemerkt (impF). Stände bis 0.119 haben den Merker nicht; dort
 // der häufigste Dateiname der Bewegungen, die nur in dieser Datei stehen können (die andere Seite hat keine Datei). Eine Bewegung zwischen zwei Adressen
 // mit Datei trägt den Namen der Datei, die zuerst eingelesen wurde, und sagt deshalb nichts. '' = unbekannt
 function wFileName(S,a,net){const x=S.addr[a];if(x&&x.impF&&x.impF[net])return x.impF[net];const n={};
@@ -4584,7 +4584,7 @@ function wFileName(S,a,net){const x=S.addr[a];if(x&&x.impF&&x.impF[net])return x
   return Object.keys(n).sort((p,q)=>n[q]-n[p]||(p<q?-1:1))[0]||''}
 // Wallet einer Datei für die Anzeige (eigene Wallet, Börse, „DFX.swiss (Dienst)“, „Anna (fremd)“)
 function wFileW(S,a){const x=S.addr[a]||{};return x.own?rAW(S,a)||x.wallet||'':x.br?`${x.name||'Dienst'} (Dienst)`:x.fr?`${x.name||''} (fremd)`:x.wallet||''}
-// Ab 0.120 (Phase 1): Bewegung ohne Zuordnung: Bei keiner ihrer beiden Adressen ist eine Datei für ihr Netzwerk vermerkt (z. B. die Datei einer fremden
+// Ab 0.121 (Phase 1): Bewegung ohne Zuordnung: Bei keiner ihrer beiden Adressen ist eine Datei für ihr Netzwerk vermerkt (z. B. die Datei einer fremden
 // Adresse aus einem Stand vor 0.119). Solche Bewegungen bilden je Dateiname und Netzwerk eine „Datei ohne Zuordnung“.
 const wMvOrph=(S,m)=>!wFileHas(S,m.from,m.net)&&!wFileHas(S,m.to,m.net);
 // Dateien, aus denen eine Bewegung stammt: je Seite mit Datei {a, net}, sonst die Datei ohne Zuordnung {o: Dateiname, net}. Nie eine andere Datei,
@@ -4602,7 +4602,7 @@ function wFileList(S){const out=[];
 // Datei entfernen (Adresse a, Netzwerk net): Bewegungen dieser Datei weg. Steht auf der anderen Seite eine eigene Adresse mit Datei für dieses
 // Netzwerk, bleibt die Bewegung (sie steht auch in deren Datei). Einträge, die das Tool daraus angelegt hat (src 'datei'), fallen mit ihren
 // Gebühren weg; Einträge von Hand und Tag-Zeilen werden nur entkoppelt. Danach wFix/wSync. Rückgabe {mv, kept, cx, hand, tag}
-// Ab 0.120 (Phase 1): dazu bx (Einträge aus einer Börsen-Datei, die bleiben), keepL (Einträge, die bleiben und nur die Verknüpfung verlieren) und
+// Ab 0.121 (Phase 1): dazu bx (Einträge aus einer Börsen-Datei, die bleiben), keepL (Einträge, die bleiben und nur die Verknüpfung verlieren) und
 // splitL (Einträge des Tools aus zwei Dateien: Sie fallen weg, die Bewegung aus der anderen Datei ist wieder offen), je als kurze Kopie (cxCp) für die Rückfrage
 const cxCp=c=>({id:c.id,kind:c.kind,qty:c.qty,coin:c.coin,date:c.date,dxNo:c.dxNo,dxb:c.dxb,bx:!!(c.bv||c.dx)});
 const wDropR=()=>({mv:0,kept:0,cx:0,hand:0,tag:0,bx:0,keepL:[],splitL:[]});
@@ -4636,12 +4636,12 @@ function wFileDrop(S,a,net){const r=wDropR(),x=S.addr[a];if(!x)return r;
   const im=Object.assign({},x.impN);delete im[net];x.impN=im;if(!Object.keys(im).length){delete x.imp}
   if(x.impF){const nf=Object.assign({},x.impF);delete nf[net];if(Object.keys(nf).length)x.impF=nf;else delete x.impF}
   return r}
-// Ab 0.120 (Phase 1): Datei ohne Zuordnung entfernen (Dateiname name, Netzwerk net): genau ihre Bewegungen, nichts sonst. Rückgabe wie wFileDrop
+// Ab 0.121 (Phase 1): Datei ohne Zuordnung entfernen (Dateiname name, Netzwerk net): genau ihre Bewegungen, nichts sonst. Rückgabe wie wFileDrop
 function wFileDropO(S,name,net){const r=wDropR(),hit=m=>m.net===net&&(m.file||'')===name&&wMvOrph(S,m);
   const del=new Set(Object.entries(S.wtx).filter(([,m])=>hit(m)).map(([k])=>k)),ig=Object.entries(S.wign||{}).filter(([,m])=>hit(m)).map(([k])=>k);
   wMvDrop(S,del,r);for(const k of ig){delete S.wign[k];r.mv++}
   wMvNoAsk(S,del);return r}
-/* ---------------- Ab 0.120 (Phase 2): gelöschte Einträge aus Dateien ----------------
+/* ---------------- Ab 0.121 (Phase 2): gelöschte Einträge aus Dateien ----------------
    „Löschen“ nimmt einen Eintrag aus einer Datei weg und merkt ihn in S.wdel, damit er beim nächsten Einlesen derselben oder einer späteren Datei nicht
    wiederkommt. S.wdel[Schlüssel] = {d (Tag des Löschens), f (Dateiname), m | c | o (Kopie zum Zurückholen)}. Schlüssel: bei einer Bewegung ihr Schlüssel
    in S.wtx (derselbe, den das Einlesen bildet), bei einer Zeile einer Börsen-Datei 'b:' + ihre Kennung (Bitvavo-id, DFX-Hash). m = Bewegung (wieder offen),
@@ -5035,7 +5035,7 @@ const bxFileN=(S,F)=>{const I=new Set(F.ids);return S.cx.filter(c=>F.mk.includes
 function bxFileDrop(S,fid){const F=(S.bxF||[]).find(f=>f.id===fid);if(!F)return null;const I=new Set(F.ids),r={cx:0,keep:0,open:0,w:0,mv:0,splitL:[]};
   const gone=new Set(S.cx.filter(c=>F.mk.includes(c.id)&&bxCid(c)&&I.has(bxCid(c))).map(c=>c.id));
   for(const c of S.cx)if(c.feeOf!=null&&gone.has(c.feeOf))gone.add(c.id);
-  // Ab 0.120 (Phase 1): splitL = Einträge der Datei, die mit einer Bewegung aus einer Wallet-Datei verknüpft sind (aus zwei Dateien zusammengesetzt)
+  // Ab 0.121 (Phase 1): splitL = Einträge der Datei, die mit einer Bewegung aus einer Wallet-Datei verknüpft sind (aus zwei Dateien zusammengesetzt)
   for(const m of Object.values(S.wtx||{})){if(m.st==='cx'&&gone.has(m.ref)){const c=S.cx.find(c=>c.id===m.ref);if(c&&c.feeOf==null&&!r.splitL.some(y=>y.id===c.id))r.splitL.push(cxCp(c));m.st='open';m.ref='';delete m.xin;delete m.pend;r.mv++}
     if(chIds(m).some(id=>gone.has(id))){delete m.chain;delete m.chs;if(m.st==='int'){m.st='open';r.mv++}}}
   for(const c of S.cx)if(!gone.has(c.id)&&bxCid(c)&&I.has(bxCid(c))){delete c.bv;delete c.dx;r.keep++}
@@ -5556,7 +5556,7 @@ async function wfLoad(files){
   const b=$('wfprev').querySelector('.tprev');if(b&&b.getBoundingClientRect().bottom>window.innerHeight)b.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 const wfWallet=f=>W_NEWV(f.wallet)?f.newName.trim():f.wallet==='+f'?(f.fix?f.fix.w:'+f'):f.wallet;
-/* Ab 0.120 (Phase 3): Die Datei ist der Export einer Adresse, die im Adressbuch schon fix etwas anderem zugeordnet ist und keine eigene ist: mit Namen
+/* Ab 0.121 (Phase 3): Die Datei ist der Export einer Adresse, die im Adressbuch schon fix etwas anderem zugeordnet ist und keine eigene ist: mit Namen
    (Dienst, Fremd) oder Merkmal (Börse, Tag, Kartenzahlungen, Brücke oder Dienst, Weiterleitung, Ladeadresse einer Karte), auch wenn das Tool sie selbst
    erkannt hat. Dann fragt die Vorschau zuerst (f.fix, Antwort f.fixA): „Nur Bewegungen von und zu meinen Wallets“ (Wahl '+f', wfImportF: der Eintrag im
    Adressbuch bleibt, wie er ist, Bewegungen zwischen zwei fremden Adressen kommen nicht dazu), „Als eigenes Wallet anlegen“ (die bisherige Auswahl mit
@@ -5572,7 +5572,7 @@ function wfFix0(S,a){const x=S.addr[a];if(!x||x.own)return null;const q=n=>`„$
   const bxW=w=>((S.wmeta||{})[w]||{}).kind==='boerse'||(!((S.wmeta||{})[w]||{}).kind&&/bitvavo|börse|boerse|binance|kraken|coinbase|bitpanda|bybit|okx|kucoin|dfx/i.test(w));
   if(x.wallet&&S.wallets.includes(x.wallet)&&bxW(x.wallet))return {l:`Adresse der Börse ${q(x.wallet)}`,t:`Börse ${q(x.wallet)}`,w:x.wallet};
   return null}
-// Ab 0.120 (Phase 3): „Nur Bewegungen von und zu meinen Wallets“: Datei vermerken (imp, impN, impF), den Eintrag der Adresse sonst nicht ändern; nur
+// Ab 0.121 (Phase 3): „Nur Bewegungen von und zu meinen Wallets“: Datei vermerken (imp, impN, impF), den Eintrag der Adresse sonst nicht ändern; nur
 // Bewegungen mit einer eigenen Adresse auf der anderen Seite (st.notOwn zählt die anderen)
 function wfImportF(f,st){const td=todayLocal(),x=S.addr[f.addr];if(!x)return;const net=wfNet(f);x.imp=td;x.impN=Object.assign({},x.impN);x.impF=Object.assign({},x.impF);
   for(const r of f.P.rows){x.impN[r.net]=td;x.impF[r.net]=f.name}if(f.P.unk.length&&net){x.impN[net]=td;x.impF[net]=f.name}
@@ -5605,7 +5605,7 @@ function wfImportX(f,st){const nm=String(f.newName||'').trim(),bx=f.xk==='boerse
 // Bewegungen speichern, eigene Adressen ins Adressbuch, Abgleich. Ergebnis für Vorschau und Meldung.
 // Ab 0.42: Zeilen unbekannter Token kommen nach S.wign; D.tok[k] = Wahl in der Vorschau ('usdc' oder 'ign'). Bestätigte Token (auch früher
 // bestätigte) wandern nach S.wtx. st.offer = angebotene Token, st.own = fremde Adressen derselben Wallet, die jetzt eigene sind.
-// Ab 0.120 (Phase 2): Bewegungen, die gelöscht sind (S.wdel), kommen nicht wieder (st.del zählt sie)
+// Ab 0.121 (Phase 2): Bewegungen, die gelöscht sind (S.wdel), kommen nicht wieder (st.del zählt sie)
 function wImport(D){const st={neu:[],known:0,del:0,ign:{other:0,zero:0,fake:0},fakeC:{},own:[],notOwn:0,after:[]};
   for(const f of D.files){for(const k of ['other','zero','fake'])st.ign[k]+=f.P.ign[k];for(const [c,n] of Object.entries(f.P.fakeC||{}))st.fakeC[c]=(st.fakeC[c]||0)+n;if(!wfUse(f))continue;
     // Ab 0.119 (Punkt 2): „Nicht meine Adresse (Börse oder Dienst)“: Die Adresse kommt als Börse bzw. Dienst ins Adressbuch, mit der Datei (impN). Übernommen
@@ -5673,7 +5673,7 @@ function wSim(fn){const keep=JSON.stringify(S),pl=PROV_LAST;try{return fn()}fina
 function renderWfPrev(){wfPrevH();needRe($('wfprev'))}
 // Ab 0.51 (2): fehlende Angaben der Dateien idx (Wallet, Name einer neuen Wallet, Netzwerk) für needMark, wie wfReady
 function wfNeed(idx){const L=[];for(const i of idx){const f=WFP.files[i];if(!wfUse(f))continue;
-    // Ab 0.120 (Phase 3): offene Frage zur schon zugeordneten Adresse: der erste Knopf der Frage wird markiert
+    // Ab 0.121 (Phase 3): offene Frage zur schon zugeordneten Adresse: der erste Knopf der Frage wird markiert
     if(f.fix&&!f.fixA){L.push([`[data-wffix="mine"][data-i="${i}"]`,'Wähle, wie das Tool diese Datei einliest.']);continue}
     if(!wfWallet(f))L.push(W_NEWV(f.wallet)?[`[data-wfn="${i}"]`,W_NEED(f.wallet)]:[`[data-wfw="${i}"]`,'Wähle die Wallet zu dieser Adresse.']);
     if(f.P.unk.length&&!wfNet(f))L.push([`[data-wfnet="${i}"]`,'Wähle das Netzwerk dieser Datei.'])}
@@ -5691,7 +5691,7 @@ function wfPrevH(){
     const nsel=use&&P.unk.length&&!P.nets.length?`<p>${gl('netzwerk','Netzwerk')} dieser Datei: <select data-wfnet="${i}" aria-label="Netzwerk dieser Datei"><option value="">bitte wählen</option>${Object.keys(W_NET).map(n=>`<option value="${n}" ${n===f.net?'selected':''}>${W_NET[n].n}</option>`).join('')}</select></p>`:'';
     const none=!P.rows.length?`<div class="msg info">Diese Datei enthält kein USDC oder USDT, das das Tool kennt. Vermutlich brauchst du sie nicht.${P.unk.length?`<div class="row"><label class="fopt"><input type="checkbox" data-wfuse="${i}" ${f.skip?'':'checked'}><span>Trotzdem verwenden (${pl(P.unk.length,'Bewegung','Bewegungen')} mit unbekanntem Token)</span></label></div>`:''}</div>`:f.skip?`<div class="msg info">Diese Datei wird nicht verwendet. <button type="button" class="zlink" data-wfunskip="${i}">doch verwenden</button></div>`:'';
     const tk=use&&wfNet(f)?tokOffer(S,P.unk.map(r=>tokMove(r,wfNet(f),wfWallet(f),f.name))).map(o=>tokRowH(o,f)).join(''):'';
-    // Ab 0.120 (Phase 3): schon fix zugeordnete Adresse: zuerst die Frage, nach „Nur Bewegungen …“ ein Satz mit „ändern“, nach „Als eigenes Wallet anlegen“ das Menü
+    // Ab 0.121 (Phase 3): schon fix zugeordnete Adresse: zuerst die Frage, nach „Nur Bewegungen …“ ein Satz mit „ändern“, nach „Als eigenes Wallet anlegen“ das Menü
     const fq=use&&f.fix&&!f.fixA?`<div class="msg info wffix"><p>Diese Adresse ist schon als ${esc(f.fix.l)} gespeichert, nicht als dein Wallet.</p><div class="row"><button type="button" class="btn primary" data-wffix="mine" data-i="${i}">Nur Bewegungen von und zu meinen Wallets</button><button type="button" class="btn" data-wffix="own" data-i="${i}">Als eigenes Wallet anlegen</button><button type="button" class="btn" data-wffix="no" data-i="${i}">Abbrechen</button></div></div>`:'';
     const fm=use&&f.fixA==='mine'?`<p>Adresse ${wAdr(f.addr)} bleibt ${esc(f.fix.t)}. Übernommen werden nur Bewegungen von und zu deinen Wallets. <button type="button" class="zlink" data-wffix="" data-i="${i}">ändern</button></p>`:'';
     return `<div class="wff"><p class="wfn"><b>${esc(f.name)}</b></p>${none}${fq?`<p>Adresse ${wAdr(f.addr)}</p>${fq}`:fm||(use?`<p>Adresse ${wAdr(f.addr)} gehört zu Wallet: ${sel}</p>`:`<p>Adresse ${wAdr(f.addr)}</p>`)}${nsel}${P.addrSrc==='count'?'<p class="small">Die Adresse stammt nicht aus dem Dateinamen, sondern ist die häufigste in der Datei. Prüfe, ob das deine Adresse ist.</p>':''}
@@ -5857,7 +5857,7 @@ $('wfprev').addEventListener('click',e=>{if(e.target.closest('#btn-wfcancel')){W
   if(WFP&&e.target.closest('[data-wfback]')){WFP.ask=Math.max(0,WFP.ask-1);renderWfPrev();const s=$('wfprev').querySelector('[data-wfw],[data-wfask]');if(s)s.focus();return}
   const ul=e.target.closest('[data-wfunlater]');if(ul&&WFP){const f=WFP.files[+ul.dataset.wfunlater];delete f.later;f.wallet='';f.newName='';renderWfPrev();const s=$('wfprev').querySelector(`[data-wfw="${ul.dataset.wfunlater}"]`);if(s)s.focus();return}
   const us=e.target.closest('[data-wfunskip]');if(us&&WFP){WFP.files[+us.dataset.wfunskip].skip=0;renderWfPrev();return}
-  // Ab 0.120 (Phase 3): Antwort auf die Frage zur schon zugeordneten Adresse. „Abbrechen“: eine Datei allein verwirft die Vorschau, sonst wird diese Datei nicht verwendet
+  // Ab 0.121 (Phase 3): Antwort auf die Frage zur schon zugeordneten Adresse. „Abbrechen“: eine Datei allein verwirft die Vorschau, sonst wird diese Datei nicht verwendet
   const fx=e.target.closest('[data-wffix]');if(fx&&WFP){const i=+fx.dataset.i,f=WFP.files[i],a=fx.dataset.wffix;if(!f)return;
     if(a==='no'){if(WFP.files.length===1){WFP=null;needReset($('wfprev'));renderWfPrev();wfEnd();dtRe();return}f.skip=1;f.wallet='';delete f.fixA;if(WFP.ask===i){WFP.ask++}renderWfPrev();return}
     if(a==='mine'){f.fixA='mine';f.wallet='+f';delete f.later}else if(a==='own'){f.fixA='own';f.wallet='+';f.newName='';delete f.later}else{delete f.fixA;f.wallet='';f.newName=''}
@@ -5879,7 +5879,7 @@ function wfStored(){WFP={files:[],tok:{},stored:true};needReset($('wfprev'));msg
 // Ab 0.44 (2.4)
 const TOK_WARN='Zähle ihn nur als USDC, wenn du sicher weißt, dass er 1 zu 1 einem Dollar entspricht, z. B. das Guthaben deiner Krypto-Karte. Betrüger verschicken gefälschte Token mit ähnlichen Namen.';
 /* ---------------- Ab 0.44: „Eingelesene Dateien“ in „＋ Daten“ ---------------- */
-/* Ab 0.120 (Phase 2): Jede eingelesene Datei steht hier mit ihrem Namen, auch eine Datei ohne Zuordnung (ihre Bewegungen gehören zu keiner Adresse mit
+/* Ab 0.121 (Phase 2): Jede eingelesene Datei steht hier mit ihrem Namen, auch eine Datei ohne Zuordnung (ihre Bewegungen gehören zu keiner Adresse mit
    vermerkter Datei, z. B. die Datei einer fremden Adresse aus einem Stand vor 0.119). Jede Datei lässt sich aufklappen (DF_OPEN, nicht gespeichert) und zeigt
    ihre Einträge: Datum, Was, Menge, Status. Hat sie gelöschte Einträge (S.wdel), steht darunter „1 Eintrag gelöscht · zurückholen“. */
 const DF_OPEN=new Set();
@@ -5913,14 +5913,14 @@ function renderFiles(){const L=wFileList(S),O=wFileOrph(S),B=S.bxF||[],V=vgBuild
     (()=>{const n=Object.values(S.tag).filter(t=>!t.hand).length;return n?`<p class="small dfbx"><b>Tag-Daten</b></p><div class="scroll"><table class="dft dfbt"><tr class="dfh"><th class="l">Daten</th><th>Zeilen</th><th></th></tr><tr><td class="l" data-l="Daten">Eingefügte Tag-Daten</td><td data-l="Zeilen">${fI.format(n)}</td><td class="dfx"><button type="button" class="btn danger sm" data-dftag aria-label="Alle Tag-Daten entfernen">entfernen</button></td></tr></table></div>`:''})()}
 // Entfernen mit Rückfrage, die die Folgen nennt (vorher in einer Kopie durchgespielt)
 $('df-list').addEventListener('click',e=>{const b=e.target.closest('[data-dfd]');if(!b)return;const [a,net]=b.dataset.dfd.split('|');wFileDropAsk(a,net,m=>msg('dfmsg','ok',m))});
-// Ab 0.120 (Phase 2): Datei ohne Zuordnung entfernen, Einträge aufklappen, gelöschte Einträge zurückholen
+// Ab 0.121 (Phase 2): Datei ohne Zuordnung entfernen, Einträge aufklappen, gelöschte Einträge zurückholen
 $('df-list').addEventListener('click',e=>{const o=e.target.closest('[data-dfo]');if(o){fileDropAsk(JSON.parse(o.dataset.dfo),m=>msg('dfmsg','ok',m));return}
   const b=e.target.closest('[data-dfback]');if(!b)return;const ks=b.dataset.dfback?wDelOf(S,JSON.parse(b.dataset.dfback)):wDelLoose(S),n=wDelBack(S,ks);wSync();save();render();
   msg('dfmsg','ok',`Zurückgeholt: ${fI.format(n)} ${n===1?'Eintrag':'Einträge'}.`)});
 $('df-list').addEventListener('toggle',e=>{const d=e.target;if(!d.classList||!d.classList.contains('dfent'))return;const k=d.dataset.dfk;if(d.open===DF_OPEN.has(k))return;if(d.open)DF_OPEN.add(k);else DF_OPEN.delete(k);renderFiles();
   const n=$('df-list').querySelector(`details.dfent[data-dfk="${CSS.escape(k)}"] summary`);if(n)n.focus({preventScroll:true})},true);
 // Ab 0.70 Nachtrag 1 (1.7): dieselbe Rückfrage auch direkt aus einer Bewegung („Ganze Datei entfernen …“), ohne Umweg über „Eingelesene Dateien“.
-// Ab 0.120 (Phase 1): Eine Datei ist {a, net} (Wallet-Datei einer Adresse), {o, net} (Datei ohne Zuordnung, Dateiname o) oder {b} (Börsen-Datei, id).
+// Ab 0.121 (Phase 1): Eine Datei ist {a, net} (Wallet-Datei einer Adresse), {o, net} (Datei ohne Zuordnung, Dateiname o) oder {b} (Börsen-Datei, id).
 // „Ganze Datei entfernen …“ nimmt immer eine Datei, aus der die Zeile stammt (vgFiles, wMvFiles), nie eine andere. Bis 0.119 öffnete der Knopf bei einer
 // Bewegung ohne vermerkte Datei nur die Liste, und dort stand ihre Datei nicht (Florians Sicherung vom 09.11.: entfernt wurde die Börsen-Datei von DFX.swiss).
 const wFileDropAsk=(a,net,done)=>fileDropAsk({a,net},done);
@@ -5947,16 +5947,16 @@ function fileDropAsk(f,done){if(f.b){bxFileDropAsk(f.b,done);return}
   const t=[`Die Datei ${fileT(f)} entfernen?`,'',`${pl(r.mv,'Bewegung fällt','Bewegungen fallen')} weg.`,
     r.kept?`${pl(r.kept,'Bewegung bleibt','Bewegungen bleiben')}, weil sie auch in der Datei einer anderen eigenen Adresse ${r.kept===1?'steht':'stehen'}.`:'',
     cxN>0?`${pl(cxN,'Eintrag, den das Tool aus der Datei angelegt hat, fällt','Einträge, die das Tool aus der Datei angelegt hat, fallen')} weg.`:'',
-    // Ab 0.120 (Phase 1): verknüpfte Einträge ausdrücklich, mit dem, was mit ihnen geschieht
+    // Ab 0.121 (Phase 1): verknüpfte Einträge ausdrücklich, mit dem, was mit ihnen geschieht
     ...cxLinkLines(r.splitL,()=>'aus zwei Dateien zusammengesetzt. Der Eintrag fällt weg, die Bewegung aus der anderen Datei ist danach wieder offen.'),
     ...cxLinkLines(r.keepL,c=>c.bx?'aus zwei Dateien zusammengesetzt. Der Eintrag bleibt, nur die Verknüpfung mit dieser Datei fällt weg.':'Eintrag von Hand. Er bleibt, nur die Verknüpfung fällt weg.'),
     r.tag?`${pl(r.tag,'Tag-Zeile bleibt','Tag-Zeilen bleiben')}, nur die Verknüpfung fällt weg.`:''].filter(x=>x!=='').join('\n');
   // Ab 0.47 (Regel 9): Rückfrage im eigenen Fenster
   askBox({title:'Datei entfernen',text:t,ok:'Entfernen',danger:true,more:ASK_BK}).then(v=>{if(!v)return;
-    // Ab 0.120 (Phase 1): erst speichern, dann am gespeicherten Stand zählen, was wirklich weg ist; die Meldung nennt diese Zahl
+    // Ab 0.121 (Phase 1): erst speichern, dann am gespeicherten Stand zählen, was wirklich weg ist; die Meldung nennt diese Zahl
     const K0=[...Object.keys(S.wtx),...Object.keys(S.wign||{})];run();wSync();save();render();
     const Z=savedS(),n=K0.filter(k=>!(Z.wtx&&Z.wtx[k])&&!(Z.wign&&Z.wign[k])).length;done(`Datei entfernt: ${pl(n,'Bewegung','Bewegungen')}.`)})}
-/* Ab 0.120 (Phase 2): „Diesen Eintrag löschen …“ für Bewegungen aus einer Datei und offene Zeilen einer Börse. Gelöscht bleibt gelöscht (S.wdel),
+/* Ab 0.121 (Phase 2): „Diesen Eintrag löschen …“ für Bewegungen aus einer Datei und offene Zeilen einer Börse. Gelöscht bleibt gelöscht (S.wdel),
    zurückholen geht in „Eingelesene Dateien“. Die Rückfrage sagt, was mit verknüpften Einträgen geschieht, und nennt es, wenn ein Eintrag für die Steuer zählt. */
 const CX_TAXK=new Set(['kauf','verkauf','tausch','tauschein','tauschaus','bezahlung','gebuehr']);
 const DEL_BACK_T=n=>`${n===1?'Sie kommt':'Sie kommen'} auch beim nächsten Einlesen nicht wieder. Zurückholen kannst du sie unter „＋ Daten“ → „Eingelesene Dateien“.`;
@@ -5978,7 +5978,7 @@ function bxOpenDelAsk(id,done){const o=(S.bxOpen||{})[id];if(!o)return;const ein
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-mvdel]');if(!b)return;const x=b.dataset.mvdel||'',v=x.startsWith('k:')?null:vgBuild(S).find(y=>y.id===x);
   const done=t=>{if(MODAL&&MODAL.id==='mv-modal'&&!vgBuild(S).some(y=>y.id===MV_ID))closeModal();toast(t)};
   if(v&&v.bxo)bxOpenDelAsk(v.bxo,done);else mvDelAsk(x.startsWith('k:')?[x.slice(2)]:v?v.mv:[],done)});
-// Ab 0.120 (Phase 2, Zusatz a): Sätze zur Rückfrage beim Löschen eines Eintrags: zählt er für die Steuer, stammt er aus einer Börsen-Datei
+// Ab 0.121 (Phase 2, Zusatz a): Sätze zur Rückfrage beim Löschen eines Eintrags: zählt er für die Steuer, stammt er aus einer Börsen-Datei
 function cxDelMore(c){const L=[],x=c&&bxCid(c);if(!c)return '';if(!taxOff()&&CX_TAXK.has(c.kind))L.push('Dieser Eintrag zählt für die Steuer. Ohne ihn ändern sich deine Zahlen.');
   if(x&&(S.bxF||[]).some(f=>f.ids.includes(x)))L.push('Er stammt aus einer Börsen-Datei und kommt auch beim nächsten Einlesen nicht wieder. Zurückholen kannst du ihn unter „＋ Daten“ → „Eingelesene Dateien“.');
   return L.join('\n')}
@@ -6023,7 +6023,7 @@ const ASK_BK={t:'Sicherung speichern',fn:askBackup};
 $('df-list').addEventListener('click',e=>{if(!e.target.closest('[data-dftag]'))return;
   askBox({title:'Tag-Daten entfernen',text:tagDropAllTxt(),ok:'Entfernen',danger:true,more:ASK_BK}).then(v=>{if(!v)return;const n=tagDropAll();wSync();save();render();msg('dfmsg','ok',`Tag-Daten entfernt: ${fI.format(n)} ${n===1?'Zeile':'Zeilen'}.`)})});
 // Ab 0.47 (Nachtrag 2, 7): Börsen-Datei entfernen, Rückfrage mit den Folgen (vorher in einer Kopie durchgespielt)
-// Ab 0.120 (Phase 1): als Funktion (auch aus einer Zeile über „Ganze Datei entfernen …“), mit den zusammengesetzten Einträgen und der echten Zahl
+// Ab 0.121 (Phase 1): als Funktion (auch aus einer Zeile über „Ganze Datei entfernen …“), mit den zusammengesetzten Einträgen und der echten Zahl
 $('df-list').addEventListener('click',e=>{const b=e.target.closest('[data-dfb]');if(b)bxFileDropAsk(b.dataset.dfb,m=>msg('dfmsg','ok',m))});
 function bxFileDropAsk(fid,done){const F=(S.bxF||[]).find(f=>f.id===fid);if(!F)return;const pl=(n,x,y)=>`${fI.format(n)} ${n===1?x:y}`;
   const r=bxFileDrop(JSON.parse(JSON.stringify(S)),F.id);
@@ -6045,7 +6045,7 @@ $('bx-fmts').textContent=`Bisher kann das Tool Dateien von ${bxNames()} lesen (B
 function bxLoadText(name,t,pre){const M=pre?[pre]:[];let bad=0;BXP=null;needReset($('bxprev'));
   for(let x={name,text:t};x;x=!BXP&&BX_Q.length?BX_Q.shift():null){const F=bxFmt(x.text)||BX_FMT[0],P=F.parse(x.text);
     if(P.err){M.push(`<b>${esc(x.name)}</b>: ${P.err}`);bad=1;continue}
-    // Ab 0.120 (Phase 2): gelöschte Zeilen (S.wdel) bleiben weg
+    // Ab 0.121 (Phase 2): gelöschte Zeilen (S.wdel) bleiben weg
     {const n=bxDelSkip(S,P);if(n)M.push(`${fI.format(n)} ${n===1?'Zeile dieser Datei hast du gelöscht, sie bleibt':'Zeilen dieser Datei hast du gelöscht, sie bleiben'} weg. Zurückholen kannst du sie unter „Eingelesene Dateien“.`)}
     // Ab 0.51 (1, ersetzt 0.46 3.3): gibt es keine Wallet mit dem erkannten Namen, ist „+ Neue Wallet …“ mit ihm vorbelegt (z. B. „Bitvavo“)
     const w=F.w(S,P);BXP=F.dx?{P,fn:F.n,dx:1,name:x.name,w:w||'+',nn:'',rw:{},ch:{},un:{}}:{P,fn:F.n,name:x.name,w:S.wallets.includes(w)?w:'+',nn:S.wallets.includes(w)?'':w,ch:{},aw:{},ew:{}}}
@@ -7009,7 +7009,7 @@ $('wtodo').addEventListener('click',e=>{
     const pre={kind:k,date:o.date,time:o.time||'',coin:o.coin,qty:o.qty,bxo:id,wallet:o.w};if(k==='uebertrag'){if(ein){pre.to=o.w;pre.wallet=oth||o.w}else pre.to=oth}
     endEdit();openCx(null,pre);if(!ein&&k==='uebertrag'&&o.qi>0&&o.qi<o.qty-1e-9)$('cx-qin').value=f8(o.qi);return}
   if(e.target.closest('[data-bxwf]')){tdOver();dtOpen('wf');return}
-  // Ab 0.120 (Phase 4): „DFX-Datei einlesen“ aus dem Punkt „ausstehend“
+  // Ab 0.121 (Phase 4): „DFX-Datei einlesen“ aus dem Punkt „ausstehend“
   if(e.target.closest('[data-bxload]')){tdOver();dtOpen('bx');return}
   const kp=e.target.closest('[data-keep]');if(kp){if(!S.cxKeep.includes(kp.dataset.keep))S.cxKeep.push(kp.dataset.keep);save();render();return}
   const ce=e.target.closest('[data-cxe2]');if(ce){openCx(+ce.dataset.cxe2);return}
@@ -7549,7 +7549,7 @@ function tagDT(t,a){if(!a.time)return fD(a.date);
   return `${fD(a.date)} <button type="button" class="adb small" data-tip="${esc(tt)}" aria-expanded="false" aria-label="Uhrzeit ${a.time.slice(0,5)}: Herkunft zeigen">${a.time.slice(0,5)}</button>`}
 // Ab 0.45 (1.13): Einkaufswert unbekannt, weil der Kurs eines Tages fehlt (nanD aus kxRun)
 // Ab 0.45 (4.6): je Coin eine fette Zeile „Summe USDC“ über alle Wallets
-// Ab 0.120 (Phase 4): Reihenfolge in „Bestand jetzt“ (nur die Anzeige; C.pots und damit Excel bleiben, wie sie sind): Coins USDC, USDT, dann andere
+// Ab 0.121 (Phase 4): Reihenfolge in „Bestand jetzt“ (nur die Anzeige; C.pots und damit Excel bleiben, wie sie sind): Coins USDC, USDT, dann andere
 // alphabetisch; je Coin die Wallets alphabetisch ohne Rücksicht auf Groß- und Kleinschreibung; die Summe des Coins direkt unter seinen Zeilen (potSum mit cs)
 const POT_CO=c=>c==='USDC'?'0':c==='USDT'?'1':'2'+c;
 const potOrd=L=>L.slice().sort((p,q)=>POT_CO(p.c)<POT_CO(q.c)?-1:POT_CO(p.c)>POT_CO(q.c)?1:p.w.localeCompare(q.w,'de',{sensitivity:'base'})||(p.w<q.w?-1:p.w>q.w?1:0));
@@ -7618,7 +7618,7 @@ function renderWallet(){
   // Ab 0.46 (5.2): „Ø-Preis“ mit klein „€ je Coin“ darunter, wie die kleinen Zusätze in der Auswertung
   // Ab 0.50 (1.5): am Handy keine Spalte „Coin“ (Klasse pcn), der Coin steht klein unter der Wallet (pcm)
   const pw=p=>`<td class="l">${esc(p.w)}<span class="small pcm">${p.c}</span></td>`;
-  // Ab 0.120 (Phase 4): je Coin seine Zeilen (Bestand und Zeilen mit Menge 0), darunter gleich seine Summe (potGroups, potSum mit dem einen Coin)
+  // Ab 0.121 (Phase 4): je Coin seine Zeilen (Bestand und Zeilen mit Menge 0), darunter gleich seine Summe (potGroups, potSum mit dem einen Coin)
   const PG=potGroups(CE.pots,extra),isX=p=>extra.includes(p);
   if(!DEw)$('t-pots').innerHTML=`<tr><th class="l">Wallet</th><th class="pcn">Coin</th><th>Menge</th>${kh}<th>${gl('einkaufswert','Einkaufs&shy;wert')}</th><th>${gl('opreis','Ø-Preis')}${smx('€ je Coin')}</th></tr>`+(CE.pots.length||extra.length?PG.map(g=>g.L.map(p=>isX(p)?
     `<tr>${pw(p)}<td class="pcn">${p.c}</td><td>${fmtNum(0)}</td>${chk(p)}<td>–</td><td>–</td></tr>`:
@@ -7779,7 +7779,7 @@ function vgFrN(v){for(const k of v.mv){const m=S.wtx[k];if(!m)continue;const s=w
 const vgAr=(a,b)=>`${a} <span class="nw">→ ${b}</span>`;
 const vgGiftN=v=>{if(v.k!=='eingang'&&v.k!=='weg')return '';const c=cxById(v.cx[0]);return c&&c.pn||''};
 function vgFT(v){if(v.mv.length===1&&(v.k==='open'||v.k==='ign'||v.k==='int'||v.k==='dfx')){const m=S.wtx[v.mv[0]],s=wSide(m),w=wOwnW(wMv(v.mv[0]))||'',cp=s==='in'?m.from:s==='out'?m.to:'',cn=esc(vgCpN(m)),cb=cp&&frName(cp)?`<b>${cn}</b>`:cn;
-    // Ab 0.120 (Phase 4): keine Seite ist eine eigene Wallet: die Namen aus dem Adressbuch („DFX.swiss → DFX.swiss“), unbekannt „?“; die Adressen stehen darunter
+    // Ab 0.121 (Phase 4): keine Seite ist eine eigene Wallet: die Namen aus dem Adressbuch („DFX.swiss → DFX.swiss“), unbekannt „?“; die Adressen stehen darunter
     if(!s&&!m.wFrom&&!m.wTo){const n=a=>{const x=S.addr[a];return wIsTag(a)?'Tag':wIsPay(a)?'Kartenzahlungen':wIsBr(a)?cpNm(a):frName(a)?`<b>${esc(frName(a))}</b>`:x&&x.wallet?`<b>${nmH(x.wallet)}</b>`:'?'};return vgAr(n(m.from),n(m.to))}
     return s==='in'?vgAr(cb,`<b>${nmH(w)}</b>`):s==='out'?vgAr(`<b>${nmH(w)}</b>`,cb):m.wFrom&&m.wTo&&m.wFrom!==m.wTo?vgAr(`<b>${nmH(m.wFrom)}</b>`,`<b>${nmH(m.wTo)}</b>`):`<b>${nmH(m.wFrom||m.wTo||'')}</b>`}
   if(v.from&&v.to&&v.from!==v.to)return vgAr(`<b>${nmH(v.from)}</b>`,`<b>${nmH(v.to)}</b>`);
@@ -7811,7 +7811,7 @@ function vgEG(v,fl){if(v.k==='bezahlung'&&fl.some(f=>f.storno)){const c=cxById(v
 // Ab 0.46 (5.3): Statuswort farbig (fertig grün, offen und Wert fehlt rot, Vorschlag und geschätzt dunkelgelb, ignoriert und verdächtig grau)
 // Ab 0.48 (Nachtrag 1, 3.2): x = kleiner Zusatz unter dem Statuswort (z. B. „ganz erstattet am 13.10.“)
 const vgStH=(v,st,x)=>{const h=vgStH0(v,st);return x?h.replace('<span class="small vgor">',`<span class="small vgss">${esc(x)}</span><span class="small vgor">`):h};
-// Ab 0.120 (Phase 2): In der Herkunft ist „Datei“ ein Begriff: Die Tafel zeigt den Dateinamen (bei mehreren Dateien derselben Quelle alle) und bleibt nach
+// Ab 0.121 (Phase 2): In der Herkunft ist „Datei“ ein Begriff: Die Tafel zeigt den Dateinamen (bei mehreren Dateien derselben Quelle alle) und bleibt nach
 // einem Klick offen. Namen je Quelle: Börsen-Datei des Eintrags bzw. der offenen Zeile, Wallet-Dateien der Bewegungen (vgSrcFiles). Ohne bekannten Namen
 // bleibt „Datei“ ein normales Wort. FN_GL: Namen → Schlüssel in GL.
 const FN_GL=new Map();
@@ -7825,7 +7825,7 @@ const srcFH=(x,M)=>{const N=M&&M.get(x),i=x.startsWith('Datei ')?x.indexOf(' ',6
   return x==='Datei'?`<span class="nw">${glFile([...N])}</span>`:`<span class="nw">${glFile([...N])}${i<0?esc(x.slice(5)):esc(x.slice(5,i))}</span>${i<0?'':nmH(x.slice(i))}`};
 function vgStH0(v,st){const SF=vgSrcFiles(v),o=`<span class="small vgor">${vgOrigL(v).map(x=>srcFH(x,SF)).join(' + ')}</span>`,T=VG_TD.get(v.id),kf=VG_RATE.has(v.id)?'<span class="small vgss">Kurs fehlt</span>':'';
   // Ab 0.47 (3.4): Status aus „Noch offen“ (offen, Vorschlag mit kleinem Text darunter, doppelt?, Einkauf fehlt …), außer der Eintrag ist unvollständig
-  // Ab 0.120 (Phase 4): ausstehend bei DFX.swiss: nur das Wort „ausstehend“ in Gelb, als Begriff (Erklärung in der Tafel), darunter die Herkunft. Vor dem
+  // Ab 0.121 (Phase 4): ausstehend bei DFX.swiss: nur das Wort „ausstehend“ in Gelb, als Begriff (Erklärung in der Tafel), darunter die Herkunft. Vor dem
   // Status aus „Noch offen“, damit das Wort gleich bleibt (der Punkt dort hat dasselbe Wort)
   if(st==='dfx')return `<span class="vgsz vgs-dfx">${gl('dxpend','ausstehend')}</span>${o}`;
   if(T&&st!=='inc')return `<span class="vgsz vgs-${T.c}">${esc(T.w)}</span>${T.s?`<span class="small vgss">${esc(T.s)}</span>`:''}${kf}${o}`;
@@ -8043,12 +8043,12 @@ function vgAdrT(v){const M=v.mv.map(k=>S.wtx[k]).filter(Boolean).sort((a,b)=>a.t
 function vgEdit(v){const cx=v.cx.filter(id=>{const c=cxById(id);return !(c&&(c.brk||cxCalcFee(c)))});return cx.length?['c',cx[0],'Eintrag bearbeiten']:v.tag.length?['t',v.tag[0],'Tag-Zeile bearbeiten']:v.k==='open'?['d',v.mv[0],'Entscheiden']:v.bxo?['x',v.bxo,'Entscheiden']:['o',v.id,'Bewegung ansehen']}
 // Ab 0.47 (3.3): offene Zeilen (offene Bewegung, offene Zeile der Börse, Tag-Zeile mit offener Wallet) haben statt ✎ den Knopf „Erledigen“: er
 // öffnet dieselbe Karte wie in „Noch offen“
-// Ab 0.120 (Phase 2): Jede Zeile hat den ✎, auch eine mit „Erledigen“ (bis 0.119 stand dort nur „Erledigen“, weil der ✎ dieselbe Karte geöffnet hätte).
+// Ab 0.121 (Phase 2): Jede Zeile hat den ✎, auch eine mit „Erledigen“ (bis 0.119 stand dort nur „Erledigen“, weil der ✎ dieselbe Karte geöffnet hätte).
 // Bei einer offenen Bewegung und einer offenen Zeile der Börse öffnet der ✎ jetzt das Fenster „Bewegung“ (ansehen, löschen, ganze Datei entfernen).
 const vgEH=v=>{const T=VG_TD.get(v.id),dn=!!(T&&T.done),nm=`${esc(vgWas(v))}${v.d?' vom '+fD(v.d):''}`;let [t,x,l]=vgEdit(v);
   if(dn&&(t==='d'||t==='x')){t='o';x=v.id;l='Bewegung ansehen'}
   return `${dn?`<button type="button" class="btn sm vgdo" data-vtd="${esc(T.it.id)}" aria-label="Erledigen: ${nm}">Erledigen</button>`:''}<button type="button" class="vge" data-vge="${t}:${esc(String(x))}" aria-label="${l}: ${nm}">✎</button>`};
-// Ab 0.120 (Phase 4): Sortierschlüssel einer Zeile: Datum und die Zeit, die in der Zeile steht (Uhrzeit, sonst die geschätzte „ca.“). Ohne beides wie in
+// Ab 0.121 (Phase 4): Sortierschlüssel einer Zeile: Datum und die Zeit, die in der Zeile steht (Uhrzeit, sonst die geschätzte „ca.“). Ohne beides wie in
 // der Rechnung (kxRun): Zugänge (Kauf, Geschenk erhalten, Rückerstattung, Auszahlung von Tag) 00:00:00, Abgänge (Verkauf, Zahlung, Gebühr, Geschenk
 // gemacht, Verloren oder gestohlen, Einzahlung zu Tag) 23:59:59, alles andere (Übertrag, Tausch, Bewegungen) 23:59:58. Steuer, Zusammenfassung, Excel
 // und CSV nutzen diese Reihenfolge nicht.
@@ -8141,7 +8141,7 @@ function renderVg(C,DEw,rg){VG_R=[C,DEw,rg];const card=$('vg-card');
   $('vg-hd').innerHTML=`<span>${gl('vgdatum','Datum')}</span><span>${gl('vgwas','Was')}</span><span>Von → Nach</span><span>Menge</span><span>Euro</span><span>Gewinn/Verlust</span><span>${gl('vgstatus','Status')}<span class="small vghk">${gl('herkunft','Herkunft')}</span></span>`;
   $('vg-focus').innerHTML=WZ_FOCUS?`<span class="small">Nur ${esc(WZ_FOCUS)}</span> <button type="button" class="zlink" data-vgall>alle zeigen</button>`:'';
   $('cx-empty').style.display=V.length?'none':'';
-  // Ab 0.120 (Phase 4): sortiert nach der Zeit, die in der Zeile steht (vgSortK), in beiden Richtungen; bis 0.119 nach der Uhrzeit allein (leer = ganz früh)
+  // Ab 0.121 (Phase 4): sortiert nach der Zeit, die in der Zeile steht (vgSortK), in beiden Richtungen; bis 0.119 nach der Uhrzeit allein (leer = ganz früh)
   vgSortL(L,F);
   const LS=S.ui.vgSort==='old'?L:L.slice().reverse();
   // Ab 0.45 (4.9): Rechenwege aller Vorgänge im Zeitraum, vorwärts, nur gezeichnet, wenn die Karte offen ist
@@ -8850,7 +8850,7 @@ function todoItems(C){
      li:{d:'',w:'',what:'Kurse noch nicht geladen',q:''}})}
   // Ab 0.47 (2.8): Rest bei Wallets ohne eigene Datei (z. B. Börse), bisher ein Satz im Überblick
   // Ab 0.47 (Nachtrag 2, 4): „So lassen“ merkt diesen Rest (Wallet, Coin, Menge) in S.cxKeep, der Punkt kommt für ihn nicht wieder
-  // Ab 0.120 (Phase 4, Florians Antwort): ausstehend bei DFX.swiss zählt in „Noch offen“ als gelber Punkt. Er sagt, was zu tun ist (DFX-Datei neu einlesen,
+  // Ab 0.121 (Phase 4, Florians Antwort): ausstehend bei DFX.swiss zählt in „Noch offen“ als gelber Punkt. Er sagt, was zu tun ist (DFX-Datei neu einlesen,
   // sobald DFX.swiss fertig ist), mit „DFX-Datei einlesen“ und dem Menü „Wie ist es ausgegangen?“. Er verschwindet, sobald die Bewegung nicht mehr ausstehend ist.
   for(const [k,m] of Object.entries(S.wtx))if(m.st==='dfx'&&fW(k)){const w=rAW(S,m.from)||m.wFrom||'';
     I.push({id:'d:'+k,lv:'y',kind:'dfx',t:mt(m),eur:0,ref:'m:'+k,hk:k,big:`${fmtNum(m.qty)} ${wCoinT(m)} aus ${esc(w)} sind bei DFX.swiss, aber noch nicht in deiner DFX-Datei.`,
@@ -8998,9 +8998,9 @@ function tdProvH(x){if(x.kind==='later')return '';const m=x.mv&&S.wtx[x.mv];
   const w=[x.li&&x.li.w,m&&m.wTo,m&&m.wFrom].find(w=>w&&wProv(w)&&S.wlater&&S.wlater[w]&&S.wlater[w].addr);
   return w?`<div class="tdprov">${apWhoH(S.wlater[w].addr,'',false,{own:1})}</div>`:''}
 // Ab 0.45 (4.10): Bewegung aus einer Wallet-Datei löschen geht nicht: Satz mit Grund, Ignorieren und „Ganze Datei entfernen …“
-// Ab 0.120 (Phase 1): Der Satz nennt die Datei mit Namen (bis 0.119 „Kommt aus der Datei von .“, wenn keine Seite eine eigene Wallet war); der Knopf
+// Ab 0.121 (Phase 1): Der Satz nennt die Datei mit Namen (bis 0.119 „Kommt aus der Datei von .“, wenn keine Seite eine eigene Wallet war); der Knopf
 // nimmt die Datei bzw. die Dateien dieser Bewegung (data-dtfiles = 'k:' + Schlüssel)
-// Ab 0.120 (Phase 2): „Diesen Eintrag löschen …“ (data-mvdel). Der Satz „Deshalb kannst du sie nicht löschen …“ fällt weg.
+// Ab 0.121 (Phase 2): „Diesen Eintrag löschen …“ (data-mvdel). Der Satz „Deshalb kannst du sie nicht löschen …“ fällt weg.
 const filesSatz=L=>L.length===1?`Kommt aus der Datei ${esc(fileT(L[0]))}.`:L.length?`Kommt aus den Dateien ${L.map(f=>esc(fileT(f))).join(' und ')}.`:'';
 function mvDelH(k){const m=S.wtx[k];if(!m)return '';const K=esc(k),L=wMvFiles(S,k);
   return `<div class="tddel"><p class="small">${filesSatz(L)}</p><div class="row">${m.st==='ign'?`<button type="button" class="btn" data-wa="reopen" data-k="${K}">wieder öffnen</button>`:`<button type="button" class="btn" data-wa="ign" data-k="${K}">Ignorieren</button>`}<button type="button" class="btn" data-mvdel="k:${K}">Diesen Eintrag löschen …</button><button type="button" class="btn" data-dtfiles="k:${K}">Ganze Datei entfernen …</button></div></div>`}
@@ -12980,7 +12980,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.120',VDATE='09.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.121',VDATE='10.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -13287,12 +13287,12 @@ function mvRender(){const v=vgBuild(S).find(v=>v.id===MV_ID);if(!v){$('mv-body')
   // Ab 0.94: Kopf mit „ · “ vor „Gebühr“; Status nur als Begriff, wenn beide Seiten der Brücke bzw. des Umtauschs im Fenster stehen (der Kopf sagt es schon)
   // Ab 0.94 Nachtrag: der Satz unter der Tabelle nennt den Knopf, der an den Bewegungen steht („keine Brücke“, „das war kein Umtausch“, sonst „Verknüpfung lösen“)
   const kurz=vgKurz(v),MV=v.mv.map(k=>S.wtx[k]).filter(Boolean),kn=MV.length&&MV.every(m=>m.st==='int'&&!m.swap&&(m.brg||m.chain))?'klicke auf „keine Brücke“':MV.length&&MV.every(m=>m.st==='int'&&m.swap)?'klicke auf „das war kein Umtausch“':'nimm „Verknüpfung lösen“';
-  // Ab 0.120 (Phase 2): offene Zeile der Börse (ohne Bewegung): Satz zur Börsen-Datei, löschen und ganze Datei entfernen
+  // Ab 0.121 (Phase 2): offene Zeile der Börse (ohne Bewegung): Satz zur Börsen-Datei, löschen und ganze Datei entfernen
   const FL=vgFiles(v),dl=`<button type="button" class="btn" data-mvdel="${esc(v.id)}">Diesen Eintrag löschen …</button>`,fb=FL.length?`<button type="button" class="btn" data-dtfiles="${esc(v.id)}">Ganze Datei entfernen …</button>`:'';
   $('mv-body').innerHTML=`<p>${vgFT(v)} · ${vgQ(v,{fenster:1})} · ${vgStH(v,st)}</p>${v.bxo?`<div class="tddel"><p class="small">${FL.length?`Kommt aus der Börsen-Datei ${esc(fileT(FL[0]))}.`:'Kommt aus einer Börsen-Datei.'}</p><div class="row">${dl}${fb}</div></div>`:vgMvTab(v.mv,PM,{kurz})+(v.mv.length===1?mvDelH(v.mv[0]):`<div class="tddel"><p class="small">${filesSatz(FL)} Ist etwas falsch verbunden, ${kn}.</p><div class="row">${dl}${fb}</div></div>`)}`}
 function mvOpen(id){MV_ID=id;{const v=vgBuild(S).find(x=>x.id===id);if(v&&vgSeen(v)){save();render()}}mvRender();openModal('mv-modal')}
 // „Ganze Datei entfernen …“: Bereich „Eingelesene Dateien“ in „＋ Daten“
-// Ab 0.120 (Phase 1): data-dtfiles = 'k:' + Schlüssel einer Bewegung oder die id eines Vorgangs. Entfernt wird eine Datei dieser Zeile, bei zwei Dateien
+// Ab 0.121 (Phase 1): data-dtfiles = 'k:' + Schlüssel einer Bewegung oder die id eines Vorgangs. Entfernt wird eine Datei dieser Zeile, bei zwei Dateien
 // nach Wahl. Gibt es den Vorgang im Fenster „Bewegung“ danach nicht mehr, schließt sich das Fenster.
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-dtfiles]');if(!b)return;const x=b.dataset.dtfiles||'',v=x.startsWith('k:')?null:vgBuild(S).find(y=>y.id===x);
   filesAsk(x.startsWith('k:')?wMvFiles(S,x.slice(2)):v?vgFiles(v):[],t=>{if(MODAL&&MODAL.id==='mv-modal'&&!vgBuild(S).some(y=>y.id===MV_ID))closeModal();toast(t)})});
