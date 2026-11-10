@@ -2411,6 +2411,8 @@ for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','t
   // der Start und „Sicherung laden“ sagen es einmal als Toast (rateGoneToast). Danach ist der Kurs aus dem Stand, der Hinweis kommt nicht wieder.
   RATE_GONE=0;for(const d of Object.keys(S.rown))if(S.rates[d]!=null||RBM[d]!=null){delete S.rown[d];RATE_GONE++}
   for(const A of Object.values(S.accounts))delete A.pfOk; // 0.32 vor dem Nachtrag: Ausblenden je Konto, jetzt gemeinsam in S.pfOk
+  // Ab 0.122: Merker statt Namen
+  nameMarks(S);
   if(!S.rcov.load){const ds=Object.keys(S.rates).filter(d=>!/Datei/.test(S.rsrc[d]||'')).sort();if(ds.length)S.rcov.load=ds[ds.length-1]}}
 // Ab 0.85: Scheitert der Start mit dem gespeicherten Stand, gilt BOOT_BAD, das Tool arbeitet mit einem leeren Stand weiter (siehe oben)
 function rateGoneToast(){const n=RATE_GONE;RATE_GONE=0;if(!n)return;save();
@@ -4711,7 +4713,8 @@ const lcW=s=>String(s==null?'':s).trim().toLowerCase();
 function wLookHas(S,a){for(const L of [S.look||{},S.lookNo||{}]){if(L[a])return true;for(const k in L)if(L[k]===a)return true}return false}
 // Name eines Diensts: gespeichert, sonst „Dienst 0x54a3“ (gibt es eine Lockadresse, 6 Zeichen)
 // Ab 0.49 (2.4): Weiterleitung (fw) ohne eigenen Namen: „Weiterleitung 0x54a3…f95f“ (Adresse gekürzt wie wShort)
-function wSvcName(S,a){const x=S.addr[a];if(x&&x.name)return x.name;a=String(a||'');if(x&&x.fw)return 'Weiterleitung '+(wLookHas(S,a)?a.slice(0,8)+'…'+a.slice(-6):a.slice(0,6)+'…'+a.slice(-4));return 'Dienst 0x'+a.slice(2,wLookHas(S,a)?8:6)}
+// Ab 0.122: Ohne eigenen Namen heißt ein Dienst mit Merker dfx „DFX.swiss“ (bis 0.121 „Dienst 0x…“, wenn man den Namen leerte)
+function wSvcName(S,a){const x=S.addr[a];if(x&&x.name)return x.name;if(x&&x.dfx)return 'DFX.swiss';a=String(a||'');if(x&&x.fw)return 'Weiterleitung '+(wLookHas(S,a)?a.slice(0,8)+'…'+a.slice(-6):a.slice(0,6)+'…'+a.slice(-4));return 'Dienst 0x'+a.slice(2,wLookHas(S,a)?8:6)}
 // Übertrag über eine Zwischenadresse (1.1): offener Ausgang aus Wallet A an X, danach (0 bis 7 Tage) offener Eingang von derselben Adresse X in
 // Wallet B, gleicher Coin, 90 bis 100 % kommen an. X ist unbekannt oder ein Dienst (nicht Tag, Kartenzahlungen, Ladeadresse oder Wallet).
 // Gleicher Hash nie. Rückgabe wie wPairCands: [{ty 'via', ko, ki, w, w2, dt, dq, rel, kb, x}], nach Abstand und Unterschied.
@@ -4869,8 +4872,25 @@ function bvOrig(P){const out={},st=c=>c==='USDC'||c==='USDT',E=[];let n=0;
     if(x.q>s.q+1e-9&&!s.bad&&s.n)s.bad={why:'weg',d:x.date};
     const t=Math.min(x.q,s.q),avg=s.q>1e-12?s.e/s.q:0;s.q-=t;s.e-=t*avg;if(s.q<1e-12){s.q=0;s.e=0}}
   return out}
+// Ab 0.122: Erkennung über Merker statt über den Namen (Namen sind frei). nameMarks setzt die Merker, wo sie fehlen, die Erkennung bis 0.121 aber über den Namen lief:
+// Dienst „DFX“ / „DFX.swiss“ → dfx; Art „Börse“, die nur aus dem Namen kam (wkRx) → fest; Wallet der Dateien von Bitvavo → bx 'bitvavo'.
+// Passen mehrere Wallets zu „bitvavo“: die mit der jüngsten Datei von Bitvavo, ohne Datei keine (die Vorschau fragt dann). Läuft in fixState (Start, „Sicherung laden“)
+// und vor jedem Umbenennen (wRename, Dienst). Nur Funktionen (keine const), weil fixState beim Start vor diesem Block läuft.
+function bvRx(){return /bitvavo/i}
+function wkRx(){return /bitvavo|börse|boerse|binance|kraken|coinbase|bitpanda|bybit|okx|kucoin/i}
+function wProvM(S,w){return !!(S.wmeta&&S.wmeta[w]&&S.wmeta[w].prov)}
+function bvMarkW(S){const M=S.wmeta||{};return (S.wallets||[]).find(w=>M[w]&&M[w].bx==='bitvavo')||null}
+function bvMarkSet(S,w){S.wmeta=Object.assign({},S.wmeta);for(const [k,x] of Object.entries(S.wmeta))if(x&&x.bx&&k!==w){const y=Object.assign({},x);delete y.bx;S.wmeta[k]=y}
+  const x=Object.assign({},S.wmeta[w]);x.bx='bitvavo';if(!x.kind&&!x.card)x.kind='boerse';S.wmeta[w]=x}
+function nameMarks(S){if(!S||!Array.isArray(S.wallets))return;
+  for(const x of Object.values(S.addr||{}))if(x&&x.br&&!x.dfx&&/^dfx(\.swiss)?$/i.test(String(x.name||'').trim()))x.dfx=1;
+  for(const w of S.wallets){const x=(S.wmeta||{})[w]||{};if(!x.kind&&!x.card&&!x.prov&&wkRx().test(w)){S.wmeta=Object.assign({},S.wmeta);S.wmeta[w]=Object.assign({},x,{kind:'boerse'})}}
+  if(bvMarkW(S))return;const C=S.wallets.filter(w=>bvRx().test(w)&&!wProvM(S,w));let w=C.length===1?C[0]:null;
+  if(C.length>1){const F=(S.bxF||[]).filter(f=>C.includes(f.w)).sort((a,b)=>String(a.d||'')<String(b.d||'')?-1:String(a.d||'')>String(b.d||'')?1:0);if(F.length)w=F[F.length-1].w}
+  if(w)bvMarkSet(S,w)}
 // Wallet der Börse vorschlagen: vorhandene Wallet mit „bitvavo“ im Namen, sonst neu „Bitvavo“
-const bvWallet=S=>S.wallets.find(w=>/bitvavo/i.test(w))||'Bitvavo';
+// Ab 0.122: nur über den Merker (S.wmeta[w].bx, nameMarks). Ohne Merker eine neue „Bitvavo“; heißen schon Wallets wie Bitvavo, ohne Vorbelegung ('')
+const bvWallet=S=>bvMarkW(S)||(S.wallets.some(w=>bvRx().test(w)&&!wProvM(S,w))?'':'Bitvavo');
 // Abgleich mit dem Stand. w = Wallet der Börse, aw = gewählte Wallets für unbekannte Zieladressen {Adresse: Wallet}. Rückgabe {items, rest (ids der
 // Rest-Gebühren aus 0.43, werden ersetzt), nodep (Einzahlungen ohne passende Bewegung)}. Item: {r (Zeile), t 'kauf'|'verkauf'|'xfer'|'dep', dup (Eintrag,
 // schon da), diffs [[Feld, alt, neu]], k (Bewegung), to (Ziel-Wallet), ask (Zieladresse unbekannt), from (Wallet beim Einzahlen), a (Adresse der Börse)}
@@ -5115,7 +5135,8 @@ const dxWallets=S=>S.wallets.filter(w=>!(typeof wProv==='function'&&wProv(w))&&!
 function dxWallet(S,P){const L=dxWallets(S),u=S.ui&&S.ui.dxW;if(u&&L.includes(u))return u;
   for(const r of (P&&P.rows)||[]){const k=dxMvOf(S,r);if(k){const w=dxMvW(S,k,r);if(w)return w}}return L[0]||''}
 // Ist a eine Adresse von DFX.swiss laut Adressbuch? (Dienst mit Merker dfx oder mit dem Namen „DFX.swiss“)
-const dxAddr=(S,a)=>{const x=S.addr&&S.addr[a];return !!(x&&x.br&&(x.dfx||/^dfx(\.swiss)?$/i.test(String(x.name||'').trim())))};
+// Ab 0.122: nur über den Merker dfx (bis 0.121 auch über den Namen „DFX“ / „DFX.swiss“; nameMarks setzt den Merker in älteren Ständen)
+const dxAddr=(S,a)=>{const x=S.addr&&S.addr[a];return !!(x&&x.br&&x.dfx)};
 // Bewegung zur Zeile r: gleicher Hash und Coin, beim Kauf Zugang in eine eigene Adresse, beim Verkauf Abgang aus einer eigenen Adresse
 function dxMvOf(S,r){if(!r.hash)return '';for(const [k,m] of Object.entries(S.wtx||{})){if(m.hash!==r.hash||m.coin!==r.coin)continue;
     if(r.type==='buy'?(rOwn(S,m.to)&&!rOwn(S,m.from)):(rOwn(S,m.from)&&!rOwn(S,m.to)))return k}return ''}
@@ -6068,7 +6089,7 @@ function bxLoadText(name,t,pre){const M=pre?[pre]:[];let bad=0;BXP=null;needRese
     // Ab 0.121 (Phase 2): gelöschte Zeilen (S.wdel) bleiben weg
     {const n=bxDelSkip(S,P);if(n)M.push(`${fI.format(n)} ${n===1?'Zeile dieser Datei hast du gelöscht, sie bleibt':'Zeilen dieser Datei hast du gelöscht, sie bleiben'} weg. Zurückholen kannst du sie unter „Eingelesene Dateien“.`)}
     // Ab 0.51 (1, ersetzt 0.46 3.3): gibt es keine Wallet mit dem erkannten Namen, ist „+ Neue Wallet …“ mit ihm vorbelegt (z. B. „Bitvavo“)
-    const w=F.w(S,P);BXP=F.dx?{P,fn:F.n,dx:1,name:x.name,w:w||'+',nn:'',rw:{},ch:{},un:{}}:{P,fn:F.n,name:x.name,w:S.wallets.includes(w)?w:'+',nn:S.wallets.includes(w)?'':w,ch:{},aw:{},ew:{}}}
+    const w=F.w(S,P);BXP=F.dx?{P,fn:F.n,dx:1,name:x.name,w:w||'+',nn:'',rw:{},ch:{},un:{}}:{P,fn:F.n,name:x.name,w:w===''?'':S.wallets.includes(w)?w:'+',nn:w===''||S.wallets.includes(w)?'':w,ch:{},aw:{},ew:{}}}
   const q=BX_Q.length,rest=q===1?`die Börsen-Datei „${esc(BX_Q[0].name)}“`:`${fI.format(q)} Börsen-Dateien`;
   if(BXP&&pre!=null)M.push(`Nächste Börsen-Datei: „${esc(BXP.name)}“.${q?` Danach ${q===1?'kommt':'kommen'} noch ${rest}.`:''}`);
   else if(BXP&&q)M.push(`Danach ${q===1?'kommt':'kommen'} noch ${rest}.`);
@@ -6087,8 +6108,9 @@ const bxW=()=>BXP?(BXP.w==='+'?BXP.nn.trim():BXP.w):'';
 function renderBxPrev(){bxPrevH();pzUpd()}
 function bxPrevH(){const box=$('bxprev');if(!BXP){box.innerHTML='';return}if(BXP.dx)return renderDxPrev();
   const D=BXP,P=D.P,w=bxW(),plan=w?bvPlan(S,P,w,D.aw):null,pl=(n,a,b)=>`${fI.format(n)} ${n===1?a:b}`,q=v=>fmtNum(v),t5=r=>r.time?' '+r.time.slice(0,5):'';
-  const sel=`<select data-bxw aria-label="Wallet der Börse">${S.wallets.filter(x=>!wProv(x)).map(x=>`<option ${x===D.w?'selected':''}>${esc(x)}</option>`).join('')}<option value="+" ${D.w==='+'?'selected':''}>+ Neue Wallet …</option></select>${D.w==='+'?` <input type="text" data-bxn value="${esc(D.nn)}" placeholder="z. B. Bitvavo" aria-label="Name der neuen Wallet" style="width:16ch">`:''}`;
-  let h=`<div class="tprev"><p><b>Vorschau:</b> ${esc(D.name)}${P.from?` · ${dS(P.from)}${P.to!==P.from?DS+dS(P.to):''}`:''}</p><div class="bxq"><p><b>Welche Wallet ist die Börse?</b> ${sel}</p></div>`;
+  // Ab 0.122: ohne Merker und mit mehreren Wallets wie „Bitvavo“ ohne Vorbelegung (D.w ''), „Übernehmen“ setzt den Merker
+  const sel=`<select data-bxw aria-label="Wallet der Börse">${D.w===''?CX_PHO.replace('disabled','disabled selected'):''}${S.wallets.filter(x=>!wProv(x)).map(x=>`<option ${x===D.w?'selected':''}>${esc(x)}</option>`).join('')}<option value="+" ${D.w==='+'?'selected':''}>+ Neue Wallet …</option></select>${D.w==='+'?` <input type="text" data-bxn value="${esc(D.nn)}" placeholder="z. B. Bitvavo" aria-label="Name der neuen Wallet" style="width:16ch">`:''}`;
+  let h=`<div class="tprev"><p><b>Vorschau:</b> ${esc(D.name)}${P.from?` · ${dS(P.from)}${P.to!==P.from?DS+dS(P.to):''}`:''}</p><div class="bxq"><p><b>Welche Wallet ist die Börse?</b> ${sel}</p>${D.w===''?'<p class="small">Mehrere Wallets heißen wie Bitvavo. Wähle die Wallet der Börse.</p>':''}</div>`;
   if(plan){const it=plan.items,rad=(i,v,t)=>`<label class="fopt"><input type="radio" name="bxc-${i}" value="${v}" data-bxc="${i}" ${(D.ch[i]||'replace')===v?'checked':''}><span>${t}</span></label>`;
     const KV=it.map((x,i)=>[x,i]).filter(([x])=>x.t==='kauf'||x.t==='verkauf'),XF=it.map((x,i)=>[x,i]).filter(([x])=>x.t==='xfer'),DP=it.map((x,i)=>[x,i]).filter(([x])=>x.t==='dep');
     const dv=(f,v)=>/^\d+(\.\d+)?$/.test(v)?(f==='Wert'||f==='Gebühr'?fE.format(+v):fmtNum(+v)):esc(v);
@@ -6205,12 +6227,12 @@ function dxSave(ok){const D=BXP;if(!D)return;const top=dxTop(),plan=dxPlan(S,D.P
     (()=>{const A=st.after.reduce((o,r)=>({mv:o.mv+r.mv.length,cx:o.cx+r.cx.length}),{mv:0,cx:0});return A.mv?` ${A.mv===1?'1 Bewegung ohne deine Adresse ist':fI.format(A.mv)+' Bewegungen ohne deine Adresse sind'} weggefallen.`:''})()+
     (pend?` ${pend===1?'1 Abgang ist':fI.format(pend)+' Abgänge sind'} ausstehend bei DFX.swiss.`:'')+(nu===1?' Dadurch steht 1 neuer Punkt in „Noch offen“.':nu?` Dadurch stehen ${fI.format(nu)} neue Punkte in „Noch offen“.`:'');
   if(BX_Q.length){const x=BX_Q.shift();bxLoadText(x.name,x.text,T)}else{msg('bxmsg','ok',T+dtWaitH('bx'));dtRe()}}
-function bxSave(){const D=BXP,w=bxW();if(!D)return;if(D.dx)return dxSave();if(!w)return needMark($('bxprev'),[['[data-bxn]','Gib der Börse einen Namen ein, z. B. Bitvavo.']]);const plan=bvPlan(S,D.P,w,D.aw);
+function bxSave(){const D=BXP,w=bxW();if(!D)return;if(D.dx)return dxSave();if(!w)return needMark($('bxprev'),D.w===''?[['[data-bxw]','Wähle die Wallet der Börse.']]:[['[data-bxn]','Gib der Börse einen Namen ein, z. B. Bitvavo.']]);const plan=bvPlan(S,D.P,w,D.aw);
   // Ab 0.47 (Nachtrag 2, 7): die Datei für „Eingelesene Dateien“ merken (pre = Einträge ohne Merker der Börse vor dem Einlesen)
   const pre=new Set(S.cx.filter(c=>!c.bv).map(c=>c.id)),n0=nwSnap();
   // Ab 0.53 (B5): Punkte in „Noch offen“ vorher (Kennung und Stufe), damit die Meldung neue Punkte und neue Vorschläge an Tag-Zeilen nennt
   const td0=new Map(todoItems(cryptoCalc()).map(x=>[x.id,x.lv]));
-  const st=bvApply(S,plan,w,D.ch,D.aw,{ew:cxLand()!=='DE'&&!taxOff()?D.ew:{},land:cxLand()});bxFileAdd(S,D.P,D.name,w,pre,todayLocal());BXP=null;S.ui.lastLoad=new Date().toISOString();const n=wSync();nwMark(n0);save();render();
+  const st=bvApply(S,plan,w,D.ch,D.aw,{ew:cxLand()!=='DE'&&!taxOff()?D.ew:{},land:cxLand()});bvMarkSet(S,w);bxFileAdd(S,D.P,D.name,w,pre,todayLocal());BXP=null;S.ui.lastLoad=new Date().toISOString();const n=wSync();nwMark(n0);save();render();
   const pl=(n,a,b)=>`${fI.format(n)} ${n===1?a:b}`;
   const I1=todoItems(cryptoCalc()),nu=I1.filter(x=>!td0.has(x.id)),ts=I1.filter(x=>x.kind==='tagq'&&x.lv==='y'&&td0.get(x.id)==='r').length,cnt=k=>nu.filter(x=>x.kind===k).length;
   const und=L=>L.length<2?L.join(''):L.slice(0,-1).join(', ')+' und '+L[L.length-1];
@@ -6433,7 +6455,7 @@ function renderAddr(){
     o.zero?'<span class="small">Nulladresse: Coins, die beim Umtausch vernichtet werden. Sie gehört niemandem.</span>':''}${o.rm?'<span class="small">Von dir entfernt. Das Tool erkennt sie nicht mehr von selbst.</span>':''}${
     k==='unk'&&!o.zero?`<button type="button" class="zlink small azu" data-ap="${A}" data-apk="${esc(mv1(a))}" aria-expanded="false" aria-label="Adresse ${s} zuordnen">zuordnen</button>`:''}${addrNaH(a)}</td>`+
     `<td class="aqn"><span class="nw">${wAdr(a)}${cpBtn(a)}</span><span class="small">${esc(apNets(a).map(wNet).join(', '))}</span></td><td>${fI.format(wNMoves(a))}</td>`+
-    `<td class="abt"><button type="button" class="btn sm" data-ape="${A}" aria-expanded="false" aria-label="Adresse ${s}: in der Liste zeigen oder entfernen">✎</button></td></tr>`};
+    `<td class="abt"><button type="button" class="btn sm" data-ape="${A}" aria-expanded="false" aria-label="Adresse ${s}: ${S.addr[a]&&(S.addr[a].br||S.addr[a].fr)?'Name ändern, ':''}in der Liste zeigen oder entfernen">✎</button></td></tr>`};
   const hd='<tr><th class="l">Name</th><th>Adresse</th><th>Bewe&shy;gungen</th><th aria-label="Knöpfe"></th></tr>';
   for(const [k,t] of ADDR_O){const c=$('wl-'+k),F=G[k].filter(([a,n,sub])=>aMatch(a,n,String(sub||'').replace(/<[^>]*>/g,'')));
     c.querySelector('.agt').textContent=`${t} (${fI.format(G[k].length)})`;
@@ -6493,7 +6515,7 @@ function ainSave(i,how){if(i.dataset.done)return true;const a=i.dataset.aini,x=S
   if(x.fr){if(!n){needMark(i.closest('td'),[[i,'Gib einen Namen ein, z. B. Anna.']],how==='blur'?{keep:1}:null);return false}
     if(n===x.name){i.dataset.done='1';if(how==='enter')renderAddr();return true}x.name=n;fin(`Die Adresse heißt jetzt „${n}“.`);return true}
   if(x.br){if(n===wSvcName(S,a)){i.dataset.done='1';if(how==='enter')renderAddr();return true}
-    if(n){x.name=n;x.nameMan=1}else{delete x.name;delete x.nameMan}fin(n?`Der Dienst heißt jetzt „${n}“.`:'Der Dienst hat wieder den automatischen Namen.');return true}
+    nameMarks(S);if(n){x.name=n;x.nameMan=1}else{delete x.name;delete x.nameMan}fin(n?`Der Dienst heißt jetzt „${n}“.`:'Der Dienst hat wieder den automatischen Namen.');return true}
   return true}
 $('wl-modal').addEventListener('keydown',e=>{const i=e.target.closest&&e.target.closest('[data-aini]');if(!i)return;
   if(e.key==='Escape'){e.preventDefault();e.stopPropagation();i.dataset.done='1';renderAddr();const b=$('wl-modal').querySelector(`[data-ain="${CSS.escape(i.dataset.aini)}"]`);if(b)b.focus();return}
@@ -6506,8 +6528,10 @@ $('wl-modal').addEventListener('click',e=>{
 // Ab 0.45 (5.2): „In der Liste zeigen“ = Liste auf diese Adresse (Suche). Ab 0.52 im kleinen Feld hinter ✎.
 function addrShow(a){VG_Q=a;apClose();closeModal();const c=$('vg-card');if(c.classList.contains('closed'))unfold(c);render();jumpCard('vg-card')}
 // Ab 0.52 (3): kleines Feld hinter ✎ (in #adpop): „In der Liste zeigen“ (nur mit Bewegungen) und „Entfernen“ (nur, was im Adressbuch steht)
-function apEditH(a){const n=wNMoves(a),A=esc(a);
-  return `<p><b>${esc(wShort(a))}</b></p><div class="row">${n?`<button type="button" class="btn golist" data-adshow="${A}">In der Liste zeigen</button>`:''}${S.addr[a]?`<button type="button" class="btn danger" data-ad="${A}">Entfernen</button>`:''}</div>`+
+// Ab 0.122: bei Dienst und Fremd oben „Name“ mit Feld und „Speichern“ (apNameSave wie im kurzen Feld: Dienst leer = Name des Tools, Fremd leer = Marke)
+function apEditH(a){const n=wNMoves(a),A=esc(a),x=S.addr[a];
+  const nm=x&&(x.br||x.fr)?`<p class="aprn"><label>Name <input type="text" data-apn="${A}" value="${esc(x.br?wSvcName(S,a):x.name||'')}" aria-label="${x.br?'Name des Diensts':'Name der Person oder des Händlers'}"></label> <button type="button" class="btn primary sm" data-aps="${A}">Speichern</button></p>`:'';
+  return `<p><b>${esc(wShort(a))}</b></p>${nm}<div class="row">${n?`<button type="button" class="btn golist" data-adshow="${A}">In der Liste zeigen</button>`:''}${S.addr[a]?`<button type="button" class="btn danger" data-ad="${A}">Entfernen</button>`:''}</div>`+
     (n?'':'<p class="small">Keine Bewegungen in „Alle Vorgänge“.</p>')+(S.addr[a]?'':'<p class="small">Die Adresse steht nicht im Adressbuch, es gibt nichts zu entfernen.</p>')}
 // Adresse aus dem Adressbuch entfernen (Knopf mit data-ad: × bei einer Wallet, ab 0.52 auch „Entfernen“ im Feld hinter ✎)
 // Ab 0.54 (2): eine Rückfrage für alle fremden Adressen, automatisch erkannt oder von Hand: addrDel löst, was das Tool über die Adresse verknüpft hat,
@@ -6531,7 +6555,7 @@ function addrDelClick(b){const a=b.dataset.ad,x=S.addr[a];if(!x)return;
 function wNewWallet(n,kind){n=String(n||'').trim();if(!n)return null;if(!S.wallets.includes(n)){S.wallets.push(n);if(kind==='karte'){S.wmeta=S.wmeta||{};S.wmeta[n]=Object.assign({},S.wmeta[n],{kind:'karte',card:true})}}return n}
 const W_NEWV=v=>v==='+'||v==='+k',W_NEWK=v=>v==='+k'?'karte':'',W_NEED=v=>v==='+k'?'Gib der neuen Karte einen Namen ein, z. B. Meine Karte.':'Gib der neuen Wallet einen Namen ein, z. B. Bix.',W_PH=v=>v==='+k'?'Name der neuen Karte':'Name der neuen Wallet';
 // Ab 0.40: Wallet umbenennen oder mit einer anderen zusammenführen (n gibt es schon). Ändert jede Stelle, die den Namen trägt.
-function wRename(o,n){if(S.w0===o)S.w0=n;
+function wRename(o,n){nameMarks(S);if(S.w0===o)S.w0=n;
   if(S.wallets.includes(n))S.wallets=S.wallets.filter(w=>w!==o);else S.wallets=S.wallets.map(w=>w===o?n:w);
   for(const t of Object.values(S.tag))if(t.wallet===o)t.wallet=n;
   for(const c of S.cx){if(c.wallet===o)c.wallet=n;if(c.to===o)c.to=n}
@@ -6825,7 +6849,7 @@ const popOwnScroll=e=>{const t=e&&e.target;return !!(t&&t.nodeType===1&&t.closes
 let AP=null;
 // Ab 0.45 (1.4): Dienst umbenennen. Leer = wieder der automatische Name.
 // Ab 0.54 [E1]: mit „Rückgängig“
-function svcRename(a,n){const x=S.addr[a];if(!x)return;const snap=JSON.stringify(S);n=String(n||'').trim();if(n){x.name=n;x.nameMan=1}else{delete x.name;delete x.nameMan}save();apClose();render();toastUndo(n?`Der Dienst heißt jetzt „${n}“.`:'Der Dienst hat wieder den automatischen Namen.',snap)}
+function svcRename(a,n){const x=S.addr[a];if(!x)return;const snap=JSON.stringify(S);nameMarks(S);n=String(n||'').trim();if(n){x.name=n;x.nameMan=1}else{delete x.name;delete x.nameMan}save();apClose();render();toastUndo(n?`Der Dienst heißt jetzt „${n}“.`:'Der Dienst hat wieder den automatischen Namen.',snap)}
 const apNets=a=>{const n=[...new Set([...Object.values(S.wtx),...Object.values(S.wign||{})].filter(m=>m.from===a||m.to===a).map(m=>m.net))].filter(n=>W_NET[n]);return n.length?n:['eth']};
 const apAddrH=a=>`<p class="apa">${esc(a)} ${cpBtn(a)}</p><p>${apNets(a).map(n=>`<a class="zlink" href="https://${W_NET[n].x}/address/${a}" target="_blank" rel="noopener">Im Block-Explorer ansehen&nbsp;↗</a> <span class="small">(${wNet(n)})</span>`).join('<br>')}</p><p class="small">Öffnet eine Webseite außerhalb des Tools.</p>`;
 // Ab 0.47 (4.1): ein kurzes Feld für Name und Adresse (Klick auf den Namen oder auf die gekürzte Adresse): oben der Name (Dienst und Fremd als Feld
@@ -8967,8 +8991,10 @@ function tdWhy(k){const W=wWhat(S,k);if(!W)return '';const a=W.a,x=a?S.addr[a]:n
 // Art einer Wallet (ab 0.46, für die Adressfrage und das Adressbuch): gespeichert in S.wmeta[w].kind, sonst Karte (Häkchen aus 0.45), Börse (bekannte fremde
 // Adressen oder Name einer Börse) oder Wallet
 const WK_TXT={wallet:'Wallet',boerse:'Börse',karte:'Karte'};
+// Ab 0.122: Vorbelegung bei Kauf und Verkauf von Hand: Wallet mit Merker der Börse, dann Art „Börse“, dann wie bis 0.121 der Name
+const bxPreW=()=>bvMarkW(S)||S.wallets.find(w=>!wProv(w)&&((S.wmeta||{})[w]||{}).kind==='boerse')||S.wallets.find(w=>/bitvavo|börse|boerse/i.test(w));
 function wKindOf(w){const x=(S.wmeta||{})[w]||{};if(x.kind&&WK_TXT[x.kind])return x.kind;if(x.card)return 'karte';
-  if(/bitvavo|börse|boerse|binance|kraken|coinbase|bitpanda|bybit|okx|kucoin/i.test(w)||Object.values(S.addr).some(a=>a&&!a.own&&a.wallet===w&&!a.tag&&!a.pay&&!a.br&&!a.load&&!a.auto))return 'boerse';return 'wallet'}
+  if(wkRx().test(w)||Object.values(S.addr).some(a=>a&&!a.own&&a.wallet===w&&!a.tag&&!a.pay&&!a.br&&!a.load&&!a.auto))return 'boerse';return 'wallet'}
 // Ab 0.47 (2.4): Kopf einer Karte für eine Bewegung k: klein Datum · Zeit · Netzwerk, groß ein Satz, darunter die Gegenseite mit
 // „Im Block-Explorer ansehen ↗“ und der graue Satz, warum es fehlt (tdWhy)
 // Ab 0.48 (2.2): Kopfzeile jeder Karte gleich: Farbpunkt · Art · Datum · Uhrzeit · Netzwerk (lv = Stufe des Punkts)
@@ -13060,7 +13086,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save();try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.121',VDATE='09.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.122',VDATE='10.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -13419,7 +13445,7 @@ function cxCardPre(kind,cw){const KA=S.wallets.filter(w=>!wProv(w)&&wKindOf(w)==
 $('dh-pane').addEventListener('click',e=>{
   const k=e.target.closest('[data-dhk]');if(k){endEdit();const kind=k.dataset.dhk;if(!kind){openCx(null);return}
     if(kind==='aufladung'||kind==='kzahl'){openCx(null,cxCardPre(kind,$('cx-wallet').value));$('cx-t').textContent='Neuer Eintrag';const q=$('cx-date');if(q)q.focus();return}
-    openCx(null,{kind,date:'',wallet:kind==='kauf'||kind==='verkauf'?(S.wallets.find(w=>/bitvavo|börse|boerse/i.test(w))||S.wallets[0]):$('cx-wallet').value||S.wallets[0],coin:'USDC'});$('cx-t').textContent='Neuer Eintrag';const q=$('cx-date');if(q)q.focus();return}
+    openCx(null,{kind,date:'',wallet:kind==='kauf'||kind==='verkauf'?(bxPreW()||S.wallets[0]):$('cx-wallet').value||S.wallets[0],coin:'USDC'});$('cx-t').textContent='Neuer Eintrag';const q=$('cx-date');if(q)q.focus();return}
   const p=e.target.closest('[data-dhp]');if(p){DT.pane=p.dataset.dhp;render();dtRender();return}
   if(e.target.closest('[data-dhbal]'))kbOpen('')});
 $('wb-dt').addEventListener('click',()=>dtOpen(''));
@@ -13500,7 +13526,7 @@ document.addEventListener('dragend',()=>{DRAG_N=0;dropOv(false)});
 $('dt-files').addEventListener('click',()=>{DT.pane=DT.pane==='files'?'':'files';render();dtRender();$('dt-files').focus()});
 // Börsen: von Hand (Formular mit der Art vorbelegt)
 $('bx-load').querySelector('.bxk').addEventListener('click',e=>{const b=e.target.closest('[data-bxk]');if(!b)return;endEdit();
-  openCx(null,{kind:b.dataset.bxk,date:'',wallet:S.wallets.find(w=>/bitvavo|börse|boerse/i.test(w))||$('cx-wallet').value||S.wallets[0],coin:'USDC'});$('cx-t').textContent='Neuer Eintrag'});
+  openCx(null,{kind:b.dataset.bxk,date:'',wallet:bxPreW()||$('cx-wallet').value||S.wallets[0],coin:'USDC'});$('cx-t').textContent='Neuer Eintrag'});
 // Beim ersten Öffnen des Reiters Wallet ohne Daten: „＋ Daten“ geführt (einmal)
 // Ab 0.47 (4.4): beim ersten Öffnen des Reiters Wallet das Fenster „Was du hier machst“ (statt „Wie willst du anfangen?“)
 // Ab 0.48 (4.3): Abschnitt „Börse oder eigene Wallet?“ in „Was du hier machst“ aus demselben Text wie das (i) beim Anlegen
