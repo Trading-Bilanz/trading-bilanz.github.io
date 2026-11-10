@@ -1038,6 +1038,8 @@ tr.hl{animation:hl 2.2s ease-out}
 .rwb{border-top:1px solid var(--line);padding:6px 0}
 .rwbk{margin:4px 0 0}.rwb.hl{animation:hl 2.2s ease-out}.rwh{margin:2px 0}
 .tddel{border-top:1px dashed var(--line);margin-top:10px;padding-top:6px}
+/* Ab 0.120: Dateinamen sind lang und ohne Leerzeichen, sie brechen an jeder Stelle um (Fenster „Bewegung“, Rückfragen, Wahl der Datei) */
+.tddel p.small,#ask-body p,#ask-body .fdsel span{overflow-wrap:anywhere}
 .psum td{border-top:2px solid var(--line)}
 .vgad{color:var(--muted);font-size:var(--fs-xs)}
 .vgtw{overflow-x:auto}
