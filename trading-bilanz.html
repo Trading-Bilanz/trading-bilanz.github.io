@@ -4671,7 +4671,9 @@ function wFileName(S,a,net){const x=S.addr[a];if(x&&x.impF&&x.impF[net])return x
   for(const m of [...Object.values(S.wtx),...Object.values(S.wign||{})])if(m.net===net&&(m.from===a||m.to===a)&&m.file&&!wFileHas(S,m.from===a?m.to:m.from,net))n[m.file]=(n[m.file]||0)+1;
   return Object.keys(n).sort((p,q)=>n[q]-n[p]||(p<q?-1:1))[0]||''}
 // Wallet einer Datei für die Anzeige (eigene Wallet, Börse, „DFX.swiss (Dienst)“, „Anna (fremd)“)
-function wFileW(S,a){const x=S.addr[a]||{};return x.own?rAW(S,a)||x.wallet||'':x.br?`${x.name||'Dienst'} (Dienst)`:x.fr?`${x.name||''} (fremd)`:x.wallet||''}
+// Ab 0.129 (Florians Auftrag): Ein Dienst ohne Namen heißt überall wie in wSvcName („Dienst 0xfc01“), hier ohne angehängtes „(Dienst)“, weil das Wort schon im
+// Namen steht (bis 0.128 „Dienst (Dienst)“). Mit Namen bleibt „DFX.swiss (Dienst)“.
+function wFileW(S,a){const x=S.addr[a]||{};return x.own?rAW(S,a)||x.wallet||'':x.br?(n=>!x.name&&/^Dienst /.test(n)?n:`${n} (Dienst)`)(wSvcName(S,a)):x.fr?`${x.name||''} (fremd)`:x.wallet||''}
 // Ab 0.121 (Phase 1): Bewegung ohne Zuordnung: Bei keiner ihrer beiden Adressen ist eine Datei für ihr Netzwerk vermerkt (z. B. die Datei einer fremden
 // Adresse aus einem Stand vor 0.119). Solche Bewegungen bilden je Dateiname und Netzwerk eine „Datei ohne Zuordnung“.
 const wMvOrph=(S,m)=>!wFileHas(S,m.from,m.net)&&!wFileHas(S,m.to,m.net);
@@ -7429,8 +7431,8 @@ function saveTag(){
   render();if(a)autoRates();
 }
 // Nicht unterstützte Coins (ⓘ „Woher kamen deine Coins?“ und Krypto-Karte der Steuer)
-// Ab 0.128: CX_OTHER stand nur im Begriff k-cx („Woher kamen deine Coins?“), der mit 0.128 entfernt ist; der Text bleibt hier stehen, bis Florian entscheidet
-const CX_OTHER='Das Tool rechnet nur USDC und USDT. Andere Coins wie BTC oder ETH sind genauso steuerpflichtig. Sie selbst zu rechnen, hätte dieses Tool zu groß gemacht. Rechne sie mit einem eigenen Krypto-Steuertool oder mit deiner Steuerberatung.';
+// Ab 0.129 (Florians Entscheidung): Die Konstante CX_OTHER ist entfernt (seit 0.128 ohne Verwendung). Ihre zwei Sätze, die sonst nirgends standen („Andere Coins wie BTC
+// oder ETH sind genauso steuerpflichtig. Sie selbst zu rechnen, hätte dieses Tool zu groß gemacht.“), stehen jetzt im (i) „Was das Tool nicht rechnet“ (GL['k-taxnot']).
 /*KRYPTO-START*/
 /* ---------------- Krypto-Rechnung: gemeinsamer Motor für Österreich und Deutschland (ab 0.38) ----------------
    Ohne DOM und ohne Zugriff auf S, damit tools/test-krypto.js diesen Block in node prüfen kann. Kurse kommen als Funktion rf(datum, zeit)
@@ -11503,7 +11505,7 @@ ${ECB_CITE}`},
   rueckbuchung:{t:'Rückbuchung',h:'Guthaben der Krypto-Karte geht zurück in deine Wallet. In einer Transaktion wird der Karten-Token (z. B. WUSD) eingelöst, USDC kommen heraus und gehen weiter an deine Wallet.'},
   uebertrag:{t:'Übertrag',h:'Coins gehen von einer deiner Wallets in eine andere. Das ist kein Verkauf, der Einkaufswert wandert mit. Kommt weniger an, als abgebucht wurde, ist der Unterschied eine Gebühr. Steuerlich ist sie ein Verkauf zum Tageswert, meist geht es um Cents.'},
   // Ab 0.128: gestrichelt in „Wem gehört diese Adresse?“ (Punkt Börse), Text ohne Karte (dort heißt sie Ladeadresse)
-  einzahlungsadr:{t:'Einzahlungsadresse',h:'Eine Adresse, die eine Börse nur für dich anlegt, damit sie deine Einzahlungen erkennt. Sie gehört zu deinem Konto bei der Börse. Von dort leitet die Börse die Coins weiter.'},
+  einzahlungsadr:{t:'Einzahlungsadresse',h:'Eine Adresse, die eine Börse nur für dich anlegt, damit sie deine Einzahlungen erkennt. Sie gehört zu deinem Konto bei der Börse. Was du dorthin schickst, kommt auf deinem Konto an.'},
   // Ab 0.42
   unbtoken:{t:'unbekannter Token',h:'Ein Token, dessen Vertrag das Tool nicht kennt, mit „USD“ im Namen. Das Tool zählt ihn nur als USDC, wenn du es bestätigst. Mache das nur, wenn du weißt, woher er kommt, z. B. das Guthaben deiner Krypto-Karte. Betrüger verschicken gefälschte Token mit ähnlichen Namen.\nIn der Steuer zählt er wie USDC. Der Tausch von USDC in diesen Token ist dann kein Verkauf. Deine Entscheidung siehst und änderst du im Fenster „Adressen“ unter „Token“.'},
   // Ab 0.39: Wallet-Datei aus dem Block-Explorer
@@ -11610,7 +11612,7 @@ ${ECB_CITE}`},
   // Ab 0.73 (2.6): die Sätze unter der Karte stehen im (i), die Tarifstufen in AT setzt renderTax je Jahr dazu (glSet)
   'k-taxestde':{t:'Steuer geschätzt',h:'In Deutschland gilt für Kapitalerträge die Abgeltungsteuer: 25 % plus Solidaritätszuschlag, eventuell Kirchensteuer. Der Sparer-Pauschbetrag (1.000 € pro Person, 2.000 € bei Zusammenveranlagung) bleibt steuerfrei, sofern er nicht schon für andere Kapitalerträge verbraucht ist.\nReicht der Datenstand nicht bis zum Jahresende, rechnet das Tool zusätzlich hoch: Bis 31.12. läuft jede Woche wie der Schnitt der letzten abgeschlossenen Wochen.\nGrobe Schätzung. Ist dein persönlicher Steuersatz niedriger als 25 %, kann die Günstigerprüfung die Steuer senken. Verluste aus anderen Kapitalerträgen können verrechnet werden.\nKrypto-Gewinne (Anlage SO) sind hier nicht enthalten. Sie kommen zu deinem übrigen Einkommen und werden mit deinem persönlichen Steuersatz besteuert.'},
   'k-taxdocs':{t:'Unterlagen aufheben',h:'Was du für die Steuererklärung und eine spätere Prüfung aufheben solltest.'},
-  'k-taxnot':{t:'Was das Tool nicht rechnet',h:'Diese Dinge fehlen in Steuer, Zusammenfassung und Excel. Rechne sie mit einem eigenen Werkzeug oder mit deiner Steuerberatung. In der Zusammenfassung steht dieselbe Liste unter „Was nicht enthalten ist“.'},
+  'k-taxnot':{t:'Was das Tool nicht rechnet',h:'Diese Dinge fehlen in Steuer, Zusammenfassung und Excel. Rechne sie mit einem eigenen Werkzeug oder mit deiner Steuerberatung. Andere Coins wie BTC oder ETH sind genauso steuerpflichtig. Sie selbst zu rechnen, hätte dieses Tool zu groß gemacht. In der Zusammenfassung steht dieselbe Liste unter „Was nicht enthalten ist“.'},
   // Ab 0.73 (1.7): Florians Text; die Erklärung zum Datenstand steht im Begriff taxds am Spaltenkopf
   'k-taxacc':{t:'Konten für die Steuer',h:'Hier legst du fest, welche Konten für die Steuer zählen. Ein Konto ohne Häkchen fehlt im Reiter Steuer, in der Zusammenfassung und in der Excel. In der Auswertung und in der Sicherung bleibt es. Nimmst du das Häkchen weg, kannst du einen Grund eintragen. Den siehst nur du, er steht nicht in Zusammenfassung und Excel.\nDer Name für Zusammenfassung und Excel kommt aus deinen MT5-Reports. Du kannst ihn ändern. Leerst du das Feld, gilt wieder der Name aus den Reports.\nLaufen deine Konten auf verschiedene Namen, stehen sie in Gruppen, je Name eine. Die Gruppe mit dem Namen aus dem Feld steht oben, die anderen folgen alphabetisch. Groß- und Kleinschreibung spielt keine Rolle.\nEin Beispiel: Du willst die Steuer für Anna ansehen oder drucken. Trag ihren Namen so ein, wie er in ihren Reports steht. Ihre Gruppe rutscht nach oben. Nimm das Häkchen bei deiner eigenen Gruppe weg. Danach stellst du beides wieder zurück.'},
   taxds:{t:'Datenstand',h:'Bis wann die Daten eines Kontos reichen. Ein MT5-Report nennt nur, wann er erstellt wurde, nicht seinen Zeitraum. Liegt die letzte Buchung höchstens 7 Tage vor dem Erstellungsdatum, gilt das Erstellungsdatum. Sonst fragt das Tool nach, ob der Zeitraum bis dahin reicht. Das Jahr ist vollständig, wenn alle zählenden Konten bis 31.12. reichen.'},
