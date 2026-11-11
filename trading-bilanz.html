@@ -2747,6 +2747,10 @@ function rateCov(){let c=RB.bis;for(const v of [S.rcov.load,S.rcov.file])if(v&&v
 // Quelle eines Kurses: 'frank', 'ezb', 'file' (alle drei in S.rates), 'rb' (eingebaut), 'own' (von Hand)
 function rateSrc(d){if(S.rates[d]!=null){const q=S.rsrc[d]||'';return /Frankfurter/.test(q)?'frank':/Datei/.test(q)?'file':'ezb'}return RBM[d]!=null?'rb':'own'}
 const RSRC_N={frank:'Frankfurter',ezb:'EZB',file:'Datei',rb:'eingebaut',own:'von Hand'};
+// Ab 0.129 (Florians Entscheidung): „Bestand jetzt“ und der Rechner „Was wäre wenn“ nehmen den letzten vorhandenen Kurs, egal ob von der EZB oder von Hand
+// (rateLast), und sagen, woher er kommt (rateLastT: „EZB-Kurs vom 12.10.2026“ bzw. „Kurs vom 20.10.2026 (von Hand)“). Die Steuer rechnet weiter mit Tageskursen (rateInfo).
+const rateLast=()=>{const ds=rateDates();return ds.length?ds[ds.length-1]:''};
+const rateLastT=d=>rateSrc(d)==='own'?`Kurs vom ${fD(d)} (von Hand)`:`EZB-Kurs vom ${fD(d)}`;
 const RB_SRC=()=>`eingebaut (EZB, Stand ${fD(RB.stand)})`;
 const ECB_CITE='Quelle: Europäische Zentralbank (EZB), Euro-Referenzkurse, ecb.europa.eu. Die Kurse gibt es dort kostenlos. „EUR je 1 USD“ ist vom Tool berechnet (1 geteilt durch den EZB-Kurs).';
 const isWE=d=>{const w=new Date(d+'T12:00:00Z').getUTCDay();return w===0||w===6};
@@ -4667,7 +4671,9 @@ function wFileName(S,a,net){const x=S.addr[a];if(x&&x.impF&&x.impF[net])return x
   for(const m of [...Object.values(S.wtx),...Object.values(S.wign||{})])if(m.net===net&&(m.from===a||m.to===a)&&m.file&&!wFileHas(S,m.from===a?m.to:m.from,net))n[m.file]=(n[m.file]||0)+1;
   return Object.keys(n).sort((p,q)=>n[q]-n[p]||(p<q?-1:1))[0]||''}
 // Wallet einer Datei für die Anzeige (eigene Wallet, Börse, „DFX.swiss (Dienst)“, „Anna (fremd)“)
-function wFileW(S,a){const x=S.addr[a]||{};return x.own?rAW(S,a)||x.wallet||'':x.br?`${x.name||'Dienst'} (Dienst)`:x.fr?`${x.name||''} (fremd)`:x.wallet||''}
+// Ab 0.129 (Florians Auftrag): Ein Dienst ohne Namen heißt überall wie in wSvcName („Dienst 0xfc01“), hier ohne angehängtes „(Dienst)“, weil das Wort schon im
+// Namen steht (bis 0.128 „Dienst (Dienst)“). Mit Namen bleibt „DFX.swiss (Dienst)“.
+function wFileW(S,a){const x=S.addr[a]||{};return x.own?rAW(S,a)||x.wallet||'':x.br?(n=>!x.name&&/^Dienst /.test(n)?n:`${n} (Dienst)`)(wSvcName(S,a)):x.fr?`${x.name||''} (fremd)`:x.wallet||''}
 // Ab 0.121 (Phase 1): Bewegung ohne Zuordnung: Bei keiner ihrer beiden Adressen ist eine Datei für ihr Netzwerk vermerkt (z. B. die Datei einer fremden
 // Adresse aus einem Stand vor 0.119). Solche Bewegungen bilden je Dateiname und Netzwerk eine „Datei ohne Zuordnung“.
 const wMvOrph=(S,m)=>!wFileHas(S,m.from,m.net)&&!wFileHas(S,m.to,m.net);
@@ -7425,8 +7431,8 @@ function saveTag(){
   render();if(a)autoRates();
 }
 // Nicht unterstützte Coins (ⓘ „Woher kamen deine Coins?“ und Krypto-Karte der Steuer)
-// Ab 0.128: CX_OTHER stand nur im Begriff k-cx („Woher kamen deine Coins?“), der mit 0.128 entfernt ist; der Text bleibt hier stehen, bis Florian entscheidet
-const CX_OTHER='Das Tool rechnet nur USDC und USDT. Andere Coins wie BTC oder ETH sind genauso steuerpflichtig. Sie selbst zu rechnen, hätte dieses Tool zu groß gemacht. Rechne sie mit einem eigenen Krypto-Steuertool oder mit deiner Steuerberatung.';
+// Ab 0.129 (Florians Entscheidung): Die Konstante CX_OTHER ist entfernt (seit 0.128 ohne Verwendung). Ihre zwei Sätze, die sonst nirgends standen („Andere Coins wie BTC
+// oder ETH sind genauso steuerpflichtig. Sie selbst zu rechnen, hätte dieses Tool zu groß gemacht.“), stehen jetzt im (i) „Was das Tool nicht rechnet“ (GL['k-taxnot']).
 /*KRYPTO-START*/
 /* ---------------- Krypto-Rechnung: gemeinsamer Motor für Österreich und Deutschland (ab 0.38) ----------------
    Ohne DOM und ohne Zugriff auf S, damit tools/test-krypto.js diesen Block in node prüfen kann. Kurse kommen als Funktion rf(datum, zeit)
@@ -7858,7 +7864,8 @@ function renderWallet(){
   // Ab 0.47 (2.8): Rest bei Wallets ohne eigene Datei steht als Punkt in „Noch offen“ (Regel 3), nicht mehr im Überblick
   $('wrest').innerHTML='';
   if(!$('cxres-card').classList.contains('nohc'))hcFix($('cxres-card'));
-  {const ds=rateDates().filter(d=>S.rown[d]==null);const ld=ds[ds.length-1];$('pots-cmp').innerHTML=ld?`Zum Vergleich: letzter EZB-Kurs vom ${fD(ld)}: 1 USD = ${fmtDec(1/rateVal(ld),4)} EUR (1 EUR = ${fmtDec(rateVal(ld),4)} USD). Liegt ${DEw?'der Einkaufswert je Coin':'dein Ø-Preis'} darunter, sind deine Coins im Moment mehr wert, als sie gekostet haben.`:''}
+  // Ab 0.129 (Florians Entscheidung): letzter vorhandener Kurs, auch ein eigener (bis 0.128 nur EZB-Kurse); die Beschriftung nennt die Herkunft (rateLastT)
+  {const ld=rateLast();$('pots-cmp').innerHTML=ld?`Zum Vergleich: letzter ${rateLastT(ld)}: 1 USD = ${fmtDec(1/rateVal(ld),4)} EUR (1 EUR = ${fmtDec(rateVal(ld),4)} USD). Liegt ${DEw?'der Einkaufswert je Coin':'dein Ø-Preis'} darunter, sind deine Coins im Moment mehr wert, als sie gekostet haben.`:''}
 }
 /* ---------------- Ab 0.46 (5.1): Fenster „Kontostände prüfen“ (kb-modal) ----------------
    Je Wallet und Coin: laut deinen Einträgen, laut Datei (mit Stand), Feld „Stand in deiner App“ (S.wbal), Unterschied mit Richtung. Aufruf über den Knopf
@@ -8131,13 +8138,19 @@ const VG_LEG=[['in','kauf','Kauf'],['in','bzein','Bezahlung erhalten'],['in','gi
 // Euro fett nur bei Kauf, Verkauf, Zahlung und Tausch (4.3)
 const VG_EB=new Set(['kauf','verkauf','bezahlung','tausch']);
 // Ab 0.44: eine Bewegung als Tabellenzeile (aufgeklappt und „Alle Einzelheiten“): Zeit · Wallet · Adresse ⧉ · Netzwerk · rein/raus · Menge ·
-// Gegenseite (Name + Adresse ⧉) · Status · ↗ · Knöpfe. (Die Zeile darunter mit Frage, „Entscheiden“ und „Was ist das?“ gibt es seit 0.47 bzw. 0.55 nicht mehr.)
+// Gegenseite (Name + Adresse ⧉) · Zuordnung (bis 0.128 „Status“) · ↗ · Knöpfe. (Die Zeile darunter mit Frage, „Entscheiden“ und „Was ist das?“ gibt es seit 0.47 bzw. 0.55 nicht mehr.)
 // Am Handy wird jede Zeile ein Block „Bezeichnung: Wert“ (CSS mit data-l).
 const apW=w=>w?`<button type="button" class="adb" data-apw="${esc(w)}" aria-expanded="false" aria-label="Wallet ${esc(w)}: Adressen zeigen">${nmH(w)}</button>`:'';
 // Ab 0.55 (6): Spalte „Wallet“ der aufgeklappten Tabelle: bei einer vorläufigen Wallet nur „nicht zugeordnet“ (die Adresse steht daneben), als Link wie der Name
 const apWT=w=>w&&wProv(w)?`<button type="button" class="adb" data-apw="${esc(w)}" aria-expanded="false" aria-label="Wallet ${esc(w)}: Adressen zeigen">nicht zugeordnet</button>`:apW(w);
 function wWlB(m){return m.st==='int'?apWT(m.wFrom||m.wTo):m.side==='zw'?`${apWT(m.wFrom)} → ${apWT(m.wTo)}`:apWT(wOwnW(m))}
-function vgMvSt(m,kurz){if(m.st==='tag')return 'zu Tag';if(m.st==='cx'){const c=cxById(m.ref);return c?`Eintrag „${esc(kindL(c)||c.kind)}“${m.xin?' (Eingang)':''}`:'Eintrag'}
+// Ab 0.129 (Florians Auftrag): Die Spalte heißt „Zuordnung“ (bis 0.128 „Status“): womit die Bewegung verbunden ist. Kurze Werte: „Tag“ (bis 0.128 „zu Tag“),
+// bei einem Eintrag der Name ohne „Eintrag“ und ohne Anführungszeichen (bis 0.128 „Eintrag „Übertrag““). vgMvNm: bei „Aufladung“, „Aufladung mit Tausch“ und
+// „Tausch über Brücke“ der Name des Vorgangs (v = Vorgang, in dem die Tabelle steht; ohne v aus dem Eintrag selbst), sonst die Art des Eintrags (kindL).
+const VG_ZU=new Set(['Aufladung','Aufladung mit Tausch','Tausch über Brücke']);
+function vgMvNm(c,v){const a=v&&v.cx&&v.cx[0]===c.id?v.art:c.kind==='tausch'?(c.how==='aufladung'?'Aufladung mit Tausch':c.how==='bruecke'?'Tausch über Brücke':''):c.kind==='uebertrag'&&c.how==='aufladung'?'Aufladung':'';
+  return VG_ZU.has(a)?a:kindL(c)||c.kind}
+function vgMvSt(m,kurz,v){if(m.st==='tag')return 'Tag';if(m.st==='cx'){const c=cxById(m.ref);return c?`${esc(vgMvNm(c,v))}${m.xin?' (Eingang)':''}`:'Eintrag'}
   if(m.st==='ign')return gl('zurueckholen','ignoriert');
   // Ab 0.117: ausstehend bei DFX.swiss, Rückbuchung von DFX.swiss
   if(m.st==='dfx')return gl('dxpend','ausstehend');
@@ -8180,15 +8193,16 @@ function vgMvTr(k,PM,opt){const m=S.wtx[k];if(!m)return '';const M=wMv(k),K=esc(
   const sub=naH(k)+dxMenuH(k);
   return `<tr class="vgm${m.st==='ign'||m.st==='int'?' wfi':''}" data-wk="${K}">${td('Zeit',`${dm(m.date)} <span class="small">${m.time}</span>`)}${td('Wallet',wWlB(M)||'–')}${td('Adresse',own?`<span class="nw">${wAdr(own)}${cpBtn(own)}</span>`:'–')}${td('Netzwerk',wNet(m.net))}`+
     `${td('rein/raus',s==='in'?'rein':s==='out'?'raus':s==='zw'?'zwischen eigenen':'–')}${td('Menge',`<b>${fmtNum(m.qty)}</b> <span class="vgcn">${wCoinH(m)}</span>`,'r')}${td('Gegenseite',vgCpCell(M))}`+
-    `${td('Status',vgMvSt(M,!!(opt&&opt.kurz&&opt.kurz.has(k))))}${td('Explorer',u?`<a class="zlink noprint" href="${esc(u)}" target="_blank" rel="noopener" aria-label="Im Block-Explorer ansehen (${wNet(m.net)}, Webseite außerhalb des Tools)">↗</a>`:'–')}${td('',vgMvB(M),'vgma')}</tr>`+
+    `${td('Zuordnung',vgMvSt(M,!!(opt&&opt.kurz&&opt.kurz.has(k)),opt&&opt.v))}${td('Explorer',u?`<a class="zlink noprint" href="${esc(u)}" target="_blank" rel="noopener" aria-label="Im Block-Explorer ansehen (${wNet(m.net)}, Webseite außerhalb des Tools)">↗</a>`:'–')}${td('',vgMvB(M),'vgma')}</tr>`+
     (sub?`<tr class="vgq" data-wk="${K}"><td colspan="10">${sub}</td></tr>`:'')}
 // Ab 0.46 (1.2): Netzwerk und Gegenseite als Begriffe (gl() gibt es hier noch nicht, deshalb ausgeschrieben)
 const glS=(k,t)=>`<span class="gl" data-gl="${k}" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">${t}</span>`;
-const VG_TH=`<tr><th>Zeit</th><th>Wallet</th><th>Adresse</th><th>${glS('netzwerk','Netzwerk')}</th><th>rein/raus</th><th>Menge</th><th>${glS('gegenseite','Gegenseite')}</th><th>Status</th><th aria-label="Im Block-Explorer">↗</th><th aria-label="Knöpfe"></th></tr>`;
+const VG_TH=`<tr><th>Zeit</th><th>Wallet</th><th>Adresse</th><th>${glS('netzwerk','Netzwerk')}</th><th>rein/raus</th><th>Menge</th><th>${glS('gegenseite','Gegenseite')}</th><th>${glS('zuordnung','Zuordnung')}</th><th aria-label="Im Block-Explorer">↗</th><th aria-label="Knöpfe"></th></tr>`;
 // Bewegungen eines Vorgangs als Tabelle, nach Zeit
-// Ab 0.94 Nachtrag: Bewegungen eines Vorgangs, deren Status nur „intern“ bzw. „Umtausch“ zeigt: Gegenstück der Brücke bzw. des Umtauschs im selben Vorgang
+// Ab 0.94 Nachtrag: Bewegungen eines Vorgangs, deren Zuordnung (bis 0.128 „Status“) nur „intern“ bzw. „Umtausch“ zeigt: Gegenstück der Brücke bzw. des Umtauschs im selben Vorgang
 const vgKurz=v=>{const H=new Set(v.mv);return new Set(v.mv.filter(k=>{const m=S.wtx[k];return m&&m.st==='int'&&((m.brg&&H.has(m.brg))||(m.swap&&H.has(m.swap)))}))};
-// Ab 0.94: o.kurz = Bewegungen, deren Status ohne den kleinen Satz steht (Fenster „Bewegung“: Brücke oder Umtausch, beide Seiten im Fenster)
+// Ab 0.129: o.v = der Vorgang (für den Namen in der Spalte „Zuordnung“, vgMvNm)
+// Ab 0.94: o.kurz = Bewegungen, deren Zuordnung ohne den kleinen Satz steht (Fenster „Bewegung“: Brücke oder Umtausch, beide Seiten im Fenster)
 function vgMvTab(ks,PM,o){const L=ks.filter(k=>S.wtx[k]).sort((a,b)=>S.wtx[a].ts-S.wtx[b].ts||(a<b?-1:1));
   return L.length?`<div class="vgtw"><table class="vgtb"><thead>${VG_TH}</thead><tbody>${L.map(k=>vgMvTr(k,PM,o)).join('')}</tbody></table></div>`:''}
 function vgTagH(id){const t=S.tag[id];if(!t)return '';const a=tagAT(t),dis=t.status!=='ok';
@@ -8290,8 +8304,8 @@ function vgDetH(v,fl,DEw,PM,F,rw){const eg=vgEG(v,fl),oc=vgOcH(v,fl,DEw),tl=vgTl
   {const c0=v.cx.length?cxById(v.cx[0]):null;if(c0&&c0.via){const M=v.mv.map(k=>S.wtx[k]).filter(Boolean).sort((a,b)=>a.ts-b.ts);if(M.length){const A=[M[0].from,...M.map(m=>m.to)].filter((a,i,x)=>a&&x.indexOf(a)===i);
     L.push(`<p class="small vgchain">Weg: ${A.map(a=>`<span class="nw">${wAdr(a)}${cpBtn(a)}</span>`).join(' → ')} (über Weiterleitung ${esc((S.addr[c0.via]||{}).name||wShort(c0.via))})</p>`)}}}
   if(tk||(v.fee>0&&v.feeW))L.push(`<p class="vgn small">${tk?gl(tk,'Was heißt '+wd+'?'):''}${v.fee>0&&v.feeW?`${tk?' · ':''}Gebühr ${fmtNum(v.fee)} ${esc(v.coin)}, gebucht bei <b>${esc(v.feeW)}</b> (Verkauf zum Tageswert)`:''}</p>`);
-  // Ab 0.94 Nachtrag: beschreibt der Kasten darüber die Brücke bzw. Aufladung, zeigt „Status“ nur „intern“ bzw. „Umtausch“ (wie im Fenster „Bewegung“)
-  L.push(vgMvTab(v.mv,PM,tl?{kurz:vgKurz(v)}:null));for(const id of v.tag)L.push(vgTagH(id));for(const id of v.cx)L.push(vgCxH(id,DEw,F));
+  // Ab 0.94 Nachtrag: beschreibt der Kasten darüber die Brücke bzw. Aufladung, zeigt „Zuordnung“ (bis 0.128 „Status“) nur „intern“ bzw. „Umtausch“ (wie im Fenster „Bewegung“)
+  L.push(vgMvTab(v.mv,PM,{kurz:tl?vgKurz(v):null,v}));for(const id of v.tag)L.push(vgTagH(id));for(const id of v.cx)L.push(vgCxH(id,DEw,F));
   // Ab 0.45 (4.9): Rechenweg steht in der Karte „Rechenwege“; hier nur der Link
   if(rw&&fl.length)L.push(`<p class="small vgrwl"><button type="button" class="zlink" data-rwgo="${esc(v.id)}">Rechenweg ansehen ↓</button></p>`);
   return `<div class="vgx">${L.join('')}</div>`}
@@ -10614,7 +10628,8 @@ function taxRows(X,tab){const {c,T,R,cy,DE}=X,y=c.y,o=[],g=(id,l)=>o.push({t:'g'
 // Das Häkchen „Krypto … aufnehmen“ steht unter der Gruppenzeile Krypto. Abgewählt bleiben beide stehen, nur die Posten fallen weg.
 function taxTabH(X,has,inc){const DE=X.DE,L=taxRows(X,1),tick=`<tr class="txck noprint"><td colspan="3"><label><input type="checkbox" data-cxincl="1"${inc?' checked':''}> Krypto in diese Abrechnung aufnehmen <span class="small">(normalerweise angehakt lassen)</span></label></td></tr>`;
   const grp=l=>`<tr class="txg"><td colspan="3">${l}</td></tr>`;
-  const tr=x=>{if(x.t==='g')return grp(x.l)+(x.id==='cx'?tick:'');const k='tx-'+x.id,l=GL[k]?gl(k,x.l):x.id==='gk'||x.id==='lk'?gl('kestverk',x.l):x.id==='vp'?gl('vpreis',x.l):x.id==='ak'?gl('einkaufswert',x.l):x.id==='wk'?gl('wkosten',x.l):x.l;
+  // Ab 0.129 (Florians Auftrag): Deutschland, Gruppenzeile Krypto mit Posten: „nach FIFO“ sichtbar und als Begriff (nur im Reiter; taxRows und die Zusammenfassung bleiben)
+  const tr=x=>{if(x.t==='g')return grp(DE&&x.id==='cx'?x.l.replace(/\)$/,', '+gl('fifo','nach FIFO')+')'):x.l)+(x.id==='cx'?tick:'');const k='tx-'+x.id,l=GL[k]?gl(k,x.l):x.id==='gk'||x.id==='lk'?gl('kestverk',x.l):x.id==='vp'?gl('vpreis',x.l):x.id==='ak'?gl('einkaufswert',x.l):x.id==='wk'?gl('wkosten',x.l):x.l;
     return `<tr class="${x.t==='sal'?'sum ':''}txp"><td>${l}</td><td>${eur(x.v)}</td><td>${x.k}</td></tr>`};
   const body=L.map(tr).join('')+(has&&!inc?grp(taxCxGroup(X.c,DE))+tick:'');
   return `<colgroup><col><col class="txe"><col class="txk"></colgroup><tr><th>Posten</th><th>EUR</th><th>${DE?'Anlage und Zeile':'Kennzahl E1kv'}</th></tr>`+(body||'<tr><td colspan="3" class="small">In diesem Jahr gibt es keine Buchungen der zählenden Konten.</td></tr>')}
@@ -11447,7 +11462,7 @@ const CX_KURS='Das Tool setzt 1 USDC und 1 USDT mit 1 USD an. Das passt, solange
 const EST_SUM='<b>Geschätzte Werte</b> (z. B. ein Tageswert statt des Kaufpreises) stehen als Frage in der Zusammenfassung für die Steuerberatung.';
 const GL={
   // Ab 0.128 (Florians Entscheidung): Begriffe ohne Anzeige entfernt: k-tag (Absatz „Uhrzeit“ jetzt in k-tagin), k-wload, k-wf, poisoning (wortgleich mit „Lockadresse“),
-  // tagart, k-cx, wbal, zuordnen, k-cxflow, abrechnung (fehlender Teil im (i) „Kartenzahlungen“, ADDR_O). Der alte Wortlaut steht im Bericht 0.128. fifo bleibt ohne Anzeige.
+  // tagart, k-cx, wbal, zuordnen, k-cxflow, abrechnung (fehlender Teil im (i) „Kartenzahlungen“, ADDR_O). Der alte Wortlaut steht im Bericht 0.128. fifo blieb in 0.128 ohne Anzeige, ab 0.129 steht es in der Jahresabrechnung für Deutschland (taxTabH).
   // Ab 0.117: DFX.swiss
   dxpend:{t:'Ausstehend',h:'Bei DFX.swiss angekommen, noch nicht in deiner DFX-Datei.\nLies die DFX-Datei neu ein, sobald DFX.swiss fertig ist.\nDie Coins zählen nicht mehr zum Bestand der Wallet, damit er zur Blockchain passt. Steuerlich ist das noch kein Vorgang. Sobald eine DFX-Datei den Verkauf mit diesem Hash zeigt, verknüpft das Tool ihn. In „Alle Vorgänge“ wählst du bei der Bewegung, wie es ausgegangen ist.'},
   'k-ov':{t:'Überblick',h:'Die wichtigsten Zahlen für den gewählten Zeitraum und die gewählten Konten. Mit „Rendite ▾“ oder „Betrag ▾“ wechselst du, ob die Kacheln Prozent oder Beträge zeigen.'},
@@ -11490,7 +11505,7 @@ ${ECB_CITE}`},
   rueckbuchung:{t:'Rückbuchung',h:'Guthaben der Krypto-Karte geht zurück in deine Wallet. In einer Transaktion wird der Karten-Token (z. B. WUSD) eingelöst, USDC kommen heraus und gehen weiter an deine Wallet.'},
   uebertrag:{t:'Übertrag',h:'Coins gehen von einer deiner Wallets in eine andere. Das ist kein Verkauf, der Einkaufswert wandert mit. Kommt weniger an, als abgebucht wurde, ist der Unterschied eine Gebühr. Steuerlich ist sie ein Verkauf zum Tageswert, meist geht es um Cents.'},
   // Ab 0.128: gestrichelt in „Wem gehört diese Adresse?“ (Punkt Börse), Text ohne Karte (dort heißt sie Ladeadresse)
-  einzahlungsadr:{t:'Einzahlungsadresse',h:'Eine Adresse, die eine Börse nur für dich anlegt, damit sie deine Einzahlungen erkennt. Sie gehört zu deinem Konto bei der Börse. Von dort leitet die Börse die Coins weiter.'},
+  einzahlungsadr:{t:'Einzahlungsadresse',h:'Eine Adresse, die eine Börse nur für dich anlegt, damit sie deine Einzahlungen erkennt. Sie gehört zu deinem Konto bei der Börse. Was du dorthin schickst, kommt auf deinem Konto an.'},
   // Ab 0.42
   unbtoken:{t:'unbekannter Token',h:'Ein Token, dessen Vertrag das Tool nicht kennt, mit „USD“ im Namen. Das Tool zählt ihn nur als USDC, wenn du es bestätigst. Mache das nur, wenn du weißt, woher er kommt, z. B. das Guthaben deiner Krypto-Karte. Betrüger verschicken gefälschte Token mit ähnlichen Namen.\nIn der Steuer zählt er wie USDC. Der Tausch von USDC in diesen Token ist dann kein Verkauf. Deine Entscheidung siehst und änderst du im Fenster „Adressen“ unter „Token“.'},
   // Ab 0.39: Wallet-Datei aus dem Block-Explorer
@@ -11550,6 +11565,8 @@ ${ECB_CITE}`},
   opreis:{t:'Ø-Preis',h:'Jede Wallet ist wie ein Topf: Das Tool merkt sich, wie viele Coins drin sind und was sie zusammen gekostet haben (Einkaufswert). Geteilt ergibt das den Ø-Preis. Gehen Coins raus, nehmen sie den Ø-Preis mit.'},
   restgeb:{t:'Rest bei einer Börse',h:'Bei dieser Wallet (meist eine Börse ohne Wallet-Datei) bleibt laut deinen Einträgen ein kleiner Rest, obwohl du alles weitergeschickt hast. Börsen ziehen beim Abheben oft eine feste Gebühr ab, z. B. 1,10 USDC je Abhebung. Die siehst du nicht in der Wallet-Datei, nur in der Abrechnung der Börse.\n<b>Auf die Überträge verteilen:</b> Je Kauf wird der Rest gleichmäßig auf die Überträge danach verteilt. Abgebucht ist dann etwas mehr, als ankam, der Unterschied ist die Gebühr.\n<b>Als eine Gebühr buchen:</b> ein Eintrag „Gebühr“ mit dem ganzen Rest.\nSteuerlich ist eine Gebühr in Coins ein Verkauf zum Tageswert, meist geht es um Cents. Liegt bei der Börse wirklich noch etwas, lass es so.'},
   'k-vg':{t:'Alle Vorgänge',h:'Eine Zeile je Vorgang. Ein Klick klappt ihn auf, <b>✎</b> bearbeitet ihn.\n<b>Erledigen</b> steht bei offenen Zeilen statt ✎. Der Knopf öffnet denselben Punkt wie in „Noch offen“.'},
+  // Ab 0.129 (Florians Wortlaut, vorletzter Satz nach Prüfung am Tool angepasst): Kopf der Spalte „Zuordnung“ in der Tabelle der Bewegungen (VG_TH)
+  zuordnung:{t:'Zuordnung',h:'Womit diese Bewegung verbunden ist: mit einer Ein- oder Auszahlung bei Tag („Tag“) oder mit einem Vorgang, dann steht hier sein Name, z. B. „Kauf“ oder „Aufladung“. „offen“ heißt: noch mit nichts verbunden. Steht hier „ignoriert“ oder „verdächtig“, zählt die Bewegung nicht. Bei „ausstehend“ sind die Coins schon aus der Wallet weg, ein Verkauf ist es noch nicht. Der Status des Vorgangs steht rechts in seiner Zeile.'},
   vgstatus:{t:'Status',h:'<b>fertig</b> = alles da, der Vorgang zählt. <b>Kurs fehlt</b> = für diesen Tag ist noch kein Kurs geladen, der Euro-Wert fehlt. <b>offen</b> = noch nicht entschieden, steht unter „Noch offen“. <b>Vorschlag</b> = das Tool hat eine Idee, darunter klein welche (z. B. „Übertrag zu Bitvavo?“, Übertrag = Coins zwischen zwei deiner Wallets). <b>doppelt?</b> = steht vielleicht zweimal da (an beiden Zeilen). <b>Einkauf fehlt</b> = für diesen Abgang kennt das Tool den Einkauf nicht. <b>vertippt?</b>, <b>Reihenfolge</b>, <b>prüfen</b> = bitte ansehen, Einzelheiten in „Noch offen“. <b>Wert fehlt</b> = der Eintrag zählt erst, wenn der Wert drin ist (sonst steht da, was fehlt). <b>geschätzt</b> = der Wert ist geschätzt. <b>ignoriert</b> = zählt nicht. <b>verdächtig</b> = winziger Betrag, vermutlich ein Betrugsversuch.'},
   'k-rw':{t:'Rechenwege',h:'Für jeden Vorgang, wie das Tool gerechnet hat: Euro-Wert, Einkaufswert, Gewinn oder Verlust und was danach im Topf liegt. Immer vom ältesten zum neuesten Vorgang, so wie das Tool rechnet.'},
   eurowert:{t:'Euro-Wert',h:'Wert am Tag des Vorgangs: bei Tag der Wert zum EZB-Kurs, sonst dein eingetragener Wert. Bei einem Abgang ist es der Erlös inklusive Gebühr, die Gebühr steht darunter.',de:'Wert am Tag des Vorgangs: bei Tag der Wert zum EZB-Kurs, sonst dein eingetragener Wert. Bei einem Abgang ist es der Veräußerungspreis, die Werbungskosten (Gebühr) stehen darunter.'},
@@ -11570,7 +11587,7 @@ ${ECB_CITE}`},
   // Ab 0.49 (5.2): Gewinn bei Stablecoins und „geschätzt“ (Zusammenfassung) stehen hier und im (i) der Karte in Österreich, nicht mehr im Reiter Wallet
   // Ab 0.72 (1.1 bis 1.3): Titel nur „Krypto“, die Angaben aus dem alten Titel und die Annahmen unter der Tabelle stehen hier; andere Coins in „Was das Tool nicht rechnet“
   'k-atcx':{t:'Krypto',h:'Gewinne und Verluste aus USDC und USDT, ausländische Kryptowährungen ohne KESt-Abzug (Verkäufe mit KESt-Abzug einer österreichischen Börse stehen getrennt). Gerechnet mit dem gleitenden Durchschnittspreis je Wallet und Coin.\n<b>Krypto-Verluste</b> kannst du nur mit anderen Kapitalerträgen mit 27,5 % aus demselben Jahr verrechnen. Sparbuchzinsen zählen nicht dazu. Ein Vortrag ist nicht möglich.\n<b>Annahmen:</b> USDC und USDT sind Kryptowährungen im Sinn von § 27b EStG. Die Einzahlung bei Tag ist ein Verkauf, die Auszahlung in Coins ein Kauf. Gebühren beim Kauf gegen Euro erhöhen den Einkaufswert. Gebühren beim Verkauf gegen Euro oder USD mindern den Erlös. Gebühren bei einem Tausch Krypto gegen Krypto zählen steuerlich nicht (EStR Rz 6178ad). Zahlst du eine Transfergebühr in Coins, ist das ein Verkauf zum Tageswert (EStR Rz 6178v). Andere Kosten kannst du nicht absetzen. Tausch Krypto gegen Krypto ist steuerneutral, der Einkaufswert geht auf den neuen Coin über. Bekommst du etwas, das keine Kryptowährung ist (z. B. ein NFT), ist es ein Verkauf. Geschenk: Einkaufswert der schenkenden Person (§ 27a Abs. 4 Z 1 EStG). Diebstahl, Betrug, Hack oder ein verlorener Schlüssel sind keine Veräußerung, ein Verlust ist nicht absetzbar (EStR Rz 6178w).\n'+CX_1USD+'\n'+CX_KURS+'\n'+STABLE_EX+'\n'+EST_SUM+'\nTrag Gewinne aus Verkäufen ohne österreichischen KESt-Abzug in Kennzahl 174 ein und Verluste in Kennzahl 176. Kennzahl 173 und 175 gelten nur mit KESt-Abzug.'},
-  'k-decx':{t:'Krypto',h:'Gewinne und Verluste aus USDC und USDT, die du höchstens ein Jahr gehalten hast, gerechnet nach FIFO je Wallet und Coin. Sie gehören in die Anlage SO, Abschnitt Kryptowerte.\n<b>Annahmen:</b> USDC und USDT sind andere Wirtschaftsgüter (BMF-Schreiben vom 06.03.2025, Rn. 53). Das Tool rechnet je Wallet und Coin nach FIFO (Rn. 61 und 62). Die Auszahlung bei Tag in Coins ist ein Kauf, die Einzahlung ein Verkauf. Wert zum EZB-Kurs vom Buchungstag, 1 Coin = 1 USD. Gebühren beim Kauf erhöhen den Einkaufswert, Gebühren beim Verkauf sind Werbungskosten und werden aufgeteilt (Rn. 57). Gebühren in Coins und der Tausch in einen anderen Coin sind Verkäufe zum Tageswert. Ein Tausch USDC gegen USDT ist ein Verkauf mit neuem Kauf. Ein Geschenk übernimmt Kaufdatum und Einkaufswert der schenkenden Person (§ 23 Abs. 1 Satz 3 EStG).\n'+CX_1USD+'\n'+CX_KURS+'\n'+STABLE_EX+'\n'+EST_SUM+'\n<b>Geplant:</b> Für Kryptowerte, die ab 2027 gekauft werden, soll die Haltefrist wegfallen und 25 % Steuer gelten. Das Gesetz ist noch nicht beschlossen, Stand November 2026. Das Tool wird angepasst, sobald es gilt.'},
+  'k-decx':{t:'Krypto',h:'Gewinne und Verluste aus USDC und USDT, die du höchstens ein Jahr gehalten hast, gerechnet nach FIFO („First in, first out“: Die zuerst gekauften Coins gelten als zuerst verkauft) je Wallet und Coin. Sie gehören in die Anlage SO, Abschnitt Kryptowerte.\n<b>Annahmen:</b> USDC und USDT sind andere Wirtschaftsgüter (BMF-Schreiben vom 06.03.2025, Rn. 53). Das Tool rechnet je Wallet und Coin nach FIFO (Rn. 61 und 62). Die Auszahlung bei Tag in Coins ist ein Kauf, die Einzahlung ein Verkauf. Wert zum EZB-Kurs vom Buchungstag, 1 Coin = 1 USD. Gebühren beim Kauf erhöhen den Einkaufswert, Gebühren beim Verkauf sind Werbungskosten und werden aufgeteilt (Rn. 57). Gebühren in Coins und der Tausch in einen anderen Coin sind Verkäufe zum Tageswert. Ein Tausch USDC gegen USDT ist ein Verkauf mit neuem Kauf. Ein Geschenk übernimmt Kaufdatum und Einkaufswert der schenkenden Person (§ 23 Abs. 1 Satz 3 EStG).\n'+CX_1USD+'\n'+CX_KURS+'\n'+STABLE_EX+'\n'+EST_SUM+'\n<b>Geplant:</b> Für Kryptowerte, die ab 2027 gekauft werden, soll die Haltefrist wegfallen und 25 % Steuer gelten. Das Gesetz ist noch nicht beschlossen, Stand November 2026. Das Tool wird angepasst, sobald es gilt.'},
   // Ab 0.72: (i) der übrigen Karten im Reiter Steuer (vorher lose Absätze und Aufklapper in den Karten)
   'k-taxat':{t:'Jahresabrechnung',h:'Deine CFD-Ergebnisse des Jahres in Euro, jede Buchung zum EZB-Referenzkurs ihres Tages umgerechnet (Datum laut Serverzeit des Brokers).\n<b>Annahmen:</b> CFDs sind nicht verbriefte Derivate. Bei einem ausländischen Broker ohne Kapitalertragsteuer-Abzug gilt der normale Tarif, nicht 27,5 %. Die Performance Fee, die Kommission, der Swap und die Gebühren mindern deinen CFD-Gewinn. Das Abzugsverbot für Werbungskosten gilt bei Einkünften zum Tarif nicht.\n<b>Jahreswechsel:</b> Das Tool ordnet CFD-Buchungen nach der Zeit des Brokers (Zypern) dem Jahr zu, Krypto-Vorgänge nach österreichischer Zeit. Eine feste Regel dazu gibt es nicht. Kläre große Beträge am Jahreswechsel mit deiner Steuerberatung.'},
   'k-taxde':{t:'Jahresabrechnung',h:'Deine CFD-Ergebnisse des Jahres in Euro, jede Buchung zum EZB-Referenzkurs ihres Tages umgerechnet. Das passt zur gesetzlichen Regel.\n<b>Annahmen (Recherche Stand 2026):</b> CFDs sind Termingeschäfte. Gewinne und Verluste über einen ausländischen Broker ohne Steuerabzug gehören ab dem Steuerjahr 2025 saldiert in Zeile 19 der Anlage KAP. Die frühere Grenze von 20.000 € für Verluste aus Termingeschäften gilt in allen offenen Fällen nicht mehr. Einen nicht verrechneten Verlust trägt das Finanzamt ins nächste Jahr vor, wenn er in deiner Erklärung steht. Kommission und Swap mindern den Gewinn, die Performance Fee nicht (Sicherheit ca. 60 bis 75 %).\n<b>Steuererklärung:</b> Kapitalerträge ohne Steuerabzug musst du erklären. Frist ohne Steuerberatung: 31. Juli des Folgejahres. Fällt er auf ein Wochenende oder einen Feiertag, gilt der nächste Werktag. Mit Steuerberatung: Ende Februar des übernächsten Jahres. Liegt dein Steuersatz unter 25 %, beantrage die Günstigerprüfung in Zeile 4 der Anlage KAP.'},
@@ -11595,7 +11612,7 @@ ${ECB_CITE}`},
   // Ab 0.73 (2.6): die Sätze unter der Karte stehen im (i), die Tarifstufen in AT setzt renderTax je Jahr dazu (glSet)
   'k-taxestde':{t:'Steuer geschätzt',h:'In Deutschland gilt für Kapitalerträge die Abgeltungsteuer: 25 % plus Solidaritätszuschlag, eventuell Kirchensteuer. Der Sparer-Pauschbetrag (1.000 € pro Person, 2.000 € bei Zusammenveranlagung) bleibt steuerfrei, sofern er nicht schon für andere Kapitalerträge verbraucht ist.\nReicht der Datenstand nicht bis zum Jahresende, rechnet das Tool zusätzlich hoch: Bis 31.12. läuft jede Woche wie der Schnitt der letzten abgeschlossenen Wochen.\nGrobe Schätzung. Ist dein persönlicher Steuersatz niedriger als 25 %, kann die Günstigerprüfung die Steuer senken. Verluste aus anderen Kapitalerträgen können verrechnet werden.\nKrypto-Gewinne (Anlage SO) sind hier nicht enthalten. Sie kommen zu deinem übrigen Einkommen und werden mit deinem persönlichen Steuersatz besteuert.'},
   'k-taxdocs':{t:'Unterlagen aufheben',h:'Was du für die Steuererklärung und eine spätere Prüfung aufheben solltest.'},
-  'k-taxnot':{t:'Was das Tool nicht rechnet',h:'Diese Dinge fehlen in Steuer, Zusammenfassung und Excel. Rechne sie mit einem eigenen Werkzeug oder mit deiner Steuerberatung. In der Zusammenfassung steht dieselbe Liste unter „Was nicht enthalten ist“.'},
+  'k-taxnot':{t:'Was das Tool nicht rechnet',h:'Diese Dinge fehlen in Steuer, Zusammenfassung und Excel. Rechne sie mit einem eigenen Werkzeug oder mit deiner Steuerberatung. Andere Coins wie BTC oder ETH sind genauso steuerpflichtig. Sie selbst zu rechnen, hätte dieses Tool zu groß gemacht. In der Zusammenfassung steht dieselbe Liste unter „Was nicht enthalten ist“.'},
   // Ab 0.73 (1.7): Florians Text; die Erklärung zum Datenstand steht im Begriff taxds am Spaltenkopf
   'k-taxacc':{t:'Konten für die Steuer',h:'Hier legst du fest, welche Konten für die Steuer zählen. Ein Konto ohne Häkchen fehlt im Reiter Steuer, in der Zusammenfassung und in der Excel. In der Auswertung und in der Sicherung bleibt es. Nimmst du das Häkchen weg, kannst du einen Grund eintragen. Den siehst nur du, er steht nicht in Zusammenfassung und Excel.\nDer Name für Zusammenfassung und Excel kommt aus deinen MT5-Reports. Du kannst ihn ändern. Leerst du das Feld, gilt wieder der Name aus den Reports.\nLaufen deine Konten auf verschiedene Namen, stehen sie in Gruppen, je Name eine. Die Gruppe mit dem Namen aus dem Feld steht oben, die anderen folgen alphabetisch. Groß- und Kleinschreibung spielt keine Rolle.\nEin Beispiel: Du willst die Steuer für Anna ansehen oder drucken. Trag ihren Namen so ein, wie er in ihren Reports steht. Ihre Gruppe rutscht nach oben. Nimm das Häkchen bei deiner eigenen Gruppe weg. Danach stellst du beides wieder zurück.'},
   taxds:{t:'Datenstand',h:'Bis wann die Daten eines Kontos reichen. Ein MT5-Report nennt nur, wann er erstellt wurde, nicht seinen Zeitraum. Liegt die letzte Buchung höchstens 7 Tage vor dem Erstellungsdatum, gilt das Erstellungsdatum. Sonst fragt das Tool nach, ob der Zeitraum bis dahin reicht. Das Jahr ist vollständig, wenn alle zählenden Konten bis 31.12. reichen.'},
@@ -12143,7 +12160,7 @@ function calcScen(I,r,n){
 // Ergebnis in #calc-out, darunter eine Zeile mit Grundlage, Investition, Dauer und Wiederanlage. Ab 0.113 ohne aufklappbare „Info“ (Florians
 // Auftrag): ihre Sätze stehen in dieser Zeile, im (i) der Karte (k-calc) und in den Begriffen „Vorsichtig“ und „Mit Wiederanlage“.
 // Ab 0.113: Die Investition folgt dem Währungsschalter. In Euro: Vorgabe = Investition in Euro (CAPE, wie „Pro Konto“), gerechnet wird in USD
-// zum letzten verfügbaren EZB-Kurs (k), die Ergebnisse wieder ÷ k in Euro. Ein eingegebener Betrag merkt seine Währung (c.invCur) und wird
+// zum letzten vorhandenen Kurs (k, EZB oder von Hand; ab 0.129 nennt die Zeile unter dem Ergebnis die Herkunft, rateLastT), die Ergebnisse wieder ÷ k in Euro. Ein eingegebener Betrag merkt seine Währung (c.invCur) und wird
 // beim Umschalten zum selben Kurs umgerechnet, damit das Szenario gleich bleibt.
 function renderCalc(){
   const D=CALC_D,c=S.ui.calc,out=$('calc-out');if(!D)return;
@@ -12165,7 +12182,7 @@ function renderCalc(){
   const sc=[['Durchschnitt',meanOf(D.rets)],[gl('median','Typisch (Median)'),median(D.rets)],[gl('vorsichtig','Vorsichtig'),quantile(D.rets,0.25)]];if(own!=null)sc.push(['Eigene',own]);
   // Gezeigt wird nur die gewählte Variante (mit oder ohne Wiederanlage), immer Betrag am Ende und Gewinn. Gerechnet in USD (I × k).
   const R=sc.map(([l,r])=>{const o=calcScen(I*k,r,n);return c.reinv?[o.cE,o.cG]:[o.sE,o.sG]});
-  // Ergebnisse in der Währung des Schalters; Euro zum letzten EZB-Kurs
+  // Ergebnisse in der Währung des Schalters; Euro zum letzten vorhandenen Kurs
   const M=v=>{const x=v/k;return `<span${x<-0.005?' class="neg"':''}>${fCur(x,0)}</span>`};
   // Zeilennamen mit Bindestrich, damit sie am Handy dort umbrechen
   let h=`<tr><th>${SM0}</th>${sc.map(([l])=>`<th>${l}${SM0}</th>`).join('')}</tr><tr><td>${gl('wr','Wochen-Rendite')}</td>${sc.map(([,r])=>`<td>${retHtml({v:r,n:1,miss:false},'–')}</td>`).join('')}</tr>`;
@@ -12173,7 +12190,7 @@ function renderCalc(){
   const nTxt=fmtDec(n,Math.abs(n-Math.round(n))<1e-9?0:1);
   // Regel B (ab 0.111): die Einheit hängt am Betrag (geschütztes Leerzeichen), rutscht nie allein in die nächste Zeile
   out.innerHTML=`<div class="tscroll"><table>${h}</table></div>
-    <p class="small" style="margin:8px 0 0">Hochrechnung aus ${D.k===1?'deiner 1 '+gl('ganz','ganzen Woche'):`deinen ${D.k} `+gl('ganz','ganzen Wochen')} nach PF, Investition ${fCur(I).replace(/ (USD|€)$/,'&nbsp;$1')}, für ${nTxt} ${n===1?'Woche':'Wochen'}, ${c.reinv?'mit':'ohne'} Wiederanlage.${eurC&&ld?` EZB-Kurs vom ${fD(ld)}.`:''} Vor Steuer, keine Vorhersage.</p>`;
+    <p class="small" style="margin:8px 0 0">Hochrechnung aus ${D.k===1?'deiner 1 '+gl('ganz','ganzen Woche'):`deinen ${D.k} `+gl('ganz','ganzen Wochen')} nach PF, Investition ${fCur(I).replace(/ (USD|€)$/,'&nbsp;$1')}, für ${nTxt} ${n===1?'Woche':'Wochen'}, ${c.reinv?'mit':'ohne'} Wiederanlage.${eurC&&ld?` ${rateLastT(ld)}.`:''} Vor Steuer, keine Vorhersage.</p>`;
   tpSimple(); // ab 0.111: Abstand nach Regel A
 }
 
@@ -13315,7 +13332,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.128',VDATE='10.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.129',VDATE='11.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
@@ -13643,7 +13660,7 @@ function mvRender(){const v=vgBuild(S).find(v=>v.id===MV_ID);if(!v){$('mv-body')
   const kurz=vgKurz(v),MV=v.mv.map(k=>S.wtx[k]).filter(Boolean),kn=MV.length&&MV.every(m=>m.st==='int'&&!m.swap&&(m.brg||m.chain))?'klicke auf „keine Brücke“':MV.length&&MV.every(m=>m.st==='int'&&m.swap)?'klicke auf „das war kein Umtausch“':'nimm „Verknüpfung lösen“';
   // Ab 0.121 (Phase 2): offene Zeile der Börse (ohne Bewegung): Satz zur Börsen-Datei, löschen und ganze Datei entfernen
   const FL=vgFiles(v),dl=`<button type="button" class="btn" data-mvdel="${esc(v.id)}">${v.bxo?'Diese Zeile':v.mv.length>1?'Diese Bewegungen':'Diese Bewegung'} löschen …</button>`,fb=FL.length?`<button type="button" class="btn" data-dtfiles="${esc(v.id)}">Ganze Datei entfernen …</button>`:'';
-  $('mv-body').innerHTML=`<p>${vgFT(v)} · ${vgQ(v,{fenster:1})} · ${vgStH(v,st)}</p>${v.bxo?`<div class="tddel"><p class="small">${FL.length?`Kommt aus der Börsen-Datei ${esc(fileT(FL[0]))}.`:'Kommt aus einer Börsen-Datei.'}</p><div class="row">${dl}${fb}</div></div>`:vgMvTab(v.mv,PM,{kurz})+(v.mv.length===1?mvDelH(v.mv[0]):`<div class="tddel"><p class="small">${filesSatz(FL)} Ist etwas falsch verbunden, ${kn}.</p>${filesListH(FL)}<div class="row">${dl}${fb}</div></div>`)}`}
+  $('mv-body').innerHTML=`<p>${vgFT(v)} · ${vgQ(v,{fenster:1})} · ${vgStH(v,st)}</p>${v.bxo?`<div class="tddel"><p class="small">${FL.length?`Kommt aus der Börsen-Datei ${esc(fileT(FL[0]))}.`:'Kommt aus einer Börsen-Datei.'}</p><div class="row">${dl}${fb}</div></div>`:vgMvTab(v.mv,PM,{kurz,v})+(v.mv.length===1?mvDelH(v.mv[0]):`<div class="tddel"><p class="small">${filesSatz(FL)} Ist etwas falsch verbunden, ${kn}.</p>${filesListH(FL)}<div class="row">${dl}${fb}</div></div>`)}`}
 function mvOpen(id){MV_ID=id;{const v=vgBuild(S).find(x=>x.id===id);if(v&&vgSeen(v)){save();render()}}mvRender();openModal('mv-modal')}
 // „Ganze Datei entfernen …“: Bereich „Eingelesene Dateien“ in „＋ Daten“
 // Ab 0.121 (Phase 1): data-dtfiles = 'k:' + Schlüssel einer Bewegung oder die id eines Vorgangs. Entfernt wird eine Datei dieser Zeile, bei zwei Dateien
