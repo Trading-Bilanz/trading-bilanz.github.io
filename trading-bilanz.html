@@ -460,6 +460,10 @@ button.zlink{border:0;background:none;padding:0;font:inherit;cursor:pointer}
 .tdbk{border-collapse:collapse;margin:6px 0 4px}.tdbk th,.tdbk td{padding:2px 12px 2px 0;text-align:left;white-space:nowrap}.tdbk th{font-weight:600;font-size:var(--fs-xs)}
 /* Ab 0.49: am Handy steht die Uhrzeit unter dem Datum, „(dieser)“ nur am PC (die Zeile ist fett), damit die Tabelle ohne seitliches Scrollen passt */
 .tdbk .tdbt{display:none}.tdbk tr.tdcur td{font-weight:600}
+/* Ab 0.132: Kartengebühr gebündelt (table.cft). Am PC steht „= … , Wert der Zahlung …“ neben dem Feld, bis 700 px in einer eigenen Zeile darunter (tr.cfsub) */
+.cft td{vertical-align:middle}.cft td:nth-child(6){white-space:normal}.cft .cfsub{display:none}.cft .cfsub td{white-space:normal;padding-top:0;padding-bottom:6px}.tdcfr label{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+@media (max-width:700px){.cft .cfxw{display:none}.cft .cfsub{display:table-row}}
+@media (max-width:400px){.tdbk.cft th,.tdbk.cft td{padding-right:5px}.cft input.pct{width:5.5ch}.cft .btn.sm{padding-left:7px;padding-right:7px}}
 @media (max-width:700px){.tdbk th,.tdbk td{padding-right:8px}.tdbk .tdbc{display:none}.tdbk .tdbt{display:block;font-weight:400}.tdbk .tddi{display:block}}
 /* Ab 0.50 (3.2): fester Aufbau eines Vorschlags */
 .sgb .sgv,.sgb .sgw,.sgb .sgf,.tdprev .sgv,.tdprev .sgw,.tdprev .sgf{margin:2px 0}.sgl{list-style:none;padding:0;margin:2px 0 4px}.sgl li{margin:1px 0}
@@ -625,6 +629,9 @@ tr.hide{display:none}
 html.mlock{overflow:hidden}
 html.mlock body{padding-right:var(--sbw,0px)}
 .modal,.modal .box{overscroll-behavior:contain}
+/* Ab 0.132 (Florians Auftrag): Die Zeile „n Einträge warten auf deine Prüfung.“ in „＋ Daten“ bleibt beim Scrollen oben stehen, erst ab 600 px Fensterhöhe
+   (darunter scrollt sie mit wie bis 0.131). Rechts bleibt Platz für das stehende ×. */
+@media (min-height:600px){#dt-modal .box>#dt-pz:not(:empty){position:sticky;top:-22px;z-index:6;background:var(--card);margin:0 -26px 6px;padding:8px 52px 8px 26px;border-bottom:1px solid var(--line)}#dt-modal .box>#dt-pz .pzl{margin:0}}
 /* Knöpfe zu den Anleitungen über dem Ablagefeld: ohne Konto groß und blau, mit Konto klein (lite) */
 .gbtns{margin:4px 0 12px}
 .gbtns.lite{gap:8px}
@@ -771,6 +778,11 @@ div.need,span.need{border:0;outline:2px solid var(--sig-r);outline-offset:3px;bo
 table.bxt tr.bxsub td{white-space:normal}
 /* Ab 0.119: am Handy wischt die Tabelle seitlich; Hinweise und Häkchen darunter bleiben links im sichtbaren Teil stehen */
 @media (max-width:500px){table.bxt tr.bxsub td .bxsw{position:sticky;left:0;max-width:calc(100vw - 112px)}table.bxt tr.bxsub td .bxsw .bxch{justify-content:flex-start}}
+/* Ab 0.132: bis 500 px die vierte Zelle unter der Menge, die Uhrzeit unter dem Datum, engerer Zellenabstand (jede Zeile ein Raster mit drei Spalten) */
+@media (max-width:500px){table.bxt,table.bxt tbody{display:block}table.bxt tr{display:grid;grid-template-columns:4.6em minmax(0,1fr) minmax(0,1.5fr)}#bxprev .tprev{padding-left:8px;padding-right:8px}
+  table.bxt th,table.bxt td{padding-left:4px;padding-right:4px}table.bxt .bxtm{display:block}
+  table.bxt tr:not(.bxsub)>:nth-child(1),table.bxt tr:not(.bxsub)>:nth-child(2){grid-row:1/span 2}table.bxt tr:not(.bxsub)>:nth-child(3){border-bottom:0;padding-bottom:0}
+  table.bxt .bx4{grid-column:3;grid-row:2;border-top:0;padding-top:0;font-size:var(--fs-s);font-weight:400}table.bxt .bx4e{display:block;visibility:hidden;height:0;padding:0;overflow:hidden}table.bxt tr.bxsub td{grid-column:1/-1}}
 /* Ab 0.50 (1.4): Tag-Vorschau „Woher und wohin?“ am Handy als Blöcke (Regel 1: festgelegte Ausnahme) */
 table.tpw .tpm{display:none}
 @media (max-width:700px){
@@ -6330,6 +6342,11 @@ const bxW=()=>BXP?(BXP.w==='+'?BXP.nn.trim():BXP.w):'';
 // Ab 0.46 (3.3): Vorschau als kleine Tabellen (Käufe und Verkäufe: Datum · Art · Menge · Euro; darunter Überträge und Einzahlungen), Fragen abgesetzt.
 // Je unbekannter Empfangsadresse eine Frage (freiwillig, jederzeit änderbar, auch zurück auf „weiß ich nicht“). Ohne Wahl wird die Auszahlung ein
 // offener Abgang der Börse, eine Einzahlung ohne Gegenstück ein offener Zugang (beide stehen danach in „Noch offen“).
+// Ab 0.132 (Florians Auftrag): Zeile und Kopf der Vorschau-Tabellen (Bitvavo und DFX.swiss). Bis 500 px steht die Uhrzeit unter dem Datum (.bxtm) und
+// die vierte Zelle (Euro bzw. „Von / Nach“, .bx4) klein unter der Menge, damit die Tabelle bei 430 px ohne Wischen passt. Das macht nur das CSS
+// (jede Zeile als Raster mit drei Spalten, die vierte Zelle in der zweiten Rasterzeile); der Inhalt steht einmal im HTML. .bx4e = nur „–“, am Handy weg.
+const bxHead=h4=>`<tr><th class="l">Datum</th><th>Art</th><th>Menge</th><th class="bx4">${h4}</th></tr>`;
+const bxRow=(r,art,menge,c4)=>`<tr><td class="l">${dS(r.date)}<span class="bxtm">${r.time?' '+r.time.slice(0,5):''}</span></td><td>${art}</td><td>${menge}</td><td class="bx4${c4==='–'?' bx4e':''}">${c4}</td></tr>`;
 function renderBxPrev(){bxPrevH();pzUpd()}
 function bxPrevH(){const box=$('bxprev');if(!BXP){box.innerHTML='';return}if(BXP.dx)return renderDxPrev();
   const D=BXP,P=D.P,w=bxW(),plan=w?bvPlan(S,P,w,D.aw):null,pl=(n,a,b)=>`${fI.format(n)}\u00a0${n===1?a:b}`,q=v=>fmtNum(v),t5=r=>r.time?' '+r.time.slice(0,5):'';
@@ -6342,16 +6359,16 @@ function bxPrevH(){const box=$('bxprev');if(!BXP){box.innerHTML='';return}if(BXP
     const dif=x=>x.diffs.length?`<br><span class="small">Abweichungen: ${x.diffs.map(([f,a,b])=>`${f} ${dv(f,a)} → ${dv(f,b)}`).join(', ')}</span>`:'';
     const ch3=i=>`<div class="bxch">${rad(i,'replace','ersetzen')}${rad(i,'keep','behalten')}${rad(i,'both','beide')}</div>`;
     // Käufe und Verkäufe
-    if(KV.length)h+=`<p class="bxh"><b>Käufe und Verkäufe (${fI.format(KV.length)})</b></p><div class="bxw"><table class="bxt"><tr><th class="l">Datum</th><th>Art</th><th>Menge</th><th>Euro</th></tr>${KV.map(([x,i])=>{const r=x.r;
-      return `<tr><td class="l">${dS(r.date)}${t5(r)}</td><td>${x.t==='kauf'?'Kauf':'Verkauf'}<br><span class="small">${x.dup?'schon da'+(x.diffs.length?'':' (gleich)'):'neu'}</span></td><td><b>${q(r.qty)}</b> ${r.coin}</td><td>${fE.format(r.val)}${r.fee>0?`<br><span class="small">Gebühr ${r.feeCur==='EUR'?fE.format(r.fee):q(r.fee)+' '+r.feeCur}</span>`:''}</td></tr>${x.dup?`<tr class="bxsub" data-pz><td colspan="4">${dif(x).replace(/^<br>/,'')}${ch3(i)}</td></tr>`:''}`}).join('')}</table></div>`;
+    if(KV.length)h+=`<p class="bxh"><b>Käufe und Verkäufe (${fI.format(KV.length)})</b></p><div class="bxw"><table class="bxt">${bxHead('Euro')}${KV.map(([x,i])=>{const r=x.r;
+      return `${bxRow(r,`${x.t==='kauf'?'Kauf':'Verkauf'}<br><span class="small">${x.dup?'schon da'+(x.diffs.length?'':' (gleich)'):'neu'}</span>`,`<b>${q(r.qty)}</b> ${r.coin}`,`${fE.format(r.val)}${r.fee>0?`<br><span class="small">Gebühr ${r.feeCur==='EUR'?fE.format(r.fee):q(r.fee)+' '+r.feeCur}</span>`:''}`)}${x.dup?`<tr class="bxsub" data-pz><td colspan="4">${dif(x).replace(/^<br>/,'')}${ch3(i)}</td></tr>`:''}`}).join('')}</table></div>`;
     // Ab 0.73 (4.1): Tausch aus convert
     // Ab 0.74 (3.2, 3.3): Kurs laut Börse aus den Mengen; je neuem „Aus … getauscht“ (Österreich) die Frage, woher die Coins kamen
     // Ab 0.75 Nachtrag 1 (3): „Ersatzwert“ ist einmal ein Begriff, beim ersten Vorkommen dieser Vorschau
     let ersN=0;const ersW=()=>ersN++?'Ersatzwert':gl('ersatzwert','Ersatzwert');
     const SW=it.map((x,i)=>[x,i]).filter(([x])=>x.sw),AK=cxLand()!=='DE'&&!taxOff(),eT=x=>{if(x.done||x.dup)return '–';if(cxLand()==='DE')return 'Tageswert';return x.orig&&x.orig.ok&&D.ew[x.r.id]==='datei'?fE.format(x.orig.eur)+'<br><span class="small">Einkaufswert</span>':ersW()+', geschätzt'};
     const kT=x=>{const r=x.r,sC=x.t==='tauschein'?r.coin:r.paid,oC=x.t==='tauschein'?r.paid:r.coin,sQ=x.t==='tauschein'?r.qty:r.paidQ,oQ=x.t==='tauschein'?r.paidQ:r.qty;return oQ>0?`<br><span class="small">Kurs laut ${esc(D.fn)}: <span class="nw">${fmtDec(sQ/oQ,x.t==='tausch'?4:2)} ${esc(sC)}</span> je ${esc(oC)}</span>`:''};
-    if(SW.length)h+=`<p class="bxh"><b>Tausch (${fI.format(SW.length)})</b></p><div class="bxw"><table class="bxt"><tr><th class="l">Datum</th><th>Art</th><th>Menge</th><th>Euro</th></tr>${SW.map(([x,i])=>{const r=x.r;
-      return `<tr><td class="l">${dS(r.date)}${t5(r)}</td><td>${x.t==='tausch'?'Tausch in '+esc(r.coin):x.t==='tauschaus'?'In '+esc(x.other)+' getauscht':'Aus '+esc(x.other)+' getauscht'}<br><span class="small">${x.done?'schon eingelesen':x.dup?'schon da':'neu'}</span></td><td><b>${q(x.qty)}</b> ${esc(x.coin)}${r.fee>0?`<br><span class="small">Gebühr ${q(r.fee)} ${esc(r.feeCur)} steckt im bezahlten Betrag</span>`:''}${kT(x)}</td><td>${x.t==='tauschein'?eT(x):'–'}</td></tr>${x.dup&&!x.done?`<tr class="bxsub"><td colspan="4">${ch3(i)}</td></tr>`:''}`}).join('')}</table></div>`;
+    if(SW.length)h+=`<p class="bxh"><b>Tausch (${fI.format(SW.length)})</b></p><div class="bxw"><table class="bxt">${bxHead('Euro')}${SW.map(([x,i])=>{const r=x.r;
+      return `${bxRow(r,`${x.t==='tausch'?'Tausch in '+esc(r.coin):x.t==='tauschaus'?'In '+esc(x.other)+' getauscht':'Aus '+esc(x.other)+' getauscht'}<br><span class="small">${x.done?'schon eingelesen':x.dup?'schon da':'neu'}</span>`,`<b>${q(x.qty)}</b> ${esc(x.coin)}${r.fee>0?`<br><span class="small">Gebühr ${q(r.fee)} ${esc(r.feeCur)} steckt im bezahlten Betrag</span>`:''}${kT(x)}`,x.t==='tauschein'?eT(x):'–')}${x.dup&&!x.done?`<tr class="bxsub"><td colspan="4">${ch3(i)}</td></tr>`:''}`}).join('')}</table></div>`;
     if(AK)for(const [x] of SW){if(x.t!=='tauschein'||x.done||x.dup||!x.orig)continue;const r=x.r,o=x.orig,c=esc(x.other),id=esc(r.id),cur=D.ew[r.id]||'',ANOTHER=`Anders oder weiß ich nicht → ${ersW()}, später klären`;
       const WHY={ein:`Am ${dm(o.d||'')} kamen auch ${c} von außen dazu, die Datei kennt ihren Einkaufswert nicht.`,tausch:`Am ${dm(o.d||'')} kamen auch ${c} aus einem Tausch dazu, die Datei kennt ihren Einkaufswert nicht.`,kauf:`Am ${dm(o.d||'')} kamen auch ${c} aus einem Kauf ohne Euro dazu, die Datei kennt ihren Einkaufswert nicht.`,anders:`Am ${dm(o.d||'')} kamen auch ${c} auf anderem Weg dazu, die Datei kennt ihren Einkaufswert nicht.`,weg:`Am ${dm(o.d||'')} gingen mehr ${c} weg, als die Datei kennt.`,none:`In der Datei steht vor dem Tausch kein Kauf von ${c}.`,short:`Die Datei zeigt vor dem Tausch nur ${fmtQ8(o.have)} ${c}, du hast ${fmtQ8(r.paidQ)} ${c} hergegeben.`};
       const kaufT=o.ok?(o.n===1?`Aus deinem Kauf bei ${esc(w)} vom ${dm(o.from)} (${fmtQ8(o.q1)} ${c} für ${fE.format(o.e1)})`:`Aus deinen Käufen bei ${esc(w)} (${fI.format(o.n)} Käufe, ${dm(o.from)}${DS}${dm(o.to)})`)+` → Einkaufswert ${fE.format(o.eur)}`:'';
@@ -6362,11 +6379,11 @@ function bxPrevH(){const box=$('bxprev');if(!BXP){box.innerHTML='';return}if(BXP
     for(const [x,i] of XF){const r=x.r,fee=+(r.qty-x.qi).toFixed(8),mq=`<b>${q(r.qty)}</b> ${r.coin}${fee>0?`<br><span class="small">angekommen ${q(x.qi)}, Gebühr ${q(fee)}</span>`:''}`;
       const ziel=x.hand||x.dup?esc(x.to):x.to?esc(x.to):r.addr?`${wAdr(r.addr)}${cpBtn(r.addr)}`:'unbekannt';
       const st=x.hand?'schon da (von Hand eingetragen)':x.dup?'schon da, abgebucht und Gebühr werden ergänzt':x.done?'schon da':x.to?(x.k?'neu, mit der Wallet-Datei verknüpft':'neu'):x.open?'offen (schon eingelesen)':'offen, bis du die Wallet wählst';
-      rows.push(`<tr><td class="l">${dS(r.date)}${t5(r)}</td><td>Auszahlung<br><span class="small">${st}</span></td><td>${mq}</td><td>${ziel}</td></tr>${x.hand?`<tr class="bxsub" data-pz><td colspan="4">${dif(x).replace(/^<br>/,'')}${ch3(i)}</td></tr>`:''}`)}
+      rows.push(`${bxRow(r,`Auszahlung<br><span class="small">${st}</span>`,mq,ziel)}${x.hand?`<tr class="bxsub" data-pz><td colspan="4">${dif(x).replace(/^<br>/,'')}${ch3(i)}</td></tr>`:''}`)}
     for(const [x,i] of DP){const r=x.r;
       const st=x.hand?'schon da (von Hand eingetragen)':x.done?'schon da':x.k?(x.dup?'schon da':'neu, Übertrag '+esc(x.from)+' → '+esc(w)):x.open?'offen (schon eingelesen)':'offen';
-      rows.push(`<tr><td class="l">${dS(r.date)}${t5(r)}</td><td>Einzahlung<br><span class="small">${st}</span></td><td><b>${q(r.qty)}</b> ${r.coin}</td><td>${x.hand?esc(x.from):x.k?esc(x.from):'unbekannt'}</td></tr>${x.hand?`<tr class="bxsub" data-pz><td colspan="4">${dif(x).replace(/^<br>/,'')}${ch3(i)}</td></tr>`:''}`)}
-    if(rows.length)h+=`<p class="bxh"><b>Überträge und Einzahlungen (${fI.format(rows.length)})</b></p><div class="bxw"><table class="bxt"><tr><th class="l">Datum</th><th>Art</th><th>Menge</th><th>Von / Nach</th></tr>${rows.join('')}</table></div>`;
+      rows.push(`${bxRow(r,`Einzahlung<br><span class="small">${st}</span>`,`<b>${q(r.qty)}</b> ${r.coin}`,x.hand?esc(x.from):x.k?esc(x.from):'unbekannt')}${x.hand?`<tr class="bxsub" data-pz><td colspan="4">${dif(x).replace(/^<br>/,'')}${ch3(i)}</td></tr>`:''}`)}
+    if(rows.length)h+=`<p class="bxh"><b>Überträge und Einzahlungen (${fI.format(rows.length)})</b></p><div class="bxw"><table class="bxt">${bxHead('Von / Nach')}${rows.join('')}</table></div>`;
     // Fragen: je unbekannter Empfangsadresse eine (freiwillig)
     const QA={};for(const [x] of XF)if(!x.hand&&!x.dup&&!x.done&&x.r.addr&&!rAW(S,x.r.addr))(QA[x.r.addr]||(QA[x.r.addr]=[])).push(x);
     for(const [a,L] of Object.entries(QA)){const cur=D.aw[a]||'';
@@ -6417,7 +6434,7 @@ function renderDxPrev(){const box=$('bxprev'),D=BXP,P=D.P,top=dxTop(),pl=(n,a,b)
   const plan=dxPlan(S,P,dxRowW),it=plan.items;
   const rad=(i,v,t)=>`<label class="fopt"><input type="radio" name="bxc-${i}" value="${v}" data-bxc="${i}" ${(D.ch[i]||'replace')===v?'checked':''}><span>${t}</span></label>`;
   const dv=(f,v)=>/^\d+(\.\d+)?$/.test(v)?(f==='Wert'||f==='Gebühr'?fE.format(+v):fmtNum(+v)):f==='Art'?esc(KIND[v]||v):esc(v);
-  if(it.length){h+=`<p class="bxh"><b>Käufe und Verkäufe (${fI.format(it.length)})</b></p><div class="bxw"><table class="bxt"><tr><th class="l">Datum</th><th>Art</th><th>Menge</th><th>Euro</th></tr>${it.map((x,i)=>{const r=x.r;
+  if(it.length){h+=`<p class="bxh"><b>Käufe und Verkäufe (${fI.format(it.length)})</b></p><div class="bxw"><table class="bxt">${bxHead('Euro')}${it.map((x,i)=>{const r=x.r;
       const st=x.done&&x.ign?'schon eingelesen, Bewegung ignoriert':x.done?'schon eingelesen':x.back?`schon da (Rückbuchung von ${esc(dxNameMv(S,x.k&&S.wtx[x.k]))})`:x.dup&&x.mv?'schon da (mit der Bewegung verknüpft)':x.dup?'schon da'+(x.diffs.length?'':' (gleich)'):x.k?'neu, mit der Wallet-Datei verknüpft':'neu';
       const eu=x.t==='kauf'?`${fE.format(r.val)}${r.fee>0?`<br><span class="small">davon Gebühr ${fE.format(r.fee)}</span>`:''}`:`${fE.format(r.erl)}<br><span class="small">ausbezahlt ${fE.format(r.val)}${r.fee>0?`, Gebühr ${fE.format(r.fee)}`:''}</span>`;
       const rw=dxRowW(i),opts=[...WL,...extra],ws=`<label class="small">Wallet: <select data-dxr="${i}" aria-label="Wallet der Zeile vom ${dS(r.date)}">${(opts.includes(rw)?opts:[rw,...opts]).filter(Boolean).map(w=>`<option ${w===rw?'selected':''}>${esc(w)}</option>`).join('')}</select></label>`;
@@ -6430,7 +6447,7 @@ function renderDxPrev(){const box=$('bxprev'),D=BXP,P=D.P,top=dxTop(),pl=(n,a,b)
         x.zeit?'Der Verkauf bekommt beim Übernehmen den Zeitpunkt aus der DFX-Datei.':''].filter(Boolean);
       const ch=(x.dup&&!x.done?`<div class="bxch">${rad(i,'replace','ersetzen')}${rad(i,'keep','behalten')}${x.mv||x.back?'':rad(i,'both','beide')}</div>`:'')+
         (x.ign?`<div class="bxch"><label class="fopt"><input type="checkbox" data-bxun="${i}" ${D.un[i]===false?'':'checked'}><span>Ignorieren aufheben und verknüpfen</span></label></div>`:'');
-      return `<tr><td class="l">${dS(r.date)}${t5(r)}</td><td>${x.t==='kauf'?'Kauf':'Verkauf'}<br><span class="small">${st}</span></td><td><b>${q(r.qty)}</b> ${esc(r.coin)}</td><td>${eu}</td></tr><tr class="bxsub"${(x.dup&&!x.done)||x.ign||r.chk!=null?' data-pz':''}><td colspan="4"><div class="bxsw">${x.done?'':ws}${hints.map((t,j)=>`${j||!x.done?'<br>':''}<span class="small">${t}</span>`).join('')}${ch}</div></td></tr>`}).join('')}</table></div>`}
+      return `${bxRow(r,`${x.t==='kauf'?'Kauf':'Verkauf'}<br><span class="small">${st}</span>`,`<b>${q(r.qty)}</b> ${esc(r.coin)}`,eu)}<tr class="bxsub"${(x.dup&&!x.done)||x.ign||r.chk!=null?' data-pz':''}><td colspan="4"><div class="bxsw">${x.done?'':ws}${hints.map((t,j)=>`${j||!x.done?'<br>':''}<span class="small">${t}</span>`).join('')}${ch}</div></td></tr>`}).join('')}</table></div>`}
   else h+='<p class="small">In der Datei steht kein Kauf und kein Verkauf, den das Tool übernehmen kann.</p>';
   // Ab 0.119 (5b, Florians Ergänzung 1): Folgen von „Ignorieren aufheben“ (neuer Dienst DFX.swiss, was wegfällt), auf einer Kopie durchgespielt
   {const A=dxUnPlan(plan,D);if(A.txt)h+=`<div class="msg ${A.bad?'warn':'info'}"><p>Beim Übernehmen:</p><p>${esc(A.txt).replace(/\n/g,'<br>')}</p></div>`}
@@ -9054,15 +9071,25 @@ function tdPrevDo(k,all,box){const P=tdPrevAns(S,k);if(!P)return;const m=S.wtx[k
 // Ab 0.49 (1.1): Frage nach der Kartengebühr. Feld „Gebühr“ in % (vorbelegt 3 bzw. die letzte Antwort derselben Wallet, cardPrev), daneben was das
 // heißt, darunter alle offenen Kartenzahlungen (Häkchen vorab gesetzt, diese markiert), „Für alle n übernehmen“ · „Nur diese“ · „Später“.
 const cardFeeTxt=(c,p)=>{if(!(p>=0&&p<=50))return '';const x=cardFeeOf(c.qty,p);return `= ${fmtNum(x.fee)} ${c.coin}, Wert der Zahlung ${usd(x.usd)}`};
-const cfPct=box=>{const e=box.querySelector('[data-cfp]'),s=e?String(e.value).trim():'';if(!s)return NaN;const v=parseDe(s.replace('.',','));return v>=0&&v<=50?v:NaN};
-// Ab 0.50 (3.4): ein Hauptknopf „Übernehmen (n)“ (die Zahl folgt den Häkchen), die aktuelle Zahlung ist „diese“ (auch am Handy); „Nur diese“ und „Später“
-// gibt es nicht mehr. Darunter steht das Formular der Zahlung (form im Punkt).
-function cardQH(c){const P=cardPrev(S,c),p=P?P.p:3,O=S.cx.filter(x=>x!==c&&cardOpen(S,x)).sort((a,b)=>((a.date||'')+(a.time||''))<((b.date||'')+(b.time||''))?-1:1),L=[c,...O],n=L.length,cb=n>1;
-  const cpT=x=>{const m=x.wk&&S.wtx[x.wk];return m?esc(frName(m.to)||wShort(m.to)):'–'};
-  const rows=L.map(x=>`<tr${x===c?' class="tdcur"':''}><td><input type="checkbox" data-cfi="${x.id}" checked aria-label="${esc(dS(x.date)+', '+fmtNum(x.qty)+' '+x.coin)} übernehmen"></td><td>${dS(x.date)}<span class="small tdbt">${(x.time||'').slice(0,5)}</span></td><td class="tdbc">${(x.time||'').slice(0,5)}</td><td><span class="nw"><b>${fmtNum(x.qty)}</b> ${esc(x.coin)}</span>${x===c?' <span class="small tddi">diese</span>':''}</td><td><span class="nw">${cpT(x)}</span></td></tr>`).join('');
-  return `<div class="tdprev tdcfee" data-cfk="${c.id}">${P?`<p>Vorschlag wie am ${dm(P.d)}: ${plainDe(P.p)} %.</p>`:''}<div class="row tdcfr"><span>${gl('kartengeb','Gebühr')}</span> ${pctIn('data-cfp',p,'Kartengebühr in Prozent')} % <span class="small" data-cfx>${esc(cardFeeTxt(c,p))}</span></div>`+
-    (cb?`<table class="tdbk"><thead><tr><th><span class="vh">übernehmen</span></th><th>Datum</th><th class="tdbc">Uhrzeit</th><th>Menge</th><th>Gegenseite</th></tr></thead><tbody>${rows}</tbody></table>`:'')+
-    `<div class="row"><button type="button" class="btn primary" data-cfall>Übernehmen (${fI.format(n)})</button></div><div class="wpaymsg"></div></div>`}
+// Ab 0.50 (3.4): ein Hauptknopf „Übernehmen (n)“ (die Zahl folgt den Häkchen); „Nur diese“ und „Später“ gibt es nicht mehr.
+// Ab 0.132 (Florians Auftrag): alle offenen Kartenzahlungen in einem Punkt (bis 0.131 je Zahlung ein Punkt mit derselben Tabelle). Je Zahlung eine Zeile
+// mit Häkchen, Datum, Menge, eigenem Feld „Gebühr %“ (vorbelegt 3 bzw. die letzte Antwort derselben Wallet, cardPrev), daneben was das heißt, und ✎
+// (klappt das Formular dieser Zahlung unter der Tabelle auf, CF_EDIT). Bei mehreren Zahlungen darüber „Gebühr für alle gewählten“ (füllt nur die
+// angehakten Zeilen). „Übernehmen (n)“ schreibt je angehakter Zeile ihren eigenen Wert. CF_ST merkt Getipptes und abgewählte Häkchen, solange der Punkt offen ist.
+let CF_EDIT=null,CF_ST={v:{},off:{}};
+const cfReset=()=>{CF_ST={v:{},off:{}}};
+const cfOpenL=()=>S.cx.filter(c=>cardOpen(S,c)).sort((a,b)=>((a.date||'')+(a.time||''))<((b.date||'')+(b.time||''))?-1:1);
+const cfPctV=v=>{const s=String(v==null?'':v).trim();if(!s)return NaN;const x=parseDe(s.replace('.',','));return x>=0&&x<=50?x:NaN};
+const cfPct=(box,id)=>{const e=box.querySelector(`[data-cfp="${id}"]`);return e?cfPctV(e.value):NaN};
+function cardQH(L){const n=L.length,cpT=x=>{const m=x.wk&&S.wtx[x.wk];return m?esc(frName(m.to)||wShort(m.to)):'–'},PV=L.map(x=>cardPrev(S,x)),P0=PV[0],same=!!P0&&PV.every(P=>P&&P.d===P0.d&&P.p===P0.p);
+  const rows=L.map((x,i)=>{const tm=(x.time||'').slice(0,5),lab=esc(dS(x.date)+', '+fmtNum(x.qty)+' '+x.coin),raw=CF_ST.v[x.id],v=raw!=null?(isNaN(cfPctV(raw))?'':cfPctV(raw)):(PV[i]?PV[i].p:3),t=esc(cardFeeTxt(x,cfPctV(v)));
+    return `<tr data-cfr="${x.id}"${CF_EDIT===x.id?' class="tdcur"':''}><td><input type="checkbox" data-cfi="${x.id}" ${CF_ST.off[x.id]?'':'checked'} aria-label="${lab} übernehmen"></td><td>${dS(x.date)}<span class="small tdbt">${tm}</span></td><td class="tdbc">${tm}</td><td><span class="nw"><b>${fmtNum(x.qty)}</b> ${esc(x.coin)}</span></td><td class="tdbc"><span class="nw">${cpT(x)}</span></td>`+
+      `<td><span class="nw">${pctIn(`data-cfp="${x.id}"`,v,'Kartengebühr in Prozent, '+dS(x.date)+', '+fmtNum(x.qty)+' '+x.coin)} %</span> <span class="small cfxw" data-cfx="${x.id}">${t}</span></td><td><button type="button" class="btn sm" data-cfe="${x.id}" aria-expanded="${CF_EDIT===x.id?'true':'false'}" aria-label="${lab} bearbeiten">✎</button></td></tr>`+
+      `<tr class="cfsub"><td></td><td colspan="6"><span class="small" data-cfx="${x.id}">${t}</span></td></tr>`}).join('');
+  return `<div class="tdprev tdcfee">${same?`<p>Vorschlag wie am ${dm(P0.d)}: ${plainDe(P0.p)} %.</p>`:''}`+
+    (n>1?`<div class="row tdcfr"><label>Gebühr für alle gewählten ${pctIn('data-cfa','','Kartengebühr in Prozent für alle gewählten Zahlungen')} %</label></div>`:'')+
+    `<table class="tdbk cft"><thead><tr><th><span class="vh">übernehmen</span></th><th>Datum</th><th class="tdbc">Uhrzeit</th><th>Menge</th><th class="tdbc">Gegenseite</th><th>${gl('kartengeb','Gebühr')} %</th><th><span class="vh">bearbeiten</span></th></tr></thead><tbody>${rows}</tbody></table>`+
+    `<div class="row"><button type="button" class="btn primary" data-cfall${L.some(x=>!CF_ST.off[x.id])?'':' disabled'}>Übernehmen (${fI.format(L.filter(x=>!CF_ST.off[x.id]).length)})</button></div><div class="wpaymsg"></div></div>`}
 // Satz unter dem Kopf einer offenen Bewegung: weitere offene Beträge an bzw. von derselben Adresse; Testbetrag (meine Regel: zwei Beträge an dieselbe
 // Adresse innerhalb von 6 Std., der frühere höchstens 10 % des späteren). Nur Hinweis, keine Zuordnung.
 function tdSameH(k){const m=S.wtx[k];if(!m||m.sus||m.st!=='open')return '';const s=wSide(m),cp=s==='in'?m.from:s==='out'?m.to:'';if(!cp||wIsPay(cp)||wIsTag(cp))return '';
@@ -9131,11 +9158,13 @@ function todoItems(C){
       sug2:`<p>Als Zahlung anlegen. Wert geschätzt: abgebuchter Betrag ohne Kartengebühr von ${pctIn(`data-paypct="${esc(w)}"`,pct,'Kartengebühr in Prozent')} %, als geschätzt markiert.</p><div class="row"><button type="button" class="btn primary" data-payone1="${K}">Übernehmen</button></div><div class="wpaymsg"></div>`,
       li:{d:m.date,w:w||'',what:'Kartenzahlung ohne Eintrag',q:mq(m)}})}
   // Ab 0.49 (1.1): Kartenzahlung mit geschätzter Kartengebühr: gelbe Frage „Gab es eine Kartengebühr?“ (cardQH)
-  for(const c of S.cx.filter(c=>cardOpen(S,c))){const m=c.wk&&S.wtx[c.wk];
-    I.push({id:'cf:'+c.id,lv:'y',kind:'cfee',t:c.date?wSec(c.date,c.time||''):0,eur:0,ref:'c:'+c.id,hdS:tdHdL(c.date,c.time,m?wNet(m.net):''),
-      big:`Kartenzahlung <span class="nw">${fmtNum(c.qty)} ${esc(c.coin)}</span> am ${dm(c.date)}: Gab es eine Kartengebühr?`,
-      why:`Bis zu deiner Antwort rechnet das Tool mit ${plainDe(c.cardPct)} % Kartengebühr, der Wert gilt als geschätzt.`,sugH:cardQH(c),form:{id:c.id},
-      li:{d:c.date,w:c.wallet,what:'Kartengebühr?',q:fmtNum(c.qty)+' '+c.coin}})}
+  // Ab 0.132: ein Punkt für alle offenen Kartenzahlungen (id 'cf'). Bei genau einer Zahlung der große Satz wie bis 0.131.
+  {const L=cfOpenL(),n=L.length;if(CF_EDIT!=null&&!L.some(c=>c.id===CF_EDIT))CF_EDIT=null;
+    if(n){const c=L[0],m=c.wk&&S.wtx[c.wk],ed=CF_EDIT!=null?L.find(x=>x.id===CF_EDIT):null,ps=[...new Set(L.map(x=>x.cardPct))];
+      I.push(Object.assign({id:'cf',lv:'y',kind:'cfee',t:c.date?wSec(c.date,c.time||''):0,eur:0,ref:'c:'+(ed||c).id,hdS:n===1?tdHdL(c.date,c.time,m?wNet(m.net):''):'',
+        big:n===1?`Kartenzahlung <span class="nw">${fmtNum(c.qty)} ${esc(c.coin)}</span> am ${dm(c.date)}: Gab es eine Kartengebühr?`:`<span class="nw">${fI.format(n)} Kartenzahlungen:</span> Gab es eine Kartengebühr?`,
+        why:n===1?`Bis zu deiner Antwort rechnet das Tool mit ${plainDe(c.cardPct)} % Kartengebühr, der Wert gilt als geschätzt.`:`Bis zu deiner Antwort rechnet das Tool mit ${ps.length===1?plainDe(ps[0])+' % Kartengebühr':'der geschätzten Kartengebühr'}, die Werte gelten als geschätzt.`,
+        sugH:cardQH(L),li:{d:c.date,w:c.wallet,what:n===1?'Kartengebühr?':`Kartengebühr? (${fI.format(n)} Zahlungen)`,q:n===1?fmtNum(c.qty)+' '+c.coin:''}},ed?{form:{id:ed.id}}:{}))}}
   // Lücken (Einkauf fehlt): Reihenfolge (gelb), von einem Duplikat erklärt (grau darunter), Vertippt? (gelb), sonst rot. Folgen grau darunter.
   const jE=(e,t)=>e.src==='tag'?`<button type="button" class="zlink" data-wjt="${esc(e.id)}">${t}</button>`:e.cx!=null&&S.cx[e.cx]?`<button type="button" class="zlink" data-wjc="${S.cx[e.cx].id}">${t}</button>`:e.cxi!=null&&S.cx[e.cxi]?`<button type="button" class="zlink" data-wjc="${S.cx[e.cxi].id}">${t}</button>`:'';
   // Ab 0.47 (1.6): Ursachen von außen für Folgefehler: offene Eingänge aus einer Datei (in ihrer Wallet), offene Zugänge der Börse (bei der Börse),
@@ -9464,7 +9493,7 @@ function renderTodo(C){
   // Ab 0.47 (2.4): in jeder Karte mit Formular (x.form: {pre} neu vorbelegt oder {id} Eintrag ergänzen)
   const fm=x&&x.form;
   if(fm&&!TD_KIND&&$('td-slot')&&$('td-modal').classList.contains('on')&&!(MODAL&&MODAL.id==='cx-modal')){
-    if(!CX_EMB||CX_EMB.id!==x.id){if(CX_EMB)endEdit();CX_EMB={id:x.id,k:x.mv||''};endEdit();openCx(fm.id!=null?fm.id:null,fm.pre)}cxEmbIn()}
+    if(!CX_EMB||CX_EMB.id!==x.id||CX_EMB.fid!==fm.id){if(CX_EMB)endEdit();CX_EMB={id:x.id,k:x.mv||'',fid:fm.id};endEdit();openCx(fm.id!=null?fm.id:null,fm.pre)}cxEmbIn()}
   else if(CX_EMB){CX_EMB=null;endEdit()}
   // Ab 0.55 (2): Tag-Zeile: Woher/Wohin mit „Euro laut Kontoauszug“ und Geschenk füllen (wie im Fenster der Tag-Zeile)
   {const R=$('wtodo').querySelector('.tdc [data-tq]');if(R&&S.tag[R.dataset.tq])tagWFill(R,S.tag[R.dataset.tq])}
@@ -9512,7 +9541,7 @@ function cxEmbBack(keep){const box=$('cx-modal').querySelector('.box'),help=$('c
 function tdKind(v){const x=TD_ITEMS[TD_POS];if(!x||!x.id.startsWith('m:'))return;
   TD_KIND=v&&TD_KIND!==v?v:'';if(TD_KIND&&CX_EMB){cxEmbBack();endEdit();CX_EMB=null}
   render();const b=$('wtodo').querySelector(TD_KIND?`[data-tdk="${TD_KIND}"]`:'#cx-kind');if(b)b.focus()}
-function tdGo(i){if(CX_EMB){cxEmbBack();endEdit()}TD_DIRTY='';TD_MK='';TD_POS=Math.max(0,Math.min(TD_ITEMS.length-1,i));TD_CUR=TD_ITEMS[TD_POS]?TD_ITEMS[TD_POS].id:'';TD_KIND='';render();$('wtodo').scrollIntoView({block:'start'});const b=$('td-modal').querySelector('.box');if(b)b.scrollTop=0}
+function tdGo(i){if(CX_EMB){cxEmbBack();endEdit()}TD_DIRTY='';CF_EDIT=null;cfReset();TD_MK='';TD_POS=Math.max(0,Math.min(TD_ITEMS.length-1,i));TD_CUR=TD_ITEMS[TD_POS]?TD_ITEMS[TD_POS].id:'';TD_KIND='';render();$('wtodo').scrollIntoView({block:'start'});const b=$('td-modal').querySelector('.box');if(b)b.scrollTop=0}
 // Rückweg aus der Liste (3.3): Leiste „← Zurück zu „Noch offen“ (n offen)“ im stehenden Titel von „Alle Vorgänge“, mit ×
 function tdBack(){const b=$('tdback');if(!b)return;const n=(LAST_TODO||{}).n||0;b.hidden=!TD_BACK||!n;
   b.innerHTML=TD_BACK&&n?`<button type="button" class="btn golist back" data-tdbk>← Zurück zu „Noch offen“ (${fI.format(n)} offen)</button><button type="button" class="mx tdbx" data-tdbx aria-label="Leiste ausblenden">×</button>`:''}
@@ -9567,6 +9596,7 @@ function tdClick(e){
     if(b.dataset.pvno!=null){const m=S.wtx[k];if(m){const pa=tdPrevAns(S,k);naRec(S,'prev',pa?'Wie am '+dm(pa.d):'',()=>m.noAsk.push('prev'));save();render()}return}tdPrevDo(k,b.dataset.pvall!=null,box);return}}
   // Ab 0.49 (1.1): Kartengebühr übernehmen mit „Rückgängig“. Ab 0.50 (3.4) nur noch „Übernehmen (n)“ für die angehakten Zahlungen
   {const b=e.target.closest('[data-cfall]');if(b){cfApply(b.closest('.tdcfee'));return}}
+  {const b=e.target.closest('[data-cfe]');if(b){cfEdit(+b.dataset.cfe);return}}
   // Ab 0.47 (2.4): „Hatte ich schon“ stellt das offene Formular auf diese Art
   if(e.target.closest('[data-tdhatte]')){$('cx-kind').value='hatte';$('cx-kind').onchange();const f=$('cx-eur');if(f)f.focus();return}
 
@@ -9711,16 +9741,26 @@ function keepOn(v){const i=v.indexOf(':'),k=v.slice(0,i),x=v.slice(i+1);
   save();render()}
 // Ab 0.49 (1.1), ab 0.50 als Funktion (auch für „Speichern“ in der Rückfrage, 1.2): Kartengebühr übernehmen (angehakte oder nur diese) mit „Rückgängig“.
 // false = keine gültige Zahl (Hinweis am Feld) oder nichts angehakt
-function cfApply(box,one){const id=+box.dataset.cfk,p=cfPct(box);if(isNaN(p)){box.querySelector('.wpaymsg').innerHTML='<div class="msg warn">Kartengebühr: Schreibe eine Zahl von 0 bis 50, z. B. 3 oder 1,5.</div>';return needMark(box,[['[data-cfp]','']])}
-  const cbs=[...box.querySelectorAll('[data-cfi]')],ids=one||!cbs.length?[id]:cbs.filter(x=>x.checked).map(x=>+x.dataset.cfi);if(!ids.length)return false;
-  const snap=JSON.stringify(S),L=cardAnswer(S,ids,p);TD_DIRTY=TD_DIRTY.replace('p','');save();render();
-  toastUndo(`${L.length===1?'1 Kartenzahlung':fI.format(L.length)+' Kartenzahlungen'}: Kartengebühr ${plainDe(p)} % übernommen.`,snap);return true}
+function cfApply(box){const cbs=[...box.querySelectorAll('[data-cfi]')].filter(x=>x.checked),ids=cbs.map(x=>+x.dataset.cfi);if(!ids.length)return false;
+  const bad=ids.filter(id=>isNaN(cfPct(box,id)));
+  if(bad.length){box.querySelector('.wpaymsg').innerHTML='<div class="msg warn">Kartengebühr: Schreibe eine Zahl von 0 bis 50, z. B. 3 oder 1,5.</div>';return needMark(box,bad.map(id=>[`[data-cfp="${id}"]`,'']))}
+  const snap=JSON.stringify(S),ps=ids.map(id=>cfPct(box,id));let n=0;ids.forEach((id,i)=>{n+=cardAnswer(S,[id],ps[i]).length});
+  TD_DIRTY=TD_DIRTY.replace('p','');cfReset();save();render();
+  toastUndo(`${n===1?'1 Kartenzahlung':fI.format(n)+' Kartenzahlungen'}: ${new Set(ps).size===1?`Kartengebühr ${plainDe(ps[0])} %`:'Kartengebühren'} übernommen.`,snap);return true}
 // Ab 0.48 (Nachtrag 1, 3.1): Zahl im Knopf „Für alle n übernehmen“ folgt den Häkchen
 $('wtodo').addEventListener('change',e=>{if(!e.target.matches('[data-pvi]'))return;const box=e.target.closest('.tdprev'),n=box.querySelectorAll('[data-pvi]:checked').length,b=box.querySelector('[data-pvall]');if(b){b.textContent=`Für ${n===1?'diesen':'alle '+fI.format(n)} übernehmen`;b.disabled=!n}});
 $('wtodo').addEventListener('toggle',()=>tdFitH(),true);
 // Ab 0.49 (1.1): Kartengebühr: Satz „= … , Wert der Zahlung …“ beim Tippen, Zahl im Knopf folgt den Häkchen
-$('wtodo').addEventListener('input',e=>{const i=e.target.closest('[data-cfp]');if(!i)return;const box=i.closest('.tdcfee'),c=cxById(+box.dataset.cfk),x=box.querySelector('[data-cfx]');if(c&&x)x.textContent=cardFeeTxt(c,cfPct(box))});
-$('wtodo').addEventListener('change',e=>{if(!e.target.matches('[data-cfi]'))return;const box=e.target.closest('.tdcfee'),n=box.querySelectorAll('[data-cfi]:checked').length,b=box.querySelector('[data-cfall]');if(b){b.textContent=`Übernehmen (${fI.format(n)})`;b.disabled=!n}});
+// Ab 0.132: je Zeile ihr Feld; „Gebühr für alle gewählten“ füllt die angehakten Zeilen
+const cfRowTxt=(box,id)=>{const c=cxById(+id),t=c?cardFeeTxt(c,cfPct(box,id)):'';for(const x of box.querySelectorAll(`[data-cfx="${id}"]`))x.textContent=t};
+$('wtodo').addEventListener('input',e=>{const box=e.target.closest('.tdcfee');if(!box)return;const i=e.target.closest('[data-cfp]'),a=e.target.closest('[data-cfa]');
+  if(i){CF_ST.v[i.dataset.cfp]=i.value;cfRowTxt(box,i.dataset.cfp)}
+  if(a)for(const cb of box.querySelectorAll('[data-cfi]:checked')){const id=cb.dataset.cfi,f=box.querySelector(`[data-cfp="${id}"]`);if(f){f.value=a.value;CF_ST.v[id]=a.value;cfRowTxt(box,id)}}});
+$('wtodo').addEventListener('change',e=>{if(!e.target.matches('[data-cfi]'))return;const box=e.target.closest('.tdcfee'),n=box.querySelectorAll('[data-cfi]:checked').length,b=box.querySelector('[data-cfall]');
+  if(e.target.checked)delete CF_ST.off[e.target.dataset.cfi];else CF_ST.off[e.target.dataset.cfi]=1;if(b){b.textContent=`Übernehmen (${fI.format(n)})`;b.disabled=!n}});
+// ✎ in einer Zeile: Formular dieser Zahlung auf- oder zuklappen (ungespeicherte Eingaben im Formular fragen wie beim Verlassen des Punkts)
+function cfEdit(id){const go=()=>{CF_EDIT=CF_EDIT===id?null:id;TD_DIRTY=TD_DIRTY.replace('f','');if(CX_EMB){cxEmbBack();endEdit();CX_EMB=null}render();const r=$('wtodo').querySelector(`[data-cfe="${id}"]`);if(r)r.focus()};
+  if(TD_DIRTY.includes('f')){const p=TD_DIRTY.includes('p');TD_DIRTY='f';tdLeave(()=>{if(p&&!TD_DIRTY.includes('p'))TD_DIRTY+='p';go()})}else go()}
 // Ab 0.47 (3.4): Vorschlag oben im Formular-Fenster: dieselben Knöpfe; nach „Übernehmen“ oder „Nein“ schließt das Fenster
 $('cx-sug').addEventListener('click',wfAct);$('cx-sug').addEventListener('click',tdClick);
 $('cx-sug').addEventListener('click',e=>{if(e.target.closest('button[data-wa],button[data-sug],button[data-sugno],button[data-dupkeep]')&&MODAL&&MODAL.id==='cx-modal'){endEdit();closeModal()}});
@@ -10179,7 +10219,7 @@ async function addCx(){
     // Ab 0.49 (1.1): Kartenzahlung: Gebühr oder Wert von Hand geändert = beantwortet (fertig); einmal beantwortet bleibt beantwortet
     if(o.cardPct!=null&&k==='bezahlung'){const df=Math.abs((entry.fee||0)-(o.fee||0))>1e-9,ch=df||Math.abs((entry.usd||0)-(o.usd||0))>1e-9||entry.cur!==o.cur;
       // Ab 0.50 (3.4): Speichern im Formular des Punkts „Kartengebühr“ in „Noch offen“ beantwortet die Frage
-      if(o.cardOk||ch||(CX_EMB&&CX_EMB.id==='cf:'+o.id)){entry.cardOk=1;entry.est=false;entry.cardPct=df&&entry.cur==='USD'&&entry.usd>0?+((entry.fee||0)/entry.usd*100).toFixed(2):o.cardPct}else if(entry.est)entry.cardPct=o.cardPct}
+      if(o.cardOk||ch||(CX_EMB&&CX_EMB.id==='cf'&&CX_EMB.fid===o.id)){entry.cardOk=1;entry.est=false;entry.cardPct=df&&entry.cur==='USD'&&entry.usd>0?+((entry.fee||0)/entry.usd*100).toFixed(2):o.cardPct}else if(entry.est)entry.cardPct=o.cardPct}
     S.cx[idx]=entry;
     if(QF)S.cx=S.cx.filter(x=>!QF.fees.includes(x.id));idx=S.cx.indexOf(entry)}
   else{entry.id=++S.cxNo;if(tmIn)entry.time=tmIn;const M=CX_META&&CX_META.wk&&S.wtx[CX_META.wk];if(M&&CX_META.dxRe&&cxMetaSt(M)&&M.st!=='open'&&M.st!=='dfx')dxUndo(S,CX_META.wk);if(M&&(M.st==='open'||M.st==='dfx')){entry.src='datei';entry.wk=CX_META.wk;if(CX_META.time&&!(dxLate(entry,M)&&dxAddr(S,M.to)))entry.time=CX_META.time;M.st='cx';M.ref=entry.id;delete M.pend}
@@ -13789,7 +13829,7 @@ document.addEventListener('click',e=>{if(!MODAL||!e.target.closest)return;
 document.addEventListener('input',e=>{const t=e.target;if(!t||!t.matches||!t.matches('input,textarea,select')||t.type==='search'||t.matches('[data-apsel],[data-apnn]'))return;const M=t.closest('.modal');if(M&&M.id!=='ask-box')M.dataset.dirty='1';
   // Ab 0.50 (1.2): Eingabe im Formular oder im Feld „Gebühr %“ einer Karte von „Noch offen“
   // Ab 0.55 (2): 't' = Woher/Wohin einer Tag-Zeile mit den Feldern darunter
-  if(M&&M.id==='td-modal'){const k=t.closest('#td-slot')?'f':t.matches('[data-cfp]')?'p':t.closest('[data-tq]')?'t':'';if(k&&!TD_DIRTY.includes(k))TD_DIRTY+=k}},true);
+  if(M&&M.id==='td-modal'){const k=t.closest('#td-slot')?'f':t.matches('[data-cfp],[data-cfa]')?'p':t.closest('[data-tq]')?'t':'';if(k&&!TD_DIRTY.includes(k))TD_DIRTY+=k}},true);
 function closeModal(){if(!MODAL)return;const was=MODAL;modalOn(MODAL,false);MODAL=null;
   // Ab 0.45 (3.2): Formular aus dem Punkt von „Noch offen“ zurück in sein Fenster
   if(was.id==='td-modal'&&CX_EMB){cxEmbBack();endEdit();TD_KIND=''}
@@ -13862,11 +13902,16 @@ function pzUpd(){const el=$('dt-pz');if(!el)return;const P=pzPane(),n=P?P.box.qu
   const h=n?`<p class="sigl y pzl"><b>${n===1?'1 Eintrag wartet':fI.format(n)+' Einträge warten'} auf deine Prüfung.</b> <button type="button" class="zlink" data-pzgo>${n===1?'Dorthin':'Zum ersten'}&nbsp;↓</button></p>`:'';
   if(el.innerHTML!==h)el.innerHTML=h;
   if(P&&P.box.innerHTML&&!PZ_SEEN.has(P.cur)){PZ_SEEN.add(P.cur);requestAnimationFrame(()=>{if(pzPane()&&pzPane().cur===P.cur)pzGo()})}}
-function pzGo(){const P=pzPane();if(!P)return;const bx=$('dt-modal').querySelector('.box');let t=P.box.querySelector('[data-pz]')||P.box.querySelector('.tprev')||P.box;if(!bx||!t)return;
+function pzGo(again){const P=pzPane();if(!P)return;const bx=$('dt-modal').querySelector('.box');let t=P.box.querySelector('[data-pz]')||P.box.querySelector('.tprev')||P.box;if(!bx||!t)return;
   // Bei einer Zeile mit der Wahl darunter (tr.bxsub) beginnt der Eintrag eine Zeile darüber
   if(t.matches('tr.bxsub')&&t.previousElementSibling)t=t.previousElementSibling;
   // Ziel oben im sichtbaren Bereich, mit etwas Luft unter dem × (stehend), damit der Eintrag mit seiner Frage ganz zu sehen ist
-  const y=t.getBoundingClientRect().top-bx.getBoundingClientRect().top+bx.scrollTop-40;bx.scrollTo(0,Math.max(0,y))}
+  // Ab 0.132: Steht die Zeile „n Einträge warten …“ oben (position:sticky), beginnt der sichtbare Bereich unter ihr
+  const pz=$('dt-pz'),st=pz&&pz.firstChild&&getComputedStyle(pz).position==='sticky'?pz.offsetHeight+8:40;
+  const y=t.getBoundingClientRect().top-bx.getBoundingClientRect().top+bx.scrollTop-st;bx.scrollTo(0,Math.max(0,y));
+  // Die Vorschau bricht kurz danach noch einmal um (geschützte Leerzeichen aus regelB). Hat seither niemand gescrollt, einmal nachstellen,
+  // damit die stehende Zeile den Anfang des Eintrags nicht verdeckt.
+  if(!again){const y0=bx.scrollTop;setTimeout(()=>{const Q=pzPane();if(Q&&Q.cur===P.cur&&Math.abs(bx.scrollTop-y0)<2)pzGo(true)},160)}}
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-pzgo]'))pzGo()});
 function dtRender(){dtWaitClean();
   $('dt-t').textContent='＋ Daten';
@@ -14165,24 +14210,45 @@ if(!BOOT_BAD)autoRates();
 // ein Coin-Name (USDC, USDT, ETH …, auch EUR) nur direkt hinter einer Zahl. Umgesetzt nur in der Anzeige: Reiter Wallet, Fenster, „＋ Daten“, Hinweise (Toast)
 // und Begriffe. Excel, CSV, Sicherung und gespeicherte Texte bleiben unverändert. regelBTxt = reine Textfunktion (node-Tests), regelB = DOM-Durchlauf.
 const RB_U=/(\S)[ \t](€|USD|%)(?![A-Za-zÄÖÜäöüß0-9])/g,RB_C=/(\d)[ \t]([A-Z][A-Z0-9.]{1,9})(?![A-Za-zÄÖÜäöüß0-9])/g;
-const regelBTxt=s=>String(s).replace(RB_U,'$1 $2').replace(RB_C,(a,d,u)=>/^(USD|EUR|[A-Z]{2,6}[A-Z0-9]?)$/.test(u.replace(/\.$/,''))?d+' '+u:a);
+const regelBTxt0=s=>String(s).replace(RB_U,'$1 $2').replace(RB_C,(a,d,u)=>/^(USD|EUR|[A-Z]{2,6}[A-Z0-9]?)$/.test(u.replace(/\.$/,''))?d+' '+u:a);
+// Ab 0.132 (Florians Regel ab 0.126, GESTALTUNG Abschnitt 5, jetzt überall): Zahl und Wort wie „4 Dateien“ hängen mit einem geschützten Leerzeichen zusammen.
+// Gebunden wird eine Mengenzahl (1 bis 3 Ziffern oder mit Tausenderpunkt, auch mit Komma: RB_ZN) vor einem großgeschriebenen Wort („43 Vorgänge“, „16 Uhr“,
+// „13 Min.“), vor einem kleingeschriebenen nur, wenn es wie ein Eigenschaftswort endet und ein Hauptwort folgt („43 neue Buchungen“, RB_ZK ohne die
+// Kleinwörter RB_ZS). Dazu „Uhr“ nach einer Uhrzeit („10:00 Uhr“, eine Einheit nach Regel B, Florians Antwort zu 0.132).
+// Nicht gebunden: Datum und Uhrzeit selbst, Version („0.48“), Jahreszahl und jede Zahl ab 4 Ziffern ohne Tausenderpunkt (Kontonummer), Kennungen und
+// Adressen („W-56“, „0x…12“, Zeichen davor: RB_ZV), „10. März“ und „1. Reports laden“ (kein Leerzeichen nach der Zahl), eine Zahl nach einem Zählwort
+// („Schritt 4“, „Kennzahl 857“, „§ 23“: RB_ZL), „43 im Plus“, die erste Zahl in „79 von 89 Trades“. Ohne Lookbehind, damit auch ältere Browser das Skript lesen.
+const RB_ZV=/[0-9A-Za-zÄÖÜäöüß.,:;\/…_#+\-–−§×]/,RB_Z=/(\d[\d.]*(?:,\d+)?)[ \t](?=[A-Za-zÄÖÜäöüß])/g,RB_ZN=/^(?:[1-9]\d{0,2}(?:\.\d{3})+|\d{1,3})(?:,\d+)?$/,RB_ZE=/(\d[\d.]*(?:,\d+)?)$/,
+  RB_ZL=/(?:^|[^A-Za-zÄÖÜäöüß]|(?=§))(?:Schritt|Punkt|Seite|Zeile|Zeilen|Konto|Nr\.|Regel|Abschnitt|Teil|Vorschlag|Kennzahl|Kennzahlen|Anlage|Spalte|Runde|Phase|Fall|Version|Woche|KW|Jahr|Steuerjahr|Stufe|Frage|Variante|Möglichkeit|Art|Typ|MetaTrader|§|Abs\.|Satz|Rn\.|Art\.|Ziffer|Tz\.)[ \u00a0]$/,
+  RB_ZK=/^[a-zäöüß]+(?:e|en|er|es|em)[ \u00a0]+[A-ZÄÖÜ]/,RB_ZS=/^(?:oder|ohne|unter|über|der|die|den|dem|des|eine|einen|einer|eines|einem|keine|keinen|alle|allen|aller|diese|diesen|dieser|dieses|jede|jeden|jeder|deine|deinen|deiner|seine|ihre|aber|welche|beide|beiden)[ \u00a0]/,
+  RB_UHR=/(\d{1,2}:\d{2})[ \t](Uhr)(?![A-Za-zÄÖÜäöüß])/g;
+const rbZOk=(vor,z,nach)=>!(vor&&RB_ZV.test(vor.slice(-1)))&&RB_ZN.test(z)&&!RB_ZL.test(vor)&&(/^[A-ZÄÖÜ]/.test(nach)||(RB_ZK.test(nach)&&!RB_ZS.test(nach)));
+const rbZ=s=>s.replace(RB_Z,(a,z,o,str)=>rbZOk(str.slice(0,o),z,str.slice(o+a.length))?z+'\u00a0':a).replace(RB_UHR,'$1\u00a0$2');
+const regelBTxt=s=>rbZ(regelBTxt0(s));
 const RB_LEAD=/^[ \t](€|USD|%|[A-Z][A-Z0-9]{1,9})(?![A-Za-zÄÖÜäöüß0-9])/;
 // Ab 0.119: ohne SVG (Grafiken brechen nie um, ihre Texte bleiben unverändert) und ohne die Druckseite der Zusammenfassung (#s-print)
 function regelB(root){if(!root||!document.createTreeWalker||(root.closest&&root.closest(RB_SKIP)))return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentNode;
     return !p||/^(SCRIPT|STYLE|TEXTAREA|OPTION)$/.test(p.nodeName)||p.namespaceURI==='http://www.w3.org/2000/svg'||(p.closest&&p.closest(RB_SKIP))?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT}});
   const N=[];for(let n=tw.nextNode();n;n=tw.nextNode())if(n.nodeValue)N.push(n);
   const unitAfter=(i,d)=>{for(let j=i+1;j<N.length;j++){const v=N[j].nodeValue;if(!/\S/.test(v))continue;const m=/^(€|USD|%|[A-Z][A-Z0-9]{1,9})(?![A-Za-zÄÖÜäöüß0-9])/.exec(v);return !!m&&(d||/^(€|USD|%)$/.test(m[1]))}return false};
-  let pv='';
+  // Ab 0.132: Zahl und Wort über Knotengrenzen („<b>3</b> Dateien“, „3 <b>Dateien</b>“), nur im selben Textfluss (RB_INL: kein Block, keine Zelle, kein Knopf dazwischen)
+  const fl=n=>{let p=n.parentNode;while(p&&p!==root&&RB_INL.test(p.nodeName))p=p.parentNode;return p},nx=i=>{for(let j=i+1;j<N.length;j++)if(/\S/.test(N[j].nodeValue))return j;return -1};
+  let pv='',pi=-1;
   N.forEach((n,i)=>{const v=n.nodeValue;let w=regelBTxt(v);
+    if(pv&&pi>=0){const m=RB_ZE.exec(pv);
+      if(m&&/^[ \t][A-Za-zÄÖÜäöüß]/.test(w)&&fl(N[pi])===fl(n)&&rbZOk(pv.slice(0,m.index),m[1],w.slice(1)))w='\u00a0'+w.slice(1);
+      else if(m&&/^[ \t]+$/.test(w)){const j=nx(i);if(j>=0&&/^[A-Za-zÄÖÜäöüß]/.test(N[j].nodeValue)&&fl(N[pi])===fl(n)&&fl(n)===fl(N[j])&&rbZOk(pv.slice(0,m.index),m[1],N[j].nodeValue))w='\u00a0'}}
+    if(/\d[ \t]$/.test(w)){const m=RB_ZE.exec(w.slice(0,-1)),j=nx(i);
+      if(m&&j>=0&&/^[A-Za-zÄÖÜäöüß]/.test(N[j].nodeValue)&&fl(n)===fl(N[j])&&rbZOk(w.slice(0,m.index),m[1],N[j].nodeValue))w=w.slice(0,-1)+'\u00a0'}
     // über Knotengrenzen: „<b>100,00</b> USDC“, „<b>100,00</b> <span>USDC</span>“, „Summe <b>USD</b>“
     if(/^[ \t]/.test(w)&&pv){const m=RB_LEAD.exec(w);if(m&&(/\d$/.test(pv)||(/^(€|USD|%)$/.test(m[1])&&/\S$/.test(pv))))w='\u00a0'+w.slice(1);
       else if(/^[ \t]+$/.test(w)&&unitAfter(i,/\d$/.test(pv)))w='\u00a0'}
     if(/[ \t]$/.test(w)&&/\S/.test(w)&&unitAfter(i,/\d[ \t]$/.test(w)))w=w.slice(0,-1)+'\u00a0';
-    if(w!==v)n.nodeValue=w;if(/\S/.test(w))pv=w.replace(/\s+$/,'')})}
+    if(w!==v)n.nodeValue=w;if(/\S/.test(w)){pv=w.replace(/\s+$/,'');pi=i}})}
 // Ab 0.119 (Florians Auftrag): Regel B in allen Reitern (auch Auswertung, dort nur der Umbruch), Kopf, Reiterleiste, Fuß, Fenster und Hinweise.
 // Die Warteschlange nimmt nicht mehr den ganzen Reiter, sondern das kleinste Stück um die Änderung (Karte, Fenster, Vorschau, Toast, Begriff), sonst den
 // Bereich selbst. Der Beobachter hört nur auf childList und characterData, nicht auf Attribute: Scrollen (--tabsoff, Deckkraft, Klassen) kostet nichts.
-const RB_ROOT='header,nav,main>section,footer,.modal,#cptoast,#glpop,#adpop,#dt-panes,#bxprev,#wtodo',RB_SKIP='#s-print',RB_UNIT='.card,.modal .box,.tprev,.msg,#cptoast,#glpop,#adpop,#wtodo';
+const RB_ROOT='header,nav,main>section,footer,.modal,#cptoast,#glpop,#adpop,#dt-panes,#bxprev,#wtodo',RB_SKIP='#s-print',RB_INL=/^(B|STRONG|SPAN|I|EM|SMALL|U|MARK|ABBR)$/,RB_UNIT='.card,.modal .box,.tprev,.msg,#cptoast,#glpop,#adpop,#wtodo';
 let RB_Q=new Set(),RB_T=0;
 function rbRun(){RB_T=0;const L=[...RB_Q];RB_Q.clear();for(const el of L)if(el.isConnected&&!L.some(o=>o!==el&&o.isConnected&&o.contains(el)))regelB(el);if(RB_OBS)RB_OBS.takeRecords()}
 const RB_OBS=typeof window!=='undefined'&&window.MutationObserver&&typeof document!=='undefined'&&document.createTreeWalker?new MutationObserver(R=>{for(const r of R){const t=r.target.nodeType===3?r.target.parentNode:r.target;const root=t&&t.closest&&t.closest(RB_ROOT);
