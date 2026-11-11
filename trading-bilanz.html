@@ -8136,13 +8136,19 @@ const VG_LEG=[['in','kauf','Kauf'],['in','bzein','Bezahlung erhalten'],['in','gi
 // Euro fett nur bei Kauf, Verkauf, Zahlung und Tausch (4.3)
 const VG_EB=new Set(['kauf','verkauf','bezahlung','tausch']);
 // Ab 0.44: eine Bewegung als Tabellenzeile (aufgeklappt und „Alle Einzelheiten“): Zeit · Wallet · Adresse ⧉ · Netzwerk · rein/raus · Menge ·
-// Gegenseite (Name + Adresse ⧉) · Status · ↗ · Knöpfe. (Die Zeile darunter mit Frage, „Entscheiden“ und „Was ist das?“ gibt es seit 0.47 bzw. 0.55 nicht mehr.)
+// Gegenseite (Name + Adresse ⧉) · Zuordnung (bis 0.128 „Status“) · ↗ · Knöpfe. (Die Zeile darunter mit Frage, „Entscheiden“ und „Was ist das?“ gibt es seit 0.47 bzw. 0.55 nicht mehr.)
 // Am Handy wird jede Zeile ein Block „Bezeichnung: Wert“ (CSS mit data-l).
 const apW=w=>w?`<button type="button" class="adb" data-apw="${esc(w)}" aria-expanded="false" aria-label="Wallet ${esc(w)}: Adressen zeigen">${nmH(w)}</button>`:'';
 // Ab 0.55 (6): Spalte „Wallet“ der aufgeklappten Tabelle: bei einer vorläufigen Wallet nur „nicht zugeordnet“ (die Adresse steht daneben), als Link wie der Name
 const apWT=w=>w&&wProv(w)?`<button type="button" class="adb" data-apw="${esc(w)}" aria-expanded="false" aria-label="Wallet ${esc(w)}: Adressen zeigen">nicht zugeordnet</button>`:apW(w);
 function wWlB(m){return m.st==='int'?apWT(m.wFrom||m.wTo):m.side==='zw'?`${apWT(m.wFrom)} → ${apWT(m.wTo)}`:apWT(wOwnW(m))}
-function vgMvSt(m,kurz){if(m.st==='tag')return 'zu Tag';if(m.st==='cx'){const c=cxById(m.ref);return c?`Eintrag „${esc(kindL(c)||c.kind)}“${m.xin?' (Eingang)':''}`:'Eintrag'}
+// Ab 0.129 (Florians Auftrag): Die Spalte heißt „Zuordnung“ (bis 0.128 „Status“): womit die Bewegung verbunden ist. Kurze Werte: „Tag“ (bis 0.128 „zu Tag“),
+// bei einem Eintrag der Name ohne „Eintrag“ und ohne Anführungszeichen (bis 0.128 „Eintrag „Übertrag““). vgMvNm: bei „Aufladung“, „Aufladung mit Tausch“ und
+// „Tausch über Brücke“ der Name des Vorgangs (v = Vorgang, in dem die Tabelle steht; ohne v aus dem Eintrag selbst), sonst die Art des Eintrags (kindL).
+const VG_ZU=new Set(['Aufladung','Aufladung mit Tausch','Tausch über Brücke']);
+function vgMvNm(c,v){const a=v&&v.cx&&v.cx[0]===c.id?v.art:c.kind==='tausch'?(c.how==='aufladung'?'Aufladung mit Tausch':c.how==='bruecke'?'Tausch über Brücke':''):c.kind==='uebertrag'&&c.how==='aufladung'?'Aufladung':'';
+  return VG_ZU.has(a)?a:kindL(c)||c.kind}
+function vgMvSt(m,kurz,v){if(m.st==='tag')return 'Tag';if(m.st==='cx'){const c=cxById(m.ref);return c?`${esc(vgMvNm(c,v))}${m.xin?' (Eingang)':''}`:'Eintrag'}
   if(m.st==='ign')return gl('zurueckholen','ignoriert');
   // Ab 0.117: ausstehend bei DFX.swiss, Rückbuchung von DFX.swiss
   if(m.st==='dfx')return gl('dxpend','ausstehend');
@@ -8185,15 +8191,16 @@ function vgMvTr(k,PM,opt){const m=S.wtx[k];if(!m)return '';const M=wMv(k),K=esc(
   const sub=naH(k)+dxMenuH(k);
   return `<tr class="vgm${m.st==='ign'||m.st==='int'?' wfi':''}" data-wk="${K}">${td('Zeit',`${dm(m.date)} <span class="small">${m.time}</span>`)}${td('Wallet',wWlB(M)||'–')}${td('Adresse',own?`<span class="nw">${wAdr(own)}${cpBtn(own)}</span>`:'–')}${td('Netzwerk',wNet(m.net))}`+
     `${td('rein/raus',s==='in'?'rein':s==='out'?'raus':s==='zw'?'zwischen eigenen':'–')}${td('Menge',`<b>${fmtNum(m.qty)}</b> <span class="vgcn">${wCoinH(m)}</span>`,'r')}${td('Gegenseite',vgCpCell(M))}`+
-    `${td('Status',vgMvSt(M,!!(opt&&opt.kurz&&opt.kurz.has(k))))}${td('Explorer',u?`<a class="zlink noprint" href="${esc(u)}" target="_blank" rel="noopener" aria-label="Im Block-Explorer ansehen (${wNet(m.net)}, Webseite außerhalb des Tools)">↗</a>`:'–')}${td('',vgMvB(M),'vgma')}</tr>`+
+    `${td('Zuordnung',vgMvSt(M,!!(opt&&opt.kurz&&opt.kurz.has(k)),opt&&opt.v))}${td('Explorer',u?`<a class="zlink noprint" href="${esc(u)}" target="_blank" rel="noopener" aria-label="Im Block-Explorer ansehen (${wNet(m.net)}, Webseite außerhalb des Tools)">↗</a>`:'–')}${td('',vgMvB(M),'vgma')}</tr>`+
     (sub?`<tr class="vgq" data-wk="${K}"><td colspan="10">${sub}</td></tr>`:'')}
 // Ab 0.46 (1.2): Netzwerk und Gegenseite als Begriffe (gl() gibt es hier noch nicht, deshalb ausgeschrieben)
 const glS=(k,t)=>`<span class="gl" data-gl="${k}" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">${t}</span>`;
-const VG_TH=`<tr><th>Zeit</th><th>Wallet</th><th>Adresse</th><th>${glS('netzwerk','Netzwerk')}</th><th>rein/raus</th><th>Menge</th><th>${glS('gegenseite','Gegenseite')}</th><th>Status</th><th aria-label="Im Block-Explorer">↗</th><th aria-label="Knöpfe"></th></tr>`;
+const VG_TH=`<tr><th>Zeit</th><th>Wallet</th><th>Adresse</th><th>${glS('netzwerk','Netzwerk')}</th><th>rein/raus</th><th>Menge</th><th>${glS('gegenseite','Gegenseite')}</th><th>${glS('zuordnung','Zuordnung')}</th><th aria-label="Im Block-Explorer">↗</th><th aria-label="Knöpfe"></th></tr>`;
 // Bewegungen eines Vorgangs als Tabelle, nach Zeit
-// Ab 0.94 Nachtrag: Bewegungen eines Vorgangs, deren Status nur „intern“ bzw. „Umtausch“ zeigt: Gegenstück der Brücke bzw. des Umtauschs im selben Vorgang
+// Ab 0.94 Nachtrag: Bewegungen eines Vorgangs, deren Zuordnung (bis 0.128 „Status“) nur „intern“ bzw. „Umtausch“ zeigt: Gegenstück der Brücke bzw. des Umtauschs im selben Vorgang
 const vgKurz=v=>{const H=new Set(v.mv);return new Set(v.mv.filter(k=>{const m=S.wtx[k];return m&&m.st==='int'&&((m.brg&&H.has(m.brg))||(m.swap&&H.has(m.swap)))}))};
-// Ab 0.94: o.kurz = Bewegungen, deren Status ohne den kleinen Satz steht (Fenster „Bewegung“: Brücke oder Umtausch, beide Seiten im Fenster)
+// Ab 0.129: o.v = der Vorgang (für den Namen in der Spalte „Zuordnung“, vgMvNm)
+// Ab 0.94: o.kurz = Bewegungen, deren Zuordnung ohne den kleinen Satz steht (Fenster „Bewegung“: Brücke oder Umtausch, beide Seiten im Fenster)
 function vgMvTab(ks,PM,o){const L=ks.filter(k=>S.wtx[k]).sort((a,b)=>S.wtx[a].ts-S.wtx[b].ts||(a<b?-1:1));
   return L.length?`<div class="vgtw"><table class="vgtb"><thead>${VG_TH}</thead><tbody>${L.map(k=>vgMvTr(k,PM,o)).join('')}</tbody></table></div>`:''}
 function vgTagH(id){const t=S.tag[id];if(!t)return '';const a=tagAT(t),dis=t.status!=='ok';
@@ -8295,8 +8302,8 @@ function vgDetH(v,fl,DEw,PM,F,rw){const eg=vgEG(v,fl),oc=vgOcH(v,fl,DEw),tl=vgTl
   {const c0=v.cx.length?cxById(v.cx[0]):null;if(c0&&c0.via){const M=v.mv.map(k=>S.wtx[k]).filter(Boolean).sort((a,b)=>a.ts-b.ts);if(M.length){const A=[M[0].from,...M.map(m=>m.to)].filter((a,i,x)=>a&&x.indexOf(a)===i);
     L.push(`<p class="small vgchain">Weg: ${A.map(a=>`<span class="nw">${wAdr(a)}${cpBtn(a)}</span>`).join(' → ')} (über Weiterleitung ${esc((S.addr[c0.via]||{}).name||wShort(c0.via))})</p>`)}}}
   if(tk||(v.fee>0&&v.feeW))L.push(`<p class="vgn small">${tk?gl(tk,'Was heißt '+wd+'?'):''}${v.fee>0&&v.feeW?`${tk?' · ':''}Gebühr ${fmtNum(v.fee)} ${esc(v.coin)}, gebucht bei <b>${esc(v.feeW)}</b> (Verkauf zum Tageswert)`:''}</p>`);
-  // Ab 0.94 Nachtrag: beschreibt der Kasten darüber die Brücke bzw. Aufladung, zeigt „Status“ nur „intern“ bzw. „Umtausch“ (wie im Fenster „Bewegung“)
-  L.push(vgMvTab(v.mv,PM,tl?{kurz:vgKurz(v)}:null));for(const id of v.tag)L.push(vgTagH(id));for(const id of v.cx)L.push(vgCxH(id,DEw,F));
+  // Ab 0.94 Nachtrag: beschreibt der Kasten darüber die Brücke bzw. Aufladung, zeigt „Zuordnung“ (bis 0.128 „Status“) nur „intern“ bzw. „Umtausch“ (wie im Fenster „Bewegung“)
+  L.push(vgMvTab(v.mv,PM,{kurz:tl?vgKurz(v):null,v}));for(const id of v.tag)L.push(vgTagH(id));for(const id of v.cx)L.push(vgCxH(id,DEw,F));
   // Ab 0.45 (4.9): Rechenweg steht in der Karte „Rechenwege“; hier nur der Link
   if(rw&&fl.length)L.push(`<p class="small vgrwl"><button type="button" class="zlink" data-rwgo="${esc(v.id)}">Rechenweg ansehen ↓</button></p>`);
   return `<div class="vgx">${L.join('')}</div>`}
@@ -11556,6 +11563,8 @@ ${ECB_CITE}`},
   opreis:{t:'Ø-Preis',h:'Jede Wallet ist wie ein Topf: Das Tool merkt sich, wie viele Coins drin sind und was sie zusammen gekostet haben (Einkaufswert). Geteilt ergibt das den Ø-Preis. Gehen Coins raus, nehmen sie den Ø-Preis mit.'},
   restgeb:{t:'Rest bei einer Börse',h:'Bei dieser Wallet (meist eine Börse ohne Wallet-Datei) bleibt laut deinen Einträgen ein kleiner Rest, obwohl du alles weitergeschickt hast. Börsen ziehen beim Abheben oft eine feste Gebühr ab, z. B. 1,10 USDC je Abhebung. Die siehst du nicht in der Wallet-Datei, nur in der Abrechnung der Börse.\n<b>Auf die Überträge verteilen:</b> Je Kauf wird der Rest gleichmäßig auf die Überträge danach verteilt. Abgebucht ist dann etwas mehr, als ankam, der Unterschied ist die Gebühr.\n<b>Als eine Gebühr buchen:</b> ein Eintrag „Gebühr“ mit dem ganzen Rest.\nSteuerlich ist eine Gebühr in Coins ein Verkauf zum Tageswert, meist geht es um Cents. Liegt bei der Börse wirklich noch etwas, lass es so.'},
   'k-vg':{t:'Alle Vorgänge',h:'Eine Zeile je Vorgang. Ein Klick klappt ihn auf, <b>✎</b> bearbeitet ihn.\n<b>Erledigen</b> steht bei offenen Zeilen statt ✎. Der Knopf öffnet denselben Punkt wie in „Noch offen“.'},
+  // Ab 0.129 (Florians Wortlaut, vorletzter Satz nach Prüfung am Tool angepasst): Kopf der Spalte „Zuordnung“ in der Tabelle der Bewegungen (VG_TH)
+  zuordnung:{t:'Zuordnung',h:'Womit diese Bewegung verbunden ist: mit einer Ein- oder Auszahlung bei Tag („Tag“) oder mit einem Vorgang, dann steht hier sein Name, z. B. „Kauf“ oder „Aufladung“. „offen“ heißt: noch mit nichts verbunden. Steht hier „ignoriert“ oder „verdächtig“, zählt die Bewegung nicht. Bei „ausstehend“ sind die Coins schon aus der Wallet weg, ein Verkauf ist es noch nicht. Der Status des Vorgangs steht rechts in seiner Zeile.'},
   vgstatus:{t:'Status',h:'<b>fertig</b> = alles da, der Vorgang zählt. <b>Kurs fehlt</b> = für diesen Tag ist noch kein Kurs geladen, der Euro-Wert fehlt. <b>offen</b> = noch nicht entschieden, steht unter „Noch offen“. <b>Vorschlag</b> = das Tool hat eine Idee, darunter klein welche (z. B. „Übertrag zu Bitvavo?“, Übertrag = Coins zwischen zwei deiner Wallets). <b>doppelt?</b> = steht vielleicht zweimal da (an beiden Zeilen). <b>Einkauf fehlt</b> = für diesen Abgang kennt das Tool den Einkauf nicht. <b>vertippt?</b>, <b>Reihenfolge</b>, <b>prüfen</b> = bitte ansehen, Einzelheiten in „Noch offen“. <b>Wert fehlt</b> = der Eintrag zählt erst, wenn der Wert drin ist (sonst steht da, was fehlt). <b>geschätzt</b> = der Wert ist geschätzt. <b>ignoriert</b> = zählt nicht. <b>verdächtig</b> = winziger Betrag, vermutlich ein Betrugsversuch.'},
   'k-rw':{t:'Rechenwege',h:'Für jeden Vorgang, wie das Tool gerechnet hat: Euro-Wert, Einkaufswert, Gewinn oder Verlust und was danach im Topf liegt. Immer vom ältesten zum neuesten Vorgang, so wie das Tool rechnet.'},
   eurowert:{t:'Euro-Wert',h:'Wert am Tag des Vorgangs: bei Tag der Wert zum EZB-Kurs, sonst dein eingetragener Wert. Bei einem Abgang ist es der Erlös inklusive Gebühr, die Gebühr steht darunter.',de:'Wert am Tag des Vorgangs: bei Tag der Wert zum EZB-Kurs, sonst dein eingetragener Wert. Bei einem Abgang ist es der Veräußerungspreis, die Werbungskosten (Gebühr) stehen darunter.'},
@@ -13649,7 +13658,7 @@ function mvRender(){const v=vgBuild(S).find(v=>v.id===MV_ID);if(!v){$('mv-body')
   const kurz=vgKurz(v),MV=v.mv.map(k=>S.wtx[k]).filter(Boolean),kn=MV.length&&MV.every(m=>m.st==='int'&&!m.swap&&(m.brg||m.chain))?'klicke auf „keine Brücke“':MV.length&&MV.every(m=>m.st==='int'&&m.swap)?'klicke auf „das war kein Umtausch“':'nimm „Verknüpfung lösen“';
   // Ab 0.121 (Phase 2): offene Zeile der Börse (ohne Bewegung): Satz zur Börsen-Datei, löschen und ganze Datei entfernen
   const FL=vgFiles(v),dl=`<button type="button" class="btn" data-mvdel="${esc(v.id)}">${v.bxo?'Diese Zeile':v.mv.length>1?'Diese Bewegungen':'Diese Bewegung'} löschen …</button>`,fb=FL.length?`<button type="button" class="btn" data-dtfiles="${esc(v.id)}">Ganze Datei entfernen …</button>`:'';
-  $('mv-body').innerHTML=`<p>${vgFT(v)} · ${vgQ(v,{fenster:1})} · ${vgStH(v,st)}</p>${v.bxo?`<div class="tddel"><p class="small">${FL.length?`Kommt aus der Börsen-Datei ${esc(fileT(FL[0]))}.`:'Kommt aus einer Börsen-Datei.'}</p><div class="row">${dl}${fb}</div></div>`:vgMvTab(v.mv,PM,{kurz})+(v.mv.length===1?mvDelH(v.mv[0]):`<div class="tddel"><p class="small">${filesSatz(FL)} Ist etwas falsch verbunden, ${kn}.</p>${filesListH(FL)}<div class="row">${dl}${fb}</div></div>`)}`}
+  $('mv-body').innerHTML=`<p>${vgFT(v)} · ${vgQ(v,{fenster:1})} · ${vgStH(v,st)}</p>${v.bxo?`<div class="tddel"><p class="small">${FL.length?`Kommt aus der Börsen-Datei ${esc(fileT(FL[0]))}.`:'Kommt aus einer Börsen-Datei.'}</p><div class="row">${dl}${fb}</div></div>`:vgMvTab(v.mv,PM,{kurz,v})+(v.mv.length===1?mvDelH(v.mv[0]):`<div class="tddel"><p class="small">${filesSatz(FL)} Ist etwas falsch verbunden, ${kn}.</p>${filesListH(FL)}<div class="row">${dl}${fb}</div></div>`)}`}
 function mvOpen(id){MV_ID=id;{const v=vgBuild(S).find(x=>x.id===id);if(v&&vgSeen(v)){save();render()}}mvRender();openModal('mv-modal')}
 // „Ganze Datei entfernen …“: Bereich „Eingelesene Dateien“ in „＋ Daten“
 // Ab 0.121 (Phase 1): data-dtfiles = 'k:' + Schlüssel einer Bewegung oder die id eines Vorgangs. Entfernt wird eine Datei dieser Zeile, bei zwei Dateien
