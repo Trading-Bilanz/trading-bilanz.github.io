@@ -463,6 +463,8 @@ button.zlink{border:0;background:none;padding:0;font:inherit;cursor:pointer}
 /* Ab 0.132: Kartengebühr gebündelt (table.cft). Am PC steht „= … , Wert der Zahlung …“ neben dem Feld, bis 700 px in einer eigenen Zeile darunter (tr.cfsub) */
 .cft td{vertical-align:middle}.cft td:nth-child(6){white-space:normal}.cft .cfsub{display:none}.cft .cfsub td{white-space:normal;padding-top:0;padding-bottom:6px}.tdcfr label{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
 @media (max-width:700px){.cft .cfxw{display:none}.cft .cfsub{display:table-row}}
+/* Ab 0.133: gemeinte Zeile im Punkt der Kartengebühr (Sprung aus „Alle Vorgänge“, offenes Formular): Strich links wie beim gemeinten Punkt in „Rundherum“ (.tdrund li.tdcur) */
+.cft tr.tdcur td:first-child{box-shadow:inset 3px 0 0 var(--ink2)}
 @media (max-width:400px){.tdbk.cft th,.tdbk.cft td{padding-right:5px}.cft input.pct{width:5.5ch}.cft .btn.sm{padding-left:7px;padding-right:7px}}
 @media (max-width:700px){.tdbk th,.tdbk td{padding-right:8px}.tdbk .tdbc{display:none}.tdbk .tdbt{display:block;font-weight:400}.tdbk .tddi{display:block}}
 /* Ab 0.50 (3.2): fester Aufbau eines Vorschlags */
@@ -3980,11 +3982,14 @@ function wLdOk(S,c,mi,CA){if(!mi||!c||c.kind!=='uebertrag'||c.wkIn||c.qtyIn>0||!
 // Ab 0.59 (Nachtrag): Aufladung über die eigene Ladeadresse (wLdOk): 0 bis 10 Min. danach, 95 bis 100 % der Menge (ld), automatisch auch ohne Einlesen.
 function wXinCands(S,k){const m=S.wtx[k];if(!m||!m.time||!rOwn(S,m.to)||rOwn(S,m.from))return [];const w=rAW(S,m.to);if(!w)return [];
   const CA=wCardTok(m)?wCardSet(S):null;
+  // Ab 0.133: Kartenguthaben von der Null-Adresse ist eine Erstattung (kein Eingang eines Übertrags); von W_CARD_TOP gilt ein Fenster von 0 bis 60 Minuten
+  // und 95 bis 100 % der Menge für jeden Weg (bis 0.132: 10 Minuten über die Ladeadresse, sonst 3 Stunden)
+  if(CA&&m.from===W_ZERO)return [];const top=!!CA&&m.from===W_CARD_TOP,lim=top?3600:600;
   const o=[];for(const c of S.cx){if(c.to!==w||(!c.time&&c.date!==m.date)||!xinFree(S,c,m,CA)||c.wk===k||(m.noAsk||[]).includes('x:'+c.id))continue;
     const dt=c.time?wSec(m.date,m.time)-wSec(c.date,c.time):0,a=c.qty-m.qty;
-    if(CA&&!xinFree(S,c)&&wLdOk(S,c,m,CA)){const r=m.qty/c.qty;if(!c.time||dt<0||dt>600||r<0.95-1e-9||r>1+1e-9)continue;o.push({c,d:dt,a,ld:1});continue}
-    if(c.coin===m.coin){if(dt<0||dt>10800||a<-1e-9||a>2+1e-9)continue;o.push({c,d:dt,a})}
-    else{const r=m.qty/c.qty;if(c.src!=='datei'||dt<0||dt>600||r<0.95-1e-9||r>1+1e-9)continue;o.push({c,d:dt,a,cc:1})}}
+    if(CA&&!xinFree(S,c)&&wLdOk(S,c,m,CA)){const r=m.qty/c.qty;if(!c.time||dt<0||dt>lim||r<0.95-1e-9||r>1+1e-9)continue;o.push({c,d:dt,a,ld:1});continue}
+    if(c.coin===m.coin){if(top){const r=m.qty/c.qty;if(dt<0||dt>lim||r<0.95-1e-9||r>1+1e-9)continue}else if(dt<0||dt>10800||a<-1e-9||a>2+1e-9)continue;o.push({c,d:dt,a})}
+    else{const r=m.qty/c.qty;if(c.src!=='datei'||dt<0||dt>lim||r<0.95-1e-9||r>1+1e-9)continue;o.push({c,d:dt,a,cc:1})}}
   return o.sort((x,y)=>x.d-y.d||x.a-y.a)}
 // Automatisch nur eindeutige Paare in beide Richtungen: der Eingang hat genau einen Kandidaten, und kein anderer Eingang will denselben Übertrag.
 // ks = Schlüssel der offenen Eingänge. Rückgabe [[Schlüssel, Übertrag], …]. Ab 0.44: mit anderem Coin nur beim Einlesen (imp).
@@ -3995,8 +4000,8 @@ function wXinAuto(S,ks,imp){const L=ks.map(k=>[k,wXinCands(S,k).filter(x=>imp||!
 // Hat der Übertrag schon Gebühr-Einträge (feeOf, 0.40) oder ein eigenes „Menge angekommen“, bleibt es dabei.
 // Ab 0.44: anderer Coin: Der Übertrag wird ein Tausch mit Ziel-Wallet (xk = so entstanden, „Aufladung“), Menge erhalten = Menge des Eingangs.
 // Ab 0.59 (Nachtrag): Aufladung über die eigene Ladeadresse mit gleichem Coin: der Übertrag heißt „Aufladung“ (how)
-// Die Gebühr steht dann nicht als „Menge angekommen“ bei der sendenden Wallet, sondern als Gebühr des Kartenanbieters in der Karte (ldFeeSet): Die Coins
-// kamen ganz auf der eigenen Ladeadresse an, erst der Anbieter schreibt weniger gut.
+// Von 0.62 bis 0.132 stand die Gebühr dann als Gebühr des Kartenanbieters in der Karte. Ab 0.133 steht sie wieder als „Menge angekommen“ bei der
+// sendenden Wallet (ldFeeSet).
 function xinLink(S,k,c){const m=S.wtx[k],ld=wLdOk(S,c,m);c.wkIn=k;m.st='cx';m.ref=c.id;m.xin=1;delete m.pend;if(!c.time&&m.time)c.time=m.time;if(ld&&c.kind==='uebertrag'){c.how='aufladung';c.ld=1}
   if(ld&&m.coin===c.coin){ldFeeSet(S,c);return}
   if(m.coin!==c.coin&&c.kind==='uebertrag'){c.kind='tausch';c.coin2=m.coin;c.qty2=m.qty;c.how='aufladung';c.xk=1;delete c.qtyIn;return}
@@ -4006,8 +4011,11 @@ function xinRevert(c){if(!c||!c.xk)return;c.kind='uebertrag';c.coin2='';c.qty2=0
 // Ab 0.62: Gebühr des Kartenanbieters bei einer Aufladung über die Ladeadresse (c.ld, gleicher Coin): Eintrag „Gebühr“ in der Karte (c.to) über
 // den Unterschied zwischen aufgeladener Menge und Kartenguthaben, zur Zeit der Gutschrift, ldf = id der Aufladung. Ein bestehender wird ersetzt.
 const LDF_NOTE='Gebühr des Kartenanbieters (Unterschied laut Wallet-Datei)';
-function ldFeeSet(S,c){S.cx=S.cx.filter(x=>x.ldf!==c.id);const i=c.wkIn&&S.wtx[c.wkIn];if(!i)return;const d=+(c.qty-i.qty).toFixed(8);if(!(d>1e-9))return;
-  S.cx.push({id:++S.cxNo,date:i.date,time:i.time,kind:'gebuehr',wallet:c.to,to:'',coin:c.coin,coin2:'',qty:d,qty2:0,eur:0,est:false,note:LDF_NOTE,src:'datei',ldf:c.id})}
+// Ab 0.133 (Florians Antwort 13 zu 0.131): Der Unterschied einer Aufladung steht als „Menge angekommen“ am Übertrag (bei der sendenden Wallet zum
+// Tageswert verkauft, wie bei jedem Übertrag), nicht mehr als Eintrag „Gebühr des Kartenanbieters“ in der Karte (so von 0.62 bis 0.132). Der Unterschied
+// ist Bridging, wenige Cent. Ein solcher Eintrag aus einem älteren Stand fällt dabei weg, außer er ist von Hand geändert (cxCalcFee nicht mehr 'ldf').
+function ldFeeSet(S,c){if(S.cx.some(x=>x.ldf===c.id&&cxCalcFee(x)!=='ldf'))return;
+  S.cx=S.cx.filter(x=>x.ldf!==c.id);const i=c.wkIn&&S.wtx[c.wkIn];if(!i)return;const d=+(c.qty-i.qty).toFixed(8);if(d>1e-9)c.qtyIn=i.qty;else delete c.qtyIn}
 // Eingangsseite lösen: wkIn weg, „Menge angekommen“ weg, wenn sie aus diesem Eingang kam. Das Paar wird nicht wieder vorgeschlagen.
 function xinUnlink(S,k){const m=S.wtx[k];if(!m)return;const c=S.cx.find(c=>c.id===m.ref);
   // Ab 0.47 (1.1): Bei einem Übertrag aus der Börsen-Datei (bv) kommt „Menge angekommen“ von der Börse, sie bleibt
@@ -4017,7 +4025,11 @@ function xinUnlink(S,k){const m=S.wtx[k];if(!m)return;const c=S.cx.find(c=>c.id=
     if(c.wkIn===k)delete c.wkIn;if(c.qtyIn===m.qty&&!c.bv)delete c.qtyIn;xinRevert(c);if(c.ld){delete c.how;delete c.ld;S.cx=S.cx.filter(x=>x.ldf!==c.id)}m.noAsk.push('x:'+c.id)}
   m.st='open';m.ref='';delete m.xin}
 // Kartenzahlungen (ab 0.42): Adressen der Abrechnung S.addr[a] = {own:false, pay:1}. Ein Ausgang an so eine Adresse ist ein Vorschlag für „Zahlung“.
-const wIsPayA=(S,a)=>!!(S.addr[a]&&S.addr[a].pay);
+// Ab 0.133 (Florians Auftrag): feste Adressen des Kartenanbieters auf Base, von Florian auf Basescan geprüft (sehr viele Transaktionen an viele Empfänger).
+// W_CARD_PAY empfängt jede Kartenzahlung, W_CARD_TOP schickt bei jeder Aufladung das Kartenguthaben (WUSD) auf das Kartenkonto. Erkennung nie über
+// Etiketten des Block-Explorers. Andere Absender und Empfänger erkennt das Tool wie bis 0.132 (als Vorschlag), falls der Anbieter eine Adresse ändert.
+const W_CARD_PAY='0xbface6ad3c7f07714f2cc0a2651436f897537a95',W_CARD_TOP='0xa2b62a7eed843a45d87a91d96968268d821f78ee';
+const wIsPayA=(S,a)=>a===W_CARD_PAY||!!(S.addr[a]&&S.addr[a].pay);
 // Ab 0.54 (2): Adresse, die du entfernt hast (S.addrNo = {Adresse: Datum}) und die seitdem nicht wieder zugeordnet ist. Das Tool erkennt sie nicht
 // von selbst wieder (keine Abrechnung der Karte, keine Brücke, keine Ladeadresse, keine Adresse einer Börse, nicht Tag) und verknüpft Bewegungen über
 // sie nicht von selbst. Vorschläge bleiben; ein Klick auf „Übernehmen“ oder Zuordnen nimmt die Merkung zurück.
@@ -4027,8 +4039,18 @@ function wCardSet(S){const o=new Set();for(const m of Object.values(S.wtx))if(wC
 const W_ZERO='0x0000000000000000000000000000000000000000';
 // Ab 0.44: Kartenzahlung = Ausgang an die Abrechnung (pay) oder Karten-Token vom Kartenkonto an eine unbekannte Adresse (nicht 0x0, das ist die
 // Rückbuchung). CA = wCardSet (optional, sonst neu berechnet)
-function wPayMv(S,m,CA){if(!m||!rOwn(S,m.from)||rOwn(S,m.to))return false;if(wIsPayA(S,m.to))return true;
+// Ab 0.133: wPaySure = sicher eine Kartenzahlung (an die feste Adresse W_CARD_PAY oder an eine Adresse der Gruppe „Kartenzahlungen“): Das Tool legt
+// die Zahlung von selbst an. Kartenguthaben an eine andere unbekannte Adresse ist nur ein gelber Vorschlag „Kartenzahlung?“ (wPayMv ohne wPaySure);
+// „Nein“ dort merkt noAsk 'pay', dann ist es ein offener Abgang.
+function wPaySure(S,m){return !!m&&rOwn(S,m.from)&&!rOwn(S,m.to)&&!(m.noAsk||[]).includes('pay')&&wIsPayA(S,m.to)}
+function wPayMv(S,m,CA){if(!m||!rOwn(S,m.from)||rOwn(S,m.to)||(m.noAsk||[]).includes('pay'))return false;if(wIsPayA(S,m.to))return true;
   return wCardTok(m)&&m.to!==W_ZERO&&!S.addr[m.to]&&!aNo(S,m.to)&&(CA||wCardSet(S)).has(m.from)}
+// Ab 0.133: Hat die Karte w schon eine bekannte Ladeadresse (im Adressbuch als Ladeadresse, oder eine eigene Adresse der Karte, die kein Kartenkonto ist)?
+// Ab 0.133: Abgang von der eigenen Ladeadresse einer Karte (eigene Adresse einer Karte, die kein Kartenkonto ist). Das ist die Weiterleitung des
+// Kartenanbieters, nie ein Übertrag in eine andere Wallet: Sonst wird sie mit einem Zugang gepaart, der kurz davor in der sendenden Wallet ankam
+// (Paar 'xp'), solange das Kartenguthaben noch nicht eingelesen ist. Die Weiterleitung gehört zur Aufladung (wChainCands), sobald diese beide Seiten hat.
+function wLdOut(S,o,CA){const w=rAW(S,o.from);return !!w&&rOwn(S,o.from)&&!CA.has(o.from)&&(!!(S.wmeta&&S.wmeta[w]&&S.wmeta[w].card)||[...CA].some(a=>rAW(S,a)===w))}
+function wCardHasLd(S,w,CA){CA=CA||wCardSet(S);return Object.entries(S.addr).some(([a,x])=>x&&(x.load===w||(x.own&&x.wallet===w&&!CA.has(a))))}
 // Schätzung mit Kartengebühr in %: abgebuchter Betrag ohne Gebühr, in USD auf Cent
 const cardEst=(q,p)=>+(q/(1+p/100)).toFixed(2);
 // Alle angegebenen offenen Kartenzahlungen als Zahlung anlegen (verknüpft, aus der Datei). pct = Kartengebühr in % (Wert geschätzt) oder
@@ -4038,7 +4060,8 @@ const cardEst=(q,p)=>+(q/(1+p/100)).toFixed(2);
 // dann nicht geschätzt); ohne ok gilt der Wert als geschätzt, bis sie in „Noch offen“ antwortet.
 function payBulk(S,keys,pct,ok){const out=[],CA=wCardSet(S);
   for(const k of keys){const m=S.wtx[k],w=m&&rAW(S,m.from);if(!m||m.st!=='open'||!wPayMv(S,m,CA)||!w)continue;
-    if(!S.addr[m.to]&&!aNo(S,m.to))S.addr[m.to]={own:false,pay:1,auto:1};
+    // Ab 0.133: die feste Adresse „automatisch erkannt“; eine andere Adresse merkt das Tool erst, wenn du den Vorschlag „Kartenzahlung?“ übernimmst
+    if(!S.addr[m.to]&&!aNo(S,m.to))S.addr[m.to]=m.to===W_CARD_PAY?{own:false,pay:1,auto:1}:{own:false,pay:1};
     const e={id:++S.cxNo,date:m.date,time:m.time,kind:'bezahlung',wallet:w,to:'',coin:m.coin,coin2:'',qty:m.qty,qty2:0,eur:null,est:false,note:'',cur:'USD',usd:null,src:'datei',wk:k};
     if(pct!=null&&pct>=0){const x=cardFeeOf(m.qty,pct);e.usd=x.usd;if(x.fee>0)e.fee=x.fee;e.est=!ok;e.cardPct=pct;if(ok)e.cardOk=1}
     S.cx.push(e);m.st='cx';m.ref=e.id;delete m.pend;out.push(e)}
@@ -4080,13 +4103,21 @@ const wFeeOk=(qo,qi)=>{const d=qo-qi;return d>-1e-9&&d<=2+1e-9&&d<=Math.max(0.05
 function wPairCands(S){const O=[],I=[],CA=wCardSet(S);
   for(const [k,m] of Object.entries(S.wtx)){const s=wLoose(S,m);if(s==='out')O.push([k,m]);else if(s==='in')I.push([k,m])}
   const C=[];
-  for(const [ko,o] of O){const w=rAW(S,o.from),unk=!S.addr[o.to]||!!S.addr[o.to].load;
+  for(const [ko,o] of O){const w=rAW(S,o.from),unk=!S.addr[o.to]||!!S.addr[o.to].load,ldo=wLdOut(S,o,CA);
     for(const [ki,i] of I){if(i.hash===o.hash||(o.noAsk||[]).includes('b:'+ki)||(i.noAsk||[]).includes('b:'+ko))continue;
+      // Ab 0.133: Kartenguthaben von der Null-Adresse ist eine Erstattung, nie die Ankunft eines Übertrags oder einer Aufladung. Kartenguthaben von
+      // W_CARD_TOP ist immer eine Aufladung: Abgang 0 bis 60 Minuten davor, 95 bis 100 % der Menge, an die Ladeadresse der Karte. Kennt das Tool für
+      // die Karte schon eine Ladeadresse, zählt kein Abgang an eine andere unbekannte Adresse (sonst würde ein Tausch über einen Dienst zur Aufladung).
+      const cz=wCardTok(i)&&i.from===W_ZERO,ct=wCardTok(i)&&i.from===W_CARD_TOP;if(cz)continue;
       const w2=rAW(S,i.to),dt=i.ts-o.ts,same=i.coin===o.coin,r=i.qty/o.qty;let ty;
+      // (Geht der Abgang von der Karte selbst aus, ist es die Weiterleitung ihrer Ladeadresse: die bleibt wie bis 0.132 unten bei „gleiche Wallet“.)
+      if(ct&&w2!==w){if(!CA.has(i.to)||dt<0||dt>3600||r<0.95-1e-9||r>1+1e-9)continue;const xo=S.addr[o.to];
+        if(!((xo&&xo.load===w2)||(!xo&&!wCardHasLd(S,w2,CA))))continue;
+        const dq=+(o.qty-i.qty).toFixed(8);C.push({ty:'top',ko,ki,w,w2,dt,dq,rel:o.qty>0?dq/o.qty:0,kb:wIsBrA(S,o.to)||wIsBrA(S,i.from)});continue}
       if(w2===w){if((i.to===o.from&&i.net===o.net)||Math.abs(dt)>10800)continue;
         if(same){if(!wFeeOk(o.qty,i.qty))continue;ty='br'}else{if(r<0.9-1e-9||r>1+1e-9)continue;ty='brx'}}
       else if(wCardTok(i)&&CA.has(i.to)&&unk&&dt>=0&&dt<=600&&r>=0.95-1e-9&&r<=1+1e-9)ty='top';
-      else{if(!same||dt<-1800||dt>10800||!wFeeOk(o.qty,i.qty))continue;ty='xp'}
+      else{if(ldo||!same||dt<-1800||dt>10800||!wFeeOk(o.qty,i.qty))continue;ty='xp'}
       const dq=+(o.qty-i.qty).toFixed(8);C.push({ty,ko,ki,w,w2,dt,dq,rel:o.qty>0?dq/o.qty:0,kb:wIsBrA(S,o.to)||wIsBrA(S,i.from)})}}
   return C.sort((a,b)=>Math.abs(a.dt)-Math.abs(b.dt)||a.rel-b.rel||(a.ko<b.ko?-1:a.ko>b.ko?1:a.ki<b.ki?-1:1))}
 // Eindeutig: Ausgang und Eingang haben nur diesen einen Kandidaten. Ist eine Seite eine bekannte Brücke, reicht, dass beide Seiten einander als
@@ -4099,7 +4130,8 @@ function wPairSplit(C){const bo={},bi={};for(const c of C){(bo[c.ko]||(bo[c.ko]=
     ((lo.length===1&&li.length===1)||(best&&(c.kb||(wPairClear(c,lo[1])&&wPairClear(c,li[1]))))?auto:amb).push(c)}
   return {auto,amb}}
 // Fremde Adresse als Brücke merken (nur, wenn das Adressbuch sie nicht kennt)
-const wBrLearn=(S,a)=>{if(a&&!S.addr[a]&&!aNo(S,a))S.addr[a]={own:false,br:1,auto:1}};
+// Ab 0.133: die Null-Adresse nie (sie gehört niemandem; bis 0.132 landete sie über wPairApply als „Dienst 0x0000“ im Adressbuch)
+const wBrLearn=(S,a)=>{if(a&&a!==W_ZERO&&!S.addr[a]&&!aNo(S,a))S.addr[a]={own:false,br:1,auto:1}};
 // Paar anwenden. Brücke: beide intern (brg), Unterschied als Gebühr in Coins der Wallet (Eintrag mit brk, Zeit des Ausgangs). Paar zwischen zwei
 // Wallets: Übertrag mit Ausgang (wk), Eingang (wkIn) und „Menge angekommen“. Rückgabe: neuer Eintrag, true (Brücke ohne Gebühr) oder null.
 // Ab 0.44: brx = Tausch über Brücke (Eintrag „Tausch“ mit beiden Seiten, how 'bruecke'), top = Aufladung (Übertrag W → Karte, bei anderem Coin
@@ -4119,7 +4151,7 @@ function wPairApply(S,c){const o=S.wtx[c.ko],i=S.wtx[c.ki];if(!o||!i||o.st!=='op
   if(c.ty==='top')e.how='aufladung';
   // Ab 0.45: dieselbe Zwischenadresse auf beiden Seiten = Übertrag über einen Dienst
   if(c.ty==='xp'&&o.to===i.from)e.via=o.to;
-  // Ab 0.62: Aufladung wie über die eigene Ladeadresse: die Gebühr ist eine Gebühr des Kartenanbieters in der Karte (ldFeeSet), nicht „Menge angekommen“
+  // Ab 0.62: Aufladung wie über die eigene Ladeadresse (ld). Ab 0.133 steht der Unterschied als „Menge angekommen“ (ldFeeSet)
   if(c.ty==='top')e.ld=1;else if(c.dq>1e-9)e.qtyIn=i.qty;S.cx.push(e);o.st='cx';o.ref=e.id;i.st='cx';i.ref=e.id;i.xin=1;if(c.ty==='top')ldFeeSet(S,e);return e}
 // Kette im Modell 0.42: Ausgang von Adresse a an eine fremde Adresse oder Brücke, 0 bis 3 Std. nach einem Übertrag in dieselbe Wallet, dessen
 // Ausgang (wk) an a ging und der schon eine Eingangsseite (wkIn) hat, gleiche Menge (± 0,01). Rückgabe [{ko, c, dt}]
@@ -4190,8 +4222,10 @@ function cxCalcFee(c){if(!c||c.kind!=='gebuehr'||c.src!=='datei'||c.eur>0||c.est
 function wLdMerge(S){let n=0;const W=S.wtx,CA=wCardSet(S),plain=c=>!!c&&c.src==='datei'&&!(c.eur>0)&&!(c.usd>0)&&!c.note&&!c.est;
   // Zwischenstand vom 27.10.2026: Gebühr als „Menge angekommen“ (qtyIn) bei der sendenden Wallet → Gebühr des Kartenanbieters in der Karte
   // Ab 0.62: ebenso eine Aufladung ohne eigene Ladeadresse (wPairApply 'top'): Kartenguthaben auf einem Kartenkonto der Karte
-  for(const c of S.cx){const i=c.kind==='uebertrag'&&c.wkIn&&W[c.wkIn];if(!i||!(c.qtyIn>0)||c.qtyIn!==i.qty||i.coin!==c.coin)continue;
-    if(!c.ld&&!(c.how==='aufladung'&&c.src==='datei'&&wCardTok(i)&&CA.has(i.to)&&rAW(S,i.to)===c.to))continue;c.ld=1;delete c.qtyIn;ldFeeSet(S,c);n++}
+  // Ab 0.133: umgekehrt. Aufladungen aus Ständen bis 0.132 (Gebühr des Kartenanbieters in der Karte, ldf) → „Menge angekommen“ am Übertrag (ldFeeSet)
+  for(const c of S.cx){const i=c.kind==='uebertrag'&&c.wkIn&&W[c.wkIn];if(!i||i.coin!==c.coin)continue;
+    if(!c.ld&&c.qtyIn>0&&c.qtyIn===i.qty&&c.how==='aufladung'&&c.src==='datei'&&wCardTok(i)&&CA.has(i.to)&&rAW(S,i.to)===c.to)c.ld=1;
+    if(c.ld&&S.cx.some(x=>x.ldf===c.id)){const n0=S.cx.length;ldFeeSet(S,c);if(S.cx.length!==n0)n++}}
   for(const [ko,o] of Object.entries(W)){if(o.st!=='int'||!(o.brg||o.swap))continue;const ki=o.brg||o.swap,i=W[ki];if(!i||i.st!=='int'||i.hash===o.hash)continue;
     const A=o.from,K=rAW(S,A);if(!K||!rOwn(S,A)||CA.has(A)||rOwn(S,o.to)||!wCardTok(i)||!CA.has(i.to)||rAW(S,i.to)!==K)continue;
     const fe=o.brg?S.cx.filter(f=>f.brk&&f.brk.includes(ko)):[];if(fe.some(f=>f.src!=='datei'||f.note!==BRK_NOTE||f.eur>0||f.est))continue;
@@ -4273,15 +4307,24 @@ function wTxApply(S,ko,ki){const o=S.wtx[ko],i=S.wtx[ki];if(!o||!i||o.st!=='open
   S.cx.push(e);o.st='cx';o.ref=e.id;i.st='cx';i.ref=e.id;i.xin=1;delete o.pend;delete i.pend;return e}
 // Rückerstattung (1.5): offener Eingang in Wallet W, gleiche Menge (± 0,01) wie eine Zahlung in W, 0 bis 90 Tage danach, Gegenseite egal.
 // Zahlungen mit Erstattung zählen nicht mehr. Nie automatisch. Rückgabe [{k, l: [Zahlungen, nächste zuerst]}]
-function wRefCands(S,skip){const P=S.cx.filter(c=>c.kind==='bezahlung'&&c.date&&c.qty>0&&!S.cx.some(x=>x.kind==='rueckerst'&&x.of===c.id)),out=[];if(!P.length)return out;
+// Ab 0.133 (Florians Auftrag): Kartenguthaben von der Null-Adresse auf ein Kartenkonto ist immer eine Erstattung des Kartenanbieters (card:1), auch ohne
+// Zahlung gleicher Menge: zur Wahl stehen alle Kartenzahlungen der Karte davor, deren noch nicht erstattete Menge reicht (Teilbeträge), die nächste
+// zuerst. „Nein“ merkt noAsk 'cref'. Der Vorschlag kommt auch ohne passende Zahlung („Zu keiner dieser Zahlungen“ = Zugang zum Tageswert).
+function wRefCands(S,skip){const PA=S.cx.filter(c=>c.kind==='bezahlung'&&c.date&&c.qty>0),P=PA.filter(c=>!S.cx.some(x=>x.kind==='rueckerst'&&x.of===c.id)),out=[],CA=wCardSet(S);
   for(const [k,m] of Object.entries(S.wtx)){if((skip&&skip.has(k))||m.st!=='open'||m.sus||m.pend||!rOwn(S,m.to)||rOwn(S,m.from))continue;const w=rAW(S,m.to);if(!w)continue;
+    if(wCardTok(m)&&m.from===W_ZERO&&CA.has(m.to)){if((m.noAsk||[]).includes('cref'))continue;
+      const rest=c=>c.qty-S.cx.reduce((q,x)=>x.kind==='rueckerst'&&x.of===c.id?q+x.qty:q,0),vor=c=>c.date<m.date||(c.date===m.date&&(!c.time||!m.time||(c.time+':00').slice(0,8)<=(m.time+':00').slice(0,8)));
+      const key=c=>c.date+' '+((c.time||'23:59:59')+':00').slice(0,8);
+      out.push({k,card:1,l:PA.filter(c=>c.wallet===w&&c.coin===m.coin&&vor(c)&&rest(c)>=m.qty-0.01-1e-9).sort((a,b)=>key(a)<key(b)?1:-1)});continue}
+    if(!P.length)continue;
     const dd=c=>(wSec(m.date,'')-wSec(c.date,''))/86400;
     const l=P.filter(c=>c.wallet===w&&Math.abs(c.qty-m.qty)<=0.01+1e-9&&dd(c)>=0&&dd(c)<=90&&!(m.noAsk||[]).includes('r:'+c.id)).sort((a,b)=>dd(a)-dd(b));
     if(l.length)out.push({k,l})}
   return out}
 // Eingang als Rückerstattung zur Zahlung c anlegen (verknüpft, aus der Datei)
-function wRefApply(S,k,c){const m=S.wtx[k];if(!m||m.st!=='open'||!c)return null;
-  const e={id:++S.cxNo,date:m.date,time:m.time,kind:'rueckerst',wallet:rAW(S,m.to),to:'',coin:m.coin,coin2:'',qty:m.qty,qty2:0,eur:0,est:false,note:'',src:'datei',wk:k,of:c.id};
+// Ab 0.133: none = „Zu keiner dieser Zahlungen“ (Erstattung auf die Karte ohne Zahlung): ofNone statt of, gerechnet als Zugang zum Tageswert
+function wRefApply(S,k,c,none){const m=S.wtx[k];if(!m||m.st!=='open'||(!c&&!none))return null;
+  const e=Object.assign({id:++S.cxNo,date:m.date,time:m.time,kind:'rueckerst',wallet:rAW(S,m.to),to:'',coin:m.coin,coin2:'',qty:m.qty,qty2:0,eur:0,est:false,note:'',src:'datei',wk:k},c?{of:c.id}:{ofNone:1});
   S.cx.push(e);m.st='cx';m.ref=e.id;delete m.pend;return e}
 // Übertrag zur Börse (1.6): offener Ausgang aus W (mit Datei) an eine unbekannte Adresse; am selben Tag oder ±1 Tag ein Verkauf gleicher Menge
 // (± max(2, 2 %)) in einer Wallet B ohne Datei. Rückgabe [{k, a (Adresse), l: [Verkäufe, nächste zuerst]}]
@@ -4389,7 +4432,7 @@ function wSugCore(S,flow,skip){const out=[],seen=new Set(),by={};
   for(const x of wExCands(S,flow||[],sk)){out.push({id:'e:'+x.ks[0],ty:'ex',uniq:!x.over,t:S.wtx[x.ks[0]].ts,ks:x.ks,x});x.ks.forEach(k=>sk.add(k))}
   // Ab 0.44
   for(const x of wExOutCands(S,sk)){sk.add(x.k);out.push({id:'o:'+x.k,ty:'xo',uniq:x.l.length===1,t:S.wtx[x.k].ts,ks:[x.k],l:x.l,a:x.a})}
-  for(const x of wRefCands(S,sk))out.push({id:'r:'+x.k,ty:'ref',uniq:false,t:S.wtx[x.k].ts,ks:[x.k],l:x.l});
+  for(const x of wRefCands(S,sk))out.push(Object.assign({id:'r:'+x.k,ty:'ref',uniq:false,t:S.wtx[x.k].ts,ks:[x.k],l:x.l},x.card?{card:1}:{}));
   for(const x of wTagWSug(S))out.push({id:'t:'+x.t.id,ty:'tw',uniq:x.ws.length===1,t:wSec(tagAT(x.t).date,tagAT(x.t).time||''),ks:[],tid:x.t.id,l:x.ws});
   for(const x of wCardWign(S))out.push({id:'w:'+x.k,ty:'wusd',uniq:true,t:x.ts,ks:[],x});
   return out.sort((a,b)=>a.t-b.t||(a.id<b.id?-1:1))}
@@ -4400,7 +4443,7 @@ function wSugDo(S,s,i){addrNoOff(S,s);if(s.ty==='pair'){const c=s.l[i||0];return
   if(s.ty==='ex')return wExApply(S,s.x).length>0;
   if(s.ty==='tx')return !!wTxApply(S,s.p[0],s.p[1]);
   if(s.ty==='xo')return !!wExOutApply(S,s.ks[0],s.l[i||0]);
-  if(s.ty==='ref')return !!wRefApply(S,s.ks[0],s.l[i||0]);
+  if(s.ty==='ref')return !!wRefApply(S,s.ks[0],s.l[i||0],!!s.card&&(i||0)>=s.l.length);
   if(s.ty==='tw'){const t=S.tag[s.tid],w=s.l[i||0];if(!t||!w)return false;t.wallet=w;t.man=Object.assign({},t.man,{w:1});t.chk=1;return true}
   if(s.ty==='wusd'){const x=s.x;return tokConfirm(S,x.k,{sym:x.sym,name:x.name,net:x.net,contract:x.contract})>0}
   // Ab 0.45
@@ -4415,7 +4458,7 @@ function wSugNo(S,s){if(s.ty==='pair')for(const c of s.l){S.wtx[c.ko].noAsk.push
   // Ab 0.44
   else if(s.ty==='tx')for(const k of s.p)S.wtx[k].noAsk.push('tx');
   else if(s.ty==='xo')S.wtx[s.ks[0]].noAsk.push('xo:'+s.l.map(c=>c.id).join(','));
-  else if(s.ty==='ref')for(const c of s.l)S.wtx[s.ks[0]].noAsk.push('r:'+c.id);
+  else if(s.ty==='ref'){if(s.card)S.wtx[s.ks[0]].noAsk.push('cref');else for(const c of s.l)S.wtx[s.ks[0]].noAsk.push('r:'+c.id)}
   else if(s.ty==='tw'){const t=S.tag[s.tid];if(t)t.noW=[...new Set([...(t.noW||[]),...s.l])]}
   // Ab 0.53 (B2): Vorschlag an einer Tag-Zeile mit „weiß ich noch nicht“ (aus wTagQ): „Nein“ bzw. „Keiner davon“ merkt Bewegungen aus einer Datei in
   // noQ, bei Zugängen (c:) die Wallet in noW („Nein“ zur Wallet), denn Übernehmen hätte nur die Wallet gesetzt
@@ -5317,9 +5360,13 @@ function dxAddrLearn(S,a){if(!a||/^0x0{40}$/.test(a)||(S.addrNo&&S.addrNo[a]))re
 // Verkauf einen späteren Tag als den Abgang, behält der Eintrag Tag und Uhrzeit aus der DFX-Datei (Erlös, Jahr, Haltefrist). Die Coins verlassen die
 // Wallet trotzdem am Tag und zur Uhrzeit der Bewegung (dxStepBo, kxRun). Am selben Tag bleibt es bei Tag und Uhrzeit der Bewegung wie bis 0.130.
 const dxLate=(c,m)=>!!(c&&m&&c.kind==='verkauf'&&c.date&&m.date&&c.date>m.date);
+// Ab 0.133 (Florians Entscheidung): dieselbe Logik beim Kauf. Nennt die DFX-Datei einen früheren Tag als den Zugang in der Wallet, ist das Kaufdatum
+// (auch für die Haltefrist) der Zeitpunkt aus der DFX-Datei; in der Wallet sind die Coins ab dem Zugang (dxStepBo buy, kxEvents, kxRun kdx).
+const dxEarly=(c,m)=>!!(c&&m&&c.kind==='kauf'&&c.date&&m.date&&c.date<m.date);
+const dxEarlyTxt=(c,m)=>`Gekauft bei ${esc(wSvcName(S,m.from))} am ${fD(c.date)}${c.time?' um '+c.time.slice(0,5):''}, Zugang in der Wallet am ${fD(m.date)}${m.time?' um '+m.time.slice(0,5):''}.`;
 const dxLateTxt=(c,m)=>`Abgang aus der Wallet am ${fD(m.date)}${m.time?' um '+m.time.slice(0,5):''}, verkauft bei ${esc(wSvcName(S,m.to))} am ${fD(c.date)}${c.time?' um '+c.time.slice(0,5):''}.`;
 function dxLinkMv(S,c,k){const m=S.wtx[k];if(!m)return false;const out=c.kind!=='kauf',w=out?rAW(S,m.from)||m.wFrom:rAW(S,m.to)||m.wTo;
-  c.qty=m.qty;c.coin=m.coin;if(!(out&&dxLate(c,m))){c.date=m.date;if(m.time)c.time=m.time}if(w)c.wallet=w;c.wk=k;if(c.src==='hand')c.src='verknüpft';
+  c.qty=m.qty;c.coin=m.coin;if(!(out&&dxLate(c,m))&&!(!out&&dxEarly(c,m))){c.date=m.date;if(m.time)c.time=m.time}if(w)c.wallet=w;c.wk=k;if(c.src==='hand')c.src='verknüpft';
   m.st='cx';m.ref=c.id;delete m.pend;dxAddrLearn(S,out?m.to:m.from);return true}
 // Abgleich mit dem Stand. wOf(i) = gewählte Wallet der Zeile i. Item: {r, t 'kauf'|'verkauf', w (Wallet: laut Bewegung, sonst gewählt), k (Bewegung mit
 // diesem Hash), other (Wallet der Bewegung, wenn sie nicht die gewählte ist), done (schon eingelesen), dup (Eintrag, schon da), mv (dup ist mit der Bewegung
@@ -5331,7 +5378,8 @@ function dxPlan(S,P,wOf){const items=[],used=new Set(),fmt=v=>String(+(+v).toFix
     const m0=k&&S.wtx[k];if(m0&&m0.st==='ign')x.ign=1;
     const done=S.cx.find(c=>c.dx===r.id);if(done){x.done=1;x.c=done;if(done.wk)delete x.ign;
       // Ab 0.131: Verkauf aus einem Stand bis 0.130 (Tag des Abgangs): bekommt beim Übernehmen den Zeitpunkt aus der DFX-Datei (x.zeit)
-      {const mz=done.wk&&S.wtx[done.wk];if(t==='verkauf'&&done.kind==='verkauf'&&mz&&mz.date&&r.date>mz.date&&done.date!==r.date)x.zeit=1}
+      {const mz=done.wk&&S.wtx[done.wk];if(t==='verkauf'&&done.kind==='verkauf'&&mz&&mz.date&&r.date>mz.date&&done.date!==r.date)x.zeit=1;
+        if(t==='kauf'&&done.kind==='kauf'&&mz&&mz.date&&r.date<mz.date&&done.date!==r.date)x.zeit=1}   // ab 0.133 auch der Kauf (früherer Tag als der Zugang)
       items.push(x);return}
     const m=k&&S.wtx[k];
     if(m&&m.st==='cx'){const c=S.cx.find(c=>c.id===m.ref);if(c){x.dup=c;x.mv=1;used.add(c.id)}}
@@ -5353,10 +5401,10 @@ function dxUnIgn(S,x,st){const m=S.wtx[x.k];if(!m||m.st!=='ign')return false;m.s
   if(!y||(y.br&&!dxAddr(S,a))){if(dxAddrLearn(S,a)&&S.addr[a])delete S.addr[a].auto;const r=addrAfter(S,a,{});st.after.push(r)}
   else if(dxAddr(S,a))st.after.push(addrAfter(S,a,{}));
   return true}
-function dxApply(S,plan,ch,un){const st={neu:0,ersetzt:0,behalten:0,skip:0,link:0,linkK:[],wallets:0,unign:0,zeit:0,after:[]};
+function dxApply(S,plan,ch,un){const st={neu:0,ersetzt:0,behalten:0,skip:0,link:0,linkK:[],wallets:0,unign:0,zeit:0,zeitK:0,after:[]};
   plan.items.forEach((x,i)=>{const r=x.r,c=ch&&ch[i]||'replace';
     if(x.ign&&!(un&&un[i]===false))dxUnIgn(S,x,st);
-    if(x.done&&x.zeit&&x.c){x.c.date=r.date;if(r.time)x.c.time=r.time;else delete x.c.time;st.zeit++;return}
+    if(x.done&&x.zeit&&x.c){x.c.date=r.date;if(r.time)x.c.time=r.time;else delete x.c.time;if(x.c.kind==='kauf')st.zeitK++;else st.zeit++;return}
     if(x.done){if(x.ign&&!(un&&un[i]===false)&&x.c&&!x.c.wk&&x.k&&S.wtx[x.k]&&S.wtx[x.k].st==='open'){dxLinkMv(S,x.c,x.k);st.link++;st.linkK.push(x.k)}else st.skip++;return}if(!x.w){st.skip++;return}
     if(!S.wallets.includes(x.w)){S.wallets.push(x.w);st.wallets++}
     const e={date:r.date,time:r.time,kind:x.t,wallet:x.w,to:'',coin:r.coin,coin2:'',qty:r.qty,qty2:0,eur:r.val,est:false,note:r.note||'',dx:r.id};
@@ -5393,10 +5441,12 @@ function dxPendBo(S){const o={};for(const [k,m] of Object.entries(S.wtx||{}))if(
 //   fee[Nummer der Gebühr] = Zwischentopf: Der Fehlbetrag („Gebühr des Diensts“) kommt aus dem Zwischentopf, nicht aus der Wallet.
 // Eine Rückkehr am selben Tag ohne spätere Uhrzeit zählt eine Sekunde nach dem Abgang.
 const dxT1=t=>{const [h,m,x]=String(t||'00:00:00').split(':').map(Number),n=Math.min(86399,(h||0)*3600+(m||0)*60+(x||0)+1);return [n/3600|0,(n%3600)/60|0,n%60].map(v=>String(v).padStart(2,'0')).join(':')};
-function dxStepBo(S){const X={sale:{},back:{},fee:{},pair:[]},wx=S.wtx||{},nm=a=>wSvcName(S,a);
+function dxStepBo(S){const X={sale:{},back:{},fee:{},pair:[],buy:{}},wx=S.wtx||{},nm=a=>wSvcName(S,a);
   const ret=(d,t,rd,rtm)=>{rd=rd||d;return rd<d||(rd===d&&(!rtm||(rtm+':00').slice(0,8)<=(String(t||'')+':00').slice(0,8)))?{rd:d,rtm:dxT1(t)}:{rd,rtm:rtm||''}};
   for(const c of S.cx||[]){
     if(c.kind==='verkauf'&&c.wk){const m=wx[c.wk];if(dxLate(c,m)&&dxAddr(S,m.to))X.sale[c.id]={k:c.wk,date:m.date,time:m.time||'',nm:nm(m.to),sd:c.date}}
+    // Ab 0.133: buy[Nummer des Kaufs] = {date, time, nm}: Zugang in der Wallet (Bewegung) an einem späteren Tag als der Kauf laut DFX-Datei
+    else if(c.kind==='kauf'&&c.wk){const m=wx[c.wk];if(dxEarly(c,m)&&dxAddr(S,m.from))X.buy[c.id]={date:m.date,time:m.time||'',nm:nm(m.from)}}
     else if(c.kind==='uebertrag'&&c.dxb&&c.wk&&wx[c.wk]&&c.date){const o=wx[c.wk],i=c.wkIn&&wx[c.wkIn];let fq=0;
       for(const f of S.cx)if(f.kind==='gebuehr'&&f.dxb&&f.feeOf===c.id){fq+=f.qty;X.fee[f.id]='dx:'+c.wk}
       X.back[c.id]=Object.assign({k:c.wk,date:c.date,time:c.time||'',qin:c.qtyIn>0&&c.qtyIn<c.qty-1e-9?c.qtyIn:+(c.qty-fq).toFixed(8),nm:nm(o.to)},ret(c.date,c.time,i?i.date:c.dxbD,i?i.time:''))}
@@ -5535,6 +5585,8 @@ function wDropXfer(c){const fees=S.cx.filter(x=>x.feeOf===c.id),d=fees.reduce((a
 // Ab 0.40: Wallets der Bewegung (wFrom, wTo) immer neu aus dem Adressbuch, gespeichert nur als Abbild für ältere Versionen. Gehören beide Seiten
 // zur selben Wallet, ist die Bewegung „intern“ (st 'int', zählt nicht); ein Übertrag aus der Datei „X → X“ fällt dabei weg.
 function wFix(){
+  // Ab 0.133: Die Null-Adresse steht nie im Adressbuch (Stände bis 0.132: „Dienst 0x0000, automatisch erkannt“)
+  if(S.addr&&S.addr[W_ZERO])delete S.addr[W_ZERO];
   for(const m of Object.values(S.wtx)){m.wFrom=wAW(m.from);m.wTo=wAW(m.to)}
   // Ab 0.56 (1): Einträge mit Bewegung tragen für jede Seite mit Adresse die Wallet laut Adressbuch (cxSync); unbekannte Adresse: der Eintrag behält seine
   for(const c of S.cx)cxSync(S,c);
@@ -5619,7 +5671,7 @@ function wSync(opt){
     S.cx.push(c);m.st='cx';m.ref=c.id;n++}
   // Ab 0.49 (1.1): erkannte Kartenzahlungen gleich als Zahlung mit 3 % Kartengebühr (geschätzt); die Frage nach der Gebühr steht in „Noch offen“.
   // Nach „Verknüpfung lösen“ (noAsk 'auto') nicht wieder.
-  {const CA=wCardSet(S),ks=Object.keys(S.wtx).filter(k=>{const m=S.wtx[k];return m.st==='open'&&!m.sus&&!m.pend&&!m.noAsk.includes('auto')&&wPayMv(S,m,CA)});if(ks.length)n+=payBulk(S,ks,3).length}
+  {const CA=wCardSet(S),ks=Object.keys(S.wtx).filter(k=>{const m=S.wtx[k];return m.st==='open'&&!m.sus&&!m.pend&&!m.noAsk.includes('auto')&&wPaySure(S,m)});if(ks.length)n+=payBulk(S,ks,3).length}
   const ms=open.filter(k=>S.wtx[k].st==='open'&&!(S.wtx[k].wFrom&&S.wtx[k].wTo)).map(wMv).filter(m=>(m.side==='in'||m.side==='out')&&!wIsBr(m.side==='in'?m.from:m.to));
   for(const [m,t] of wTagAuto(ms,wTagsFree(),(m,t)=>S.wtx[m.k].noAsk.includes('t:'+t.id))){if(wTagDiff(t,S.wtx[m.k]).length)continue;wTagLink(m.k,S.tag[t.id]);n++}
   // Ab 0.50 (2.2): opt.only = Menge von Bewegungen: die Automatik wie beim Einlesen nur für Paare, Ketten und Tausch mit einer dieser Bewegungen
@@ -5628,7 +5680,7 @@ function wSync(opt){
   if(opt&&opt.imp){
     // Ab 0.44: Tausch (gleicher Hash), Kartenzahlungen an unbekannte Adressen als Abrechnung merken (automatisch erkannt)
     for(const [a,b] of wTxSwap(S))if(inO(a,b)&&wTxApply(S,a,b))n++;
-    {const CA=wCardSet(S);for(const [k,m] of Object.entries(S.wtx))if(inO(k)&&m.st==='open'&&!S.addr[m.to]&&wPayMv(S,m,CA))S.addr[m.to]={own:false,pay:1,auto:1}}
+    {const CA=wCardSet(S);for(const [k,m] of Object.entries(S.wtx))if(inO(k)&&m.st==='open'&&!S.addr[m.to]&&m.to===W_CARD_PAY&&wPayMv(S,m,CA))S.addr[m.to]={own:false,pay:1,auto:1}}
     // Ab 0.44 bis zu 10 Runden: nach jedem Paar werden die übrigen neu bewertet (nächster Kandidat mit klarem Abstand)
     for(let r=0;r<10;r++){let d=0;const A=wPairSplit(wPairCands(S)).auto,u=new Set();
       // Ab 0.54 (2): nicht über eine Adresse, die du entfernt hast (bleibt ein Vorschlag)
@@ -6412,7 +6464,7 @@ function renderDxPrev(){const box=$('bxprev'),D=BXP,P=D.P,top=dxTop(),pl=(n,a,b)
         // Ab 0.119 (5b): ignorierte Bewegung mit diesem Hash
         x.ign?`Diese Bewegung hast du ignoriert. Laut DFX.swiss-Datei gehört sie zu deinem ${x.t==='kauf'?'Kauf':'Verkauf'}.`:'',
         // Ab 0.131: Verkauf aus einem Stand bis 0.130 trägt noch den Tag des Abgangs
-        x.zeit?'Der Verkauf bekommt beim Übernehmen den Zeitpunkt aus der DFX-Datei.':''].filter(Boolean);
+        x.zeit?`Der ${x.t==='kauf'?'Kauf':'Verkauf'} bekommt beim Übernehmen den Zeitpunkt aus der DFX-Datei.`:''].filter(Boolean);
       const ch=(x.dup&&!x.done?`<div class="bxch">${rad(i,'replace','ersetzen')}${rad(i,'keep','behalten')}${x.mv||x.back?'':rad(i,'both','beide')}</div>`:'')+
         (x.ign?`<div class="bxch"><label class="fopt"><input type="checkbox" data-bxun="${i}" ${D.un[i]===false?'':'checked'}><span>Ignorieren aufheben und verknüpfen</span></label></div>`:'');
       return `${bxRow(r,`${x.t==='kauf'?'Kauf':'Verkauf'}<br><span class="small">${st}</span>`,`<b>${q(r.qty)}</b> ${esc(r.coin)}`,eu)}<tr class="bxsub"${(x.dup&&!x.done)||x.ign||r.chk!=null?' data-pz':''}><td colspan="4"><div class="bxsw">${x.done?'':ws}${hints.map((t,j)=>`${j||!x.done?'<br>':''}<span class="small">${t}</span>`).join('')}${ch}</div></td></tr>`}).join('')}</table></div>`}
@@ -6436,7 +6488,7 @@ function dxSave(ok){const D=BXP;if(!D)return;const top=dxTop(),plan=dxPlan(S,D.P
   // Ab 0.127 (GESTALTUNG Abschnitt 5, Zahl und Wort): auch „1 neuer Punkt“, „{n} neue Punkte“, „1 Bewegung“, „{n} Abgänge“ mit geschütztem Leerzeichen
   const pl=(n,a,b)=>`${fI.format(n)}\u00a0${n===1?a:b}`,I1=todoItems(cryptoCalc()),nu=I1.filter(x=>!td0.has(x.id)).length,pendM=Object.values(S.wtx).filter(m=>m.st==='dfx'),pend=pendM.length,pendN=[...new Set(pendM.map(m=>wSvcName(S,m.to)))].join(' und ');
   const T=[st.neu?pl(st.neu,'neuer Eintrag','neue Einträge'):'',st.ersetzt?pl(st.ersetzt,'Eintrag ersetzt','Einträge ersetzt'):'',st.behalten?pl(st.behalten,'Eintrag behalten','Einträge behalten'):'',
-    st.link?`${pl(st.link,'Eintrag','Einträge')} mit ${mvDatei((st.linkK||[]).map(k=>S.wtx[k]),'Wallet-Datei')} verknüpft`:'',st.unign?pl(st.unign,'Bewegung nicht mehr ignoriert','Bewegungen nicht mehr ignoriert'):'',st.zeit?pl(st.zeit,'Verkauf hat jetzt den Zeitpunkt aus der DFX-Datei','Verkäufe haben jetzt den Zeitpunkt aus der DFX-Datei'):''].filter(Boolean).join(' · ').replace(/^$/,'Nichts Neues, alles schon da')+'.'+
+    st.link?`${pl(st.link,'Eintrag','Einträge')} mit ${mvDatei((st.linkK||[]).map(k=>S.wtx[k]),'Wallet-Datei')} verknüpft`:'',st.unign?pl(st.unign,'Bewegung nicht mehr ignoriert','Bewegungen nicht mehr ignoriert'):'',st.zeit?pl(st.zeit,'Verkauf hat jetzt den Zeitpunkt aus der DFX-Datei','Verkäufe haben jetzt den Zeitpunkt aus der DFX-Datei'):'',st.zeitK?pl(st.zeitK,'Kauf hat jetzt den Zeitpunkt aus der DFX-Datei','Käufe haben jetzt den Zeitpunkt aus der DFX-Datei'):''].filter(Boolean).join(' · ').replace(/^$/,'Nichts Neues, alles schon da')+'.'+
     (()=>{const A=st.after.reduce((o,r)=>({mv:o.mv+r.mv.length,cx:o.cx+r.cx.length}),{mv:0,cx:0});return A.mv?` ${A.mv===1?'1\u00a0Bewegung ohne deine Adresse ist':fI.format(A.mv)+'\u00a0Bewegungen ohne deine Adresse sind'} weggefallen.`:''})()+
     (pend?` ${pend===1?'1\u00a0Abgang ist':fI.format(pend)+'\u00a0Abgänge sind'} ausstehend bei ${esc(pendN)}.`:'')+(nu===1?' Dadurch steht 1\u00a0neuer Punkt in „Noch offen“.':nu?` Dadurch stehen ${fI.format(nu)}\u00a0neue Punkte in „Noch offen“.`:'');
   if(BX_Q.length){const x=BX_Q.shift();bxLoadText(x.name,x.text,T)}else{msg('bxmsg','ok',T+dtWaitH('bx'));dtRe()}}
@@ -7263,6 +7315,8 @@ $('wtodo').addEventListener('click',e=>{
     // Ab 0.51 (2): Der Satz bleibt, das Prozentfeld wird zusätzlich markiert
     if(isNaN(v)){payMsg(p1,'Kartengebühr: Schreibe eine Zahl von 0 bis 50, z. B. 3 oder 1,5.');const f=$('wtodo').querySelector(`[data-paypct="${CSS.escape(w)}"]`);if(f)needMark(p1.closest('.tdsug')||$('wtodo'),[[f,'']]);return}
     const L=payBulk(S,[k],v,true);wSync();save();render();toast(L.length?`Zahlung angelegt, Kartengebühr ${plainDe(v)} %.`:'Nichts angelegt.',3500);return}
+  // Ab 0.133: „Nein“ zum Vorschlag „Kartenzahlung?“ (gespeicherte Antwort, mit „Wieder einschalten“ an der Bewegung)
+  const pn=e.target.closest('[data-payno]');if(pn){const m=S.wtx[pn.dataset.payno];if(m){naRec(S,'sug','Kartenzahlung',()=>m.noAsk.push('pay'));save();render()}return}
   const n=e.target.closest('[data-tgn]');if(n){S.tagSame[n.dataset.tgn]='n';save();render();return}
   // Ab 0.50 Nachtrag 5 (W10): „Dieselbe“ entfernt die überzähligen Tag-Zeilen erst nach einer Rückfrage mit „Sicherung speichern“
   const s=e.target.closest('[data-tgs]');if(s){const v=s.dataset.tgs,i=v.lastIndexOf('|'),k=v.slice(0,i),ids=v.slice(i+1).split(',').filter(Boolean);
@@ -7542,7 +7596,7 @@ function cxMissing(c){
   if(f.qty2&&!(c.qty2>0))m.push('Menge erhalten');
   if(f.other&&!String(c.other||'').trim())m.push(c.kind==='tauschaus'?'in (anderer Coin)':'aus (anderer Coin)');
   if(f.eur){if((f.cur||f.usd)&&c.cur==='USD'){if(!(c.usd>0))m.push('Betrag in USD')}else if(c.eur==null||!(c.eur>=0)||(f.pos&&!(c.eur>0)))m.push('Wert in Euro')}
-  if(f.of&&!(c.of>0))m.push('gehört zu Zahlung');
+  if(f.of&&!(c.of>0)&&!c.ofNone)m.push('gehört zu Zahlung');   // ofNone (ab 0.133) = Erstattung auf die Karte ohne Zahlung, Zugang zum Tageswert
   return m;
 }
 // Bedeutung jeder Art je Land (die einzige Stelle dafür): k = Zugang mit Einkaufswert, g = Geschenk (Einkaufswert der schenkenden Person;
@@ -7608,7 +7662,8 @@ function kxEvents(tag,cx,rf,bo){
     const mv=()=>{const r=rf(c.date,'');return r?c.qty/r:NaN}; // Marktwert am Tag
     const fe=()=>{if(!(c.fee>0))return 0;if(c.cur!=='USD')return c.fee;const r=rf(c.date,'');return r?c.fee/r:NaN};
     const k=c.kind;
-    if(k==='kauf'||k==='hatte')ev.push(Object.assign(b,{label:KIND[k]+nt,val:kxEur(c,rf)}));
+    // Ab 0.133: Kauf über DFX.swiss mit späterem Zugang: in der Wallet ab dem Zugang (d, tm), Kaufdatum für die Haltefrist bleibt der Tag des Kaufs (kd, kdx)
+    if(k==='kauf'||k==='hatte'){const Bq=k==='kauf'&&DX.buy?DX.buy[c.id]:null;ev.push(Object.assign(b,{label:KIND[k]+nt,val:kxEur(c,rf)},Bq?{d:Bq.date,tm:Bq.time,kd:c.date,kdx:1,nm:Bq.nm}:{}))}
     // Ab 0.120: Bezahlung erhalten, Einkaufswert = Tageswert (Menge ÷ EZB-Kurs USD je EUR des Tages), bz = für die Jahressumme (bzSum)
     else if(k==='bzein')ev.push(Object.assign(b,{label:KIND[k]+nt,val:mv(),bz:1}));
     else if(k==='tauschein')ev.push(Object.assign(b,{label:`Getauscht aus ${c.other}`+nt,val:kxEur(c,rf)}));
@@ -7706,7 +7761,7 @@ function kxRun(L,evs,until){
   const Y=y=>byY[y]||(byY[y]=DE?{n:0,nT:0,vp:0,ak:0,wk:0,gain:0,loss:0,free:0,nF:0}:{n:0,gain:0,loss:0,gainK:0,lossK:0,nK:0,kest:0,fee:0});
   for(const e of E){CUR=e.d;
     const p=e.from?Z(e.from,e):P(e.w,e.coin),bef={q:p.q,ak:p.ak,avg:p.q>1e-9?p.ak/p.q:0};
-    if(e.t==='k'||e.t==='g'){const kd=DE&&e.t==='g'?e.kd:e.d;add(p,e.q,e.val,kd);if(!DE&&e.est)estAdd(p,[e.d]);flow.push(Object.assign({},e,{eur:e.val,gain:null,kd,bef,estD:DE&&e.t==='g'?(e.estD||e.noGd):e.estD},st(p)));continue}
+    if(e.t==='k'||e.t==='g'){const kd=DE&&(e.t==='g'||e.kdx)?e.kd:e.d;add(p,e.q,e.val,kd);if(!DE&&e.est)estAdd(p,[e.d]);flow.push(Object.assign({},e,{eur:e.val,gain:null,kd,bef,estD:DE&&e.t==='g'?(e.estD||e.noGd):e.estD},st(p)));continue}
     // Ab 0.44: Rückerstattung legt ihren Anteil der Teile zurück, die die Zahlung verbraucht hat (DE mit deren Kaufdatum). Lief die Zahlung
     // nicht (z. B. ohne Kurs), ein Zugang zum Marktwert.
     if(e.t==='r'){const R=RF[e.of];let ak=0;
@@ -7872,6 +7927,8 @@ const uwList=end=>!end?[]:S.cx.filter(c=>c.kind==='uebertrag'&&!c.dxb&&c.date&&c
 const potUw=(p,end)=>uwList(end).filter(u=>u.to===p.w&&u.coin===p.c).map(u=>`<br><span class="small">davon ${fmtNum(u.q)} ${u.coin} unterwegs zu ${esc(u.to)} (angekommen am ${dm(u.d)})</span>`).join('');
 // Ab 0.131: Coins, die am Stichtag bei DFX.swiss liegen (CE = Rechnung bis zum Stichtag): {w, c, q, ak, lots, nm, t ('sold' verkauft, 'back' zurück,
 // 'pend' noch ausstehend), d (Tag des Verkaufs bzw. der Rückkehr)}. dxEndNote = der Zusatz in Klammern.
+// Ab 0.133: Käufe über DFX.swiss, die am Stichtag gekauft, aber noch nicht in der Wallet waren: {nm, w, c, q, eur, kd (Kaufdatum), d (Zugang)}
+const dxBuyAtEnd=end=>!end?[]:Object.entries(dxStepBo(S).buy).map(([id,b])=>{const c=S.cx.find(x=>String(x.id)===id);return c&&c.date<=end&&b.date>end?{nm:b.nm,w:c.wallet,c:c.coin,q:c.qty,eur:c.cur==='USD'?null:c.eur,kd:c.date,d:b.date}:null}).filter(Boolean);
 function dxAtEnd(CE){const X=dxStepBo(S),by={};for(const x of Object.values(X.sale))by['dx:'+x.k]={t:'sold',d:x.sd};for(const x of [...Object.values(X.back),...X.pair])by['dx:'+x.k]={t:'back',d:x.rd};
   return ((CE&&CE.dxp)||[]).map(z=>{const m=S.wtx[z.key.slice(3)],o=by[z.key]||{t:'pend',d:''};return Object.assign({},z,{nm:m?wSvcName(S,m.to):'DFX.swiss',t:o.t,d:o.d})})}
 const dxEndNote=x=>x.t==='sold'?'verkauft am '+fD(x.d):x.t==='back'?'zurück am '+fD(x.d):'noch ausstehend';
@@ -7938,7 +7995,8 @@ function renderWallet(){
   // Ab 0.117: ausstehend bei DFX.swiss als eigene Zeile (nicht im Bestand, kein steuerlicher Vorgang)
   // Ab 0.122: „Ausstehend bei <Name>“ mit dem aktuellen Namen des Diensts aus dem Adressbuch (wSvcName der Adressen, an die die Coins gingen)
   // Ab 0.131: mit Stichtag die Coins, die an dem Tag bei DFX.swiss lagen (ausstehend, erst später verkauft oder später zurückgekommen)
-  if(end){const L=dxAtEnd(CE);$('wdfx').innerHTML=L.length?`<p class="small">${L.map(x=>`Am ${fD(end)} bei ${esc(x.nm)}: ${fmtNum(x.q)}&nbsp;${esc(x.c)} aus ${esc(x.w)} (${dxEndNote(x)}).`).join('<br>')}</p>`:''}
+  if(end){const L=dxAtEnd(CE).map(x=>`Am ${fD(end)} bei ${esc(x.nm)}: ${fmtNum(x.q)}&nbsp;${esc(x.c)} aus ${esc(x.w)} (${dxEndNote(x)}).`).concat(dxBuyAtEnd(end).map(x=>`Am ${fD(end)} bei ${esc(x.nm)} gekauft, noch nicht in der Wallet: ${fmtNum(x.q)}&nbsp;${esc(x.c)} für ${esc(x.w)} (Zugang am ${fD(x.d)}).`));
+    $('wdfx').innerHTML=L.length?`<p class="small">${L.join('<br>')}</p>`:''}
   else{const P=dxPendSum(S),L=Object.entries(P).filter(([,q])=>q>0);$('wdfx').innerHTML=L.length?`<p class="small">${L.map(([k,q])=>{const i=k.lastIndexOf('|');return `${gl('dxpend','Ausstehend bei '+esc(dxPendName(k)))}: ${fmtNum(q)}&nbsp;${esc(k.slice(i+1))} (aus ${esc(k.slice(0,i))})`}).join('<br>')}</p>`:''}
   // Ab 0.46 (5.2): „Ø-Preis“ mit klein „€ je Coin“ darunter, wie die kleinen Zusätze in der Auswertung
   // Ab 0.50 (1.5): am Handy keine Spalte „Coin“ (Klasse pcn), der Coin steht klein unter der Wallet (pcm)
@@ -8397,7 +8455,8 @@ function vgDetH(v,fl,DEw,PM,F,rw){const eg=vgEG(v,fl),oc=vgOcH(v,fl,DEw),tl=vgTl
   {const c0=v.cx.length?cxById(v.cx[0]):null;if(c0&&c0.via){const M=v.mv.map(k=>S.wtx[k]).filter(Boolean).sort((a,b)=>a.ts-b.ts);if(M.length){const A=[M[0].from,...M.map(m=>m.to)].filter((a,i,x)=>a&&x.indexOf(a)===i);
     L.push(`<p class="small vgchain">Weg: ${A.map(a=>`<span class="nw">${wAdr(a)}${cpBtn(a)}</span>`).join(' → ')} (über Weiterleitung ${esc((S.addr[c0.via]||{}).name||wShort(c0.via))})</p>`)}}}
   // Ab 0.131: Verkauf über DFX.swiss an einem späteren Tag als der Abgang aus der Wallet
-  {const c0=v.cx.length?cxById(v.cx[0]):null,m0=c0&&c0.wk?S.wtx[c0.wk]:null;if(dxLate(c0,m0)&&dxAddr(S,m0.to))L.push(`<p class="small vgdxz">${dxLateTxt(c0,m0)}</p>`)}
+  {const c0=v.cx.length?cxById(v.cx[0]):null,m0=c0&&c0.wk?S.wtx[c0.wk]:null;if(dxLate(c0,m0)&&dxAddr(S,m0.to))L.push(`<p class="small vgdxz">${dxLateTxt(c0,m0)}</p>`);
+    else if(dxEarly(c0,m0)&&dxAddr(S,m0.from))L.push(`<p class="small vgdxz">${dxEarlyTxt(c0,m0)}</p>`)}
   if(tk||(v.fee>0&&v.feeW))L.push(`<p class="vgn small">${tk?gl(tk,'Was heißt '+wd+'?'):''}${v.fee>0&&v.feeW?`${tk?' · ':''}Gebühr ${fmtNum(v.fee)} ${esc(v.coin)}, gebucht bei <b>${esc(v.feeW)}</b> (Verkauf zum Tageswert)`:''}</p>`);
   // Ab 0.94 Nachtrag: beschreibt der Kasten darüber die Brücke bzw. Aufladung, zeigt „Zuordnung“ (bis 0.128 „Status“) nur „intern“ bzw. „Umtausch“ (wie im Fenster „Bewegung“)
   L.push(vgMvTab(v.mv,PM,{kurz:tl?vgKurz(v):null,v}));for(const id of v.tag)L.push(vgTagH(id));for(const id of v.cx)L.push(vgCxH(id,DEw,F));
@@ -8422,7 +8481,7 @@ function vgEdit(v){const cx=v.cx.filter(id=>{const c=cxById(id);return !(c&&(c.b
 // Bei einer offenen Bewegung und einer offenen Zeile der Börse öffnet der ✎ jetzt das Fenster „Bewegung“ (ansehen, löschen, ganze Datei entfernen).
 const vgEH=v=>{const T=VG_TD.get(v.id),dn=!!(T&&T.done),nm=`${esc(vgWas(v))}${v.d?' vom '+fD(v.d):''}`;let [t,x,l]=vgEdit(v);
   if(dn&&(t==='d'||t==='x')){t='o';x=v.id;l='Bewegung ansehen'}
-  return `${dn?`<button type="button" class="btn sm vgdo" data-vtd="${esc(T.it.id)}" aria-label="Erledigen: ${nm}">Erledigen</button>`:''}<button type="button" class="vge" data-vge="${t}:${esc(String(x))}" aria-label="${l}: ${nm}">✎</button>`};
+  return `${dn?`<button type="button" class="btn sm vgdo" data-vtd="${esc(T.it.id)}"${T.cf!=null?` data-vtdcf="${T.cf}"`:''} aria-label="Erledigen: ${nm}">Erledigen</button>`:''}<button type="button" class="vge" data-vge="${t}:${esc(String(x))}" aria-label="${l}: ${nm}">✎</button>`};
 // Ab 0.121 (Phase 4): Sortierschlüssel einer Zeile: Datum und die Zeit, die in der Zeile steht (Uhrzeit, sonst die geschätzte „ca.“). Ohne beides wie in
 // der Rechnung (kxRun): Zugänge (Kauf, Geschenk erhalten, Rückerstattung, Auszahlung von Tag) 00:00:00, Abgänge (Verkauf, Zahlung, Gebühr, Geschenk
 // gemacht, Verloren oder gestohlen, Einzahlung zu Tag) 23:59:59, alles andere (Übertrag, Tausch, Bewegungen) 23:59:58. Steuer, Zusammenfassung, Excel
@@ -8447,7 +8506,7 @@ function vgSugShort(it){const s=it.sug;
 function vgTdMap(V){const M=new Map(),by={m:{},c:{},t:{},b:{}};
   for(const v of V){for(const k of v.mv)by.m[k]=v.id;for(const id of v.cx)by.c[id]=v.id;for(const id of v.tag)by.t[id]=v.id;if(v.bxo)by.b[v.bxo]=v.id}
   // Mehrere Punkte an einer Zeile: Status nach Rang (offen, Vorschlag, doppelt?, Einkauf fehlt, vertippt?, Reihenfolge, prüfen), alle in o.all
-  const RK=['offen','verdächtig','Vorschlag','doppelt?','Einkauf fehlt','vertippt?','Reihenfolge','prüfen','ausstehend'];
+  const RK=['offen','verdächtig','Vorschlag','doppelt?','Einkauf fehlt','vertippt?','Reihenfolge','prüfen','ausstehend','geschätzt'];
   const put=(rid,o)=>{if(!rid)return;const x=M.get(rid);if(!x){M.set(rid,Object.assign(o,{all:[o]}));return}x.all.push(o);
     if(RK.indexOf(o.w)<RK.indexOf(x.w)){const all=x.all;M.set(rid,Object.assign(o,{all}))}},ref=r=>{if(!r)return '';const i=r.indexOf(':');return (by[r.slice(0,i)]||{})[r.slice(i+1)]||(r[0]==='c'?(by.c[+r.slice(2)]||''):'')};
   for(const it of TD_ITEMS){const sm=vgSugShort(it);
@@ -8461,6 +8520,8 @@ function vgTdMap(V){const M=new Map(),by={m:{},c:{},t:{},b:{}};
     else if(it.kind==='bxein'||it.kind==='bxaus')put(ref(it.ref),{w:'offen',c:'open',s:'',it,done:true});
     else if(it.kind==='dfx')put(ref(it.ref),{w:'ausstehend',c:'sug',s:'',it,done:true});
     else if(it.kind==='tagq')put(ref(it.ref),{w:sm?'Vorschlag':'offen',c:sm?'sug':'open',s:sm,it,done:true});
+    // Ab 0.133 (Florians Auftrag): Kartenzahlung mit geschätzter Kartengebühr: „Erledigen“ führt zum gebündelten Punkt und hebt dort ihre Zeile hervor (cf)
+    else if(it.kind==='cfee')for(const c of cfOpenL())put(by.c[c.id],{w:'geschätzt',c:'est',s:'',it,done:true,cf:c.id});
     else if(it.kind==='tagw')put(ref(it.ref),{w:'prüfen',c:'sug',s:'Wallet vom Tool gewählt',it});
     else if(it.kind==='swapland')put(ref(it.ref),{w:'prüfen',c:'sug',s:'Wert aus dem anderen Land',it})}
   return M}
@@ -8759,6 +8820,14 @@ function sugInfo(s){
     return {frage:one?`Hast du diese ${q} zu ${esc(L[0].wallet)} geschickt?`:`Wohin gingen diese ${q}?`,name:'Übertrag zur Börse',kurz:`${q} (${esc(rAW(S,m.from))}${one?' → '+esc(L[0].wallet):''})`,
       warum:[[m.time.slice(0,5),`${q} gehen aus ${esc(rAW(S,m.from))} an ${cpH(s.a)}`],...(one?[['',`Am ${L[0].date===m.date?'selben Tag':dm(L[0].date)} hast du bei ${esc(L[0].wallet)} ${fmtNum(L[0].qty)} ${esc(L[0].coin)} verkauft.`]]:[])],
       wenn:`${one?`ein Übertrag zu ${esc(L[0].wallet)}, `:''}das Tool merkt sich die Adresse als Adresse der Börse.`,ch:one?null:L.map(c=>`Übertrag zu ${esc(c.wallet)} (Verkauf am ${dm(c.date)}, ${fmtNum(c.qty)} ${esc(c.coin)})`),k:s.ks[0],d:m.date,t:m.time}}
+  if(s.ty==='ref'&&s.card){const m=S.wtx[s.ks[0]],L=s.l,I=esc(s.id),w=rAW(S,m.to)||'',q=`${fmtNum(m.qty)} ${wCoinT(m)}`,sel=refSel(s),dd=c=>(wSec(m.date,'')-wSec(c.date,''))/86400;
+    // Ab 0.133 (Florians Auftrag): „Erstattung auf deine Karte?“ mit Wahl der Kartenzahlung (alle davor, die letzten 90 Tage zuerst, darunter „Ältere zeigen“),
+    // die nächstliegende mit gleicher Menge vorgewählt, dazu „Zu keiner dieser Zahlungen“. Ein Hauptknopf „Übernehmen“ (data-refgo) für die gewählte Zeile.
+    const opt=(c,i)=>`<div><label class="fopt"><input type="radio" name="ref-${I}" value="${i}" data-refpick="${I}"${i===sel?' checked':''}><span>Zahlung vom ${dm(c.date)}${c.time?' '+c.time.slice(0,5):''}, ${fmtNum(c.qty)} ${esc(c.coin)}${c.qty-m.qty>0.01+1e-9?` (Teil-Erstattung: ${fmtNum(m.qty)} von ${fmtNum(c.qty)} ${esc(c.coin)})`:''}</span></label></div>`;
+    const R=L.map((c,i)=>[c,i]),neu=R.filter(([c])=>dd(c)<=90),alt=R.filter(([c])=>dd(c)>90);
+    return {frage:'Erstattung auf deine Karte?',name:sugGl('Rückerstattung'),kurz:`${q} auf ${esc(w)}`,warum:[mvLine(m),['','So bucht der Kartenanbieter eine Erstattung.']],wenn:'',k:s.ks[0],d:m.date,t:m.time,
+      btns:(ja,no)=>`<p><b>Zu welcher Kartenzahlung gehört sie?</b></p>${L.length?'':'<p class="small">Das Tool findet keine Kartenzahlung davor.</p>'}<div class="refpk">${neu.map(([c,i])=>opt(c,i)).join('')}${alt.length?`<details${alt.some(([,i])=>i===sel)?' open':''}><summary>Ältere zeigen</summary>${alt.map(([c,i])=>opt(c,i)).join('')}</details>`:''}`+
+        `<div><label class="fopt"><input type="radio" name="ref-${I}" value="${L.length}" data-refpick="${I}"${sel===L.length?' checked':''}><span>Zu keiner dieser Zahlungen</span></label></div></div><p class="small" data-refwenn="${I}">${refWenn(s,sel)}</p><div class="row"><button type="button" class="btn primary" data-refgo="${I}">Übernehmen</button>${no()}</div><div class="wpaymsg"></div>`}}
   if(s.ty==='ref'){const m=S.wtx[s.ks[0]],L=s.l,one=L.length===1,q=`${fmtNum(m.qty)} ${esc(m.coin)}`;
     return {frage:one?`Sind diese ${q} das Geld zurück von deiner Zahlung vom ${dm(L[0].date)}?`:`Zu welcher Zahlung gehören diese ${q}?`,name:sugGl('Rückerstattung'),kurz:`${q}${one?` (zur Zahlung vom ${dm(L[0].date)})`:''}`,
       warum:[mvLine(m),...(one?[['',`Am ${dm(L[0].date)} hast du ${fmtNum(L[0].qty)} ${esc(L[0].coin)} bezahlt.`]]:[])],wenn:one?'die Zahlung gilt als erstattet.':'',
@@ -8825,6 +8894,15 @@ function dupAfter(fn){const b=new Set(wDupCands(S).map(x=>x.keep.id+'|'+x.del.id
   const d=wDupCands(S2).find(x=>!b.has(x.keep.id+'|'+x.del.id));if(!d)return '';const q=d.keep.qtyIn>0?d.keep.qtyIn:d.keep.qty;
   return `Danach gibt es zwei Überträge über ${fmtNum(q)} ${esc(d.keep.coin)} am ${dm(d.keep.date)}`}
 // inCard: der große Satz ist schon Kopf der Karte (Punkt in „Noch offen“), sonst steht er fett im Vorschlag
+// Ab 0.133: Erstattung auf die Karte. refSel = vorgewählte Zeile (die nächstliegende Zahlung mit gleicher Menge; ohne Zahlung davor „Zu keiner“; sonst keine),
+// refWenn = der Satz „Wenn du übernimmst: …“ zur gewählten Zeile.
+function refSel(s){const m=S.wtx[s.ks[0]],i=s.l.findIndex(c=>Math.abs(c.qty-m.qty)<=0.01+1e-9);return i>=0?i:s.l.length?-1:0}
+function refWenn(s,i){const m=S.wtx[s.ks[0]],c=s.l[i];if(i==null||i<0||!m)return '';
+  return c&&c.date.slice(0,4)===m.date.slice(0,4)?`Wenn du übernimmst: Die Zahlung vom ${dm(c.date)} zählt um ${fmtNum(m.qty)} ${esc(m.coin)} nicht als Verkauf. Die Coins kommen mit ihrem Einkaufswert zurück.`:'Wenn du übernimmst: Zugang zum Tageswert.'}
+document.addEventListener('change',e=>{const r=e.target.closest&&e.target.closest('[data-refpick]');if(!r)return;const s=sugFind(r.dataset.refpick),box=r.closest('.refpk'),p=box&&box.parentNode.querySelector('[data-refwenn]');if(s&&p)p.textContent=refWenn(s,+r.value)});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-refgo]');if(!b)return;const s=sugFind(b.dataset.refgo);if(!s)return;const box=b.closest('.row').parentNode,r=box.querySelector('[data-refpick]:checked');
+  if(!r){const m=box.querySelector('.wpaymsg');if(m)m.innerHTML='<div class="msg warn">Wähle die Kartenzahlung oder „Zu keiner dieser Zahlungen“.</div>';return}
+  const snap=JSON.stringify(S);if(sugTake(s,+r.value)){save();render();toastUndo('Übernommen.',snap)}});
 function sugH(s,inCard){const I=esc(s.id),x=sugInfo(s);if(!x)return '';
   // Ab 0.50 Nachtrag 2 (1.1): Automatik aus in der Kette: „Automatik einschalten und übernehmen“, darüber „Dafür muss die Automatik bei … wieder an.“
   const naT=i=>{const L=sugNaKs(s,i);return L.length?`Dafür muss die Automatik bei ${naWhen(L)} wieder an.`:''};
@@ -9044,14 +9122,14 @@ const cardFeeTxt=(c,p)=>{if(!(p>=0&&p<=50))return '';const x=cardFeeOf(c.qty,p);
 // mit Häkchen, Datum, Menge, eigenem Feld „Gebühr %“ (vorbelegt 3 bzw. die letzte Antwort derselben Wallet, cardPrev), daneben was das heißt, und ✎
 // (klappt das Formular dieser Zahlung unter der Tabelle auf, CF_EDIT). Bei mehreren Zahlungen darüber „Gebühr für alle gewählten“ (füllt nur die
 // angehakten Zeilen). „Übernehmen (n)“ schreibt je angehakter Zeile ihren eigenen Wert. CF_ST merkt Getipptes und abgewählte Häkchen, solange der Punkt offen ist.
-let CF_EDIT=null,CF_ST={v:{},off:{}};
+let CF_EDIT=null,CF_MARK=null,CF_ST={v:{},off:{}};
 const cfReset=()=>{CF_ST={v:{},off:{}}};
 const cfOpenL=()=>S.cx.filter(c=>cardOpen(S,c)).sort((a,b)=>((a.date||'')+(a.time||''))<((b.date||'')+(b.time||''))?-1:1);
 const cfPctV=v=>{const s=String(v==null?'':v).trim();if(!s)return NaN;const x=parseDe(s.replace('.',','));return x>=0&&x<=50?x:NaN};
 const cfPct=(box,id)=>{const e=box.querySelector(`[data-cfp="${id}"]`);return e?cfPctV(e.value):NaN};
 function cardQH(L){const n=L.length,cpT=x=>{const m=x.wk&&S.wtx[x.wk];return m?esc(frName(m.to)||wShort(m.to)):'–'},PV=L.map(x=>cardPrev(S,x)),P0=PV[0],same=!!P0&&PV.every(P=>P&&P.d===P0.d&&P.p===P0.p);
   const rows=L.map((x,i)=>{const tm=(x.time||'').slice(0,5),lab=esc(dS(x.date)+', '+fmtNum(x.qty)+' '+x.coin),raw=CF_ST.v[x.id],v=raw!=null?(isNaN(cfPctV(raw))?'':cfPctV(raw)):(PV[i]?PV[i].p:3),t=esc(cardFeeTxt(x,cfPctV(v)));
-    return `<tr data-cfr="${x.id}"${CF_EDIT===x.id?' class="tdcur"':''}><td><input type="checkbox" data-cfi="${x.id}" ${CF_ST.off[x.id]?'':'checked'} aria-label="${lab} übernehmen"></td><td>${dS(x.date)}<span class="small tdbt">${tm}</span></td><td class="tdbc">${tm}</td><td><span class="nw"><b>${fmtNum(x.qty)}</b> ${esc(x.coin)}</span></td><td class="tdbc"><span class="nw">${cpT(x)}</span></td>`+
+    return `<tr data-cfr="${x.id}"${CF_EDIT===x.id||CF_MARK===x.id?' class="tdcur"':''}><td><input type="checkbox" data-cfi="${x.id}" ${CF_ST.off[x.id]?'':'checked'} aria-label="${lab} übernehmen"></td><td>${dS(x.date)}<span class="small tdbt">${tm}</span></td><td class="tdbc">${tm}</td><td><span class="nw"><b>${fmtNum(x.qty)}</b> ${esc(x.coin)}</span></td><td class="tdbc"><span class="nw">${cpT(x)}</span></td>`+
       `<td><span class="nw">${pctIn(`data-cfp="${x.id}"`,v,'Kartengebühr in Prozent, '+dS(x.date)+', '+fmtNum(x.qty)+' '+x.coin)} %</span> <span class="small cfxw" data-cfx="${x.id}">${t}</span></td><td><button type="button" class="btn sm" data-cfe="${x.id}" aria-expanded="${CF_EDIT===x.id?'true':'false'}" aria-label="${lab} bearbeiten">✎</button></td></tr>`+
       `<tr class="cfsub"><td></td><td colspan="6"><span class="small" data-cfx="${x.id}">${t}</span></td></tr>`}).join('');
   return `<div class="tdprev tdcfee">${same?`<p>Vorschlag wie am ${dm(P0.d)}: ${plainDe(P0.p)} %.</p>`:''}`+
@@ -9120,11 +9198,18 @@ function todoItems(C){
   for(const x of tagAmbig())I.push({id:'a:'+x.k,lv:'y',kind:'tagamb',t:wSec(x.d,''),eur:0,body:tagAskHTML([x]),ref:'',hdS:tdHdL(x.d),li:{d:x.d,w:'Tag',what:'Auszahlung doppelt?',q:usd(x.usd)}});
   // Kartenzahlungen ohne Eintrag: je Zahlung ein Punkt, Vorschlag „Als Zahlung anlegen“ mit Kartengebühr in % (gemerkt je Wallet, anfangs 3 %)
   // Ab 0.49 (1.1): nur noch nach „Verknüpfung lösen“ (sonst legt wSync die Zahlung mit 3 % an); vorbelegt 3 %, nichts je Wallet gemerkt
-  for(const m of PY){const w=m.wFrom,K=esc(m.k),pct=3;
-    I.push({id:'m:'+m.k,mv:m.k,lv:'r',kind:'pay',t:mt(m),eur:tdEur(m.qty,m.date),ref:'m:'+m.k,form:{pre:tdPre(m.k)},
+  // Ab 0.133 (Florians Auftrag): Kartenguthaben an eine Adresse, die das Tool nicht als Abrechnung der Karte kennt (nicht W_CARD_PAY, nicht in der Gruppe
+  // „Kartenzahlungen“): gelber Vorschlag „Kartenzahlung?“ mit „Übernehmen“ (merkt die Adresse) und „Nein“ (danach ein offener Abgang).
+  for(const m of PY){const w=m.wFrom,K=esc(m.k),pct=3,sure=wPaySure(S,S.wtx[m.k]);
+    const an=`<p>Als Zahlung anlegen. Wert geschätzt: abgebuchter Betrag ohne Kartengebühr von ${pctIn(`data-paypct="${esc(w)}"`,pct,'Kartengebühr in Prozent')} %, als geschätzt markiert.</p>`;
+    I.push(sure?{id:'m:'+m.k,mv:m.k,lv:'r',kind:'pay',t:mt(m),eur:tdEur(m.qty,m.date),ref:'m:'+m.k,form:{pre:tdPre(m.k)},
       why:'Kartenzahlung ohne Eintrag. Ohne Eintrag fehlt sie in der Steuer.',
-      sug2:`<p>Als Zahlung anlegen. Wert geschätzt: abgebuchter Betrag ohne Kartengebühr von ${pctIn(`data-paypct="${esc(w)}"`,pct,'Kartengebühr in Prozent')} %, als geschätzt markiert.</p><div class="row"><button type="button" class="btn primary" data-payone1="${K}">Übernehmen</button></div><div class="wpaymsg"></div>`,
-      li:{d:m.date,w:w||'',what:'Kartenzahlung ohne Eintrag',q:mq(m)}})}
+      sug2:`${an}<div class="row"><button type="button" class="btn primary" data-payone1="${K}">Übernehmen</button></div><div class="wpaymsg"></div>`,
+      li:{d:m.date,w:w||'',what:'Kartenzahlung ohne Eintrag',q:mq(m)}}:
+     {id:'m:'+m.k,mv:m.k,lv:'y',tax:1,kind:'pay',t:mt(m),eur:tdEur(m.qty,m.date),ref:'m:'+m.k,form:{pre:tdPre(m.k)},
+      why:PAY_Q_WHY,
+      sug2:`<p><b>Kartenzahlung?</b></p>${an}<p class="small">Wenn du übernimmst: Das Tool merkt sich die Adresse für Kartenzahlungen.</p><div class="row"><button type="button" class="btn primary" data-payone1="${K}">Übernehmen</button><button type="button" class="btn" data-payno="${K}">Nein</button></div><div class="wpaymsg"></div>`,
+      li:{d:m.date,w:w||'',what:'Vorschlag: Kartenzahlung',q:mq(m)}})}
   // Ab 0.49 (1.1): Kartenzahlung mit geschätzter Kartengebühr: gelbe Frage „Gab es eine Kartengebühr?“ (cardQH)
   // Ab 0.132: ein Punkt für alle offenen Kartenzahlungen (id 'cf'). Bei genau einer Zahlung der große Satz wie bis 0.131.
   {const L=cfOpenL(),n=L.length;if(CF_EDIT!=null&&!L.some(c=>c.id===CF_EDIT))CF_EDIT=null;
@@ -9336,7 +9421,11 @@ function tdWhy(k){const W=wWhat(S,k);if(!W)return '';const a=W.a,x=a?S.addr[a]:n
   else if(a&&x)t='Die Adresse steht im Adressbuch, aber was die Bewegung war, weiß das Tool nicht.';
   if(W.br)t+=(t?' ':'')+'Die Coins gingen an eine bekannte Brücke, kamen aber in keiner deiner Wallets an. Vielleicht fehlt eine Wallet-Datei.';
   if(W.card)t+=(t?' ':'')+'USDC auf Base von einer unbekannten Adresse ist oft eine Rückbuchung deiner Karte.';
+  // Ab 0.133: Kartenguthaben vom Kartenanbieter ohne passenden Abgang (z. B. fehlt die Datei der Wallet oder des Netzwerks, aus dem aufgeladen wurde)
+  {const m=S.wtx[k];if(m&&wCardTok(m)&&m.from===W_CARD_TOP&&rOwn(S,m.to))t=CARD_TOP_OPEN}
   return t?`<p class="small tdwhy">${t}</p>`:''}
+const PAY_Q_WHY='Kartenguthaben ging vom Kartenkonto an eine Adresse, die das Tool nicht als Abrechnung der Karte kennt.';
+const CARD_TOP_OPEN='Das ist eine Aufladung deiner Karte. Das Tool findet den Abgang dazu nicht. Lies die Datei der Wallet ein, aus der du aufgeladen hast.';
 // Art einer Wallet (ab 0.46, für die Adressfrage und das Adressbuch): gespeichert in S.wmeta[w].kind, sonst Karte (Häkchen aus 0.45), Börse (bekannte fremde
 // Adressen oder Name einer Börse) oder Wallet
 const WK_TXT={wallet:'Wallet',boerse:'Börse',karte:'Karte'};
@@ -9476,7 +9565,9 @@ function tdFitH(){const md=$('td-modal'),cur=$('wtodo').querySelector(':scope>.t
   const w=cur.getBoundingClientRect().width,key=TD_ITEMS.map(x=>x.id).join(',')+'|'+Math.round(w)+'|'+TD_FH;
   if(key!==TD_HK){TD_HK=key;const m=document.createElement('div');m.setAttribute('aria-hidden','true');m.style.cssText=`position:absolute;visibility:hidden;pointer-events:none;left:0;top:0;width:${w}px`;$('wtodo').appendChild(m);
     const kd=TD_KIND;TD_KIND='';let mx=0;
-    try{for(const x of TD_ITEMS){m.innerHTML=tdCard(x).replace(/ id="td-slot"/g,'');const c=m.firstElementChild;if(c)mx=Math.max(mx,Math.ceil(c.getBoundingClientRect().height)+(x.form?TD_FH:0))}}finally{TD_KIND=kd;m.remove()}
+    // Ab 0.133: Die Messkopie steht kurz in der Seite. Auswahlknöpfe (radio) bekommen dort keinen Gruppennamen, sonst nimmt die Kopie der sichtbaren
+    // Karte die Vorwahl weg (gleicher Name = eine Gruppe, nur ein Knopf gewählt) und im Punkt „Erstattung auf deine Karte?“ wäre nichts vorgewählt.
+    try{for(const x of TD_ITEMS){m.innerHTML=tdCard(x).replace(/ id="td-slot"/g,'').replace(/(<input type="radio") name="[^"]*"/g,'$1');const c=m.firstElementChild;if(c)mx=Math.max(mx,Math.ceil(c.getBoundingClientRect().height)+(x.form?TD_FH:0))}}finally{TD_KIND=kd;m.remove()}
     TD_HM=mx}
   cur.style.minHeight='';const box=md.querySelector('.box'),rest=box.scrollHeight-cur.offsetHeight,avail=Math.floor(innerHeight*0.92)-rest;
   cur.style.minHeight=Math.max(0,Math.min(TD_HM,avail))+'px'}
@@ -9509,7 +9600,7 @@ function cxEmbBack(keep){const box=$('cx-modal').querySelector('.box'),help=$('c
 function tdKind(v){const x=TD_ITEMS[TD_POS];if(!x||!x.id.startsWith('m:'))return;
   TD_KIND=v&&TD_KIND!==v?v:'';if(TD_KIND&&CX_EMB){cxEmbBack();endEdit();CX_EMB=null}
   render();const b=$('wtodo').querySelector(TD_KIND?`[data-tdk="${TD_KIND}"]`:'#cx-kind');if(b)b.focus()}
-function tdGo(i){if(CX_EMB){cxEmbBack();endEdit()}TD_DIRTY='';CF_EDIT=null;cfReset();TD_MK='';TD_POS=Math.max(0,Math.min(TD_ITEMS.length-1,i));TD_CUR=TD_ITEMS[TD_POS]?TD_ITEMS[TD_POS].id:'';TD_KIND='';render();$('wtodo').scrollIntoView({block:'start'});const b=$('td-modal').querySelector('.box');if(b)b.scrollTop=0}
+function tdGo(i){if(CX_EMB){cxEmbBack();endEdit()}TD_DIRTY='';CF_EDIT=null;CF_MARK=null;cfReset();TD_MK='';TD_POS=Math.max(0,Math.min(TD_ITEMS.length-1,i));TD_CUR=TD_ITEMS[TD_POS]?TD_ITEMS[TD_POS].id:'';TD_KIND='';render();$('wtodo').scrollIntoView({block:'start'});const b=$('td-modal').querySelector('.box');if(b)b.scrollTop=0}
 // Rückweg aus der Liste (3.3): Leiste „← Zurück zu „Noch offen“ (n offen)“ im stehenden Titel von „Alle Vorgänge“, mit ×
 function tdBack(){const b=$('tdback');if(!b)return;const n=(LAST_TODO||{}).n||0;b.hidden=!TD_BACK||!n;
   b.innerHTML=TD_BACK&&n?`<button type="button" class="btn golist back" data-tdbk>← Zurück zu „Noch offen“ (${fI.format(n)} offen)</button><button type="button" class="mx tdbx" data-tdbx aria-label="Leiste ausblenden">×</button>`:''}
@@ -9607,6 +9698,7 @@ function naSay(G){const x=G.x,a=G.a,w=a==='sug'?`„Nein“ zum Vorschlag „${x
     a==='prev'?`„Nein“ zu „${x||'Wie am …'}“ gesagt`:a==='imp'?`beim Einlesen „rückgängig“ geklickt${x?` (${x})`:''}`:NA_ACT[a]||'„Nein“ gesagt';
   return `Automatik aus: Hier hast du am ${dm(G.d)} ${w}.`}
 function naTok(x){const i=x.indexOf(':'),p=i<0?x:x.slice(0,i+1),v=i<0?'':x.slice(i+1),c=()=>cxById(+v),ce=c=>c?`„${kindL(c)||c.kind}“ vom ${dm(c.date)}`:'';
+  if(x==='pay')return 'keine Kartenzahlung';if(x==='cref')return 'keine Erstattung auf die Karte';
   if(x==='auto')return 'kein Übertrag zwischen deinen Wallets';if(x==='tx')return 'kein Tausch in derselben Transaktion';if(x==='swap')return 'kein Umtausch';
   // Ab 0.50 Nachtrag 3: mit Bezug auf den Zugang bzw. die Verkäufe
   if(p==='ex:'){const c=cxById(+v);return c?`kein Übertrag vom Eintrag „${kindL(c)||c.kind}“ vom ${dm(c.date)}`:''}if(p==='xo:')return 'kein Übertrag zu einer Börse';
@@ -9733,7 +9825,10 @@ function cfEdit(id){const go=()=>{CF_EDIT=CF_EDIT===id?null:id;TD_DIRTY=TD_DIRTY
 $('cx-sug').addEventListener('click',wfAct);$('cx-sug').addEventListener('click',tdClick);
 $('cx-sug').addEventListener('click',e=>{if(e.target.closest('button[data-wa],button[data-sug],button[data-sugno],button[data-dupkeep]')&&MODAL&&MODAL.id==='cx-modal'){endEdit();closeModal()}});
 // Ab 0.47 (3.3): „Erledigen“ in der Liste und in der Teiltabelle: derselbe Punkt wie in „Noch offen“
-document.addEventListener('click',e=>{const b=e.target.closest('[data-vtd]');if(!b)return;e.preventDefault();closeFpanel();todoOpen(b.dataset.vtd)});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-vtd]');if(!b)return;e.preventDefault();closeFpanel();
+  // Ab 0.133: aus einer Kartenzahlung mit „geschätzt“: Zeile dieser Zahlung im Punkt der Kartengebühr hervorheben und ins Bild holen
+  CF_MARK=b.dataset.vtdcf!=null?+b.dataset.vtdcf:null;todoOpen(b.dataset.vtd);
+  if(CF_MARK!=null)requestAnimationFrame(()=>{const r=$('wtodo').querySelector(`tr[data-cfr="${CF_MARK}"]`);if(r)r.scrollIntoView({block:'center'})})});
 function cxSugFill(c){const box=$('cx-sug');if(!c){box.innerHTML='';return}const T=VG_TD.get('c:'+c.id);if(!T||!T.it){box.innerHTML='';return}
   const it=((T.all||[T]).find(o=>o.w==='Vorschlag'||o.w==='doppelt?')||{}).it;if(!it){box.innerHTML='';return}let h='';
   if(it.mv&&S.wtx[it.mv]){const q=wAsk(it.mv,wPairMap().get(it.mv));if(q)h=wAskHTML(it.mv,S.wtx[it.mv],q)}
@@ -10179,7 +10274,7 @@ async function addCx(){
     if(Math.abs(entry.qtyIn-entry.qty)<1e-9)delete entry.qtyIn}
   // Ab 0.39: feste id; beim Bearbeiten bleiben Herkunft, Verknüpfung, Uhrzeit und Gebühr-Bezug. Neu zu einer Bewegung: Herkunft „aus Datei“.
   let idx=wasEdit?S.cx.findIndex(x=>x.id===EDIT):-1;const tmIn=cxTimeIn();
-  if(idx>=0){const o=S.cx[idx];entry.id=o.id;for(const f of ['src','wk','time','feeOf','wkIn','brk','rest','how','xk','via','bv','dx','dxNo','dxb','dupOk','ld','ldf'])if(o[f]!=null)entry[f]=o[f];
+  if(idx>=0){const o=S.cx[idx];entry.id=o.id;for(const f of ['src','wk','time','feeOf','wkIn','brk','rest','how','xk','via','bv','dx','dxNo','dxb','dupOk','ld','ldf','ofNone'])if(o[f]!=null)entry[f]=o[f];if(entry.of>0)delete entry.ofNone;
     // Ab 0.74 (2.4): bestätigter Ersatzwert (eOk) gilt, solange es ein Ersatzwert bleibt
     if(ersatz&&o.eOk)entry.eOk=1;
     // Ab 0.45: Uhrzeit von Hand (ohne Bewegung aus der Datei)
@@ -10280,6 +10375,8 @@ function assumptions(o){return [
 // wenn es solche Zeilen gibt. st = Stichtag wie in den anderen Zeilen, wd = Anzeige der Wallet. Rückgabe: Zahl der Zeilen bei DFX.swiss.
 function beExtra(be,st,end,CE,DE,X,wd){const hin=()=>{if(!be[0].hin){be[0].hin=1;be[0].push(X.B('Hinweis'))}};let n=0;
   for(const u of uwList(end)){hin();be.push([st,wd(u.to),u.coin,...(DE?['']:[]),X.N(u.q),'','',`davon unterwegs, angekommen am ${fD(u.d)}`])}
+  for(const x of dxBuyAtEnd(end)){hin();n++;const t=`gekauft für ${wd(x.w)}, Zugang am ${fD(x.d)}`;
+    be.push(DE?[st,x.nm,x.c,X.D(x.kd),X.N(x.q),x.eur!=null?X.E(x.eur):'',X.D(kxFreiAb(x.kd)),t]:[st,x.nm,x.c,X.N(x.q),x.eur!=null?X.E(x.eur):'',x.eur!=null&&x.q?X.R(x.eur/x.q):'',t])}
   for(const x of dxAtEnd(CE)){hin();n++;const t=`aus ${wd(x.w)}, ${dxEndNote(x)}`;
     if(DE)for(const l of x.lots)be.push([st,x.nm,x.c,X.D(l.kd),X.N(l.q),X.E(l.ak),X.D(l.frei),t]);else be.push([st,x.nm,x.c,X.N(x.q),X.E(x.ak),x.q?X.R(x.ak/x.q):'',t])}
   return n}
@@ -13468,7 +13565,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.132',VDATE='11.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.133',VDATE='11.11.2026',DL_URL='https://trading-bilanz.github.io';
 function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
 function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
