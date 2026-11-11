@@ -1228,7 +1228,13 @@ button.chki:hover,button.chki:focus-visible{background:var(--bg)}
 .rnot{margin:18px 0 0}
 .rnot .btn{font-size:var(--fs-s);padding:4px 10px;margin-left:4px}
 #t-rates button.btn{padding:2px 8px}
-.heart{color:var(--heart)}
+/* Ab 0.134: gezeichnetes Herz (SVG, HEART im Skript) statt des Schriftzeichens, auf jedem Gerät gleich. Größe folgt der Schrift. */
+svg.heart{width:1.05em;height:.96em;fill:var(--heart);vertical-align:-.1em;flex:none}
+#btn-don-go svg.heart{fill:#fff;margin-right:2px}
+#don-modal .btn[hidden]{display:none}
+/* Ab 0.134: Karte „Anregungen, Fehler, Feedback“ im Reiter „Resonanz“: Mail-Knopf, Adresse als Text, „Adresse kopieren“ */
+.fbrow{gap:10px 12px;margin-top:14px}.fbaddr{font-family:ui-monospace,Consolas,monospace;font-size:14px;overflow-wrap:anywhere}
+#fb-card details.dhc{margin-top:12px}#fb-card details.dhc ul{margin:6px 0 0;padding-left:20px}
 /* Lange Adressen in Links brechen um, statt die Seite seitlich scrollen zu lassen */
 a.url{overflow-wrap:anywhere}
 .addr{font-family:ui-monospace,Consolas,monospace;font-size:14px;word-break:break-all;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
@@ -1753,14 +1759,14 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 </section>
 
 <section id="s-print" class="ps"></section>
-<!-- UNTERSTUETZEN -->
+<!-- RESONANZ (bis 0.133 „Unterstützen“; die Kennung support bleibt) -->
 <section id="s-support">
   <div class="card">
     <h2>💚 Danke, dass du die Trading-Bilanz nutzt</h2>
-    <p>Ich habe dieses Tool mit viel Zeit und Herz für die Community gebaut und schenke es dir. Ohne Abo, ohne Werbung. Und deine Daten bleiben bei dir.</p>
-    <p>Wenn du damit schon deinen besten Trade gefeiert hast, dich über die neue Übersicht freust oder es dir sogar schon Kopfzerbrechen erspart hat, freue ich mich sehr über eine Wertschätzung. Jeder Beitrag hilft mir, das Tool weiter zu pflegen und für uns alle besser zu machen.</p>
+    <p>Ich habe dieses Tool mit viel Sorgfalt, Zeit und Liebe für die Community gebaut und schenke es dir. Ohne Abo, ohne Werbung, ohne Anmeldung. Mit Zahlen, die nur du siehst.</p>
+    <p>Wenn du damit schon deinen besten Trade gefeiert hast, deine Ergebnisse in schönen Bildern mit Interessierten teilst oder es dir sogar schon Kopfzerbrechen bei der Steuer erspart hat, freue ich mich sehr über eine Wertschätzung. Jeder Beitrag hilft mir, das Tool weiter zu pflegen und für uns alle besser zu machen.</p>
     <p><strong>Auf dass die Fülle immer weiter fließt.</strong></p>
-    <p>Am liebsten in USDC oder USDT. Aber ganz ehrlich: Ich freue mich über alles, was gerade so herumliegt und ein neues Zuhause sucht. 🙂</p>
+    <p>Am liebsten in USDC oder USDT. Aber ganz ehrlich: Als Vater, der sein Kind in Freiheit aufwachsen lassen will, freue ich mich über alles, was zu mir fließen möchte. 🙂</p>
     <p>Und wenn gerade nichts übrig ist: Erzähle anderen in der Community davon. Auch das trägt uns alle.</p>
     <div class="row" style="gap:20px;align-items:flex-start;margin-top:14px">
       <div class="qr" role="img" aria-label="QR-Code der Wallet-Adresse" title="QR-Code der Wallet-Adresse"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33"><path stroke="#000" d="M2 2.5h7m3 0h2m4 0h1m1 0h3m1 0h7m-29 1h1m5 0h1m3 0h1m2 0h1m1 0h1m4 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h4m3 0h1m3 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m1 0h4m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m5 0h1m4 0h2m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h2m2 0h2m1 0h4m1 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m2 0h1m1 0h1m1 0h1m2 0h1m-20 1h1m1 0h5m4 0h3m1 0h4m3 0h5m-27 1h1m2 0h2m4 0h1m1 0h2m1 0h1m4 0h6m3 0h1m-29 1h1m3 0h1m1 0h2m3 0h3m1 0h1m1 0h2m1 0h2m1 0h2m2 0h1m-25 1h3m1 0h2m3 0h1m2 0h1m4 0h1m1 0h3m-25 1h2m1 0h2m1 0h1m1 0h1m1 0h2m1 0h2m1 0h2m2 0h2m1 0h1m1 0h3m-28 1h1m1 0h1m5 0h1m2 0h2m5 0h2m2 0h1m1 0h2m1 0h2m-28 1h6m1 0h2m1 0h5m5 0h5m-26 1h1m1 0h1m1 0h1m4 0h2m1 0h1m2 0h1m2 0h2m4 0h2m1 0h1m-28 1h1m1 0h7m1 0h2m1 0h1m2 0h3m2 0h1m4 0h3m-29 1h4m1 0h1m1 0h4m1 0h1m1 0h1m4 0h2m1 0h4m2 0h1m-29 1h1m1 0h2m1 0h2m2 0h1m2 0h4m1 0h1m6 0h1m-25 1h1m2 0h2m3 0h3m4 0h1m2 0h1m1 0h3m4 0h1m-28 1h1m2 0h1m1 0h4m3 0h7m1 0h8m-20 1h1m1 0h2m5 0h1m2 0h1m3 0h1m1 0h1m1 0h1m-29 1h7m7 0h3m1 0h3m1 0h1m1 0h1m2 0h1m-28 1h1m5 0h1m1 0h1m2 0h2m1 0h2m2 0h3m3 0h1m2 0h2m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h2m3 0h4m1 0h9m-29 1h1m1 0h3m1 0h1m1 0h2m2 0h1m7 0h2m1 0h1m3 0h2m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h3m1 0h1m2 0h1m1 0h2m1 0h1m-28 1h1m5 0h1m2 0h2m2 0h1m1 0h1m4 0h1m2 0h1m1 0h1m1 0h1m-28 1h7m1 0h4m1 0h7m1 0h2m1 0h1m1 0h1"/></svg></div>
@@ -1768,7 +1774,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
         <div class="small" style="margin-bottom:4px">Wallet-Adresse (<strong>EVM</strong>)</div>
         <div class="addr" id="don-addr">0xa05d81c8a5c966fdb5cce33d6871108870b32f6e</div>
         <div class="row" style="margin-top:8px"><button class="btn primary" id="btn-copyaddr">Adresse kopieren</button><span id="copymsg" class="small"></span></div>
-        <p class="small" style="margin-top:8px">Du kannst die Spendenadresse auf der GitHub-Seite der Trading-Bilanz vergleichen. <a href="https://github.com/Trading-Bilanz/trading-bilanz.github.io#readme" target="_blank" rel="noopener">Adresse vergleichen&nbsp;↗</a></p>
+        <!-- Ab 0.134: nur in der heruntergeladenen Datei (.offl). Der Satz kommt vom Skript (Sprung-Link aus DL_URL, JUMP_URL). -->
+        <p class="small offl" id="don-cmp" style="margin-top:8px"></p>
         <p class="small" style="margin-top:12px">Funktioniert auf allen <strong>EVM-Netzwerken</strong>, z. B. Ethereum, Arbitrum, Base, Optimism, Polygon, BNB Smart Chain, Avalanche, Linea.</p>
         <div class="msg warn"><b>Bitte nicht über TRON (TRC20), Solana oder Bitcoin senden.</b> Diese Netzwerke haben andere Adressen, die Spende käme nicht an. Wenn du von einer Börse aus sendest, wähle als Netzwerk z. B. „Ethereum (ERC20)“, „BNB Smart Chain (BEP20)“, „Arbitrum One“, „Base“ oder „Polygon“.</div>
       </div>
@@ -1776,8 +1783,30 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <h3 style="margin-top:18px">Lieber per PayPal?</h3>
     <p><a class="btn primary" href="https://www.paypal.com/donate?hosted_button_id=KHXGUFJ6FVVRN" target="_blank" rel="noopener">Mit PayPal spenden&nbsp;↗</a></p>
     <div class="msg info" style="margin-top:16px" data-orig></div>
-    <!-- Annahme: Startseite auf Tentary, Adresse noch nicht geprüft -->
-    <p class="small" style="margin:14px 0 0"><a href="https://florianpainsipp.mytentary.com" target="_blank" rel="noopener">Mehr von mir&nbsp;↗</a></p>
+    <p class="small" style="margin:14px 0 0"><a href="https://weltenwandel.at" target="_blank" rel="noopener">Mehr von mir&nbsp;↗</a></p>
+  </div>
+  <!-- Ab 0.134: Karte zum Zuklappen wie überall (S.ui.fold), beim ersten Mal zu. Der Mail-Knopf bekommt seine Adresse vom Skript (fbMail). -->
+  <div class="card fold closed" data-fold="fb-card" id="fb-card">
+    <h2>Anregungen, Fehler, Feedback</h2>
+    <p>Ich bin Autor und Körpertherapeut, kein Programmierer. Ich habe das Tool gemeinsam mit einer KI gebaut und selbst getestet. Allerdings nur mit den Daten, die ich selbst hatte oder mir rekonstruieren und ausdenken konnte. Deine Konten, Wallets und Wege können anders aussehen. Darum freue ich mich über jede Rückmeldung.</p>
+    <p><b>Fehler gefunden?</b> Schreib mir bitte möglichst genau, was du getan hast, bevor das Problem aufgetreten ist. Am besten Schritt für Schritt. Ein Screenshot hilft oft sehr. Beträge darfst du gern unkenntlich machen.</p>
+    <p><b>Fehlt dir eine Funktion oder hast du eine Idee?</b> Schreib sie mir.</p>
+    <p><b>Und wenn du einfach Feedback teilen oder Danke sagen magst:</b> Auch darüber freue ich mich sehr.</p>
+    <div class="row fbrow"><a class="btn primary" id="btn-fbmail" href="mailto:florian@weltenwandel.at">E-Mail schreiben</a><span class="fbaddr" id="fb-addr">florian@weltenwandel.at</span><button type="button" class="btn" id="btn-fbcopy">Adresse kopieren</button><span id="fbcopymsg" class="small"></span></div>
+    <details class="dhc"><summary>So machst du einen Screenshot</summary>
+      <ul>
+        <li><b>Windows:</b> Win + Shift + S, Bereich wählen, in der Mail mit Strg + V einfügen</li>
+        <li><b>Mac:</b> Cmd + Shift + 4</li>
+        <li><b>Android:</b> Ein/Aus und Leiser gleichzeitig</li>
+        <li><b>iPhone:</b> Seitentaste und Lauter gleichzeitig (mit Home-Taste: Home und Seitentaste)</li>
+      </ul>
+    </details>
+  </div>
+  <!-- Ab 0.134: unsichtbar, solange die Liste KOMMT im Skript leer ist (renderKommt) -->
+  <div class="card fold closed" data-fold="kommt-card" id="kommt-card" style="display:none">
+    <h2>Was vielleicht noch kommt</h2>
+    <p>Kein Versprechen, eher ein Blick in meine Werkstatt. Schreib mir, was dir am wichtigsten ist.</p>
+    <ul id="kommt-list"></ul>
   </div>
 </section>
 
@@ -1868,11 +1897,13 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <div id="boot-b"></div><div id="boot-msg"></div>
   <div class="row" style="justify-content:flex-end"><button type="button" class="btn danger" id="btn-boot-wipe">Alles löschen</button><button type="button" class="btn primary" id="btn-boot-load">Sicherung laden</button></div>
 </div></div>
-<div class="modal" id="don-modal"><div class="box">
-  <h2>💚 Deine Zahlen sind fertig.</h2>
-  <p>Ich hoffe, sie machen dir Freude! Wenn dir das Tool geholfen hat, freue ich mich sehr über eine Wertschätzung.</p>
-  <p></p>
-  <div class="row" style="justify-content:flex-end"><button class="btn primary" id="btn-don-go" style="background:#1f7a4d;border-color:#1f7a4d;color:#fff">❤️ Zur Spende</button><button class="btn" id="btn-don-no">Jetzt nicht</button><button class="btn" id="btn-don-done">Schon gespendet</button></div>
+<!-- Ab 0.134: Fenster nach einem Anlass (Export, „Sicherung speichern“, Bild einer Grafik). Titel und Text kommen aus der Liste FENSTER im Skript,
+     die Knöpfe richten sich nach der Art des Eintrags (fenShow). × und Esc schließen und zählen wie „Jetzt nicht“. Ein Klick daneben schließt nicht:
+     Das Fenster kommt von selbst kurz nach einem Klick, ein verirrter Klick soll es nicht ungelesen schließen. Öffnet über modalOn, nicht über openModal. -->
+<div class="modal" id="don-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="don-t" aria-describedby="don-p"><button type="button" class="mx" id="don-x" aria-label="Schließen">×</button>
+  <h2 id="don-t"></h2>
+  <p id="don-p"></p>
+  <div class="row" style="justify-content:flex-end"><button type="button" class="btn primary" id="btn-don-go" style="background:#1f7a4d;border-color:#1f7a4d;color:#fff">Zur Spende</button><button type="button" class="btn primary" id="btn-don-fb" hidden>Feedback schreiben</button><button type="button" class="btn primary" id="btn-don-link" hidden>Link kopieren</button><button type="button" class="btn primary" id="btn-don-ok" hidden></button><button type="button" class="btn" id="btn-don-no">Jetzt nicht</button><button type="button" class="btn" id="btn-don-done">Schon gespendet</button></div>
 </div></div>
 <!-- Fenster „Erste Schritte“ und „Datenschutz“: schließen mit ×, Esc oder Klick daneben (openModal/closeModal) -->
 <div class="modal noprint" id="steps-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="steps-t"><button type="button" class="mx" aria-label="Schließen">×</button>
@@ -1887,7 +1918,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <ul>
     <li>Der Aufruf der Online-Version und „Für offline herunterladen“. Dabei speichert GitHub deine IP-Adresse aus Sicherheitsgründen (<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub&nbsp;↗</a>).</li>
     <li>Das Laden der Wechselkurse: von selbst, sobald Kurse fehlen, und wenn du auf „Kurse laden“ klickst. Das Laden von selbst schaltest du im Reiter „Kurse“ aus (Häkchen „Fehlende Kurse automatisch laden“). Dabei sieht die EZB deine IP-Adresse. Antwortet sie nicht, fragt das Tool beim Dienst Frankfurter. Dann sieht dieser Dienst deine IP-Adresse. Liest du stattdessen die Datei der EZB ein, geht das Tool nicht ins Internet.</li>
-    <li>Links, die du anklickst (Anleitung, Tentary, PayPal), öffnen andere Seiten mit ihren eigenen Regeln.</li>
+    <li>Links, die du anklickst (Anleitung, weltenwandel.at, PayPal), öffnen andere Seiten mit ihren eigenen Regeln.</li>
+    <li>„E-Mail schreiben“ öffnet dein Mail-Programm. Das Tool verschickt nichts. In der Mail stehen nur Version, Browser, Gerät und Ansicht, nichts aus deinen Daten.</li>
   </ul>
   <p>Technisch abgesichert: Eine Regel am Anfang der Datei erlaubt dem Tool nur die Verbindung zu den Wechselkurs-Diensten und zur eigenen Adresse (für „Für offline herunterladen“). Dein Browser verhindert jede andere Verbindung. Lade das Tool nur von trading-bilanz.github.io, damit diese Regel nicht verändert ist.</p>
   <p>Verantwortlich: Florian Painsipp, siehe <a href="https://weltenwandel.at/impressum.html" target="_blank" rel="noopener">Impressum&nbsp;↗</a>. Fragen: <a href="mailto:florian@weltenwandel.at">florian@weltenwandel.at</a></p>
@@ -10405,7 +10437,7 @@ function exportXlsx(year){
     sheets[0].skip=[0];
     for(const sh of sheets)xNice(sh,sh.name==='Übersicht'?{noHdr:true}:{})}
   if(mrX&&mrX.n)for(const sh of sheets)sh.nanBlank=true;
-  const blob=buildXlsx(sheets,!!XA);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Trading-Bilanz-${year||'alle'}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);maybeDonate();
+  const blob=buildXlsx(sheets,!!XA);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Trading-Bilanz-${year||'alle'}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);maybeDonate('export');
 }
 
 // Haltedauer: je Konto und Symbol die Buchungen der Zeit nach, jede Schließung gehört zur Eröffnung davor. Unklar (Ergebnis null) sind
@@ -10793,7 +10825,7 @@ function printSummary(){
   $('s-print').innerHTML=h;
   document.body.classList.add('printsum');
   const off=()=>{document.body.classList.remove('printsum');window.removeEventListener('afterprint',off)};
-  window.addEventListener('afterprint',off);window.print();setTimeout(off,1500);maybeDonate();
+  window.addEventListener('afterprint',off);window.print();setTimeout(off,1500);maybeDonate('export');
 }
 
 // Ab 0.72 (Phase 4): Steuer-Excel („Excel für dieses Jahr“) als eigene Funktion. exportXlsx(null) baut weiter die Excel mit allen Daten,
@@ -10914,7 +10946,7 @@ function taxXlsx(y){
   if((cxOn&&C.n)||(DE&&(Object.keys(S.tag).length||S.cx.length)))sheets.push({name:'Ein- und Auszahlungen Broker',rows:tg,freeze:1,widths:[11,...(TZ?[11,11]:[8]),11,11,6,11,14,15,11,10,12,...(HW?[68]:[])]},{name:'Eigene Krypto-Einträge',rows:cx,freeze:1,widths:cxW});
   if(wb.length>1)sheets.push({name:'Wallet-Bewegungen',rows:wb,freeze:1,widths:[11,9,11,14,14,10,14,10,14,30,68,30,30]});
   sheets.push({name:'Kurse',rows:ku,freeze:1,widths:[11,28,14,10],skip:[ku.length-1]});
-  const blob=buildXlsx(sheets,false);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Trading-Bilanz-${y}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);maybeDonate();
+  const blob=buildXlsx(sheets,false);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Trading-Bilanz-${y}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);maybeDonate('export');
 }
 
 /* ---------------- Steuertarif Österreich ---------------- */
@@ -10923,7 +10955,10 @@ function tarifFor(y){return TARIF[y]||TARIF[2026]}
 function est(inc,y){const b=tarifFor(y);let t=0,lo=0;for(const [hi,r] of b){if(inc>lo)t+=(Math.min(inc,hi)-lo)*r;lo=hi}return t}
 
 /* ---------------- Oberfläche ---------------- */
-const TABS=[['reports','Reports'],['rates','Kurse'],['wallet','Wallet'],['stats','Auswertung'],['tax','Steuer'],['data','Sicherung'],['support','<span class="heart">♥&#xFE0E;</span> Unterstützen']];
+// Ab 0.134: Der Reiter heißt „Resonanz“ (bis 0.133 „Unterstützen“, Kennung support bleibt). Das Herz ist gezeichnet (SVG, voll, Farbe --heart),
+// weil das Schriftzeichen ♥ je nach Gerät dünn aussah. Dasselbe Herz steht weiß im Knopf „Zur Spende“.
+const HEART='<svg class="heart" viewBox="0 0 24 22" aria-hidden="true" focusable="false"><path d="M12 21C5.6 15.7 1.2 12 1.2 7.2A5.9 5.9 0 0 1 12 4.3 5.9 5.9 0 0 1 22.8 7.2C22.8 12 18.4 15.7 12 21Z"/></svg>';
+const TABS=[['reports','Reports'],['rates','Kurse'],['wallet','Wallet'],['stats','Auswertung'],['tax','Steuer'],['data','Sicherung'],['support',HEART+' Resonanz']];
 function status(){
   const accs=Object.keys(S.accounts);const unk=Object.keys(unknownKinds()).length;
   const nofac=accs.filter(a=>!S.accounts[a].factor).length;const mr=missingRates().n;
@@ -12787,6 +12822,8 @@ function gfsClose(){
   if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
   if(GFS_H){GFS_H=false;try{history.back()}catch(e){}}
   if(grafRedraw)grafRedraw();$('graf-fs').focus({preventScroll:true});
+  // Ab 0.134: „Bild“ aus dem Vollbild: Das Fenster nach dem Anlass wird jetzt nachgeholt (fenTry hat es in FEN_NACH gemerkt)
+  if(FEN_NACH){const a=FEN_NACH;FEN_NACH=null;clearTimeout(FEN_T);FEN_T=setTimeout(()=>fenTry(a),700)}
 }
 $('graf-fs').addEventListener('click',e=>{e.stopPropagation();e.preventDefault();gfsOpen()});
 $('gfs-x').addEventListener('click',e=>{e.preventDefault();gfsClose()});
@@ -12836,10 +12873,12 @@ function grafPng(){
     img.onerror=()=>{URL.revokeObjectURL(u);bad(new Error('Bild'))};img.src=u});
 }
 function grafPrep(){if(!GPNG){const L=GRAF_LAST;GPNG=grafPng();GPNG.then(b=>{if(GRAF_LAST===L)GPNG_B=b},()=>{GPNG=null})}return GPNG}
-function grafSave(){const n=grafFileName();(GPNG_B?Promise.resolve(GPNG_B):grafPrep()).then(b=>download(n,b,'image/png'),()=>toast('Das Bild ließ sich nicht erzeugen.'))}
+// Ab 0.134: Nach dem Speichern oder Teilen eines Bildes zählt der Anlass „bild“ (maybeDonate). Beim Teilen erst, wenn das Teilen abgeschlossen
+// ist und die Person wieder im Tool ist (fenBack); bricht sie ab, zählt nichts.
+function grafSave(){const n=grafFileName();(GPNG_B?Promise.resolve(GPNG_B):grafPrep()).then(b=>{download(n,b,'image/png');maybeDonate('bild')},()=>toast('Das Bild ließ sich nicht erzeugen.'))}
 // Teilen: dieselbe PNG-Datei. Abbrechen ohne Meldung; geht Teilen nicht, speichert das Tool das Bild.
 function grafShare(){const n=grafFileName();
-  const go=b=>{const f=new File([b],n,{type:'image/png'});navigator.share({files:[f]}).catch(e=>{if(e&&e.name==='AbortError')return;download(n,b,'image/png');toast('Teilen ging nicht, das Bild ist gespeichert.')})};
+  const go=b=>{const f=new File([b],n,{type:'image/png'});navigator.share({files:[f]}).then(()=>fenBack(()=>maybeDonate('bild')),e=>{if(e&&e.name==='AbortError')return;download(n,b,'image/png');toast('Teilen ging nicht, das Bild ist gespeichert.');maybeDonate('bild')})};
   if(GPNG_B)go(GPNG_B);else grafPrep().then(go,()=>toast('Das Bild ließ sich nicht erzeugen.'))}
 function renderTax(rows){
   // Ab 0.46 (2.7, 3.4): „Ohne Steuer“: nur der Hinweis und die Wahl, sonst nichts (die Rechnung im Hintergrund bleibt gleich)
@@ -13197,6 +13236,7 @@ function scrollAnchor(){
 }
 function keepAnchor(a){if(!a||a.tab!==S.ui.tab||a.el.offsetParent===null)return;const d=a.el.getBoundingClientRect().top-a.top;if(Math.abs(d)>0.5)window.scrollBy(0,d)}
 function render(){
+  jumpLeave();   // ab 0.134: Sprung-Link #resonanz (Begrüßung nachholen, Adresszeile aufräumen)
   RV=null;const anc=scrollAnchor();
   const st=status();renderTabs(st);const rows=enrich();addAnalysis(rows);
   window.__rows=rows;renderAccounts(rows);renderChain();renderMap();renderNext();renderGuideBtns();renderRates();renderRateList();renderWallet();
@@ -13370,10 +13410,22 @@ async function introDone(steps){const g=$('intro-land');
   clearTimeout(introDone.t);introDone.t=setTimeout(()=>bs.classList.remove('pulse'),matchMedia('(prefers-reduced-motion: reduce)').matches?2500:3600)}
 $('btn-intro-steps').onclick=()=>introDone(true);
 $('btn-intro-skip').onclick=()=>introDone(false);
-$('btn-don-no').onclick=()=>{donPause(91);modalOn($('don-modal'),false)};
-$('btn-don-done').onclick=()=>{donPause(365);modalOn($('don-modal'),false)};
-$('btn-don-go').onclick=()=>{modalOn($('don-modal'),false);S.ui.tab='support';save();render();window.scrollTo(0,0)};
-$('btn-copyaddr').onclick=async()=>{const a=$('don-addr').textContent.trim();try{await navigator.clipboard.writeText(a);$('copymsg').textContent='Adresse kopiert. Danke! 💚'}catch(e){const r=document.createRange();r.selectNodeContents($('don-addr'));const sl=getSelection();sl.removeAllRanges();sl.addRange(r);$('copymsg').innerHTML=OS==='mobile'?'Markiert. Tippe auf „Kopieren“.':`Markiert, jetzt mit ${OS==='mac'?'<kbd>⌘ Cmd</kbd>+<kbd>C</kbd>':'<kbd>Strg</kbd>+<kbd>C</kbd>'} kopieren.`}};
+// Ab 0.134: Knöpfe des Fensters nach einem Anlass (fenShow weiter unten). „Jetzt nicht“, × und Esc: bei einem Spenden-Fenster 3 Monate Ruhe.
+function fenNo(){if(FEN_CUR&&FEN_SP.includes(FEN_CUR.art))donPause(91);fenClose()}
+$('btn-don-no').onclick=fenNo;$('don-x').onclick=fenNo;
+$('btn-don-ok').onclick=fenNo;
+$('btn-don-done').onclick=()=>{donPause(365);fenClose()};
+$('btn-don-go').onclick=()=>{fenClose();S.ui.tab='support';save();render();window.scrollTo(0,0)};
+// „Feedback schreiben“: Reiter „Resonanz“, Karte „Anregungen, Fehler, Feedback“ aufklappen und hinscrollen
+$('btn-don-fb').onclick=()=>{fenClose();goTo('support','fb-card')};
+// „Link kopieren“ (Art Weitersagen): kopiert die Adresse des Tools (DL_URL)
+$('btn-don-link').onclick=async()=>{let ok=false;try{await navigator.clipboard.writeText(DL_URL);ok=true}catch(e){try{const t=document.createElement('textarea');t.value=DL_URL;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();ok=document.execCommand('copy');t.remove()}catch(e2){}}
+  fenNo();if(ok)toast('Link kopiert.')};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!e.defaultPrevented&&$('don-modal').classList.contains('on')){e.preventDefault();fenNo()}});
+// Ab 0.134: ein Weg für beide Adressen im Reiter „Resonanz“ (Spendenadresse und Mail-Adresse). Ist die Zwischenablage gesperrt, markiert das Tool die Adresse.
+async function addrCopy(el,out,okT){const a=el.textContent.trim();try{await navigator.clipboard.writeText(a);out.textContent=okT}catch(e){const r=document.createRange();r.selectNodeContents(el);const sl=getSelection();sl.removeAllRanges();sl.addRange(r);out.innerHTML=OS==='mobile'?'Markiert. Tippe auf „Kopieren“.':`Markiert, jetzt mit ${OS==='mac'?'<kbd>⌘ Cmd</kbd>+<kbd>C</kbd>':'<kbd>Strg</kbd>+<kbd>C</kbd>'} kopieren.`}}
+$('btn-copyaddr').onclick=()=>addrCopy($('don-addr'),$('copymsg'),'Adresse kopiert. Danke! 💚');
+$('btn-fbcopy').onclick=()=>addrCopy($('fb-addr'),$('fbcopymsg'),'Adresse kopiert.');
 $('btn-xlsxyear').onclick=()=>taxXlsx(S.ui.yTax);   // ab 0.72 eigene Steuer-Excel
 $('btn-xlsxall').onclick=()=>exportXlsx(null);
 // Ab 0.46 (6.2): neue Wallet mit Art und freiwilliger Adresse (Format geprüft; bei einer Börse eine Adresse der Börse, sonst eine eigene)
@@ -13426,8 +13478,8 @@ $('calc-in').addEventListener('change',e=>{const t=e.target,c=S.ui.calc;
 $('calc-in').addEventListener('click',e=>{if(e.target.closest('#c-reset')){S.ui.calc.inv='';save();renderCalc()}});
 $('yr-tax').onchange=e=>{S.ui.yTax=e.target.value;save();render()};
 $('other').oninput=e=>{S.ui.other=e.target.value;save();render()};
-$('btn-print').onclick=()=>{window.print();maybeDonate()};
-$('btn-csvall').onclick=()=>{csv(window.__rows,'Trading-Buchungen-alle.csv');maybeDonate()};
+$('btn-print').onclick=()=>{window.print();maybeDonate('export')};
+$('btn-csvall').onclick=()=>{csv(window.__rows,'Trading-Buchungen-alle.csv');maybeDonate('export')};
 // Ab 0.50 Nachtrag 5: Steht schon etwas im Tool (Reports, Krypto, eigene Kurse, Wallets)? Dann fragt „Sicherung laden“ nach.
 const stateHasData=()=>!!(Object.keys(S.accounts).length||Object.keys(S.deals).length||S.cx.length||Object.keys(S.tag).length||Object.keys(S.wtx).length||Object.keys(S.wign||{}).length||(S.bxF||[]).length||Object.keys(S.addr).length||Object.keys(S.rown).length||S.wallets.some(w=>w!=='Meine Wallet'));
 // Ab 0.85: Ließ sich der gespeicherte Stand beim Start nicht laden (BOOT_BAD), sichert „Sicherung speichern“ (in der Rückfrage zu „Alles löschen“) ihn so,
@@ -13435,7 +13487,7 @@ const stateHasData=()=>!!(Object.keys(S.accounts).length||Object.keys(S.deals).l
 function saveBackup(){const fn=`Trading-Bilanz-Sicherung-${new Date().toISOString().slice(0,10)}.json`;if(BOOT_BAD){download(fn,BOOT_RAW||JSON.stringify(S),'application/json');return}
   S.ui.lastBackup=new Date().toISOString();save();download(fn,JSON.stringify(S),'application/json')}
 // Ab 0.123: in einem Tab mit altem Stand zuerst die Rückfrage (bkGate)
-$('btn-backup').onclick=()=>bkGate(()=>{saveBackup();msg('datamsg','ok','Sicherung gespeichert. Lege die Datei an einen sicheren Ort.');maybeDonate()});
+$('btn-backup').onclick=()=>bkGate(()=>{saveBackup();msg('datamsg','ok','Sicherung gespeichert. Lege die Datei an einen sicheren Ort.');maybeDonate('sicherung')});
 $('btn-restore').onclick=()=>$('restorefile').click();
 $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   // Ab 0.70: zuerst lesen und prüfen. Keine Sicherung: sofort die rote Meldung, ohne Rückfrage, nichts ändert sich
@@ -13451,7 +13503,9 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   // Erst wenn alles geklappt hat, ersetzt die Sicherung den alten Stand und wird gespeichert. Scheitert ein Schritt, zeichnet das Tool den alten Stand
   // wieder, im Speicher hat sich nichts geändert (G-19).
   const old=S;SAVE_OFF=true;SAVE_DUE=false;
-  try{S=Object.assign(blank(),j);fixState();provOpen();S.ui.tab='data';render()}
+  // Ab 0.134: Der Zähler der Fenster (S.ui.don) kommt aus der Sicherung. Kennt sie das Datum der ersten Nutzung nicht, bleibt das Datum dieses Browsers
+  const f0=old&&old.ui&&old.ui.don&&old.ui.don.first;
+  try{S=Object.assign(blank(),j);fixState();provOpen();{const d=S.ui.don||(S.ui.don={n:0,last:null});if(!d.first&&f0)d.first=f0;donGet()}S.ui.tab='data';render()}
   catch(err){console.warn('Sicherung laden:',err);S=old;SAVE_OFF=false;SAVE_DUE=false;RV=null;try{render()}catch(e2){console.warn(e2)}
     msg(mid,'bad',`Die Sicherung „${esc(f.name)}“ ließ sich nicht laden. Sie ist vielleicht beschädigt. Deine bisherigen Daten sind unverändert. Probiere eine andere Sicherung.`);e.target.value='';return}
   SAVE_OFF=false;SAVE_DUE=false;if(BOOT_BAD){BOOT_BAD=false;BOOT_RAW='';modalOn($('boot-modal'),false)}save(true);rateGoneToast();
@@ -13468,9 +13522,121 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.132',VDATE='11.11.2026',DL_URL='https://trading-bilanz.github.io';
-function maybeDonate(){const d=S.ui.don||(S.ui.don={n:0,last:null});d.n++;const now=new Date();const m=now.getMonth();const eligible=d.n>=2||m===11||m===0;const until=d.until?new Date(d.until):(d.last?new Date(new Date(d.last).getTime()+91*864e5):null);const due=!until||now>=until;if(eligible&&due){d.last=now.toISOString();d.until=new Date(now.getTime()+91*864e5).toISOString();setTimeout(()=>modalOn($('don-modal'),true),700)}save()}
-function donPause(days){const d=S.ui.don||(S.ui.don={n:0,last:null});d.until=new Date(Date.now()+days*864e5).toISOString();save()}
+const VERSION='0.134',VDATE='11.11.2026',DL_URL='https://trading-bilanz.github.io';
+/* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
+   KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
+   z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
+const KOMMT=[];
+/* FENSTER: alle Texte der Fenster, die nach einem Anlass kommen. Je Eintrag:
+     anlass  nach welchen Anlässen der Eintrag kommen darf: 'export' (Drucken, Excel, CSV), 'sicherung' („Sicherung speichern“), 'bild' (Bild einer Grafik
+             gespeichert oder geteilt)
+     art     Art der Knöpfe:
+             'spende'       „Zur Spende“ · „Jetzt nicht“ · „Schon gespendet“
+             'feedback'     „Feedback schreiben“ (öffnet den Reiter „Resonanz“ und klappt „Anregungen, Fehler, Feedback“ auf) · „Jetzt nicht“
+             'danke'        ein einzelner Knopf, sein Text steht im Eintrag als knopf:'…'
+             'weitersagen'  „Link kopieren“ (kopiert die Adresse des Tools) · „Jetzt nicht“
+     titel, text
+   Gibt es zu einem Anlass mehrere Einträge derselben Gruppe, wählt das Tool zufällig, aber nie zweimal hintereinander denselben.
+   Wann ein Fenster kommt, regeln die vier Zählregeln (GESTALTUNG Abschnitt 24), im Skript fenPick. */
+const FENSTER=[
+  {anlass:['export'],art:'spende',titel:'💚 Deine Zahlen sind fertig.',text:'Ich hoffe, sie machen dir Freude! Wenn dir das Tool geholfen hat, freue ich mich sehr über eine Wertschätzung.'},
+  {anlass:['sicherung','bild'],art:'spende',titel:'💚 Danke, dass du die Trading-Bilanz nutzt',text:'Wenn dir das Tool geholfen hat, freue ich mich sehr über eine Wertschätzung.'},
+  {anlass:['export','sicherung','bild'],art:'feedback',titel:'💚 Wie geht es dir mit der Trading-Bilanz?',text:'Fehlt dir etwas, hakt etwas, oder freust du dich einfach? Schreib mir.'}
+];
+// Sprung-Link: die Adresse des Tools mit #resonanz am Ende öffnet direkt den Reiter „Resonanz“ (jumpIs, jumpGo)
+const JUMP='#resonanz',JUMP_URL=DL_URL+'/'+JUMP,FB_MAIL='florian@weltenwandel.at';
+// Über den Sprung-Link gekommen und noch im Reiter „Resonanz“ (JUMP_ON): Die Begrüßung wartet, bis die Person einen anderen Reiter wählt oder die
+// Seite ohne Sprung öffnet. Der Sprung speichert nichts als bestätigt (Land und Hinweis zur Steuer bleiben offen). Beim Wechsel in einen anderen
+// Reiter verschwindet #resonanz aus der Adresszeile, damit ein Neuladen nicht zurückspringt.
+let JUMP_ON=false;
+const jumpIs=()=>String(location.hash||'').toLowerCase()===JUMP;
+function jumpHashOff(){if(!jumpIs())return;try{history.replaceState(history.state,'',location.pathname+location.search)}catch(e){}}
+function introDue(){if(BOOT_BAD||S.ui.ack||$('intro-modal').classList.contains('on'))return false;introLand('');modalOn($('intro-modal'),true);INTRO_HINT();return true}
+function jumpLeave(){if(S.ui.tab==='support')return;jumpHashOff();if(JUMP_ON){JUMP_ON=false;introDue()}}
+window.addEventListener('hashchange',()=>{if(!jumpIs()||BOOT_BAD||document.querySelector('.modal.on'))return;if(S.ui.tab!=='support'){S.ui.tab='support';save();render();tabTop()}});
+// Ab 0.134: „E-Mail schreiben“ öffnet eine vorausgefüllte Mail. Darin stehen nur Version, Browser, Gerät, Ansicht und ob Online-Version oder
+// heruntergeladene Datei, danach drei leere Fragen. Nichts aus dem gespeicherten Stand (keine Zahlen, Konten, Adressen).
+function fbBrowser(){const ua=navigator.userAgent||'';const L=[[/Edg(?:A|iOS)?\/(\d+)/,'Edge'],[/OPR\/(\d+)/,'Opera'],[/SamsungBrowser\/(\d+)/,'Samsung Internet'],[/(?:Firefox|FxiOS)\/(\d+)/,'Firefox'],[/(?:Chrome|CriOS)\/(\d+)/,'Chrome'],[/Version\/(\d+)[\d.]* (?:Mobile\/\S+ )?Safari/,'Safari']];
+  for(const [re,n] of L){const m=ua.match(re);if(m)return n+' '+m[1]}return 'unbekannt'}
+function fbGeraet(){const ua=navigator.userAgent||'';
+  if(/Android/i.test(ua))return 'Android';if(/iPhone|iPod/i.test(ua))return 'iPhone';if(/iPad/i.test(ua)||(/Macintosh/i.test(ua)&&navigator.maxTouchPoints>1))return 'iPad';
+  if(/Windows/i.test(ua))return 'Windows';if(/Macintosh|Mac OS X/i.test(ua))return 'Mac';if(/Linux|X11|CrOS/i.test(ua))return 'Linux';return 'unbekannt'}
+function fbDark(){const t=document.documentElement.dataset.theme;return t==='dark'||(t!=='light'&&!!(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))}
+function fbBody(){return [`Trading-Bilanz ${VERSION} vom ${VDATE}`,`Browser: ${fbBrowser()}`,`Gerät: ${fbGeraet()}`,`Ansicht: ${window.innerWidth} px breit, ${fbDark()?'dunkel':'hell'}`,
+  /^https?:$/.test(location.protocol)?'Online-Version':'Heruntergeladene Datei','','Was hast du gemacht?','','','Was ist passiert?','','','Was hast du erwartet?','',''].join('\r\n')}
+function fbMail(){return `mailto:${FB_MAIL}?subject=${encodeURIComponent(`Trading-Bilanz ${VERSION}: Rückmeldung`)}&body=${encodeURIComponent(fbBody())}`}
+// Die Adresse der Mail entsteht beim Klick (Breite und hell/dunkel von jetzt)
+$('btn-fbmail').addEventListener('click',()=>{$('btn-fbmail').href=fbMail()});$('btn-fbmail').href=fbMail();
+// Karte „Was vielleicht noch kommt“: Punkte aus KOMMT, unsichtbar, solange die Liste leer ist
+function renderKommt(){const L=KOMMT.filter(x=>String(x||'').trim());$('kommt-card').style.display=L.length?'':'none';$('kommt-list').innerHTML=L.map(x=>`<li>${esc(x)}</li>`).join('')}
+renderKommt();
+// Satz zum Vergleichen der Spendenadresse, nur in der heruntergeladenen Datei (.offl): die Adresse als lesbarer Text und zugleich Sprung-Link
+$('don-cmp').innerHTML=`Vergleiche die Adresse mit der Online-Version: <a class="nw" href="${JUMP_URL}" target="_blank" rel="noopener">${esc(DL_URL.replace(/^https?:\/\//,''))}</a>, Reiter „Resonanz“.`;
+/* ---------------- Fenster nach einem Anlass und Zählregeln (ab 0.134, GESTALTUNG Abschnitt 24) ----------------
+   Anlässe: Export (Drucken, Excel, CSV), „Sicherung speichern“, Bild einer Grafik gespeichert oder geteilt. Jeder abgeschlossene Anlass zählt
+   (maybeDonate → fenZaehl), auch wenn gerade kein Fenster kommen darf. 0,7 s später prüft fenTry, ob ein Fenster kommt:
+   1. Spenden-Fenster (Arten spende, danke, weitersagen): zusammen höchstens eines in 3 Monaten (91 Tage). „Jetzt nicht“ gibt 3 Monate Ruhe,
+      „Schon gespendet“ 12 Monate (365 Tage). Wie bisher erst ab dem zweiten Anlass, im Dezember und Jänner schon beim ersten.
+   2. Feedback-Fenster: einmal nach drei Wochen (ab Tag 21), danach höchstens einmal im Jahr (365 Tage), mit mindestens 14 Tagen Abstand zu einem
+      anderen Fenster (in beide Richtungen). Sind beide fällig, kommt das Feedback-Fenster.
+   3. (Feiern: spätere Runde, hier nichts gebaut.)
+   4. Nie zwei Fenster am selben Tag, keines in der ersten Woche (Tag 0 bis 6), keines während einer Eingabe (fenFrei: anderes Fenster offen
+      oder Cursor in einem Eingabefeld). Ein so unterdrücktes Fenster wird nicht nachgeholt, der nächste Anlass prüft neu. Einzige Ausnahme:
+      „Bild“ aus dem Vollbild der Grafik, das Fenster kommt nach dem Schließen des Vollbilds (FEN_NACH, gfsClose).
+   Gezählt wird in Kalendertagen (Uhr des Geräts). Tag 0 ist die erste Nutzung in diesem Browser (S.ui.don.first); bei einem Stand ohne dieses
+   Datum beginnt die Zählung mit dem ersten Start ab 0.134.
+   Der Zähler liegt in S.ui.don (Browser-Speicher, reist mit der Sicherung): n = Zahl der Anlässe, first = erste Nutzung, last = letztes
+   Spenden-Fenster, until = bis dahin kein Spenden-Fenster, fb = letztes Feedback-Fenster, le = zuletzt gezeigter Eintrag (Kennzahl aus Titel und Text).
+   Mehrere Tabs: Vor jeder Prüfung liest donSync den Zähler frisch aus dem Speicher, so kommt auch über zwei Tabs nur ein Fenster am Tag. */
+const FEN_SP=['spende','danke','weitersagen'];
+let FEN_NOW=()=>new Date(),FEN_RND=()=>Math.random();   // in den Tests gestellt (Uhr, Zufall)
+let FEN_T=null,FEN_NACH=null,FEN_CUR=null,FEN_FROM=null;
+const fenDay=d=>{d=new Date(d);return Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5)};
+const fenPlus=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const fenHash=e=>{let h=0;for(const c of String(e.titel)+'\n'+String(e.text))h=(h*31+c.codePointAt(0))>>>0;return h};
+function donGet(){const d=S.ui.don||(S.ui.don={n:0,last:null});if(!d.first)d.first=FEN_NOW().toISOString();return d}
+// Zähler mit dem Stand im Browser-Speicher abgleichen (ein anderer Tab kann inzwischen gezählt oder ein Fenster gezeigt haben): je Wert der neuere
+function donSync(){const d=donGet();if(BOOT_BAD)return d;let o=null;try{const j=JSON.parse(localStorage.getItem(KEY)||'null');o=j&&j.ui&&j.ui.don}catch(e){}
+  if(!o||typeof o!=='object')return d;const t=x=>x?+new Date(x)||0:0;
+  if(Math.max(t(o.last),t(o.fb))>Math.max(t(d.last),t(d.fb))&&o.le!=null)d.le=o.le;
+  for(const k of ['last','fb','until'])if(t(o[k])>t(d[k]))d[k]=o[k];
+  if((o.n|0)>(d.n|0))d.n=o.n|0;if(o.first&&t(o.first)&&t(o.first)<t(d.first))d.first=o.first;return d}
+function donPause(days){const d=donGet();d.until=fenPlus(FEN_NOW(),days).toISOString();save()}
+// Welcher Eintrag aus FENSTER käme jetzt? Reine Entscheidung nach den Zählregeln, ändert nichts. null = kein Fenster.
+function fenPick(d,now,anlass){
+  const day=fenDay(now),t=day-fenDay(d.first),ago=x=>x?day-fenDay(x):Infinity;
+  if(t<7)return null;                                  // Regel 4: keines in der ersten Woche
+  if(ago(d.last)===0||ago(d.fb)===0)return null;       // Regel 4: nie zwei Fenster am selben Tag
+  const pick=arts=>{const L=FENSTER.filter(e=>arts.includes(e.art)&&(e.anlass||[]).includes(anlass));if(!L.length)return null;
+    const M=L.filter(e=>fenHash(e)!==d.le),P=L.length>1&&M.length?M:L;return P[Math.min(P.length-1,Math.floor(FEN_RND()*P.length))]};
+  // Regel 2: Feedback-Fenster, hat Vorrang
+  if(t>=21&&ago(d.fb)>=365&&ago(d.last)>=14){const e=pick(['feedback']);if(e)return e}
+  // Regel 1: Spenden-Fenster. Stände bis 0.133 ohne until: 91 Tage nach dem letzten Fenster
+  const m=now.getMonth(),until=d.until?fenDay(d.until):d.last?fenDay(d.last)+91:-Infinity;
+  if(((d.n|0)>=2||m===11||m===0)&&day>=until&&ago(d.fb)>=14)return pick(FEN_SP);
+  return null}
+// Keines während einer Eingabe: nicht, solange ein anderes Fenster (auch „＋ Daten“, „Noch offen“, Rückfrage, Begrüßung) offen ist oder der Cursor in einem Eingabefeld steht
+function fenFrei(){if(document.querySelector('.modal.on'))return false;const a=document.activeElement;
+  return !(a&&a.matches&&(a.matches('textarea,select,[contenteditable=""],[contenteditable="true"]')||(a.matches('input')&&!/^(button|submit|reset|checkbox|radio|file|range|color|image)$/i.test(a.type||''))))}
+function fenZaehl(){const d=donSync();d.n=(d.n|0)+1;save()}
+function maybeDonate(anlass){fenZaehl();clearTimeout(FEN_T);FEN_T=setTimeout(()=>fenTry(anlass||'export'),700)}
+// frei: darf jetzt ein Fenster kommen (im Tool fenFrei(), in den Tests gestellt). Rückgabe: der gezeigte Eintrag oder null.
+function fenTry(anlass,frei){
+  if(GFS){FEN_NACH=anlass;return null}
+  if(BOOT_BAD||!(frei===undefined?fenFrei():frei))return null;
+  const d=donSync(),now=FEN_NOW(),e=fenPick(d,now,anlass);if(!e)return null;
+  const iso=now.toISOString();if(e.art==='feedback')d.fb=iso;else{d.last=iso;d.until=fenPlus(now,91).toISOString()}
+  d.le=fenHash(e);save();fenShow(e);return e}
+function fenShow(e){FEN_CUR=e;FEN_FROM=document.activeElement;$('don-t').textContent=e.titel;$('don-p').textContent=e.text;
+  const A=e.art,vis={'btn-don-go':A==='spende','btn-don-done':A==='spende','btn-don-fb':A==='feedback','btn-don-link':A==='weitersagen','btn-don-ok':A==='danke','btn-don-no':A!=='danke'};
+  for(const k in vis)$(k).hidden=!vis[k];if(A==='danke')$('btn-don-ok').textContent=e.knopf||'Schließen';
+  modalOn($('don-modal'),true);$('don-x').focus({preventScroll:true})}
+function fenClose(){if(!FEN_CUR&&!$('don-modal').classList.contains('on'))return;modalOn($('don-modal'),false);FEN_CUR=null;const f=FEN_FROM;FEN_FROM=null;if(f&&f.focus&&document.contains(f))f.focus({preventScroll:true})}
+// Nach dem Teilen: erst weiter, wenn die Person wieder im Tool ist (Seite sichtbar und im Vordergrund, oder sie tippt wieder ins Tool)
+function fenBack(fn){const ok=()=>document.visibilityState!=='hidden'&&(!document.hasFocus||document.hasFocus());if(ok()){fn();return}
+  let done=false;const go=()=>{if(done)return;done=true;document.removeEventListener('visibilitychange',h);window.removeEventListener('focus',h);document.removeEventListener('pointerdown',go,true);fn()},h=()=>{if(ok())go()};
+  document.addEventListener('visibilitychange',h);window.addEventListener('focus',h);document.addEventListener('pointerdown',go,true)}
+$('btn-don-go').innerHTML=HEART+' Zur Spende';
 function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
 // Klick auf einen Kartentitel klappt die Karte auf oder zu. Lag der Kartenanfang beim Zuklappen schon über der Filterzeile, rückt die Karte darunter, damit die nächste Karte im Blick ist.
 // Ab 0.50 (13): Die Karte klappt nur, wenn Drücken und Loslassen der Maus beide auf dem Titel waren (nicht in einem Feld, Knopf, Menü oder Begriff)
@@ -13560,7 +13726,7 @@ function wlHcAll(){if(!WL_HC_ON)return;for(const c of WL_HC){c.classList.remove(
 HC_BAR.addEventListener&&HC_BAR.addEventListener('change',()=>HC_CARDS.forEach(c=>hcAlign(c)));
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{FB_KEY='';if(S.ui.tab==='stats'){fitFbar();updateNavH();layoutTiles();hcAll();fitHL()}});
 /* ---------------- Erste Schritte, Nächster Schritt, Fenster ---------------- */
-// Texte zum Original und zu den getrennten Speichern, einmal hier (Begrüßung, Unterstützen, Erste Schritte, Sicherung)
+// Texte zum Original und zu den getrennten Speichern, einmal hier (Begrüßung, Resonanz, Erste Schritte, Sicherung)
 const ORIG_HTML='Das Original der Trading-Bilanz läuft nur unter genau dieser Adresse: <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>.<span class="odl"> Dort kannst du sie auch herunterladen und ohne Internet nutzen.</span> Kopien aus anderen Quellen können verändert sein, zum Beispiel mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.';
 const GTK='Deine Daten liegen nur in diesem Browser. Online-Version und heruntergeladene Datei sehen nicht dieselben Daten. Mit einer Sicherung nimmst du sie mit.';
 document.querySelectorAll('[data-orig]').forEach(e=>{e.innerHTML=ORIG_HTML});
@@ -13873,6 +14039,8 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
 async function dropFiles(files){files=[...(files||[])];if(!files.length)return;
   // Begrüßung offen: nichts verarbeiten (der Browser öffnet die Datei trotzdem nicht)
   if($('intro-modal').classList.contains('on')||$('taxack-modal').classList.contains('on')||$('boot-modal').classList.contains('on'))return;
+  // Ab 0.134: nach dem Sprung-Link ohne bestätigte Begrüßung zuerst die Begrüßung, nichts verarbeiten
+  if(JUMP_ON&&!S.ui.ack){JUMP_ON=false;introDue();return}
   if(ASK){toast(`Schließe zuerst das Fenster „${$('ask-t').textContent}“.`,4000);return}
   if(MODAL&&MODAL.id!=='dt-modal'&&mBusy(MODAL)){toast(`Schließe zuerst das Fenster „${mTitle(MODAL)}“.`,4000);return}
   const K=await Promise.all(files.map(fileKind));
@@ -14026,8 +14194,12 @@ try{
  if(wqWin(S))ch++;
  // Ab 0.50 (2.2 b): gespeicherte Antworten, die auf nicht mehr Vorhandenes zeigen oder nichts bewirken, fallen weg
  if(naClean(S))ch++;
+ // Ab 0.134: Datum der ersten Nutzung für die Zählregeln der Fenster (donGet); fehlt es, beginnt die Zählung jetzt
+ if(!BOOT_BAD&&!(S.ui.don&&S.ui.don.first)){donGet();ch++}
  if(ch)save()}
-if(!BOOT_BAD&&!S.ui.ack){introLand('');modalOn($('intro-modal'),true);INTRO_HINT()}
+// Ab 0.134: Sprung-Link (Adresse mit #resonanz): Reiter „Resonanz“ öffnen, die Begrüßung kommt erst beim Wechsel in einen anderen Reiter (jumpLeave)
+if(!BOOT_BAD&&jumpIs()){S.ui.tab='support';JUMP_ON=true}
+if(!BOOT_BAD&&!S.ui.ack&&!JUMP_ON){introLand('');modalOn($('intro-modal'),true);INTRO_HINT()}
 render()}catch(e){bootFail(e);modalOn($('intro-modal'),false);try{render()}catch(e2){console.warn(e2)}}
 tabBase();SAVE_OFF=false;if(SAVE_DUE&&!BOOT_BAD){SAVE_DUE=false;save()}
 if(BOOT_BAD)bootShow();else rateGoneToast();
