@@ -2747,6 +2747,10 @@ function rateCov(){let c=RB.bis;for(const v of [S.rcov.load,S.rcov.file])if(v&&v
 // Quelle eines Kurses: 'frank', 'ezb', 'file' (alle drei in S.rates), 'rb' (eingebaut), 'own' (von Hand)
 function rateSrc(d){if(S.rates[d]!=null){const q=S.rsrc[d]||'';return /Frankfurter/.test(q)?'frank':/Datei/.test(q)?'file':'ezb'}return RBM[d]!=null?'rb':'own'}
 const RSRC_N={frank:'Frankfurter',ezb:'EZB',file:'Datei',rb:'eingebaut',own:'von Hand'};
+// Ab 0.129 (Florians Entscheidung): „Bestand jetzt“ und der Rechner „Was wäre wenn“ nehmen den letzten vorhandenen Kurs, egal ob von der EZB oder von Hand
+// (rateLast), und sagen, woher er kommt (rateLastT: „EZB-Kurs vom 12.10.2026“ bzw. „Kurs vom 20.10.2026 (von Hand)“). Die Steuer rechnet weiter mit Tageskursen (rateInfo).
+const rateLast=()=>{const ds=rateDates();return ds.length?ds[ds.length-1]:''};
+const rateLastT=d=>rateSrc(d)==='own'?`Kurs vom ${fD(d)} (von Hand)`:`EZB-Kurs vom ${fD(d)}`;
 const RB_SRC=()=>`eingebaut (EZB, Stand ${fD(RB.stand)})`;
 const ECB_CITE='Quelle: Europäische Zentralbank (EZB), Euro-Referenzkurse, ecb.europa.eu. Die Kurse gibt es dort kostenlos. „EUR je 1 USD“ ist vom Tool berechnet (1 geteilt durch den EZB-Kurs).';
 const isWE=d=>{const w=new Date(d+'T12:00:00Z').getUTCDay();return w===0||w===6};
@@ -7858,7 +7862,8 @@ function renderWallet(){
   // Ab 0.47 (2.8): Rest bei Wallets ohne eigene Datei steht als Punkt in „Noch offen“ (Regel 3), nicht mehr im Überblick
   $('wrest').innerHTML='';
   if(!$('cxres-card').classList.contains('nohc'))hcFix($('cxres-card'));
-  {const ds=rateDates().filter(d=>S.rown[d]==null);const ld=ds[ds.length-1];$('pots-cmp').innerHTML=ld?`Zum Vergleich: letzter EZB-Kurs vom ${fD(ld)}: 1 USD = ${fmtDec(1/rateVal(ld),4)} EUR (1 EUR = ${fmtDec(rateVal(ld),4)} USD). Liegt ${DEw?'der Einkaufswert je Coin':'dein Ø-Preis'} darunter, sind deine Coins im Moment mehr wert, als sie gekostet haben.`:''}
+  // Ab 0.129 (Florians Entscheidung): letzter vorhandener Kurs, auch ein eigener (bis 0.128 nur EZB-Kurse); die Beschriftung nennt die Herkunft (rateLastT)
+  {const ld=rateLast();$('pots-cmp').innerHTML=ld?`Zum Vergleich: letzter ${rateLastT(ld)}: 1 USD = ${fmtDec(1/rateVal(ld),4)} EUR (1 EUR = ${fmtDec(rateVal(ld),4)} USD). Liegt ${DEw?'der Einkaufswert je Coin':'dein Ø-Preis'} darunter, sind deine Coins im Moment mehr wert, als sie gekostet haben.`:''}
 }
 /* ---------------- Ab 0.46 (5.1): Fenster „Kontostände prüfen“ (kb-modal) ----------------
    Je Wallet und Coin: laut deinen Einträgen, laut Datei (mit Stand), Feld „Stand in deiner App“ (S.wbal), Unterschied mit Richtung. Aufruf über den Knopf
@@ -12144,7 +12149,7 @@ function calcScen(I,r,n){
 // Ergebnis in #calc-out, darunter eine Zeile mit Grundlage, Investition, Dauer und Wiederanlage. Ab 0.113 ohne aufklappbare „Info“ (Florians
 // Auftrag): ihre Sätze stehen in dieser Zeile, im (i) der Karte (k-calc) und in den Begriffen „Vorsichtig“ und „Mit Wiederanlage“.
 // Ab 0.113: Die Investition folgt dem Währungsschalter. In Euro: Vorgabe = Investition in Euro (CAPE, wie „Pro Konto“), gerechnet wird in USD
-// zum letzten verfügbaren EZB-Kurs (k), die Ergebnisse wieder ÷ k in Euro. Ein eingegebener Betrag merkt seine Währung (c.invCur) und wird
+// zum letzten vorhandenen Kurs (k, EZB oder von Hand; ab 0.129 nennt die Zeile unter dem Ergebnis die Herkunft, rateLastT), die Ergebnisse wieder ÷ k in Euro. Ein eingegebener Betrag merkt seine Währung (c.invCur) und wird
 // beim Umschalten zum selben Kurs umgerechnet, damit das Szenario gleich bleibt.
 function renderCalc(){
   const D=CALC_D,c=S.ui.calc,out=$('calc-out');if(!D)return;
@@ -12166,7 +12171,7 @@ function renderCalc(){
   const sc=[['Durchschnitt',meanOf(D.rets)],[gl('median','Typisch (Median)'),median(D.rets)],[gl('vorsichtig','Vorsichtig'),quantile(D.rets,0.25)]];if(own!=null)sc.push(['Eigene',own]);
   // Gezeigt wird nur die gewählte Variante (mit oder ohne Wiederanlage), immer Betrag am Ende und Gewinn. Gerechnet in USD (I × k).
   const R=sc.map(([l,r])=>{const o=calcScen(I*k,r,n);return c.reinv?[o.cE,o.cG]:[o.sE,o.sG]});
-  // Ergebnisse in der Währung des Schalters; Euro zum letzten EZB-Kurs
+  // Ergebnisse in der Währung des Schalters; Euro zum letzten vorhandenen Kurs
   const M=v=>{const x=v/k;return `<span${x<-0.005?' class="neg"':''}>${fCur(x,0)}</span>`};
   // Zeilennamen mit Bindestrich, damit sie am Handy dort umbrechen
   let h=`<tr><th>${SM0}</th>${sc.map(([l])=>`<th>${l}${SM0}</th>`).join('')}</tr><tr><td>${gl('wr','Wochen-Rendite')}</td>${sc.map(([,r])=>`<td>${retHtml({v:r,n:1,miss:false},'–')}</td>`).join('')}</tr>`;
@@ -12174,7 +12179,7 @@ function renderCalc(){
   const nTxt=fmtDec(n,Math.abs(n-Math.round(n))<1e-9?0:1);
   // Regel B (ab 0.111): die Einheit hängt am Betrag (geschütztes Leerzeichen), rutscht nie allein in die nächste Zeile
   out.innerHTML=`<div class="tscroll"><table>${h}</table></div>
-    <p class="small" style="margin:8px 0 0">Hochrechnung aus ${D.k===1?'deiner 1 '+gl('ganz','ganzen Woche'):`deinen ${D.k} `+gl('ganz','ganzen Wochen')} nach PF, Investition ${fCur(I).replace(/ (USD|€)$/,'&nbsp;$1')}, für ${nTxt} ${n===1?'Woche':'Wochen'}, ${c.reinv?'mit':'ohne'} Wiederanlage.${eurC&&ld?` EZB-Kurs vom ${fD(ld)}.`:''} Vor Steuer, keine Vorhersage.</p>`;
+    <p class="small" style="margin:8px 0 0">Hochrechnung aus ${D.k===1?'deiner 1 '+gl('ganz','ganzen Woche'):`deinen ${D.k} `+gl('ganz','ganzen Wochen')} nach PF, Investition ${fCur(I).replace(/ (USD|€)$/,'&nbsp;$1')}, für ${nTxt} ${n===1?'Woche':'Wochen'}, ${c.reinv?'mit':'ohne'} Wiederanlage.${eurC&&ld?` ${rateLastT(ld)}.`:''} Vor Steuer, keine Vorhersage.</p>`;
   tpSimple(); // ab 0.111: Abstand nach Regel A
 }
 
