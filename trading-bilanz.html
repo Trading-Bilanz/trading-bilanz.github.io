@@ -2486,6 +2486,10 @@ for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','t
   // Rechnung, keine Schätzung. Sie gilt als fertig, die Notiz „Schätzung: …“ fällt weg. Mit Gebühr 0 bleibt sie geschätzt.
   for(const c of S.cx)if(c.kind==='bezahlung'&&c.est&&c.cardPct==null&&c.cur==='USD'&&c.fee>0&&c.qty>0&&Math.abs((c.usd||0)-(c.qty-c.fee))<0.006&&payCardW(S,c.wallet)){
     c.est=false;if(c.note==='Schätzung: abgebuchter Betrag minus Gebühr')c.note=''}
+  // Ab 0.138 (Florians Entscheidung): Kartenzahlungen nach Weg 1, deren Wert genau Menge minus Gebühr ist und mehr als zwei Stellen hat (vom Tool
+  // gerechnet, 0.135 bis 0.137 ungerundet), einmal auf Cent runden. Von Hand getippte Werte (nicht genau Menge minus Gebühr) bleiben. Danach hat der Wert
+  // zwei Stellen, ein zweites Öffnen ändert nichts.
+  for(const c of S.cx)if(c.kind==='bezahlung'&&c.cur==='USD'&&c.qty>0&&c.usd>0&&Math.abs(c.usd-(c.qty-(c.fee||0)))<1e-6&&Math.abs(c.usd*100-Math.round(c.usd*100))>1e-6&&payCardW(S,c.wallet))c.usd=cent(c.usd);
   payFeeSync(S);
   if(!S.rcov.load){const ds=Object.keys(S.rates).filter(d=>!/Datei/.test(S.rsrc[d]||'')).sort();if(ds.length)S.rcov.load=ds[ds.length-1]}}
 // Ab 0.85: Scheitert der Start mit dem gespeicherten Stand, gilt BOOT_BAD, das Tool arbeitet mit einem leeren Stand weiter (siehe oben)
@@ -4114,7 +4118,12 @@ function payBulk(S,keys,pct,ok){const out=[],CA=wCardSet(S);
 // Von 0.49 bis 0.134 (cardFeeOld): p in % vom Wert der Zahlung, Wert = abgebuchter Betrag ÷ (1 + p/100) auf Cent, Gebühr = der Rest. fixState rechnet
 // Zahlungen aus älteren Ständen um, deren Wert und Gebühr noch genau der alten Formel entsprechen (also nicht von Hand geändert sind).
 // Als function (nicht const), weil fixState sie schon beim Laden braucht.
-function cardFeeOf(q,p){const fee=Math.max(0,Math.round(q*p+1e-7)/100);return {usd:Math.max(0,+(q-fee).toFixed(8)),fee}}
+// Ab 0.138 (Florians Entscheidung): Auch der Wert ist auf Cent gerundet (cent), nicht nur die Gebühr. Wert plus Gebühr kann dadurch bis zu einem halben
+// Cent über dem abgebuchten Betrag liegen (Spielraum PAY_TOL).
+function cardFeeOf(q,p){const fee=Math.max(0,Math.round(q*p+1e-7)/100);return {usd:Math.max(0,cent(q-fee)),fee}}
+// Ab 0.138: Betrag auf Cent, kaufmännisch (0,005 aufgerundet); PAY_TOL = Spielraum für „Wert = Menge minus Gebühr“ nach dem Runden (wie die 0,006 in fixState ab 0.137)
+function cent(x){return Math.round(+(+x).toFixed(8)*100+1e-7)/100}
+const PAY_TOL=0.006;
 // Ab 0.137 (Florians Entscheidung): Kartenzahlung = Zahlung aus einer Wallet der Art „Karte“ (gespeicherte Art, sonst der Vorschlag kindGuess).
 // Ihre Gebühr steht immer in USD, laut Karten-App, egal welche Währung der Wert hat, auch bei alten Einträgen. Die Rechnung (kxEvents, Block KRYPTO)
 // sieht die Art nicht, sie liest die Marke feeU am Eintrag; payFeeSync setzt sie aus der Art der Wallet (fixState, cryptoCalc). Zwei Wege:
@@ -10039,8 +10048,6 @@ const CX_HELP={
   gebuehr:{AT:'<b>Gebühr</b>: Coins, die als Gebühr weggehen (z. B. Netzwerkgebühr bei einem Übertrag), Menge siehst du im Verlauf deiner Wallet. Steuerlich bezahlst du damit eine Leistung (EStR Rz 6178v): Das Tool rechnet sie als Verkauf zum Tageswert (Menge ÷ EZB-Kurs). Meist geht es um Cents.',
     DE:'<b>Gebühr</b>: Coins, die als Gebühr weggehen (z. B. Netzwerkgebühr bei einem Übertrag), Menge siehst du im Verlauf deiner Wallet. Das Tool rechnet sie als Verkauf zum Tageswert (Menge ÷ EZB-Kurs). Meist geht es um Cents. Deine Steuerberatung bekommt dazu eine Frage in der Zusammenfassung.'}
 };
-// Ab 0.137: Wert ins Feld, auf Cent mit zwei Stellen, sonst mit allen Stellen (ungerundet, z. B. 2,595294)
-const cxV8=v=>Math.abs(v*100-Math.round(v*100))<1e-6?numIn(v):f8(v);
 // Ab 0.137: Ist die gewählte Wallet im Formular eine Karte? („+ Neue Karte …“ zählt mit)
 function cxCardW(){const w=$('cx-wallet').value;return w==='+k'||(S.wallets.includes(w)&&payCardW(S,w))}
 // Altvermögen (AT): Kauf vor dem 01.03.2021 (Hatte ich schon, Geschenk mit Kaufdatum der schenkenden Person)
@@ -10111,9 +10118,9 @@ async function estValue(force){
     if(!(q>0)){msg('cxmsg','warn','Trage zuerst die Menge ein.');return nd('#cx-qty')}
     if(!(f>=0)){msg('cxmsg','bad','Gebühr: Das ist keine gültige Zahl. Schreibe z. B. 0,08 oder lass das Feld leer.');return nd('#cx-fee')}
     // Ab 0.137 (Florians Entscheidung): Zahlung aus einer Karte: „Berechnen“ rechnet wie die Kartengebühr: Gebühr auf Cent gerundet (steht danach so im
-    // Feld), Wert = abgebuchter Betrag minus Gebühr, ungerundet, in USD. Eine Rechnung, keine Schätzung: keine Notiz, dataset.calc statt dataset.est.
+    // Feld), Wert = abgebuchter Betrag minus Gebühr, in USD, ab 0.138 auf Cent gerundet (cent, Florians Entscheidung; 0.137 ungerundet). Eine Rechnung, keine Schätzung: keine Notiz, dataset.calc statt dataset.est.
     if(cxCardW()){const fc=Math.round(f*100+1e-7)/100;if(!(fc<q)){msg('cxmsg','bad','Die Gebühr ist nicht kleiner als die Menge. Prüfe die beiden Zahlen.');return nd('#cx-fee','#cx-qty')}
-      const v=+(q-fc).toFixed(8);if(fs)$('cx-fee').value=numIn(fc);$('cx-cur').value='USD';cxHelp();$('cx-eur').value=cxV8(v);delete $('cx-eur').dataset.est;$('cx-eur').dataset.calc='1';needClear($('cx-eur'));
+      const v=cent(q-fc);if(fs)$('cx-fee').value=numIn(fc);$('cx-cur').value='USD';cxHelp();$('cx-eur').value=numIn(v);delete $('cx-eur').dataset.est;$('cx-eur').dataset.calc='1';needClear($('cx-eur'));
       if(fc>0)msg('cxmsg','ok',`Abgebuchter Betrag minus Kartengebühr: ${fmtNum(q)} − ${fmtNum(fc)} = ${usd(v)}.`);else msg('cxmsg','warn',`Wert = Menge: ${usd(v)}. ${PAY_FEE_TXT}`);
       return}
     const x=payEst(q,f);if(x.bad){msg('cxmsg','bad','Die Gebühr ist nicht kleiner als die Menge. Prüfe die beiden Zahlen.');return nd('#cx-fee','#cx-qty')}
@@ -10209,7 +10216,8 @@ function openCx(id,pre){
   if(swc){$('cx-otherq').value=c.otherQ>0?f8(c.otherQ):'';$('cx-unk').checked=swE;if(!swE&&c.ew){const E=$('cx-eur');E.dataset.ew=c.ew;if(c.ewT)E.dataset.ewt=c.ewT;if(c.ew==='hilfe'&&c.ewT)$('cx-rhs').textContent=c.ewT}}
   if(c&&c.est&&c.kind!=='tauschaus')$('cx-eur').dataset.est='1';else delete $('cx-eur').dataset.est;
   // Ab 0.137: Kartenzahlung nach Weg 1 (Wert = abgebuchter Betrag minus Gebühr, in USD): eine geänderte Gebühr rechnet den Wert mit, wie nach „Berechnen“
-  if(c&&!c.est&&payWeg1(S,c)&&c.qty>0&&Math.abs((c.usd||0)-(c.qty-(c.fee||0)))<1e-6)$('cx-eur').dataset.calc='1';else delete $('cx-eur').dataset.calc;
+  // Ab 0.138: mit dem Spielraum eines halben Cents (PAY_TOL), weil der Wert auf Cent gerundet ist
+  if(c&&!c.est&&payWeg1(S,c)&&c.qty>0&&Math.abs((c.usd||0)-(c.qty-(c.fee||0)))<PAY_TOL)$('cx-eur').dataset.calc='1';else delete $('cx-eur').dataset.calc;
   // Ab 0.59 (Nachtrag): geschätzter Wert der erhaltenen Coins
   if(c&&c.est&&c.kind==='tauschaus')$('cx-recv').dataset.est='1';else delete $('cx-recv').dataset.est;
   // Ab 0.38: Geschenk (Preis/Datum unbekannt, Kaufdatum), Gebühr, KESt, NFT, Wert erhalten
@@ -10349,7 +10357,7 @@ async function addCx(){
   // Ab 0.137: Gebühr einer Kartenzahlung immer in USD (payFeeSync). Wert und Gebühr in USD zusammen mehr als die Menge: ruhiger Satz im Toast (Florians
   // Antwort 5, Wortlaut sein Vorschlag), das Speichern geht weiter
   const card=k==='bezahlung'&&cxCardW();if(card)entry.feeU=1;
-  const ovTxt=card&&usdIn&&fee>0&&amt+fee>q+1e-9?' Wert und Gebühr sind zusammen mehr als der abgebuchte Betrag. Mit „Berechnen“ passt es.':'';
+  const ovTxt=card&&usdIn&&fee>0&&amt+fee>q+PAY_TOL?' Wert und Gebühr sind zusammen mehr als der abgebuchte Betrag. Mit „Berechnen“ passt es.':'';
   if(kest){entry.kest=true;if(kv>0)entry.kestEur=kv}
   if(nft)entry.nft=true;
   if(recv>0)entry.eur=recv;
@@ -11881,7 +11889,7 @@ ${ECB_CITE}`},
   geschpayk:{t:'Wert der Zahlung',h:'Abgebuchter Betrag minus Kartengebühr, in USD, mit „Berechnen“ ausgerechnet. Mit einem Beleg in einer anderen Währung: der Kaufpreis laut Beleg.'},
   geschgp:{t:'Weiß ich nicht',h:'Dann gilt der Tageswert am Geschenktag als Einkaufswert: Menge geteilt durch den EZB-Kurs, 1 Coin = 1 USD. Der Wert ist dann geschätzt.'},
   geschgd:{t:'Weiß ich nicht',h:'Dann gilt der Geschenktag als Kaufdatum (geschätzt). In Deutschland beginnt die Haltefrist dann am Geschenktag.'},
-  kartengeb:{t:'Kartengebühr',h:'Was die Karte beim Bezahlen zusätzlich abbucht, in Prozent vom abgebuchten Betrag. Gebühr = abgebuchter Betrag × Prozentsatz ÷ 100, auf Cent gerundet. Der Wert der Zahlung ist der abgebuchte Betrag minus Gebühr. Bis du antwortest, rechnet das Tool mit 3 %. 0 ist erlaubt. Du siehst die Gebühr danach im Eintrag im Feld „Gebühr“ und kannst sie mit ✎ ändern.'},
+  kartengeb:{t:'Kartengebühr',h:'Was die Karte beim Bezahlen zusätzlich abbucht, in Prozent vom abgebuchten Betrag. Gebühr = abgebuchter Betrag × Prozentsatz ÷ 100, auf Cent gerundet. Der Wert der Zahlung ist der abgebuchte Betrag minus Gebühr, auf Cent gerundet. Bis du antwortest, rechnet das Tool mit 3 %. 0 ist erlaubt. Du siehst die Gebühr danach im Eintrag im Feld „Gebühr“ und kannst sie mit ✎ ändern.'},
   geschaetzt:{t:'geschätzt',h:'Wert ≈ Tageswert: Menge geteilt durch den EZB-Kurs an diesem Tag, Annahme 1 Coin = 1 USD.'},
   wkind:{t:'Börse oder eigene Wallet?',h:'Das Merkmal: Wer hat die Schlüssel?\n<b>Börse</b> (z. B. Bitvavo, Kraken): Die Börse verwahrt deine Coins. Du hast keine Wiederherstellungsphrase. Die Börse zieht Gebühren beim Auszahlen selbst ab. Dein Bestand kommt aus der Börsen-Datei oder aus deinen Einträgen von Hand (Käufe, Verkäufe).\nAlle Adressen der Börse kommen unter die Börse: deine Einzahlungsadresse (sie gehört zu deinem Konto) und die Adresse, von der die Börse auszahlt. Das ist eine Sammeladresse. Mit ihr erkennt das Tool z. B. „Bitvavo → Bix“ als Übertrag.\n<b>Eigene Wallet</b> (z. B. eine Hardware-Wallet): Du hast die Wiederherstellungsphrase und zahlst die Netzwerkgebühr selbst. Das gilt auch, wenn die Wallet in der App eines Anbieters liegt (z. B. Bix: Phrase vorhanden, in anderen Apps zu öffnen). Dein Bestand kommt aus dem Explorer-Export.\n<b>Karte</b> (z. B. Bix-Card): deine Krypto-Karte. Du lädst sie aus einer eigenen Wallet auf und zahlst mit ihr. Zu ihr gehören zwei Adressen: die Ladeadresse, an die du zum Aufladen schickst, und das Kartenkonto, von dem du bezahlst.\n<b>Andere</b> (z. B. Tag, Dienste, Personen und Händler): Du schickst ihnen Coins oder bekommst Coins von ihnen.\nSo hängt es zusammen: Du kaufst bei Bitvavo (Börse), schickst die Coins an Bix (eigene Wallet) und lädst damit die Bix-Card (Karte) auf.\n„Bestand jetzt“ zeigt jede Wallet, auch Börsen und Karten. „Kontostände prüfen“ vergleicht deinen Bestand mit dem Kontostand aus einer eingelesenen Datei oder mit dem Stand, den du aus deiner App einträgst. Das Tool prüft die Sammeladresse einer Börse nie.'},
   wallet:{t:'Wallet',h:'Eine Wallet im Tool ist eine Netzwerk-Adresse (z. B. 0xea01…) oder ein Konto bei einer Börse. Nutzt du dieselbe Netzwerk-Adresse in mehreren Apps, zum Beispiel in Bix und in einer Hardware-Wallet, lege sie hier nur einmal an.'},
@@ -13459,7 +13467,7 @@ $('cx-wallet').addEventListener('change',()=>cxHelp());
 // USD steht (Weg 1, wie die Kartengebühr); steht er in einer anderen Währung (Weg 2), rechnet eine geänderte Gebühr ihn nie neu (Florians Korrektur b).
 function cxFeeRe(){const e=$('cx-eur');if($('cx-kind').value!=='bezahlung'||$('cx-cur').value!=='USD')return;const card=cxCardW();if(card?e.dataset.calc!=='1':e.dataset.est!=='1')return;
   const q=parseDe($('cx-qty').value),s=$('cx-fee').value.trim(),f=s?parseDe(s):0;if(!(q>0)||!(f>=0))return;
-  if(card){const fc=Math.round(f*100+1e-7)/100;if(fc<q)e.value=cxV8(+(q-fc).toFixed(8));return}
+  if(card){const fc=Math.round(f*100+1e-7)/100;if(fc<q)e.value=numIn(cent(q-fc));return}
   const x=payEst(q,f);if(!x.bad)e.value=numIn(x.usd)}
 $('cx-fee').addEventListener('input',cxFeeRe);
 // Ab 0.55 (1): Baustein „Geschenk“ im Formular „Neuer Eintrag“ (ids cx-geur, cx-unkp, cx-gd, cx-unkd, cx-pn)
@@ -13699,7 +13707,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.137',VDATE='12.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.138',VDATE='12.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
