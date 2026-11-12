@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded',function(){
     <li><p><b>Stufe 2: Dein echtes Geld.</b> Du fügst die Tag-Daten ein und siehst, was du wirklich eingezahlt und ausgezahlt hast.</p>
       <p class="small"><b>Was du brauchst:</b> den Zugang zum Tag-Portal.</p></li>
     <li><p><b>Stufe 3: Krypto-Steuer.</b> Nur wenn du mit USDC oder USDT ein- oder auszahlst und deine Kryptos nicht schon mit einem <a href="#anderes-tool">anderen Tool</a> rechnest. Du trägst ein, woher die Coins kamen und wohin sie gingen.</p>
-      <p class="small"><b>Was du brauchst:</b> deine Kaufbelege oder die Datei deiner Börse, bei einer Krypto-Karte deren Belege, und am Ende den Kontostand jeder Wallet-App. Adressen brauchst du nicht.</p></li>
+      <p class="small"><b>Was du brauchst:</b> deine Kaufbelege oder die Datei deiner Börse, bei einer Krypto-Karte die Karten-App, und am Ende den Kontostand jeder Wallet-App. Adressen brauchst du nicht.</p></li>
   </ol>
   <p>Beim ersten Öffnen begrüßt dich das Tool und sagt kurz, was es kann. Im grauen Kästchen „Wo zahlst du Steuern?“ wählst du <b>„Österreich“</b>, <b>„Deutschland“</b> oder <b>„Ohne Steuer“</b>. Das kannst du später im Reiter „Steuer“ ändern. Mit einem der beiden Knöpfe unten geht es los. Hast du ein Land gewählt, zeigt dir das Tool beim ersten Öffnen des Reiters „Steuer“ einen wichtigen Hinweis.</p>
   <h4 class="os-win os-mac">Dateien ziehst du einfach ins Tool</h4>
@@ -529,12 +529,13 @@ document.addEventListener('DOMContentLoaded',function(){
   <p>Klicke auf <b>„Speichern“</b>.</p>
   <h4>Die Kartenzahlung</h4>
   <p>Klicke in der 4. Kategorie auf <b>„(Karten-)Zahlung“</b>. Es öffnet sich das Formular für eine Zahlung, bei <b>„Wallet / Börse“</b> steht schon deine Karte.</p>
-  <figure class="k"><a href="anleitung/tool-karte-zahlung.webp"><img src="anleitung/tool-karte-zahlung.webp" width="640" height="730" alt="Formular Neuer Eintrag: Zahlung am 22.08.2026 aus Meine Karte, grüne Kreise 1 bei Menge 32,10, 2 beim Wert 26,64 Euro, 3 bei der Gebühr 0,80 Euro und 3 Prozent" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-karte-zahlung.webp"><img src="anleitung/tool-karte-zahlung.webp" width="640" height="736" alt="Formular Neuer Eintrag: Zahlung am 22.08.2026 aus Meine Karte, grüne Kreise 1 bei Menge 32,10, 2 bei der Gebühr 0,96 USD laut Karten-App, 3 beim Wert 31,14 USD mit dem Knopf Berechnen" loading="lazy"></a></figure>
   <ol class="kreise">
     <li>Trage bei <b>„Menge“</b> ein, was abgebucht wurde, mit Gebühr. Im Beispiel 32,10 USDC.</li>
-    <li>Bei <b>„Wert“</b> trägst du den Betrag vom Kassenbon in Euro ein, im Beispiel 26,64 €.</li>
-    <li>Bei <b>„Gebühr“</b> trägst du ins Feld mit „%“ ein, was die Karte dazu verlangt, im Beispiel 3. Das Tool rechnet daraus 0,80 €.</li>
+    <li>Bei <b>„Gebühr“</b> trägst du die Gebühr aus der Karten-App in USD ein, im Beispiel 0,96.</li>
+    <li>Klicke auf <b>„Berechnen“</b>: 32,10 minus 0,96 = 31,14 USD.</li>
   </ol>
+  <p>Hast du einen Kassenbon in Euro, kannst du stattdessen bei „Wert“ den Betrag von dort eintragen, im Beispiel 26,64 €.</p>
   <p>Klicke auf <b>„Speichern“</b>. Trage so jede Kartenzahlung ein. Ganz am Ende trägst du in <a href="#kontostand">Abschnitt 14</a> auch den Kontostand aus der Karten-App ein, im Beispiel 66,90 USDC. Dann prüft das Tool, ob eine Zahlung fehlt.</p>
   <p class="small">Mit Wallet-Dateien liest das Tool Aufladungen und Kartenzahlungen auch selbst ein. Eine Anleitung mit Bildern dazu folgt später.</p>
 </section>
@@ -704,7 +705,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </main>
 
 <footer>
-  <p>Trading-Bilanz · Anleitung, Stand 10.11.2026 · Keine Steuer- oder Finanzberatung.</p>
+  <p>Trading-Bilanz · Anleitung, Stand 12.11.2026 · Keine Steuer- oder Finanzberatung.</p>
   <p><b>Nur das Original:</b> Nutze die Trading-Bilanz nur von <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, zum Beispiel mit einer anderen Spendenadresse.</p>
   <p><b>Datenschutz:</b> Diese Seite speichert nichts und lädt nur ihre eigenen Bilder. Beim Aufruf speichert GitHub deine IP-Adresse aus Sicherheitsgründen (<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub&nbsp;↗</a>).</p>
   <p><a href="https://weltenwandel.at/impressum.html" target="_blank" rel="noopener">Impressum&nbsp;↗</a> · <a href="mailto:florian@weltenwandel.at">florian@weltenwandel.at</a> · <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">Zur Trading-Bilanz</a></p>
