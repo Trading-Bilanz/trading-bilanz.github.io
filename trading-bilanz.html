@@ -42,7 +42,7 @@
   --sig-r-txt:#a3360a;
   /* Ab 0.45: Farben je Art in der Liste (GESTALTUNG.md Regel 5) */
   --k-in:#0e8174; --k-out:#cc4a33; --k-sw:#7a4dc2; --k-tag:#2a63a6; --k-mu:#5f666d; --sig-y-txt:#8a5d00;
-  --heart:#d6204e; --sub-bg:#f0f3f7;
+  --heart:#b60c0c; --don:#0f7516; --sub-bg:#f0f3f7;
   /* Knöpfe (Blau, in hell und dunkel gleich) und Rahmen der Reiter (Gold) */
   --btn:#2f6db5; --btn-dk:#245891;
   --tab-line:#C49A55;
@@ -65,7 +65,7 @@
     --st-ok-ink:#8fdcb2; --st-warn-ink:#f2cf80;
     --sig-r:#f08a5d; --sig-y:#f2c14e; --sig-y-ink:#15181b; --sig-g:#8d959c; --sig-r-txt:#f5a07a;
     --k-in:#3cc4b4; --k-out:#f0846c; --k-sw:#b18cf0; --k-tag:#6ea3e0; --k-mu:#99a1a8; --sig-y-txt:#f2c14e;
-    --heart:#ff5c7a; --sub-bg:#1a232d;
+    --heart:#b60c0c; --don:#0f7516; --sub-bg:#1a232d;
     --on-mid:#15181b;
     --btn:#2f6db5; --btn-dk:#245891;
     --tab-line:#D4B27A;
@@ -1232,7 +1232,10 @@ button.chki:hover,button.chki:focus-visible{background:var(--bg)}
 #t-rates button.btn{padding:2px 8px}
 /* Ab 0.134: gezeichnetes Herz (SVG, HEART im Skript) statt des Schriftzeichens, auf jedem Gerät gleich. Größe folgt der Schrift. */
 svg.heart{width:1.05em;height:.96em;fill:var(--heart);vertical-align:-.1em;flex:none}
-#btn-don-go svg.heart{fill:#fff;margin-right:2px}
+/* Ab 0.136: im Knopf „Zur Spende“ rot mit 1 px weißem Rand außen (paint-order: stroke, Breite in Bildschirmpunkten); grünes Herz statt 💚 (HEART_G, herzH) */
+#btn-don-go svg.heart{margin-right:2px;overflow:visible}
+#btn-don-go svg.heart path{stroke:#fff;stroke-width:2px;paint-order:stroke;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+svg.heart.hg{fill:var(--don)}
 #don-modal .btn[hidden]{display:none}
 /* Ab 0.134: Karte „Anregungen, Fehler, Feedback“ im Reiter „Resonanz“: Mail-Knopf, Adresse als Text, „Adresse kopieren“ */
 .fbrow{gap:10px 12px;margin-top:14px}.fbaddr{font-family:ui-monospace,Consolas,monospace;font-size:14px;overflow-wrap:anywhere}
@@ -1764,7 +1767,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <!-- RESONANZ (bis 0.133 „Unterstützen“; die Kennung support bleibt) -->
 <section id="s-support">
   <div class="card">
-    <h2>💚 Danke, dass du die Trading-Bilanz nutzt</h2>
+    <h2 data-herz>💚 Danke, dass du die Trading-Bilanz nutzt</h2>
     <p>Ich habe dieses Tool mit viel Sorgfalt, Zeit und Liebe für die Community gebaut und schenke es dir. Ohne Abo, ohne Werbung, ohne Anmeldung. Mit Zahlen, die nur du siehst.</p>
     <p>Wenn du damit schon deinen besten Trade gefeiert hast, deine Ergebnisse in schönen Bildern mit Interessierten teilst oder es dir sogar schon Kopfzerbrechen bei der Steuer erspart hat, freue ich mich sehr über eine Wertschätzung. Jeder Beitrag hilft mir, das Tool weiter zu pflegen und für uns alle besser zu machen.</p>
     <p><strong>Auf dass die Fülle immer weiter fließt.</strong></p>
@@ -1798,9 +1801,9 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <details class="dhc"><summary>So machst du einen Screenshot</summary>
       <ul>
         <li><b>Windows:</b> Win + Shift + S, Bereich wählen, in der Mail mit Strg + V einfügen</li>
-        <li><b>Mac:</b> Cmd + Shift + 4</li>
-        <li><b>Android:</b> Ein/Aus und Leiser gleichzeitig</li>
-        <li><b>iPhone:</b> Seitentaste und Lauter gleichzeitig (mit Home-Taste: Home und Seitentaste)</li>
+        <li><b>Mac:</b> Cmd + Ctrl + Shift + 4, Bereich wählen, in der Mail mit Cmd + V einfügen</li>
+        <li><b>Android:</b> Ein/Aus und Leiser gleichzeitig. Das Bild landet in deiner Galerie. In der Mail über das Büroklammer-Symbol anhängen.</li>
+        <li><b>iPhone:</b> Seitentaste und Lauter gleichzeitig (mit Home-Taste: Home und Seitentaste). Das Bild landet in deinen Fotos. In der Mail über das Bild-Symbol über der Tastatur einfügen.</li>
       </ul>
     </details>
   </div>
@@ -1905,7 +1908,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <div class="modal" id="don-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="don-t" aria-describedby="don-p"><button type="button" class="mx" id="don-x" aria-label="Schließen">×</button>
   <h2 id="don-t"></h2>
   <p id="don-p"></p>
-  <div class="row" style="justify-content:flex-end"><button type="button" class="btn primary" id="btn-don-go" style="background:#1f7a4d;border-color:#1f7a4d;color:#fff">Zur Spende</button><button type="button" class="btn primary" id="btn-don-fb" hidden>Feedback schreiben</button><button type="button" class="btn primary" id="btn-don-link" hidden>Link kopieren</button><button type="button" class="btn primary" id="btn-don-ok" hidden></button><button type="button" class="btn" id="btn-don-no">Jetzt nicht</button><button type="button" class="btn" id="btn-don-done">Schon gespendet</button></div>
+  <div class="row" style="justify-content:flex-end"><button type="button" class="btn primary" id="btn-don-go" style="background:var(--don);border-color:var(--don);color:#fff">Zur Spende</button><button type="button" class="btn primary" id="btn-don-fb" hidden>Feedback schreiben</button><button type="button" class="btn primary" id="btn-don-link" hidden>Link kopieren</button><button type="button" class="btn primary" id="btn-don-ok" hidden></button><button type="button" class="btn" id="btn-don-no">Jetzt nicht</button><button type="button" class="btn" id="btn-don-done">Schon gespendet</button></div>
 </div></div>
 <!-- Fenster „Erste Schritte“ und „Datenschutz“: schließen mit ×, Esc oder Klick daneben (openModal/closeModal) -->
 <div class="modal noprint" id="steps-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="steps-t"><button type="button" class="mx" aria-label="Schließen">×</button>
@@ -3252,7 +3255,8 @@ function pfCheck(ck){
     const t=Object.assign({},c,{A,B,fit:Math.min(dA,dB)>PF_NONE+e?'-':Math.abs(A-B)<=2*PF_TOL+e?'~':dA<=dB?'A':'B'});
     tests.push(t);if(t.fit==='B'||t.fit==='-')iss.push(Object.assign({type:t.fit==='B'?'carry':'none',key:c.id},t))}
   return {rate,tests,iss}}
-// Gemeinsamer Hinweis zu allen gezeigten Fällen, dazu ein Mail-Link mit demselben Text
+// Gemeinsamer Hinweis zu allen gezeigten Fällen. Ab 0.136 ohne fertige Mail (bis 0.135 ein Mail-Link mit Kontonummer und Beträgen): Der letzte Satz
+// bittet um einen Screenshot, der Link öffnet den Reiter „Resonanz“ und klappt „Anregungen, Fehler, Feedback“ auf (data-fbgo, fbGo)
 function pfHint(iss,rate){
   const t=[],acc=L=>`Konto ${[...new Set(L.map(x=>x.a))].join(', ')}`;
   const byW={};for(const x of iss.filter(x=>x.type==='carry'))(byW[x.lwk]||(byW[x.lwk]=[])).push(x);
@@ -3260,8 +3264,7 @@ function pfHint(iss,rate){
   for(const x of iss.filter(x=>x.type==='none'))t.push(`Konto ${x.a}: Die Performance Fee vom ${dS(x.d)} passt zu keiner der beiden Rechnungen. Gebucht: ${usd(x.u)}. Ohne Übertrag des Verlusts wären es ${usd(x.A)}, mit Übertrag ${usd(x.B)} (Gewinn der Woche ${usd(x.nu)}, Verlust davor ${usd(x.loss)}, Satz ${fmtDec(rate*100,2)} %).`);
   for(const x of iss.filter(x=>x.type==='loss'))t.push(`Konto ${x.a}: Die Performance Fee vom ${dS(x.d)} wurde in einer Woche mit Verlust abgebucht (Ergebnis ${usd(x.nu)}).`);
   const tail=iss.some(x=>x.type==='carry')?'„PF verteilt“ rechnet anders und ist für diese Wochen nicht genau.':'Dann ist „PF verteilt“ für diese Wochen vielleicht nicht genau.';
-  const mail=`mailto:florian@weltenwandel.at?subject=${encodeURIComponent('Trading-Bilanz: Performance Fee')}&body=${encodeURIComponent(t.join(' ')+' '+tail+'\n\n(Trading-Bilanz '+VERSION+')')}`;
-  return `<b>Performance Fee:</b> ${t.join(' ')} ${tail} Schick mir bitte diesen Hinweis an <a href="${mail}">florian@weltenwandel.at</a>, ein Bildschirmfoto reicht.`;
+  return `<b>Performance Fee:</b> ${t.join(' ')} ${tail} Schick mir dazu bitte einen Screenshot dieses Hinweises, so wie unter „<a href="#resonanz" data-fbgo>Anregungen, Fehler, Feedback</a>“ beschrieben.`;
 }
 // Silvester: Die Zeit im MT5-Report ist die des Brokers (Zypern), ganzjährig 1 Stunde vor Österreich und Deutschland. Steuerlich relevante
 // Buchungen am 01.01. zwischen 00:00 und 00:59 Uhr waren hier noch am 31.12. Das Tool rechnet sie nicht um, es gibt nur Hinweise (Steuer-Seite
@@ -7036,7 +7039,8 @@ function toastHide(){const x=$('cptoast');x.classList.remove('on','act');clearTi
 function toastRun(ms){clearTimeout(toast.t);TOAST.left=ms;TOAST.end=Date.now()+ms;if(!TOAST.hov&&!TOAST.foc)toast.t=setTimeout(toastHide,ms)}
 // Ab 0.55 (4): Text in den festen Bereich mit aria-live (#cptmsg), Knöpfe daneben (#cptbtn), damit nur der Text vorgelesen wird
 // Ab 0.125: ohne die Markierung der Dateinamen (fdlTxt), ein Toast nennt ab drei Dateien nur die Zahl
-function toastShow(t,lab,fn){t=fdlTxt(t);const x=$('cptoast');$('cptmsg').textContent=t;$('cptbtn').innerHTML=`${lab?`<button type="button" class="tbtn">${esc(lab)}</button>`:''}<button type="button" class="tx" data-tx aria-label="Meldung schließen">×</button>`;
+// Ab 0.136: Text über herzH (sicher eingesetzt, 💚 als gezeichnetes Herz)
+function toastShow(t,lab,fn){t=fdlTxt(t);const x=$('cptoast');$('cptmsg').innerHTML=herzH(t);$('cptbtn').innerHTML=`${lab?`<button type="button" class="tbtn">${esc(lab)}</button>`:''}<button type="button" class="tx" data-tx aria-label="Meldung schließen">×</button>`;
   x.classList.add('on','act');TOAST_U=null;if(lab)x.querySelector('.tbtn').onclick=()=>{toastHide();fn()};x.querySelector('[data-tx]').onclick=()=>toastHide();TOAST.hov=x.matches(':hover');TOAST.foc=x.contains(document.activeElement);toastRun(toastMs(t))}
 function toast(t,ms){toastShow(t)}
 // Ab 0.47 (2.7): Toast mit einem Knopf (z. B. „Rückgängig“)
@@ -10977,7 +10981,7 @@ function printSummary(){
   $('s-print').innerHTML=h;
   document.body.classList.add('printsum');
   const off=()=>{document.body.classList.remove('printsum');window.removeEventListener('afterprint',off)};
-  window.addEventListener('afterprint',off);window.print();setTimeout(off,1500);maybeDonate('export');
+  window.addEventListener('afterprint',off);window.print();setTimeout(off,1500);maybeDonate('steuer');
 }
 
 // Ab 0.72 (Phase 4): Steuer-Excel („Excel für dieses Jahr“) als eigene Funktion. exportXlsx(null) baut weiter die Excel mit allen Daten,
@@ -11098,7 +11102,7 @@ function taxXlsx(y){
   if((cxOn&&C.n)||(DE&&(Object.keys(S.tag).length||S.cx.length)))sheets.push({name:'Ein- und Auszahlungen Broker',rows:tg,freeze:1,widths:[11,...(TZ?[11,11]:[8]),11,11,6,11,14,15,11,10,12,...(HW?[68]:[])]},{name:'Eigene Krypto-Einträge',rows:cx,freeze:1,widths:cxW});
   if(wb.length>1)sheets.push({name:'Wallet-Bewegungen',rows:wb,freeze:1,widths:[11,9,11,14,14,10,14,10,14,30,68,30,30]});
   sheets.push({name:'Kurse',rows:ku,freeze:1,widths:[11,28,14,10],skip:[ku.length-1]});
-  const blob=buildXlsx(sheets,false);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Trading-Bilanz-${y}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);maybeDonate('export');
+  const blob=buildXlsx(sheets,false);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Trading-Bilanz-${y}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);maybeDonate('steuer');
 }
 
 /* ---------------- Steuertarif Österreich ---------------- */
@@ -11110,6 +11114,10 @@ function est(inc,y){const b=tarifFor(y);let t=0,lo=0;for(const [hi,r] of b){if(i
 // Ab 0.134: Der Reiter heißt „Resonanz“ (bis 0.133 „Unterstützen“, Kennung support bleibt). Das Herz ist gezeichnet (SVG, voll, Farbe --heart),
 // weil das Schriftzeichen ♥ je nach Gerät dünn aussah. Dasselbe Herz steht weiß im Knopf „Zur Spende“.
 const HEART='<svg class="heart" viewBox="0 0 24 22" aria-hidden="true" focusable="false"><path d="M12 21C5.6 15.7 1.2 12 1.2 7.2A5.9 5.9 0 0 1 12 4.3 5.9 5.9 0 0 1 22.8 7.2C22.8 12 18.4 15.7 12 21Z"/></svg>';
+// Ab 0.136: grünes Herz statt des Zeichens 💚. Texte (FENSTER, Karten, Meldungen) behalten 💚, das Tool tauscht beim Anzeigen (herzH: Text sicher
+// einsetzen, jedes 💚 als gezeichnetes Herz in --don). Vorleseprogramme lesen das gezeichnete Herz nicht vor (aria-hidden, wie das Herz im Reiter).
+const HEART_G=HEART.replace('class="heart"','class="heart hg"');
+const herzH=t=>esc(t).replace(/💚\uFE0F?/g,HEART_G);
 const TABS=[['reports','Reports'],['rates','Kurse'],['wallet','Wallet'],['stats','Auswertung'],['tax','Steuer'],['data','Sicherung'],['support',HEART+' Resonanz']];
 function status(){
   const accs=Object.keys(S.accounts);const unk=Object.keys(unknownKinds()).length;
@@ -13574,20 +13582,25 @@ async function introDone(steps){const g=$('intro-land');
 $('btn-intro-steps').onclick=()=>introDone(true);
 $('btn-intro-skip').onclick=()=>introDone(false);
 // Ab 0.134: Knöpfe des Fensters nach einem Anlass (fenShow weiter unten). „Jetzt nicht“, × und Esc: bei einem Spenden-Fenster 3 Monate Ruhe.
-function fenNo(){if(FEN_CUR&&FEN_SP.includes(FEN_CUR.art))donPause(91);fenClose()}
+// Ab 0.136 (Florians Auftrag) auch im Feedback-Fenster: 3 Monate Ruhe vor dem Spenden-Fenster. „Feedback schreiben“ gibt keine Ruhe (nur die 14 Tage Abstand).
+function fenNo(){if(FEN_CUR&&(FEN_SP.includes(FEN_CUR.art)||FEN_CUR.art==='feedback'))donPause(91);fenClose()}
 $('btn-don-no').onclick=fenNo;$('don-x').onclick=fenNo;
 $('btn-don-ok').onclick=fenNo;
 $('btn-don-done').onclick=()=>{donPause(365);fenClose()};
 $('btn-don-go').onclick=()=>{fenClose();S.ui.tab='support';save();render();window.scrollTo(0,0)};
 // „Feedback schreiben“: Reiter „Resonanz“, Karte „Anregungen, Fehler, Feedback“ aufklappen und hinscrollen
-$('btn-don-fb').onclick=()=>{fenClose();goTo('support','fb-card')};
+$('btn-don-fb').onclick=()=>{fenClose();fbGo()};
 // „Link kopieren“ (Art Weitersagen): kopiert die Adresse des Tools (DL_URL)
 $('btn-don-link').onclick=async()=>{let ok=false;try{await navigator.clipboard.writeText(DL_URL);ok=true}catch(e){try{const t=document.createElement('textarea');t.value=DL_URL;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();ok=document.execCommand('copy');t.remove()}catch(e2){}}
   fenNo();if(ok)toast('Link kopiert.')};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!e.defaultPrevented&&$('don-modal').classList.contains('on')){e.preventDefault();fenNo()}});
 // Ab 0.134: ein Weg für beide Adressen im Reiter „Resonanz“ (Spendenadresse und Mail-Adresse). Ist die Zwischenablage gesperrt, markiert das Tool die Adresse.
-async function addrCopy(el,out,okT){const a=el.textContent.trim();try{await navigator.clipboard.writeText(a);out.textContent=okT}catch(e){const r=document.createRange();r.selectNodeContents(el);const sl=getSelection();sl.removeAllRanges();sl.addRange(r);out.innerHTML=OS==='mobile'?'Markiert. Tippe auf „Kopieren“.':`Markiert, jetzt mit ${OS==='mac'?'<kbd>⌘ Cmd</kbd>+<kbd>C</kbd>':'<kbd>Strg</kbd>+<kbd>C</kbd>'} kopieren.`}}
+async function addrCopy(el,out,okT){const a=el.textContent.trim();try{await navigator.clipboard.writeText(a);out.innerHTML=herzH(okT)}catch(e){const r=document.createRange();r.selectNodeContents(el);const sl=getSelection();sl.removeAllRanges();sl.addRange(r);out.innerHTML=OS==='mobile'?'Markiert. Tippe auf „Kopieren“.':`Markiert, jetzt mit ${OS==='mac'?'<kbd>⌘ Cmd</kbd>+<kbd>C</kbd>':'<kbd>Strg</kbd>+<kbd>C</kbd>'} kopieren.`}}
 $('btn-copyaddr').onclick=()=>addrCopy($('don-addr'),$('copymsg'),'Adresse kopiert. Danke! 💚');
+document.querySelectorAll('[data-herz]').forEach(e=>{e.innerHTML=herzH(e.textContent)});
+// Ab 0.136: Link „Anregungen, Fehler, Feedback“ (Hinweis „Performance Fee“): Reiter „Resonanz“, Karte aufklappen und zeigen, wie „Feedback schreiben“
+function fbGo(){goTo('support','fb-card')}
+document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('[data-fbgo]');if(!a)return;e.preventDefault();fbGo()});
 $('btn-fbcopy').onclick=()=>addrCopy($('fb-addr'),$('fbcopymsg'),'Adresse kopiert.');
 $('btn-xlsxyear').onclick=()=>taxXlsx(S.ui.yTax);   // ab 0.72 eigene Steuer-Excel
 $('btn-xlsxall').onclick=()=>exportXlsx(null);
@@ -13641,7 +13654,7 @@ $('calc-in').addEventListener('change',e=>{const t=e.target,c=S.ui.calc;
 $('calc-in').addEventListener('click',e=>{if(e.target.closest('#c-reset')){S.ui.calc.inv='';save();renderCalc()}});
 $('yr-tax').onchange=e=>{S.ui.yTax=e.target.value;save();render()};
 $('other').oninput=e=>{S.ui.other=e.target.value;save();render()};
-$('btn-print').onclick=()=>{window.print();maybeDonate('export')};
+$('btn-print').onclick=()=>{window.print();maybeDonate('steuer')};   // ab 0.136 Steuer-Export (Knopf im Reiter „Steuer“)
 $('btn-csvall').onclick=()=>{csv(window.__rows,'Trading-Buchungen-alle.csv');maybeDonate('export')};
 // Ab 0.50 Nachtrag 5: Steht schon etwas im Tool (Reports, Krypto, eigene Kurse, Wallets)? Dann fragt „Sicherung laden“ nach.
 const stateHasData=()=>!!(Object.keys(S.accounts).length||Object.keys(S.deals).length||S.cx.length||Object.keys(S.tag).length||Object.keys(S.wtx).length||Object.keys(S.wign||{}).length||(S.bxF||[]).length||Object.keys(S.addr).length||Object.keys(S.rown).length||S.wallets.some(w=>w!=='Meine Wallet'));
@@ -13666,9 +13679,10 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   // Erst wenn alles geklappt hat, ersetzt die Sicherung den alten Stand und wird gespeichert. Scheitert ein Schritt, zeichnet das Tool den alten Stand
   // wieder, im Speicher hat sich nichts geändert (G-19).
   const old=S;SAVE_OFF=true;SAVE_DUE=false;
-  // Ab 0.134: Der Zähler der Fenster (S.ui.don) kommt aus der Sicherung. Kennt sie das Datum der ersten Nutzung nicht, bleibt das Datum dieses Browsers
+  // Ab 0.134: Der Zähler der Fenster (S.ui.don) kommt aus der Sicherung. Kennt sie das Datum der ersten Nutzung nicht, bleibt das Datum dieses Browsers.
+  // Ab 0.136 (Florians Auftrag): Haben beide ein Datum, gilt das ältere
   const f0=old&&old.ui&&old.ui.don&&old.ui.don.first;
-  try{S=Object.assign(blank(),j);fixState();provOpen();{const d=S.ui.don||(S.ui.don={n:0,last:null});if(!d.first&&f0)d.first=f0;donGet()}S.ui.tab='data';render()}
+  try{S=Object.assign(blank(),j);fixState();provOpen();{const d=S.ui.don||(S.ui.don={n:0,last:null});if(f0&&(!d.first||!(new Date(d.first)<=new Date(f0))))d.first=f0;donGet()}S.ui.tab='data';render()}
   catch(err){console.warn('Sicherung laden:',err);S=old;SAVE_OFF=false;SAVE_DUE=false;RV=null;try{render()}catch(e2){console.warn(e2)}
     msg(mid,'bad',`Die Sicherung „${esc(f.name)}“ ließ sich nicht laden. Sie ist vielleicht beschädigt. Deine bisherigen Daten sind unverändert. Probiere eine andere Sicherung.`);e.target.value='';return}
   SAVE_OFF=false;SAVE_DUE=false;if(BOOT_BAD){BOOT_BAD=false;BOOT_RAW='';modalOn($('boot-modal'),false)}save(true);rateGoneToast();
@@ -13692,7 +13706,8 @@ const VERSION='0.136',VDATE='12.11.2026',DL_URL='https://trading-bilanz.github.i
 const KOMMT=[];
 /* FENSTER: alle Texte der Fenster, die nach einem Anlass kommen. Je Eintrag:
      anlass  nach welchen Anlässen der Eintrag kommen darf: 'export' (Drucken, Excel, CSV), 'sicherung' („Sicherung speichern“), 'bild' (Bild einer Grafik
-             gespeichert oder geteilt)
+             gespeichert oder geteilt). Ab 0.136 ist der Steuer-Export (Zusammenfassung, Steuer-Excel, „Diese Seite drucken“ im Reiter „Steuer“) ein eigener
+             Anlass 'steuer'; er zeigt die Einträge mit 'export' (und mit 'steuer', falls es einmal eigene gibt)
      art     Art der Knöpfe:
              'spende'       „Zur Spende“ · „Jetzt nicht“ · „Schon gespendet“
              'feedback'     „Feedback schreiben“ (öffnet den Reiter „Resonanz“ und klappt „Anregungen, Fehler, Feedback“ auf) · „Jetzt nicht“
@@ -13746,6 +13761,8 @@ $('don-cmp').innerHTML=`Vergleiche die Adresse mit der Online-Version: <a class=
    4. Nie zwei Fenster am selben Tag, keines in der ersten Woche (Tag 0 bis 6), keines während einer Eingabe (fenFrei: anderes Fenster offen
       oder Cursor in einem Eingabefeld). Ein so unterdrücktes Fenster wird nicht nachgeholt, der nächste Anlass prüft neu. Einzige Ausnahme:
       „Bild“ aus dem Vollbild der Grafik, das Fenster kommt nach dem Schließen des Vollbilds (FEN_NACH, gfsClose).
+   Ab 0.136 (Florians Auftrag, Ausnahmen in STAND.md beim Fenster): „Jetzt nicht“, × und Esc im Feedback-Fenster geben 3 Monate Ruhe vor dem
+   Spenden-Fenster; Ruhe wird nie kürzer; beim Steuer-Export (Anlass 'steuer') darf das Spenden-Fenster auch in der ersten Woche kommen.
    Gezählt wird in Kalendertagen (Uhr des Geräts). Tag 0 ist die erste Nutzung in diesem Browser (S.ui.don.first); bei einem Stand ohne dieses
    Datum beginnt die Zählung mit dem ersten Start ab 0.134.
    Der Zähler liegt in S.ui.don (Browser-Speicher, reist mit der Sicherung): n = Zahl der Anlässe, first = erste Nutzung, last = letztes
@@ -13764,13 +13781,15 @@ function donSync(){const d=donGet();if(BOOT_BAD)return d;let o=null;try{const j=
   if(Math.max(t(o.last),t(o.fb))>Math.max(t(d.last),t(d.fb))&&o.le!=null)d.le=o.le;
   for(const k of ['last','fb','until'])if(t(o[k])>t(d[k]))d[k]=o[k];
   if((o.n|0)>(d.n|0))d.n=o.n|0;if(o.first&&t(o.first)&&t(o.first)<t(d.first))d.first=o.first;return d}
-function donPause(days){const d=donGet();d.until=fenPlus(FEN_NOW(),days).toISOString();save()}
+// Ab 0.136: Ruhe wird nie kürzer (Florians Freigabe): Liegt schon ein späteres Ende vor (z. B. 12 Monate nach „Schon gespendet“), bleibt es
+function donPause(days){const d=donGet(),u=fenPlus(FEN_NOW(),days);if(!(d.until&&new Date(d.until)>u))d.until=u.toISOString();save()}
 // Welcher Eintrag aus FENSTER käme jetzt? Reine Entscheidung nach den Zählregeln, ändert nichts. null = kein Fenster.
 function fenPick(d,now,anlass){
-  const day=fenDay(now),t=day-fenDay(d.first),ago=x=>x?day-fenDay(x):Infinity;
-  if(t<7)return null;                                  // Regel 4: keines in der ersten Woche
+  const day=fenDay(now),t=day-fenDay(d.first),ago=x=>x?day-fenDay(x):Infinity,st=anlass==='steuer',AN=st?['steuer','export']:[anlass];
+  // Regel 4: keines in der ersten Woche. Ab 0.136 (Florians Auftrag) Ausnahme: Steuer-Export, nur für das Spenden-Fenster (das Feedback-Fenster braucht ohnehin Tag 21)
+  if(t<7&&!st)return null;
   if(ago(d.last)===0||ago(d.fb)===0)return null;       // Regel 4: nie zwei Fenster am selben Tag
-  const pick=arts=>{const L=FENSTER.filter(e=>arts.includes(e.art)&&(e.anlass||[]).includes(anlass));if(!L.length)return null;
+  const pick=arts=>{const L=FENSTER.filter(e=>arts.includes(e.art)&&(e.anlass||[]).some(a=>AN.includes(a)));if(!L.length)return null;
     const M=L.filter(e=>fenHash(e)!==d.le),P=L.length>1&&M.length?M:L;return P[Math.min(P.length-1,Math.floor(FEN_RND()*P.length))]};
   // Regel 2: Feedback-Fenster, hat Vorrang
   if(t>=21&&ago(d.fb)>=365&&ago(d.last)>=14){const e=pick(['feedback']);if(e)return e}
@@ -13790,7 +13809,8 @@ function fenTry(anlass,frei){
   const d=donSync(),now=FEN_NOW(),e=fenPick(d,now,anlass);if(!e)return null;
   const iso=now.toISOString();if(e.art==='feedback')d.fb=iso;else{d.last=iso;d.until=fenPlus(now,91).toISOString()}
   d.le=fenHash(e);save();fenShow(e);return e}
-function fenShow(e){FEN_CUR=e;FEN_FROM=document.activeElement;$('don-t').textContent=e.titel;$('don-p').textContent=e.text;
+// Ab 0.136: Titel und Text über herzH (💚 als gezeichnetes Herz)
+function fenShow(e){FEN_CUR=e;FEN_FROM=document.activeElement;$('don-t').innerHTML=herzH(e.titel);$('don-p').innerHTML=herzH(e.text);
   const A=e.art,vis={'btn-don-go':A==='spende','btn-don-done':A==='spende','btn-don-fb':A==='feedback','btn-don-link':A==='weitersagen','btn-don-ok':A==='danke','btn-don-no':A!=='danke'};
   for(const k in vis)$(k).hidden=!vis[k];if(A==='danke')$('btn-don-ok').textContent=e.knopf||'Schließen';
   modalOn($('don-modal'),true);$('don-x').focus({preventScroll:true})}
