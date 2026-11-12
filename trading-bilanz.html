@@ -2482,6 +2482,11 @@ for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','t
   if(S.wbalD!=null&&(typeof S.wbalD!=='object'||Array.isArray(S.wbalD)))delete S.wbalD;
   // Ab 0.122: Merker statt Namen
   nameMarks(S);
+  // Ab 0.137 (Florians Entscheidung): Zahlung aus einer Karte, mit ≈ ausgerechnet (abgebuchter Betrag minus Gebühr in USD, Gebühr über 0): Das ist eine
+  // Rechnung, keine Schätzung. Sie gilt als fertig, die Notiz „Schätzung: …“ fällt weg. Mit Gebühr 0 bleibt sie geschätzt.
+  for(const c of S.cx)if(c.kind==='bezahlung'&&c.est&&c.cardPct==null&&c.cur==='USD'&&c.fee>0&&c.qty>0&&Math.abs((c.usd||0)-(c.qty-c.fee))<0.006&&payCardW(S,c.wallet)){
+    c.est=false;if(c.note==='Schätzung: abgebuchter Betrag minus Gebühr')c.note=''}
+  payFeeSync(S);
   if(!S.rcov.load){const ds=Object.keys(S.rates).filter(d=>!/Datei/.test(S.rsrc[d]||'')).sort();if(ds.length)S.rcov.load=ds[ds.length-1]}}
 // Ab 0.85: Scheitert der Start mit dem gespeicherten Stand, gilt BOOT_BAD, das Tool arbeitet mit einem leeren Stand weiter (siehe oben)
 function rateGoneToast(){const n=RATE_GONE;RATE_GONE=0;if(!n)return;save();
@@ -4110,6 +4115,13 @@ function payBulk(S,keys,pct,ok){const out=[],CA=wCardSet(S);
 // Zahlungen aus älteren Ständen um, deren Wert und Gebühr noch genau der alten Formel entsprechen (also nicht von Hand geändert sind).
 // Als function (nicht const), weil fixState sie schon beim Laden braucht.
 function cardFeeOf(q,p){const fee=Math.max(0,Math.round(q*p+1e-7)/100);return {usd:Math.max(0,+(q-fee).toFixed(8)),fee}}
+// Ab 0.137 (Florians Entscheidung): Kartenzahlung = Zahlung aus einer Wallet der Art „Karte“ (gespeicherte Art, sonst der Vorschlag kindGuess).
+// Ihre Gebühr steht immer in USD, laut Karten-App, egal welche Währung der Wert hat, auch bei alten Einträgen. Die Rechnung (kxEvents, Block KRYPTO)
+// sieht die Art nicht, sie liest die Marke feeU am Eintrag; payFeeSync setzt sie aus der Art der Wallet (fixState, cryptoCalc). Zwei Wege:
+// Weg 1 (Standard, Wert in USD): Wert = abgebuchter Betrag minus Kartengebühr. Weg 2 (Wert in einer anderen Währung): Kaufpreis laut Beleg.
+function payCardW(S,w){const x=(S.wmeta||{})[w]||{};return (['wallet','boerse','karte'].includes(x.kind)?x.kind:kindGuess(S,w)[0])==='karte'}
+function payFeeSync(S){for(const c of S.cx||[])if(c.kind==='bezahlung'){if(payCardW(S,c.wallet))c.feeU=1;else delete c.feeU}}
+const payWeg1=(S,c)=>!!c&&c.kind==='bezahlung'&&c.cur==='USD'&&payCardW(S,c.wallet);
 function cardFeeOld(q,p){const usd=+(q/(1+p/100)).toFixed(2);return {usd,fee:Math.max(0,+(q-usd).toFixed(8))}}
 // Kartenzahlung, deren Kartengebühr noch nicht beantwortet ist (Wert mit Kartengebühr geschätzt, cardOk fehlt)
 const cardOpen=(S,c)=>!!c&&c.kind==='bezahlung'&&!!c.est&&c.cardPct!=null&&c.cur==='USD'&&!c.cardOk;
@@ -7706,7 +7718,8 @@ function kxEvents(tag,cx,rf,bo){
     if(!KX_ART[c.kind]||(cxMissing(c).length&&!(c.kind==='uebertrag'&&c.dxb&&dxB[c.id]&&c.to===c.wallet&&c.date&&c.qty>0)))return;
     const nt=c.note?': '+c.note:'',b={k:c.kind,d:c.date,tm:c.time||'',w:c.wallet,coin:c.coin,q:c.qty,cx:i,est:!!c.est};
     const mv=()=>{const r=rf(c.date,'');return r?c.qty/r:NaN}; // Marktwert am Tag
-    const fe=()=>{if(!(c.fee>0))return 0;if(c.cur!=='USD')return c.fee;const r=rf(c.date,'');return r?c.fee/r:NaN};
+    // Ab 0.137: feeU = Gebühr in USD auch bei einem Wert in einer anderen Währung (Kartenzahlung, payFeeSync), zum EZB-Kurs des Tages in Euro
+    const fe=()=>{if(!(c.fee>0))return 0;if(c.cur!=='USD'&&!c.feeU)return c.fee;const r=rf(c.date,'');return r?c.fee/r:NaN};
     const k=c.kind;
     // Ab 0.133: Kauf über DFX.swiss mit späterem Zugang: in der Wallet ab dem Zugang (d, tm), Kaufdatum für die Haltefrist bleibt der Tag des Kaufs (kd, kdx)
     if(k==='kauf'||k==='hatte'){const Bq=k==='kauf'&&DX.buy?DX.buy[c.id]:null;ev.push(Object.assign(b,{label:KIND[k]+nt,val:kxEur(c,rf)},Bq?{d:Bq.date,tm:Bq.time,kd:c.date,kdx:1,nm:Bq.nm}:{}))}
@@ -7911,12 +7924,15 @@ const taxOff=()=>S.ui.country==='none'||S.ui.cxIncl===false;
 // Ab 0.40: Tag-Zeilen als Kopien mit österreichischem Datum und Uhrzeit (tagCp), S.tag bleibt, wie es ist
 const tagATAll=()=>{const o={};for(const [k,t] of Object.entries(S.tag))o[k]=tagCp(t);return o};
 // Ab 0.117: ausstehende Abgänge an DFX.swiss (dxPendBo) wie offene Abgänge einer Börse: Menge und Einkaufswert verlassen den Topf, kein Erlös, kein Gewinn
-function cryptoCalc(L,until){RD=null;const R=kxRun(L||cxLand(),kxEvents(tagATAll(),S.cx,(d,t)=>rateFor(d,'USD',t),Object.assign({},S.bxOpen,dxPendBo(S),{'@dx':dxStepBo(S)})),until);
+function cryptoCalc(L,until){RD=null;payFeeSync(S);const R=kxRun(L||cxLand(),kxEvents(tagATAll(),S.cx,(d,t)=>rateFor(d,'USD',t),Object.assign({},S.bxOpen,dxPendBo(S),{'@dx':dxStepBo(S)})),until);
   // Ab 0.117: ein fehlender Einkauf bei einem ausstehenden Abgang an DFX.swiss ist kein Punkt (kein steuerlicher Vorgang); er zeigt sich beim Verkauf
   R.short=R.short.filter(s=>!(s.e&&s.e.dx));
   for(const s of R.short)Object.defineProperty(s,'_all',{value:R.short});return R}   // Ab 0.71 Nachtrag 2: für cxKept (keepPick)
 // Ab 0.41: Zahl der Zahlungen mit Coins im Jahr y (ohne y: alle Jahre), für Annahmen und Fragen an die Steuerberatung
 const payN=(C,y)=>C.sales.filter(s=>s.k==='bezahlung'&&(!y||s.d.slice(0,4)===y)).length;
+// Ab 0.137 (Florians Antwort 3): Zahlungen außer Kartenzahlungen nach Weg 1 (payWeg1). Nur mit ihnen kommen die Sätze zum Kaufpreis laut Beleg
+// (Annahme PAY_ANN, Frage q-pay); Kartenzahlungen nach Weg 1 haben ihren eigenen Satz (a-card).
+const payBN=(C,y)=>C.sales.filter(s=>s.k==='bezahlung'&&(!y||s.d.slice(0,4)===y)&&!payWeg1(S,S.cx[s.cx])).length;
 const PAY_ANN={AT:'Bei Zahlungen mit Coins gilt der Kaufpreis der Ware oder Leistung als Erlös. Der Unterschied zum Wert der abgebuchten Coins mindert den Gewinn wie eine Gebühr.',
   DE:'Bei Zahlungen mit Coins gilt der Kaufpreis der Ware oder Leistung als Veräußerungspreis. Der Unterschied zum Wert der abgebuchten Coins mindert den Gewinn wie eine Gebühr.'};
 // Satz zur Zahlung am Ende eines Annahmen-Absatzes der Steuer-Seite: nur mit Zahlungen, sonst bleibt der Absatz unverändert
@@ -8408,11 +8424,11 @@ function vgTagH(id){const t=S.tag[id];if(!t)return '';const a=tagAT(t),dis=t.sta
     <span>${t.fiat?'<span class="small">Bank/Euro, kein Krypto</span>':`${gl('tagmenge','Menge')} ${fmtNum(t.qty)} ${t.coin}`}</span><span>${t.wq==='g'&&!t.fiat?`${t.kind==='ein'?'Woher':'Wohin'}: <b>${esc(tagWN(t))}</b>`:t.fiat?`${t.kind==='ein'?'Woher':'Wohin'}: <b>Bank</b>`:`${gl('tagwallet','Wallet')} ${esc(tagWN(t))}`}</span>
     ${t.kind==='ein'?`<span>${gl('meingeld','Mein Geld')}: ${t.own?'ja':'nein'}</span>`:''}<span class="small">${gl('herkunft','Herkunft')}: ${srcH(t.hand?'von Hand':'Tag-Daten')}${t.wk&&S.wtx[t.wk]?' + '+srcH('Datei '+vgMvW(t.wk)):''}</span></div>${tagNaH(t)}${tagGiftEst(t)?`<div class="msg info">${giftHint(!tagGE(t))}</div>`:''}</div>`}
 // Euro-Wert eines Eintrags (wie bis 0.42 in „Woher kamen deine Coins?“)
-function vgCxEuro(c){const money=v=>c.cur==='USD'?usd(v):fE.format(v);
+function vgCxEuro(c){const money=v=>c.cur==='USD'?usd(v):fE.format(v),feeM=v=>c.cur==='USD'||c.feeU?usd(v):fE.format(v);
   if(c.kind==='tauschaus')return c.eur>0?eur(c.eur,false)+' <span class="small">erhalten</span>':'';
   if(['uebertrag','tausch','gebuehr','weg','verloren'].includes(c.kind)||cxMissing(c).length)return '';const v=cxEur(c);
   return (c.cur==='USD'?(isNaN(v)?'<span class="small">Kurs fehlt</span>':eur(v,false))+` <span class="small">aus ${usd(c.usd)}</span>`:eur(v,false))+(cxEst(c)?` <span class="small">(${gl('geschaetzt','geschätzt')})</span>`:'')+
-    (c.fee>0?` <span class="small">Gebühr ${money(c.fee)}</span>`:'')+(c.feeIn>0?` <span class="small">davon Gebühr ${money(c.feeIn)} (im Einkaufswert enthalten)</span>`:'')+(c.kest?` <span class="small">KESt abgezogen${c.kestEur>0?' '+fE.format(c.kestEur):''}</span>`:'')}
+    (c.fee>0?` <span class="small">Gebühr ${feeM(c.fee)}</span>`:'')+(c.feeIn>0?` <span class="small">davon Gebühr ${money(c.feeIn)} (im Einkaufswert enthalten)</span>`:'')+(c.kest?` <span class="small">KESt abgezogen${c.kestEur>0?' '+fE.format(c.kestEur):''}</span>`:'')}
 function giveText(f,c,DEw){const g=f.give;if(!g)return '';
   if(!DEw)return `Zum Weitergeben an die beschenkte Person: ${fmtNum(g.q)} ${c.coin} mit Ø-Preis ${fmtDec(g.avg,4)} € je Coin, Einkaufswert ${fE.format(g.q*g.avg)}.`;
   return `Zum Weitergeben an die beschenkte Person: ${g.map(x=>`${fmtNum(x.q)} ${c.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join('; ')}.`}
@@ -9247,7 +9263,7 @@ function todoItems(C){
   // Ab 0.133 (Florians Auftrag): Kartenguthaben an eine Adresse, die das Tool nicht als Abrechnung der Karte kennt (nicht W_CARD_PAY, nicht in der Gruppe
   // „Kartenzahlungen“): gelber Vorschlag „Kartenzahlung?“ mit „Übernehmen“ (merkt die Adresse) und „Nein“ (danach ein offener Abgang).
   for(const m of PY){const w=m.wFrom,K=esc(m.k),pct=3,sure=wPaySure(S,S.wtx[m.k]);
-    const an=`<p>Als Zahlung anlegen. Wert geschätzt: abgebuchter Betrag ohne Kartengebühr von ${pctIn(`data-paypct="${esc(w)}"`,pct,'Kartengebühr in Prozent')} %.</p>`;
+    const an=`<p>Als Zahlung anlegen. Wert: abgebuchter Betrag ohne Kartengebühr von ${pctIn(`data-paypct="${esc(w)}"`,pct,'Kartengebühr in Prozent')} %.</p>`;
     I.push(sure?{id:'m:'+m.k,mv:m.k,lv:'r',kind:'pay',t:mt(m),eur:tdEur(m.qty,m.date),ref:'m:'+m.k,form:{pre:tdPre(m.k)},
       why:'Kartenzahlung ohne Eintrag. Ohne Eintrag fehlt sie in der Steuer.',
       sug2:`${an}<div class="row"><button type="button" class="btn primary" data-payone1="${K}">Übernehmen</button></div><div class="wpaymsg"></div>`,
@@ -9904,6 +9920,9 @@ function flowValText(f){
     if(c.est&&c.cur==='USD'&&c.cardPct!=null)return `Abgebuchter Betrag ohne Kartengebühr (${plainDe(c.cardPct)} %): ${usd(c.usd)}${k} = ${v} (geschätzt)${pf}.`;
     if(c.est&&c.cur==='USD')return `Abgebuchter Betrag minus Gebühr: ${usd(c.usd)}${k} = ${v} (geschätzt)${pf}.`;
     if(c.est)return `Tageswert der Coins ${v} (geschätzt)${pf}.`;
+    // Ab 0.137: Kartenzahlung Weg 1 (Wert in USD) ist eine Rechnung; Weg 2 nennt die Gebühr auch in USD
+    if(payCardW(S,c.wallet)){if(c.cur==='USD')return `Abgebuchter Betrag ohne Kartengebühr laut Karten-App: ${usd(c.usd)}${k} = ${v}${pf}.`;
+      if(f.fee>0)return `Kaufpreis laut Beleg ${v} plus Gebühr ${fE.format(f.fee)} (${usd(c.fee)} laut Karten-App${k}).`}
     return `Kaufpreis laut Beleg ${v}${c.cur==='USD'?` (${usd(c.usd)}${k})`:''}${pf}.`}
   return f.fee>0?`Eingetragener Wert ${fE.format(f.eur-f.fee)} plus Gebühr ${fE.format(f.fee)}.`:'Eingetragener Wert.';
 }
@@ -9995,7 +10014,10 @@ const CX_HELP={
   verkauf:{b:'<b>Verkauf</b> gegen Euro oder Dollar. Wert = der Betrag, der bei dir angekommen ist, siehe deinen Kontoauszug oder die Verkaufsbestätigung der Börse. Hat die Börse eine Gebühr abgezogen, trage sie bei „Gebühr“ ein: Sie wird vom Erlös abgezogen. Hast du Dollar bekommen, wähle USD: Das Tool rechnet zum EZB-Kurs des Tages in Euro um.',
     AT:' Hat eine österreichische Börse wie Bitpanda die KESt schon abgezogen, setze das Häkchen „KESt abgezogen“.',DE:' Die Gebühr zählt als Werbungskosten.',tail:CX_CARD},
   // Ab 0.41 Lesart A (AT und DE): Wert = Kaufpreis laut Beleg, die Differenz zu den abgebuchten Coins mindert als Gebühr das Ergebnis
-  bezahlung:{b:'<b>Zahlung</b> mit Coins (Ware, Leistung, Rechnung). Steuerlich ist das ein Verkauf. Menge = die abgebuchten Coins laut Karten-App oder Wallet (z. B. 2,68). Wert = Kaufpreis laut Beleg, in der Währung des Geschäfts (z. B. 2,29 €), nicht der abgebuchte Betrag. Hast du in Dollar bezahlt, wähle USD: Das Tool rechnet zum EZB-Kurs des Tages in Euro um. Ohne Beleg: Wähle USD, trage bei „Gebühr“ die Gebühr aus der Karten-App ein (z. B. 0,08) und klicke auf <b>≈</b>. Dann gilt abgebuchter Betrag minus Gebühr (2,60 USD) zum EZB-Kurs des Tages. Eine versteckte Fremdwährungsgebühr steckt dann noch drin, der Fehler liegt meist bei etwa 1 %. <b>Krypto-Karte, die erst beim Bezahlen tauscht:</b> Lege die Karte als eigene Wallet an. Aufladen ist ein Übertrag. Jede Kartenzahlung trägst du als „Zahlung“ ein: Menge = die abgebuchten Coins, Wert = der Betrag des Einkaufs. Viele kleine Zahlungen kannst du vielleicht als Sammeleintrag pro Monat eintragen. Kläre das mit deiner Steuerberatung.'},
+  // Ab 0.137 (Florians Entscheidung): Zahlung aus einer Wallet, die keine Karte ist; der Teil zur Krypto-Karte und die Beispielwerte sind weg
+  bezahlung:{b:'<b>Zahlung</b> mit Coins (Ware, Leistung, Rechnung). Steuerlich ist das ein Verkauf. Menge = die abgebuchten Coins laut Wallet. Wert = Kaufpreis laut Beleg, in der Währung des Geschäfts, nicht der abgebuchte Betrag. Hast du in Dollar bezahlt, wähle USD: Das Tool rechnet zum EZB-Kurs des Tages in Euro um. Ohne Beleg: Wähle USD, trage bei „Gebühr“ die Gebühr ein und klicke auf <b>≈</b>. Dann gilt abgebuchter Betrag minus Gebühr zum EZB-Kurs des Tages, der Wert gilt als geschätzt. <b>Mit einer Krypto-Karte bezahlt?</b> Wähle bei „Wallet / Börse“ deine Karte oder lege sie mit „+ Neue Karte …“ an. Dann rechnet das Tool den Wert selbst.'},
+  // Ab 0.137 (Florians Wortlaut): Zahlung aus einer Wallet der Art „Karte“ (payCardW)
+  bezkarte:{b:'<b>Zahlung</b> mit deiner Karte (Ware, Leistung, Rechnung). Steuerlich ist das ein Verkauf. Das Tool rechnet den Wert selbst: abgebuchter Betrag in USD minus Kartengebühr. Menge = der abgebuchte Betrag laut Karten-App, mit Gebühr (z. B. 50,00). Gebühr = die Kartengebühr laut Karten-App, in USD (z. B. 1,50), oder der Prozentsatz im Feld mit „%“. Dann klicke auf <b>„Berechnen“</b> (im Beispiel 48,50 USD). Hast du einen Beleg in einer anderen Währung, kannst du stattdessen bei „Wert“ den Kaufpreis von dort eintragen (z. B. 43,00 €). Das ist genauer, weil dann auch der Wechselkurs der Karte als Kosten zählt.'},
   weg:{AT:'<b>Verschenkt oder weitergegeben</b>: Coins, die du ohne Gegenleistung weggegeben hast. Die beschenkte Person übernimmt deinen Einkaufswert, das Tool zeigt dir Menge und Ø-Preis zum Weitergeben. Hast du damit etwas bezahlt oder Schulden zurückgezahlt, wähle „Zahlung“, das ist steuerlich ein Verkauf. Größere Schenkungen müssen gemeldet werden (unter Angehörigen ab 50.000 € in einem Jahr, sonst ab 15.000 € in fünf Jahren).',
     DE:'<b>Verschenkt oder weitergegeben</b>: Coins, die du ohne Gegenleistung weggegeben hast. Die Posten gehen nach FIFO weg, ohne Gewinn. Die beschenkte Person übernimmt Kaufdatum und Einkaufswert, das Tool zeigt dir die Posten zum Weitergeben. Hast du damit etwas bezahlt oder Schulden zurückgezahlt, wähle „Zahlung“, das ist steuerlich ein Verkauf.'},
   verloren:{AT:'<b>Verloren oder gestohlen</b>: Coins, die durch Diebstahl, Betrug, einen Hack oder einen verlorenen Schlüssel weg sind. Sie gehen zum Ø-Preis weg, ohne Gewinn oder Verlust. Diebstahl, Betrug, Hack oder ein verlorener Schlüssel sind in Österreich keine Veräußerung. Ein Verlust ist daher nicht absetzbar.',
@@ -10017,6 +10039,10 @@ const CX_HELP={
   gebuehr:{AT:'<b>Gebühr</b>: Coins, die als Gebühr weggehen (z. B. Netzwerkgebühr bei einem Übertrag), Menge siehst du im Verlauf deiner Wallet. Steuerlich bezahlst du damit eine Leistung (EStR Rz 6178v): Das Tool rechnet sie als Verkauf zum Tageswert (Menge ÷ EZB-Kurs). Meist geht es um Cents.',
     DE:'<b>Gebühr</b>: Coins, die als Gebühr weggehen (z. B. Netzwerkgebühr bei einem Übertrag), Menge siehst du im Verlauf deiner Wallet. Das Tool rechnet sie als Verkauf zum Tageswert (Menge ÷ EZB-Kurs). Meist geht es um Cents. Deine Steuerberatung bekommt dazu eine Frage in der Zusammenfassung.'}
 };
+// Ab 0.137: Wert ins Feld, auf Cent mit zwei Stellen, sonst mit allen Stellen (ungerundet, z. B. 2,595294)
+const cxV8=v=>Math.abs(v*100-Math.round(v*100))<1e-6?numIn(v):f8(v);
+// Ab 0.137: Ist die gewählte Wallet im Formular eine Karte? („+ Neue Karte …“ zählt mit)
+function cxCardW(){const w=$('cx-wallet').value;return w==='+k'||(S.wallets.includes(w)&&payCardW(S,w))}
 // Altvermögen (AT): Kauf vor dem 01.03.2021 (Hatte ich schon, Geschenk mit Kaufdatum der schenkenden Person)
 const AT_ALT='2021-03-01',ALT_TXT='Altvermögen, es gelten andere Regeln. Kläre das mit deiner Steuerberatung.';
 function cxHelp(){
@@ -10034,15 +10060,18 @@ function cxHelp(){
   // Ab 0.55 (1): Baustein „Geschenk“ (giftH): bei Geschenk erhalten Wert, Kaufdatum und Name, bei Geschenk gemacht nur der Name
   {const g=k==='eingang'||k==='weg';sh('cx-gift',g);if(g){giftDir(giftOf($('cx-gift')),k==='weg'?'aus':'ein');pnFill()}}
   // ≈ schätzt in Euro: nur bei gewähltem €. Ab 0.41 bei Zahlung immer: abgebuchter Betrag minus Gebühr in USD (Ersatzweg ohne Beleg).
-  const pay=k==='bezahlung',est=f.est&&(pay||$('cx-cur').value!=='USD');sh('btn-estval',est);sh('cx-esthint',est);
+  // Ab 0.137 (Florians Entscheidung): Zahlung aus einer Karte (gewählte Wallet der Art „Karte“ oder „+ Neue Karte …“): Knopf „Berechnen“ statt ≈,
+  // Gebühr immer in USD, eigener Erklärtext; der Hinweis unter dem Formular fällt weg (der Erklärtext sagt es)
+  const pay=k==='bezahlung',est=f.est&&(pay||$('cx-cur').value!=='USD'),card=pay&&cxCardW();sh('btn-estval',est);sh('cx-esthint',est&&!card);
+  $('btn-estval').textContent=card?'Berechnen':'≈';
   $('cx-esthint').textContent=pay?' · ≈ = abgebuchter Betrag minus Gebühr, wenn du keinen Beleg hast.':' · ≈ = Tageswert schätzen, wenn du den genauen Euro-Wert nicht kennst.';
-  $('btn-estval').title=pay?'Ohne Beleg: abgebuchter Betrag minus Gebühr, in USD':'Tageswert eintragen (Schätzung): Menge ÷ EZB-Kurs an diesem Tag, Annahme 1 Coin = 1 USD';$('btn-estval').setAttribute('aria-label',pay?'Wert ohne Beleg: abgebuchter Betrag minus Gebühr':'Tageswert schätzen');
-  sh('cx-fee-l',f.fee||f.feeIn);$('cx-fee-t').textContent=f.tag?'Gebühr (Coins)':(f.feeIn?'davon Gebühr (':'Gebühr (')+(f.cur&&$('cx-cur').value==='USD'?'USD':'€')+')';
+  $('btn-estval').title=card?'Abgebuchter Betrag minus Kartengebühr, in USD':pay?'Ohne Beleg: abgebuchter Betrag minus Gebühr, in USD':'Tageswert eintragen (Schätzung): Menge ÷ EZB-Kurs an diesem Tag, Annahme 1 Coin = 1 USD';$('btn-estval').setAttribute('aria-label',card?'Wert berechnen':pay?'Wert ohne Beleg: abgebuchter Betrag minus Gebühr':'Tageswert schätzen');
+  sh('cx-fee-l',f.fee||f.feeIn);$('cx-fee-t').textContent=card?'Gebühr (USD, laut Karten-App)':f.tag?'Gebühr (Coins)':(f.feeIn?'davon Gebühr (':'Gebühr (')+(f.cur&&$('cx-cur').value==='USD'?'USD':'€')+')';
   sh('cx-feein-h',!!f.feeIn);sh('cx-feep-w',!f.tag);$('cx-feep').setAttribute('aria-label',pay?'Gebühr in Prozent vom abgebuchten Betrag':'Gebühr in Prozent vom Wert');
   sh('cx-kest-l',f.kest&&!DE);sh('cx-kestv-l',$('cx-kest').checked);
   sh('cx-nft-l',f.recv&&!DE);sh('cx-recv-l',f.recv&&(DE||$('cx-nft').checked));
   // Ab 0.49 (3): bei einer Zahlung ist „Wert“ ein Begriff (Beleg oder abgebuchter Betrag minus Gebühr)
-  {const t=k==='tauschein'?(DE?'Wert in Euro':'Einkaufswert in Euro'):f.cur?'Wert':'Wert in Euro';$('cx-eur-t').innerHTML=k==='bezahlung'?gl('geschpay',esc(t)):esc(t)}
+  {const t=k==='tauschein'?(DE?'Wert in Euro':'Einkaufswert in Euro'):f.cur?'Wert':'Wert in Euro';$('cx-eur-t').innerHTML=k!=='bezahlung'?esc(t):card?gl('geschpayk',esc(t)):gl('geschpay',esc(t))}
   // Ab 0.74 (2.1 bis 2.3, 2.5): Österreich Einkaufswert mit „Weiß ich nicht“ und Rechenhilfe; Deutschland Feld freiwillig, leer = Tageswert. „Menge hergegeben“ in beiden Ländern.
   sh('cx-swlink',k==='tauschein'||k==='tauschaus');
   {const sw=k==='tauschein',unk=sw&&!DE&&$('cx-unk').checked;sh('cx-otherq-l',!!f.otherQ);sh('cx-unk-l',sw&&!DE);sh('cx-rh',sw&&!DE&&!unk);if(unk)unkPair($('cx-unk'),$('cx-eur'));$('cx-eur').placeholder=sw&&DE?'leer = Tageswert':f.cur&&$('cx-cur').value==='USD'?'in USD':'Betrag in €';$('cx-eur').classList.toggle('phl',sw&&DE)}
@@ -10054,7 +10083,7 @@ function cxHelp(){
    const fh=c?cxFeeTxt(c.id):'';$('cx-delhint').hidden=!(c&&(c.wk||c.wkIn||fh));$('cx-delhint').textContent=fdlTxt(c&&(c.wk||c.wkIn||fh)?'Löschen: '+[c.wk||c.wkIn?'Das Tool fragt dann, ob die Bewegung aus der Datei wieder offen ist oder ignoriert wird.':'',fh].filter(Boolean).join(' '):'')}
   // Ab 0.45: Uhrzeit, bei einer Bewegung aus der Datei nur zum Lesen
   {const lk=!!(CX_META&&CX_META.time)||!!(EDIT!=null&&(cxById(EDIT)||{}).wk);$('cx-time').disabled=lk;$('cx-time').title=lk?'Die Uhrzeit kommt aus der Wallet-Datei.':''}
-  const H=CX_HELP[k]||{b:'Wähle zuerst bei „Was?“, was es war. Danach zeigt das Formular die passenden Felder.'};$('cx-help').innerHTML=(H.b||'')+(H[L]||'')+(H.tail||'');
+  const H=CX_HELP[card?'bezkarte':k]||{b:'Wähle zuerst bei „Was?“, was es war. Danach zeigt das Formular die passenden Felder.'};$('cx-help').innerHTML=(H.b||'')+(H[L]||'')+(H.tail||'');
   // Altvermögen (nur Österreich)
   const d=$('cx-date').value,gd=$('cx-gd').value;
   const alt=!DE&&((k==='hatte'&&d&&d<AT_ALT)||(k==='eingang'&&!$('cx-unkd').checked&&gd&&gd<AT_ALT));
@@ -10081,6 +10110,12 @@ async function estValue(force){
     const q=parseDe($('cx-qty').value),fs=$('cx-fee').value.trim(),f=fs?parseDe(fs):0,nd=(...L)=>needMark($('cx-form'),L.map(x=>[x,'']));
     if(!(q>0)){msg('cxmsg','warn','Trage zuerst die Menge ein.');return nd('#cx-qty')}
     if(!(f>=0)){msg('cxmsg','bad','Gebühr: Das ist keine gültige Zahl. Schreibe z. B. 0,08 oder lass das Feld leer.');return nd('#cx-fee')}
+    // Ab 0.137 (Florians Entscheidung): Zahlung aus einer Karte: „Berechnen“ rechnet wie die Kartengebühr: Gebühr auf Cent gerundet (steht danach so im
+    // Feld), Wert = abgebuchter Betrag minus Gebühr, ungerundet, in USD. Eine Rechnung, keine Schätzung: keine Notiz, dataset.calc statt dataset.est.
+    if(cxCardW()){const fc=Math.round(f*100+1e-7)/100;if(!(fc<q)){msg('cxmsg','bad','Die Gebühr ist nicht kleiner als die Menge. Prüfe die beiden Zahlen.');return nd('#cx-fee','#cx-qty')}
+      const v=+(q-fc).toFixed(8);if(fs)$('cx-fee').value=numIn(fc);$('cx-cur').value='USD';cxHelp();$('cx-eur').value=cxV8(v);delete $('cx-eur').dataset.est;$('cx-eur').dataset.calc='1';needClear($('cx-eur'));
+      if(fc>0)msg('cxmsg','ok',`Abgebuchter Betrag minus Kartengebühr: ${fmtNum(q)} − ${fmtNum(fc)} = ${usd(v)}.`);else msg('cxmsg','warn',`Wert = Menge: ${usd(v)}. ${PAY_FEE_TXT}`);
+      return}
     const x=payEst(q,f);if(x.bad){msg('cxmsg','bad','Die Gebühr ist nicht kleiner als die Menge. Prüfe die beiden Zahlen.');return nd('#cx-fee','#cx-qty')}
     $('cx-cur').value='USD';cxHelp();$('cx-eur').value=numIn(x.usd);$('cx-eur').dataset.est='1';
     if(!$('cx-note').value.trim())$('cx-note').value='Schätzung: abgebuchter Betrag minus Gebühr';
@@ -10173,6 +10208,8 @@ function openCx(id,pre){
   $('cx-eur').value=!c||!ef.eur||swE?'':v.cur==='USD'?f8(v.usd):f8(v.eur);
   if(swc){$('cx-otherq').value=c.otherQ>0?f8(c.otherQ):'';$('cx-unk').checked=swE;if(!swE&&c.ew){const E=$('cx-eur');E.dataset.ew=c.ew;if(c.ewT)E.dataset.ewt=c.ewT;if(c.ew==='hilfe'&&c.ewT)$('cx-rhs').textContent=c.ewT}}
   if(c&&c.est&&c.kind!=='tauschaus')$('cx-eur').dataset.est='1';else delete $('cx-eur').dataset.est;
+  // Ab 0.137: Kartenzahlung nach Weg 1 (Wert = abgebuchter Betrag minus Gebühr, in USD): eine geänderte Gebühr rechnet den Wert mit, wie nach „Berechnen“
+  if(c&&!c.est&&payWeg1(S,c)&&c.qty>0&&Math.abs((c.usd||0)-(c.qty-(c.fee||0)))<1e-6)$('cx-eur').dataset.calc='1';else delete $('cx-eur').dataset.calc;
   // Ab 0.59 (Nachtrag): geschätzter Wert der erhaltenen Coins
   if(c&&c.est&&c.kind==='tauschaus')$('cx-recv').dataset.est='1';else delete $('cx-recv').dataset.est;
   // Ab 0.38: Geschenk (Preis/Datum unbekannt, Kaufdatum), Gebühr, KESt, NFT, Wert erhalten
@@ -10184,11 +10221,11 @@ function openCx(id,pre){
   cxHelp();msg('cxmsg','','');if(!CX_EMB&&!(MODAL&&MODAL.id==='cx-modal'))openModal('cx-modal');
   // Ab 0.43: Zahlung mit vorbelegtem, geschätztem Wert (z. B. gesammelt angelegt): Hinweis zur Kartengebühr
   // Ab 0.49 (1.1): bei geschätzter Kartengebühr steht sie im Satz
-  if(c&&c.kind==='bezahlung'&&c.est&&c.cur==='USD'&&c.usd>0)msg('cxmsg','warn',c.cardPct!=null?`Der Wert ${usd(c.usd)} ist geschätzt mit ${plainDe(c.cardPct)} % Kartengebühr (Gebühr ${fmtNum(c.fee||0)} ${esc(c.coin)}). Stimmt die Gebühr nicht, ändere sie und klicke auf ≈. Hast du den Beleg, trage den Kaufpreis ein.`:`Der Wert ${usd(c.usd)} ist geschätzt. ${PAY_FEE_TXT} Hast du den Beleg, trage den Kaufpreis ein.`);
+  if(c&&c.kind==='bezahlung'&&c.est&&c.cur==='USD'&&c.usd>0)msg('cxmsg','warn',c.cardPct!=null?`Der Wert ${usd(c.usd)} ist geschätzt mit ${plainDe(c.cardPct)} % Kartengebühr (Gebühr ${fmtNum(c.fee||0)} ${esc(c.coin)}). Stimmt die Gebühr nicht, ändere sie und klicke auf ${cxCardW()?'„Berechnen“':'≈'}. Hast du den Beleg, trage den Kaufpreis ein.`:`Der Wert ${usd(c.usd)} ist geschätzt. ${PAY_FEE_TXT} Hast du den Beleg, trage den Kaufpreis ein.`);
   // Bei Vorbelegung fehlt meist nur der Wert
   const fo=pre&&v.kind?((CX_FIELDS[v.kind]||{}).eur?$('cx-eur'):null):$('cx-kind');if(fo)fo.focus();
 }
-function endEdit(){EDIT=null;CX_META=null;EDIT_TAG=null;CX_PROV=null;$('cx-sug').innerHTML='';$('cx-feep').value='';cxSwReset();for(const id of ['cx-time','cx-qty','cx-qin','cx-qty2','cx-eur','cx-other','cx-note','cx-gd','cx-fee','cx-kestv','cx-recv'])$(id).value='';delete $('cx-eur').dataset.est;delete $('cx-recv').dataset.est;
+function endEdit(){EDIT=null;CX_META=null;EDIT_TAG=null;CX_PROV=null;$('cx-sug').innerHTML='';$('cx-feep').value='';cxSwReset();for(const id of ['cx-time','cx-qty','cx-qin','cx-qty2','cx-eur','cx-other','cx-note','cx-gd','cx-fee','cx-kestv','cx-recv'])$(id).value='';delete $('cx-eur').dataset.est;delete $('cx-eur').dataset.calc;delete $('cx-recv').dataset.est;
   for(const id of ['cx-kest','cx-nft'])$(id).checked=false;giftFill(giftOf($('cx-gift')),{})}
 // Ab 0.45 (1.11): Ein- oder Auszahlung zu Tag von Hand als Tag-Zeile (id h1, h2 …, hand). Menge = Betrag laut Tag (usd), Gebühr = Unterschied
 // zur Wallet: Einzahlung qty = Menge + Gebühr (aus der Wallet weg), Auszahlung qty = Menge − Gebühr (in der Wallet angekommen). tz 'at' = Uhrzeit
@@ -10268,7 +10305,7 @@ async function addCx(){
   if(qin!=null&&!(qin>0)){msg('cxmsg','bad','Menge angekommen: Das ist keine gültige Zahl. Schreibe z. B. 998,90 oder lass das Feld leer.');return nd('#cx-qin')}
   for(const [v,n,id] of [[fee,'Gebühr','#cx-fee'],[kv,'Abgezogene KESt','#cx-kestv'],[recv,'Wert der erhaltenen Coins','#cx-recv']])if(v!=null&&!(v>=0)){msg('cxmsg','bad',`${n}: Das ist keine gültige Zahl. Schreibe z. B. 1,50 oder lass das Feld leer.`);return nd(id)}
   // Ab 0.48 (Nachtrag 1, 3.2): auch eine Zahlung braucht einen Wert über 0
-  if(F.pos&&!(amt>0)){msg('cxmsg','bad',k==='bezahlung'?'Trage den Wert der Zahlung ein oder klicke auf ≈. Ein Wert von 0 geht hier nicht.':'Trage den Euro-Wert ein oder klicke auf ≈. Ein Einkaufswert von 0 geht hier nicht.');return nd('#cx-eur')}
+  if(F.pos&&!(amt>0)){msg('cxmsg','bad',k==='bezahlung'?`Trage den Wert der Zahlung ein oder klicke auf ${cxCardW()?'„Berechnen“':'≈'}. Ein Wert von 0 geht hier nicht.`:'Trage den Euro-Wert ein oder klicke auf ≈. Ein Einkaufswert von 0 geht hier nicht.');return nd('#cx-eur')}
   if(F.to&&!to){msg('cxmsg','bad','Wähle bei „nach Wallet“ eine Wallet oder lege mit „+ Neue Wallet …“ bzw. „+ Neue Karte …“ eine an.');return nd('#cx-to')}
   if(k==='uebertrag'&&w===to){msg('cxmsg','bad','Wähle bei „nach Wallet“ eine andere Wallet als bei „von Wallet“.');return nd('#cx-to')}
   if(k==='tausch'&&c===c2){msg('cxmsg','bad','Wähle bei „getauscht in“ einen anderen Coin als bei „Coin“.');return nd('#cx-coin2')}
@@ -10309,6 +10346,10 @@ async function addCx(){
   // Ab 0.48 (3.3): Name der Person beim Geschenk (frei)
   if(k==='eingang'||k==='weg'){const pn=$('cx-pn').value.trim();if(pn)entry.pn=pn}
   if(fee>0){if(F.feeIn)entry.feeIn=fee;else entry.fee=fee}
+  // Ab 0.137: Gebühr einer Kartenzahlung immer in USD (payFeeSync). Wert und Gebühr in USD zusammen mehr als die Menge: ruhiger Satz im Toast (Florians
+  // Antwort 5, Wortlaut sein Vorschlag), das Speichern geht weiter
+  const card=k==='bezahlung'&&cxCardW();if(card)entry.feeU=1;
+  const ovTxt=card&&usdIn&&fee>0&&amt+fee>q+1e-9?' Wert und Gebühr sind zusammen mehr als der abgebuchte Betrag. Mit „Berechnen“ passt es.':'';
   if(kest){entry.kest=true;if(kv>0)entry.kestEur=kv}
   if(nft)entry.nft=true;
   if(recv>0)entry.eur=recv;
@@ -10344,15 +10385,15 @@ async function addCx(){
   wSync(PVR?{imp:1}:undefined);save();
   // Ab 0.55 (5): Satz zur aufgelösten vorläufigen Wallet (auch wenn wSync sie über den Eintrag selbst aufgelöst hat)
   const pvTxt=AS.map(x=>` Die Adresse ${wShort(x.a)} gehört jetzt zu „${x.w}“.`).join('')+(PVR?` Die Datei „${PVR.name}“ gehört jetzt zu „${PVR.w}“.`:'')+provMsg();
-  if(CX_NEXT||CX_SESS.length){cxSessAdd('c:'+entry.id,KIND[k]+' '+(d?fD(d)+', ':'')+valTxt);cxNextReset();msg('cxmsg','ok',(wasEdit?'Gespeichert: ':'Eingetragen: ')+KIND[k]+', '+valTxt+'. Nächster Eintrag:');render();return true}
+  if(CX_NEXT||CX_SESS.length){cxSessAdd('c:'+entry.id,KIND[k]+' '+(d?fD(d)+', ':'')+valTxt);cxNextReset();msg('cxmsg','ok',(wasEdit?'Gespeichert: ':'Eingetragen: ')+KIND[k]+', '+valTxt+'.'+ovTxt+' Nächster Eintrag:');render();return true}
   // Ab 0.45 (3.2): Formular im Punkt von „Noch offen“: zurück zum Durchgang (der Punkt ist erledigt, der nächste kommt)
   // Ab 0.50 (1.2): addCx gibt true zurück, wenn gespeichert wurde (für die Rückfrage beim Verlassen einer Karte)
-  if(CX_EMB){cxEmbBack();endEdit();TD_KIND='';TD_DIRTY='';render();toast('Eingetragen: '+KIND[k]+', '+valTxt+'.'+pvTxt,3000);return true}
+  if(CX_EMB){cxEmbBack();endEdit();TD_KIND='';TD_DIRTY='';render();toast('Eingetragen: '+KIND[k]+', '+valTxt+'.'+ovTxt+pvTxt,ovTxt?7000:3000);return true}
   endEdit();closeModal();
   // Bei „In anderen Coin getauscht“ (AT): welcher Einkaufswert auf den neuen Coin übergeht
   const xf=k==='tauschaus'?cryptoCalc().flow.find(f=>f.cx===idx&&f.xfer!=null):null;
   // Ab 0.46 (5.5): Rückmeldung als Toast, der von selbst verschwindet
-  render();toast((wasEdit?'Gespeichert: ':'Eingetragen: ')+KIND[k]+', '+valTxt+'.'+pvTxt+(xf?' '+xferText(xf.xfer,other):''),xf?7000:3500);return true
+  render();toast((wasEdit?'Gespeichert: ':'Eingetragen: ')+KIND[k]+', '+valTxt+'.'+ovTxt+pvTxt+(xf?' '+xferText(xf.xfer,other):''),xf||ovTxt?7000:3500);return true
 }
 /* ---------------- Excel-Export (eigener kleiner XLSX-Schreiber) ---------------- */
 const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
@@ -10449,7 +10490,7 @@ function exportXlsx(year){
    [X.B('Saldo nach PF (am Abbuchungstag)'),X.EB(T.tax)],['zur Information: Gewinnauszahlungen',X.E(T.pw)],[],
    ...(C.n?[[X.B('Krypto (USDC und USDT)'),X.B('EUR')],['Gewinne',X.E(cy.gain)],['Verluste',X.E(cy.loss)],[X.B('Saldo'),X.EB(cy.gain+cy.loss)],
      ...(fre?[['Nicht enthalten: Einzahlungen, die nicht eigenes Geld sind (USD)',X.N(fre)]]:[]),...(keptText(C,year,undefined,1)?[['Fehlender Einkauf',keptText(C,year,undefined,1)]]:[]),[]]:[]),
-   [X.B('Annahmen')],...assumptions({pay:payN(C,year),cx:C.n>0,tb:accs.some(a=>S.accounts[a].factor>1)}).map(a=>['',a])];
+   [X.B('Annahmen')],...assumptions({pay:payBN(C,year),cx:C.n>0,tb:accs.some(a=>S.accounts[a].factor>1)}).map(a=>['',a])];
   const yms=[...new Set(R.map(r=>r.ym))].sort();
   // Ab 0.77 (Teil 3): „Steuerpflichtig“ heißt in Monate, Wochen und Konten „Ergebnis nach PF (am Abbuchungstag)“ (z.tax = Ergebnis + Performance Fee
   // der Buchungen im Zeitraum), zur Unterscheidung von „Netto-Gewinn PF verteilt“
@@ -10514,7 +10555,7 @@ function exportXlsx(year){
   S.cx.map((c,i)=>Object.assign({i},c)).filter(c=>!year||c.date.slice(0,4)===year).sort((a,b)=>a.date<b.date?-1:1).forEach(c=>{const ev=CX_FIELDS[c.kind]&&CX_FIELDS[c.kind].eur,ve=ev?cxEur(c):null;
     const g=gv[c.i],gt=!g?'':DE?g.give.map(x=>`${fmtNum(x.q)} ${c.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join('; '):`${fmtNum(g.give.q)} ${c.coin}, Ø-Preis ${fmtDec(g.give.avg,4)} €, Einkaufswert ${fE.format(g.give.q*g.give.avg)}`;
     cx.push([X.D(c.date),kindL(c),c.wallet,c.to||'',c.coin,X.N(c.qty),...(QI?[c.kind==='uebertrag'&&c.qtyIn>0?X.N(c.qtyIn):'']:[]),c.coin2||'',c.qty2?X.N(c.qty2):'',c.other||'',...(OQ?[c.kind==='tauschein'&&c.otherQ>0?c.otherQ:'']:[]),ev?(c.cur==='USD'?'USD':'EUR'):bzE[c.i]!=null?'EUR':'',c.cur==='USD'&&c.usd!=null?X.N(c.usd):'',ev&&isFinite(ve)&&!cxMissing(c).length?X.E(ve):bzE[c.i]!=null?X.E(bzE[c.i]):(c.kind==='tauschaus'&&c.eur>0?X.E(c.eur):''),c.est||xes[c.i]?'ja':'',xf[c.i]!=null?X.E(xf[c.i]):'',
-      c.gd?X.D(c.gd):'',c.kind==='eingang'&&c.estD?'ja':'',c.fee>0?(c.cur==='USD'?X.N(c.fee):X.E(c.fee)):'',c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,c.note||'',...(HW?[cxOrigN(c)]:[])])});
+      c.gd?X.D(c.gd):'',c.kind==='eingang'&&c.estD?'ja':'',c.fee>0?(c.cur==='USD'||c.feeU?X.N(c.fee):X.E(c.fee)):'',c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,c.note||'',...(HW?[cxOrigN(c)]:[])])});
   // Ab 0.39: Bewegungen aus der Wallet-Datei (Jahres-Excel: nur die des Jahres)
   const wb=[[X.B('Datum'),X.B('Zeit'),X.B('Netzwerk'),X.B('Wallet von'),X.B('Wallet nach'),X.B('rein/raus'),X.B('Coin'),X.B('ausgegeben von'),X.B('Menge'),X.B('Gegenseite'),X.B('Hash'),X.B('Status'),X.B('zugeordnet zu')]];
   Object.values(S.wtx).filter(m=>!year||m.date.slice(0,4)===year).sort((a,b)=>a.ts-b.ts).forEach(m=>{const sd=wSide(m),cp=sd==='in'?m.from:sd==='out'?m.to:'',cw=cp&&(m.st==='tag'||wIsTag(cp))?'Tag':cp&&wIsPay(cp)?'Kartenzahlungen':cp&&wIsBr(cp)?'Brücke / Dienst':sd==='in'?m.wFrom:sd==='out'?m.wTo:'',c=m.st==='cx'?cxById(m.ref):null;
@@ -10812,6 +10853,8 @@ function taxBlocks(c){const DE=c.L==='DE',f=c.f,y=c.y,ann=[],est=[],q=[],not=[],
       :'Eine Auszahlung vom Broker in Coins gilt als Kauf. Der Einkaufswert ist der abgebuchte USD-Betrag samt Gebühren.');
     if(c.feeSale>0||c.feeBuy)A('a-fee',DE?'Gebühren beim Verkauf sind Werbungskosten, anteilig verteilt (Rn. 57). Gebühren beim Kauf erhöhen die Anschaffungskosten.'
       :`Gebühren beim Kauf erhöhen den Einkaufswert. Gebühren beim Verkauf mindern den Erlös${c.feeSale>0?`, ${y} zusammen ${f.E(c.feeSale)}`:''}.`);
+    // Ab 0.137 (Florians Entscheidung und Antwort 2a): Kartenzahlungen nach Weg 1 (bestätigt, Wert in USD), mit Zahl und Summe als zweitem Satz
+    if(c.card&&c.card.n)A('a-card',`Kartenzahlungen: angesetzt ist der abgebuchte Betrag ohne Kartengebühr laut Karten-App. ${y} ${c.card.n===1?'ist das 1\u00a0Zahlung mit':`sind das ${c.card.n}\u00a0Zahlungen mit zusammen`} ${f.U(c.card.usd)}${isFinite(c.card.eur)?` (${f.E(c.card.eur)})`:''}.`);
     if(c.coinFee&&!DE)A('a-coinfee','Gebühren, die in Coins bezahlt wurden (z. B. für Überträge), gelten als Verkauf zum Tageswert (EStR Rz 6178v).');
     if(c.swap)A('a-swap',DE?'Ein Tausch von Kryptowerten ist eine Veräußerung des einen und eine Anschaffung des anderen, jeweils zum Tageswert.'
       :'Ein Tausch von Krypto gegen Krypto ist steuerneutral. Der Einkaufswert geht auf den neuen Coin über.');
@@ -10828,6 +10871,8 @@ function taxBlocks(c){const DE=c.L==='DE',f=c.f,y=c.y,ann=[],est=[],q=[],not=[],
         :(e.p&&e.dd?`Wert am Tag des Erhalts, ${f.E(e.eur)}, und dieser Tag als Kaufdatum.`:e.p?`Wert am Tag des Erhalts, ${f.E(e.eur)}.`:'der Tag des Erhalts als Kaufdatum.'));
       est.push({id:e.bk?'e-giftbk':'e-gift',t})}
     else if(e.k==='swapin')est.push({id:'e-swapin',t:h+`aus einem anderen Coin getauscht: Wert fehlt. Angesetzt: Wert am Tag, ${f.E(e.eur)}.`});
+    // Ab 0.137 (Florians Antwort 2b): Kartenzahlung mit noch nicht bestätigter Kartengebühr: „Kartengebühr nicht bestätigt“ statt „Beleg fehlt“
+    else if(e.k==='pay'&&e.usd!=null&&e.pct!=null)est.push({id:'e-paycard',t:h+`Zahlung: Kartengebühr nicht bestätigt. Angesetzt: abgebuchter Betrag ohne Kartengebühr (${e.pct} %), ${f.U(e.usd)}${e.eurU!=null&&isFinite(e.eurU)?` (${f.E(e.eurU)})`:''}.`});
     else if(e.k==='pay')est.push({id:'e-pay',t:h+'Zahlung: Beleg fehlt. Angesetzt: '+(e.usd!=null?(e.pct!=null?`abgebuchter Betrag ohne Kartengebühr (${e.pct} %), ${f.U(e.usd)}${e.eurU!=null&&isFinite(e.eurU)?` (${f.E(e.eurU)})`:''}.`:`abgebuchter Betrag ohne Gebühr, ${f.U(e.usd)}${e.eurU!=null&&isFinite(e.eurU)?` (${f.E(e.eurU)})`:''}.`):`Wert der Coins am Tag, ${f.E(e.eur)}.`)});
     else est.push({id:'e-other',t:h+`${e.kind}: Wert fehlt. Angesetzt: Wert am Tag, ${f.E(e.eur)}.`})}
   for(const s of c.short.slice().sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0))est.push({id:s.mv?'e-shortmv':'e-short',t:`${f.D(s.d)}, ${s.what}: Für ${f.N(s.q)} ${s.coin} fehlt der Einkauf. `+
@@ -10882,7 +10927,7 @@ function taxCtx(y){const L=S.ui.country==='DE'?'DE':'AT',DE=L==='DE',rows=(windo
     dep:fl.some(f=>f.k==='tagein'),wd:fl.some(f=>f.k==='tagaus'),feeSale:DE?cy.wk:cy.fee,feeBuy:S.cx.some(c=>c.kind==='kauf'&&c.fee>0&&yr(c.date)===y),
     coinFee:C.fees.some(inY),swap:fl.some(f=>f.k==='tausch'),xfer:fl.filter(f=>f.xfer!=null).map(f=>({d:f.d,q:-f.q,coin:f.coin,other:f.other,ak:f.xfer})),
     frei:DE?{g:cy.gain+cy.loss,o:os?parseDe(os):NaN,fg:freiGrenze(y)}:null,est,short,
-    janFee:!DE&&jf?jf:null,tok:Object.values(tok),variants,payN:payN(C,y),refund:{n:rf.length,late:rf.some(c=>{const p=cxById(c.of);return p&&p.date&&yr(p.date)!==y})},
+    janFee:!DE&&jf?jf:null,tok:Object.values(tok),variants,payN:payBN(C,y),card:(L=>({n:L.length,usd:L.reduce((a,x)=>a+x.usd,0),eur:L.reduce((a,x)=>a+cxEur(x),0)}))(cx?S.cx.filter(x=>x.date&&yr(x.date)===y&&payWeg1(S,x)&&!cxEst(x)&&!cxMissing(x).length&&x.usd>0):[]),refund:{n:rf.length,late:rf.some(c=>{const p=cxById(c.of);return p&&p.date&&yr(p.date)!==y})},
     kest:!DE&&cy.nK?cy.kest:null,lost:DE?fl.filter(f=>f.k==='verloren').map(f=>({d:f.d,q:-f.q,coin:f.coin,ak:f.ak})):[],
     usd:{on:Object.values(S.tag).some(t=>t.status==='ok'&&yr(tagD(t))===y),bank:Object.values(S.tag).some(t=>t.fiat&&t.kind==='ein'&&yr(tagD(t))<=y)},
     ny:nyData(rows,y),cxSaldo:cy.gain+cy.loss,not:taxNotItems(L),f:{E:v=>fE.format(v).replace(' €',' €'),D:fD,N:v=>fN.format(v),U:v=>usd(v).replace(' USD',' USD')}};
@@ -11034,7 +11079,7 @@ function taxXlsx(y){
   const crows=S.cx.map((c,i)=>Object.assign({i},c)).filter(c=>yr(c.date)===y).sort((a,b)=>a.date<b.date?-1:1).map(c=>{const ev=CX_FIELDS[c.kind]&&CX_FIELDS[c.kind].eur,ve=ev?cxEur(c):null;
     const g=gv[c.i],gt=!g?'':DE?g.give.map(x=>`${fmtNum(x.q)} ${c.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join(', '):`${fmtNum(g.give.q)} ${c.coin}, Ø-Preis ${fmtDec(g.give.avg,4)} €, Einkaufswert ${fE.format(g.give.q*g.give.avg)}`;
     return [X.D(c.date),txKind(c.kind),c.wallet,c.to||'',c.coin,X.N(c.qty),c.kind==='uebertrag'&&c.qtyIn>0?X.N(c.qtyIn):'',c.coin2||'',c.qty2?X.N(c.qty2):'',c.other||'',ev?(c.cur==='USD'?'USD':'EUR'):bzE[c.i]!=null?'EUR':'',c.cur==='USD'&&c.usd!=null?X.N(c.usd):'',ev&&isFinite(ve)&&!cxMissing(c).length?X.E(ve):bzE[c.i]!=null?X.E(bzE[c.i]):(c.kind==='tauschaus'&&c.eur>0?X.E(c.eur):''),cxEst(c)||xes[c.i]?'ja':'',xf[c.i]!=null?X.E(xf[c.i]):'',
-      c.gd?X.D(c.gd):'',c.kind==='eingang'&&(c.estD||(DE&&!c.gd))?'ja':'',c.fee>0?(c.cur==='USD'?X.N(c.fee):X.E(c.fee)):'',c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,...(HW?[cxOrigN(c)]:[])]});
+      c.gd?X.D(c.gd):'',c.kind==='eingang'&&(c.estD||(DE&&!c.gd))?'ja':'',c.fee>0?(c.cur==='USD'||c.feeU?X.N(c.fee):X.E(c.fee)):'',c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,...(HW?[cxOrigN(c)]:[])]});
   const keep=CH.map((h,j)=>j<2||j===2||j===4||j===5||crows.some(r=>r[j]!==''&&r[j]!=null));
   const cx=[CH.filter((h,j)=>keep[j]).map(h=>X.B(h)),...crows.map(r=>r.filter((v,j)=>keep[j]))],cxW=CW.filter((w,j)=>keep[j]);
   // Wallet-Bewegungen: Broker statt „Tag“, Zuordnung mit Datum, ohne fremdes Geld, ignoriert mit Grund, Kartenguthaben statt WUSD (4.2 bis 4.4, 4.11)
@@ -11832,6 +11877,8 @@ ${ECB_CITE}`},
   tdeur:{t:'betrifft ca.',h:'Um wie viel Euro es ungefähr geht: die Menge zum EZB-Kurs des Tages.'},
   tdpairs:{t:'Gehört das zu einem dieser Einträge?',h:'Hast du den Vorgang schon eingetragen, z. B. einen Übertrag (Coins zwischen zwei deiner Wallets) von Hand, verbindest du die Bewegung damit.'},
   geschpay:{t:'Wert der Zahlung',h:'Der Kaufpreis laut Beleg. Ohne Beleg: abgebuchter Betrag minus Gebühr in USD, mit ≈ ausgerechnet. Der Wert gilt dann als geschätzt.'},
+  // Ab 0.137: bei einer Zahlung aus einer Karte
+  geschpayk:{t:'Wert der Zahlung',h:'Abgebuchter Betrag minus Kartengebühr, in USD, mit „Berechnen“ ausgerechnet. Mit einem Beleg in einer anderen Währung: der Kaufpreis laut Beleg.'},
   geschgp:{t:'Weiß ich nicht',h:'Dann gilt der Tageswert am Geschenktag als Einkaufswert: Menge geteilt durch den EZB-Kurs, 1 Coin = 1 USD. Der Wert ist dann geschätzt.'},
   geschgd:{t:'Weiß ich nicht',h:'Dann gilt der Geschenktag als Kaufdatum (geschätzt). In Deutschland beginnt die Haltefrist dann am Geschenktag.'},
   kartengeb:{t:'Kartengebühr',h:'Was die Karte beim Bezahlen zusätzlich abbucht, in Prozent vom abgebuchten Betrag. Gebühr = abgebuchter Betrag × Prozentsatz ÷ 100, auf Cent gerundet. Der Wert der Zahlung ist der abgebuchte Betrag minus Gebühr. Bis du antwortest, rechnet das Tool mit 3 %. 0 ist erlaubt. Du siehst die Gebühr danach im Eintrag im Feld „Gebühr“ und kannst sie mit ✎ ändern.'},
@@ -13035,7 +13082,7 @@ function renderTax(rows){
   $('opt-l').style.display=hasCx?'':'none';
   // Ab 0.73 (2.1): Krypto in derselben Tabelle wie die CFD. (i) der Karte mit den Krypto-Annahmen (2.6: auch der Satz zu Zahlungen mit Coins)
   glSet('tx-salcx',`Aus ${CY.n===1?'1 Verkauf':fI.format(CY.n)+' Verkäufen'} (Einzahlungen bei Tag, Verkäufe, Zahlungen).`);
-  glSet('k-taxat',hasCxData?'<b>Krypto:</b> '+GL['k-atcx'].h+(payN(C,y)?'\n'+PAY_ANN.AT:''):'');
+  glSet('k-taxat',hasCxData?'<b>Krypto:</b> '+GL['k-atcx'].h+(payBN(C,y)?'\n'+PAY_ANN.AT:''):'');
   $('t-taxparts').innerHTML=taxTabH({c:{y,cfd:R.length>0,cx:hasCx,opt:!!S.ui.opt},T,R,cy:CY,DE:false},hasCxData,cxIncl);
   // Ab 0.120: Jahressumme „Bezahlungen in Coins erhalten“ (grau, nur über 0) nach dem Satz zum Herausnehmen
   $('taxcx-warn').innerHTML=(hasCxData&&!cxIncl?'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung, Excel und Steuerschätzung). Krypto-Gewinne sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>':hasCxData?taxCxNote(C,y):'')+(hasCxData?bzLine(C,y):'');
@@ -13209,7 +13256,7 @@ function renderTaxDECx(y){
   $('de-cx-warn').innerHTML=!X.has?'':(inc?taxCxNote(C,y):'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung und Excel). Gewinne aus Coins, die du höchstens ein Jahr gehalten hast, sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>')+bzLine(C,y);
   const form=FORM_SO[y]?`Eintragen: Anlage SO, Abschnitt „Kryptowerte“ (Formular ${y}): ${FORM_SO[y].ja} „Ja“, ${FORM_SO[y].bez} Bezeichnung (z. B. „USDC/USDT, siehe Aufstellung“), ${FORM_SO[y].zeit} Zeitpunkte laut Aufstellung, ${FORM_SO[y].vp} bis ${FORM_SO[y].wk} die Summen oben, ${FORM_SO[y].g} Gewinn/Verlust, Übertrag in ${FORM_SO[y].zur}. Als gesonderte Aufstellung dient das Excel-Blatt „Verkäufe nach FIFO“. Ob alle Verkäufe in einer Zeile stehen dürfen oder in ${FORM_SO[y].weitere}, klärst du mit deiner Steuerberatung.`:
     `Trag Verkäufe von USDC und USDT im Abschnitt Kryptowerte der Anlage SO ein. Fass sie zusammen und leg eine Aufstellung bei. Prüf die Zeilennummern im aktuellen Formular. Als gesonderte Aufstellung dient das Excel-Blatt „Verkäufe nach FIFO“.`;
-  glSet('k-taxde',X.has?'<b>Krypto:</b> '+GL['k-decx'].h+(payN(C,y)?'\n'+PAY_ANN.DE:'')+'\n'+form:'');
+  glSet('k-taxde',X.has?'<b>Krypto:</b> '+GL['k-decx'].h+(payBN(C,y)?'\n'+PAY_ANN.DE:'')+'\n'+form:'');
   // Ab 0.73 (2.2): Verlust-Satz und Zahl der Verkäufe im Begriff auf „Gewinn/Verlust“
   glSet('tx-gv',`Aus ${Y.n===1?'1 Verkauf':fI.format(Y.n)+' Verkäufen'}, davon ${fI.format(Y.nT)} mit steuerpflichtigem Teil (FIFO, Haltefrist).`+(X.g<0?'\nEin Verlust ist nur mit Gewinnen aus privaten Veräußerungsgeschäften verrechenbar, auch mit dem Vorjahr (Rücktrag) oder späteren Jahren (Vortrag). Damit er festgestellt wird, gib ihn in der Steuererklärung an.':''));
   if(!X.has||!inc)return;
@@ -13392,7 +13439,7 @@ $('tagcoin').onchange=e=>{S.defCoin=e.target.value==='USDT'?'USDT':'USDC';save()
 // Ab 0.47 (3.2): Gebühr in Prozent: rechnet die Gebühr aus dem Wert (beim Kauf „davon Gebühr“ aus dem Betrag). Der Betrag bleibt danach änderbar.
 $('cx-feep').addEventListener('input',()=>{const p=parseFloat(String($('cx-feep').value).replace(',','.'));if(!(p>=0))return;
   // Ab 0.135: bei einer Zahlung rechnet das Prozentfeld vom abgebuchten Betrag (Menge), wie die Kartengebühr (cardFeeOf); sonst wie bisher vom Wert
-  if($('cx-kind').value==='bezahlung'){const q=parseDe($('cx-qty').value);if(!(q>0)){msg('cxmsg','warn','Trage zuerst die Menge ein, dann rechnet das Prozentfeld die Gebühr aus.');return}msg('cxmsg','','');$('cx-fee').value=numIn(cardFeeOf(q,p).fee);return}
+  if($('cx-kind').value==='bezahlung'){const q=parseDe($('cx-qty').value);if(!(q>0)){msg('cxmsg','warn','Trage zuerst die Menge ein, dann rechnet das Prozentfeld die Gebühr aus.');return}msg('cxmsg','','');$('cx-fee').value=numIn(cardFeeOf(q,p).fee);cxFeeRe();return}
   const w=parseDe($('cx-eur').value);
   if(!(w>0)){msg('cxmsg','warn','Trage zuerst den Wert ein, dann rechnet das Prozentfeld die Gebühr aus.');return}msg('cxmsg','','');$('cx-fee').value=numIn(+(w*p/100).toFixed(2))});
 $('cx-fee').addEventListener('input',()=>{$('cx-feep').value=''});
@@ -13405,10 +13452,16 @@ $('cx-kind').onchange=()=>{const k=$('cx-kind').value,hasO=v=>[...$('cx-to').opt
   else if(CX_CTX&&k==='uebertrag'){const w=CX_CTX.w;if(CX_CTX.dir==='in'){if(hasO(w))$('cx-to').value=w;if($('cx-wallet').value===w)$('cx-wallet').value=oth(w)}else{if(S.wallets.includes(w))$('cx-wallet').value=w;if($('cx-to').value===w||!$('cx-to').value){const o=oth(w);if(hasO(o))$('cx-to').value=o}}}
   else if(CX_CTX&&S.wallets.includes(CX_CTX.w))$('cx-wallet').value=CX_CTX.w;
   cxHelp()};
-$('cx-cur').onchange=()=>{delete $('cx-eur').dataset.est;cxHelp()};
-// Ab 0.41: Zahlung mit ≈ (USD): ändert sich die Gebühr, rechnet der Wert mit
-$('cx-fee').addEventListener('input',()=>{const e=$('cx-eur');if($('cx-kind').value!=='bezahlung'||e.dataset.est!=='1'||$('cx-cur').value!=='USD')return;
-  const q=parseDe($('cx-qty').value),s=$('cx-fee').value.trim(),f=s?parseDe(s):0;if(!(q>0)||!(f>=0))return;const x=payEst(q,f);if(!x.bad)e.value=numIn(x.usd)});
+$('cx-cur').onchange=()=>{delete $('cx-eur').dataset.est;delete $('cx-eur').dataset.calc;cxHelp()};
+// Ab 0.137 (Florians Korrektur c): Wechsel der Wallet baut das Formular neu auf (Karte oder nicht), alle eingetippten Werte bleiben
+$('cx-wallet').addEventListener('change',()=>cxHelp());
+// Ab 0.41: Zahlung mit ≈ (USD): ändert sich die Gebühr, rechnet der Wert mit. Ab 0.137 bei einer Karte nur, wenn der Wert mit „Berechnen“ entstand und in
+// USD steht (Weg 1, wie die Kartengebühr); steht er in einer anderen Währung (Weg 2), rechnet eine geänderte Gebühr ihn nie neu (Florians Korrektur b).
+function cxFeeRe(){const e=$('cx-eur');if($('cx-kind').value!=='bezahlung'||$('cx-cur').value!=='USD')return;const card=cxCardW();if(card?e.dataset.calc!=='1':e.dataset.est!=='1')return;
+  const q=parseDe($('cx-qty').value),s=$('cx-fee').value.trim(),f=s?parseDe(s):0;if(!(q>0)||!(f>=0))return;
+  if(card){const fc=Math.round(f*100+1e-7)/100;if(fc<q)e.value=cxV8(+(q-fc).toFixed(8));return}
+  const x=payEst(q,f);if(!x.bad)e.value=numIn(x.usd)}
+$('cx-fee').addEventListener('input',cxFeeRe);
 // Ab 0.55 (1): Baustein „Geschenk“ im Formular „Neuer Eintrag“ (ids cx-geur, cx-unkp, cx-gd, cx-unkd, cx-pn)
 $('cx-gift').innerHTML=giftH('cx','ein');
 for(const id of ['cx-unkp','cx-unkd','cx-kest','cx-nft','cx-date','cx-gd'])$(id).addEventListener('change',()=>cxHelp());
@@ -13428,7 +13481,7 @@ $('cx-unk').addEventListener('change',e=>{const E=$('cx-eur');if(e.target.checke
 for(const id of ['cx-rhq','cx-rhe','cx-otherq','cx-other'])$(id).addEventListener('input',()=>{if($('cx-rhq').value.trim()&&$('cx-rhe').value.trim()&&$('cx-kind').value==='tauschein'&&cxLand()!=='DE'&&!$('cx-unk').checked)cxRhCalc()});
 $('btn-cxcancel').onclick=()=>{endEdit();msg('cxmsg','','');closeModal()};
 // Selbst getippter Wert ist nicht geschätzt; ab 0.43 fällt eine vom Tool gesetzte Notiz „Schätzung: …“ dabei weg
-$('cx-eur').oninput=()=>{const E=$('cx-eur');delete E.dataset.est;delete E.dataset.ew;delete E.dataset.ewt;delete E.dataset.ewv;$('cx-rhs').textContent='';const n=$('cx-note');if(/^Schätzung:/.test(n.value.trim()))n.value=''};
+$('cx-eur').oninput=()=>{const E=$('cx-eur');delete E.dataset.est;delete E.dataset.calc;delete E.dataset.ew;delete E.dataset.ewt;delete E.dataset.ewv;$('cx-rhs').textContent='';const n=$('cx-note');if(/^Schätzung:/.test(n.value.trim()))n.value=''};
 $('cx-recv').oninput=()=>{delete $('cx-recv').dataset.est;const n=$('cx-note');if(/^Schätzung:/.test(n.value.trim()))n.value=''};
 // Aufklappen-Menü von „Pro Woche“. Klicks auf Knopf und Menü klappen die Karte nicht zu.
 $('fdd-wk').addEventListener('click',e=>{e.stopPropagation();
@@ -13646,7 +13699,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.136',VDATE='12.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.137',VDATE='12.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
