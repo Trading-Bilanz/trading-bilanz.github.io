@@ -7487,9 +7487,12 @@ function askBox(o){if(typeof o==='string')o={text:o};return new Promise(res=>{co
   // Ab 0.96: o.noDanger = zweiter Knopf rot (z. B. „Verwerfen“ neben „Speichern“; „Verwerfen“ ist überall rot)
   // Ab 0.123: o.okPlain = Hauptknopf grau (neben „more“ als blauem Knopf, z. B. „Neu laden“ · „Trotzdem diesen Stand sichern“)
   // Ab 0.58 (6): o.alt = Text eines weiteren Wegs (grauer Knopf vor dem Hauptknopf), Ergebnis dann 'alt'
-  $('ask-btns').innerHTML=`${o.more?`<button type="button" class="btn primary" data-ask="x">${esc(o.more.t)}</button>`:''}${o.alt?`<button type="button" class="btn" data-ask="2">${esc(o.alt)}</button>`:''}<button type="button" class="btn${o.okPlain?'':o.danger?' danger':' primary'}" data-ask="1">${esc(o.ok||'Ja')}</button><button type="button" class="btn${o.noDanger?' danger':''}" data-ask="0">${esc(o.no||'Abbrechen')}</button>`;$('ask-btns').classList.toggle('ask3',!!o.more);$('ask-btns').classList.toggle('ask4',!!(o.more&&o.alt));$('ask-box').classList.toggle('ask4',!!(o.more&&o.alt));
+  // Ab 0.140 (Florians Entscheidung): o.back = der zweite Knopf (zurück, Ergebnis false) ist der Hauptknopf: blau, links, mit Fokus; Enter geht also
+  // zurück. Der Knopf „ok“ (Ergebnis true) ist dann grau und steht rechts daneben (z. B. „Zurück zum Formular“ · „Trotzdem speichern“).
+  {const okB=`<button type="button" class="btn${o.okPlain||o.back?'':o.danger?' danger':' primary'}" data-ask="1">${esc(o.ok||'Ja')}</button>`,noB=`<button type="button" class="btn${o.back?' primary':o.noDanger?' danger':''}" data-ask="0">${esc(o.no||'Abbrechen')}</button>`;
+  $('ask-btns').innerHTML=`${o.more?`<button type="button" class="btn primary" data-ask="x">${esc(o.more.t)}</button>`:''}${o.alt?`<button type="button" class="btn" data-ask="2">${esc(o.alt)}</button>`:''}${o.back?noB+okB:okB+noB}`}$('ask-btns').classList.toggle('ask3',!!o.more);$('ask-btns').classList.toggle('ask4',!!(o.more&&o.alt));$('ask-box').classList.toggle('ask4',!!(o.more&&o.alt));
   const prev=document.activeElement;ASK={esc:o.stay?null:false,more:o.more,done:v=>{b.classList.remove('on');ASK=null;if(prev&&prev.focus&&document.contains(prev))prev.focus({preventScroll:true});res(v)}};
-  b.classList.add('on');b.querySelector(o.more?'[data-ask="x"]':'[data-ask="1"]').focus()})}
+  b.classList.add('on');b.querySelector(o.more?'[data-ask="x"]':o.back?'[data-ask="0"]':'[data-ask="1"]').focus()})}
 $('ask-box').addEventListener('click',e=>{if(!ASK)return;const a=e.target.closest('[data-ask]');if(a){if(a.dataset.ask==='x'){if(ASK.more)ASK.more.fn(a);return}ASK.done(a.dataset.ask==='2'?'alt':a.dataset.ask==='1')}else if(e.target===$('ask-box'))ASK.done(ASK.esc)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ASK){e.preventDefault();e.stopPropagation();ASK.done(ASK.esc)}},true);
 /* ---------------- Ab 0.51 (2, Regel 14): Pflichtfelder im Reiter Wallet ----------------
@@ -10700,6 +10703,10 @@ function zeroAsk(u,how){return askBox({title:`Wert 0 ${u}?`,text:`Stimmt der Wer
 // Ab 0.120: Geschenk an der Tag-Zeile (Fenster und „Noch offen“) mit Kaufpreis 0 €: Rückfrage; „Wert ändern“ setzt den Cursor ins Feld
 function tagZeroAsk(V,R){if(!(V.gift&&V.C&&V.C.eur===0))return Promise.resolve(true);
   return zeroAsk('€','gain').then(ok=>{if(!ok){const e=giftEl(V.G,'eur');if(e&&e.offsetParent){e.focus();if(e.select)e.select()}}return ok})}
+// Ab 0.140: Rückfrage W-385 (Wortlaut Florians, die Zahlen sind die des Eintrags). Ohne Gebühr der kürzere Satz (Florians Antwort 4). Promise: true = speichern.
+function payOverAsk(v,fee,q,coin){const U=x=>fmtNum(x)+' USD';
+  return askBox({title:'Wert und Gebühr passen nicht zusammen',text:fee>0?`Wert ${U(v)} und Gebühr ${U(fee)} sind zusammen ${U(v+fee)}. Abgebucht wurden ${fmtNum(q)} ${coin}. Prüfe die drei Zahlen in der Karten-App. Mit „Berechnen“ rechnet das Tool den Wert aus Menge minus Gebühr.`
+    :`Wert ${U(v)} ist mehr als der abgebuchte Betrag. Abgebucht wurden ${fmtNum(q)} ${coin}. Prüfe die Zahlen in der Karten-App.`,ok:'Trotzdem speichern',no:'Zurück zum Formular',back:true})}
 async function addCx(){
   if(!askDots([[$('cx-qty'),'Menge'],[$('cx-qin'),'Menge angekommen'],[$('cx-qty2'),'Menge erhalten'],[$('cx-otherq'),'Menge hergegeben'],[$('cx-eur'),$('cx-eur-t').textContent],[$('cx-geur'),GIFT_T.eur],[$('cx-fee'),'Gebühr'],[$('cx-kestv'),'Abgezogene KESt'],[$('cx-recv'),'Wert der erhaltenen Coins']],$('cxmsg'),addCx))return;
   const d=$('cx-date').value,k=$('cx-kind').value,w=$('cx-wallet').value,to=$('cx-to').value,c=$('cx-coin').value,c2=$('cx-coin2').value,q=parseDe($('cx-qty').value),q2=parseDe($('cx-qty2').value);
@@ -10745,6 +10752,10 @@ async function addCx(){
   // („In anderen Coin getauscht“: 0 rechnet wie leer, also mit dem Tageswert).
   {const zh=amt===0&&!ersatz&&!unkp?(k==='kauf'||k==='tauschein'||k==='eingang'?'gain':k==='verkauf'?'loss':''):'';
    if(zh&&!(await zeroAsk(usdIn?'USD':'€',zh))){const e=F.gift?$('cx-geur'):$('cx-eur');if(e&&e.offsetParent){e.focus();if(e.select)e.select()}return false}}
+  // Ab 0.140 (Florians Regel und Wortlaut, W-385): Zahlung aus einer Karte mit Wert in USD, Wert und Gebühr zusammen mehr als PAY_TOL über der Menge
+  // (auch ohne Gebühr, Florians Antwort 4): vorher ein Fenster statt eines Satzes im Toast danach. Kommt jedes Mal, solange der Widerspruch besteht, auch
+  // beim Bearbeiten. „Zurück zum Formular“ (Hauptknopf, Enter, Esc, Klick daneben) speichert nichts, Cursor im Feld „Wert“; „Trotzdem speichern“ speichert.
+  if(k==='bezahlung'&&usdIn&&cxCardW()&&amt+(fee||0)>q+PAY_TOL&&!(await payOverAsk(amt,fee||0,q,c))){const e=$('cx-eur');if(e&&e.offsetParent){e.focus();if(e.select)e.select()}return false}
   // Preis des Geschenks unbekannt: Tageswert am Geschenktag
   if(unkp){const x=await dayValue(d,q,false);if(!x)return;amt=x.v}
   // Ab 0.56 (1): Seiten mit Adresse (cxSides) schreiben ins Adressbuch. Weicht die Wahl vom Adressbuch ab, fragt das Tool vorher (addrMvTxt);
@@ -10773,10 +10784,8 @@ async function addCx(){
   // Ab 0.48 (3.3): Name der Person beim Geschenk (frei)
   if(k==='eingang'||k==='weg'){const pn=$('cx-pn').value.trim();if(pn)entry.pn=pn}
   if(fee>0){if(F.feeIn)entry.feeIn=fee;else entry.fee=fee}
-  // Ab 0.137: Gebühr einer Kartenzahlung immer in USD (payFeeSync). Wert und Gebühr in USD zusammen mehr als die Menge: ruhiger Satz im Toast (Florians
-  // Antwort 5, Wortlaut sein Vorschlag), das Speichern geht weiter
-  const card=k==='bezahlung'&&cxCardW();if(card)entry.feeU=1;
-  const ovTxt=card&&usdIn&&fee>0&&amt+fee>q+PAY_TOL?' Wert und Gebühr sind zusammen mehr als der abgebuchte Betrag. Mit „Berechnen“ passt es.':'';
+  // Ab 0.137: Gebühr einer Kartenzahlung immer in USD (payFeeSync). Bis 0.138 hier der Satz im Toast (W-385), ab 0.140 vorher das Fenster (payOverAsk)
+  if(k==='bezahlung'&&cxCardW())entry.feeU=1;
   if(kest){entry.kest=true;if(kv>0)entry.kestEur=kv}
   if(nft)entry.nft=true;
   if(recv>0)entry.eur=recv;
@@ -10812,15 +10821,15 @@ async function addCx(){
   wSync(PVR?{imp:1}:undefined);save();
   // Ab 0.55 (5): Satz zur aufgelösten vorläufigen Wallet (auch wenn wSync sie über den Eintrag selbst aufgelöst hat)
   const pvTxt=AS.map(x=>` Die Adresse ${wShort(x.a)} gehört jetzt zu „${x.w}“.`).join('')+(PVR?` Die Datei „${PVR.name}“ gehört jetzt zu „${PVR.w}“.`:'')+provMsg();
-  if(CX_NEXT||CX_SESS.length){cxSessAdd('c:'+entry.id,KIND[k]+' '+(d?fD(d)+', ':'')+valTxt);cxNextReset();msg('cxmsg','ok',(wasEdit?'Gespeichert: ':'Eingetragen: ')+KIND[k]+', '+valTxt+'.'+ovTxt+' Nächster Eintrag:');render();return true}
+  if(CX_NEXT||CX_SESS.length){cxSessAdd('c:'+entry.id,KIND[k]+' '+(d?fD(d)+', ':'')+valTxt);cxNextReset();msg('cxmsg','ok',(wasEdit?'Gespeichert: ':'Eingetragen: ')+KIND[k]+', '+valTxt+'. Nächster Eintrag:');render();return true}
   // Ab 0.45 (3.2): Formular im Punkt von „Noch offen“: zurück zum Durchgang (der Punkt ist erledigt, der nächste kommt)
   // Ab 0.50 (1.2): addCx gibt true zurück, wenn gespeichert wurde (für die Rückfrage beim Verlassen einer Karte)
-  if(CX_EMB){cxEmbBack();endEdit();TD_KIND='';TD_DIRTY='';render();toast('Eingetragen: '+KIND[k]+', '+valTxt+'.'+ovTxt+pvTxt,ovTxt?7000:3000);return true}
+  if(CX_EMB){cxEmbBack();endEdit();TD_KIND='';TD_DIRTY='';render();toast('Eingetragen: '+KIND[k]+', '+valTxt+'.'+pvTxt,3000);return true}
   endEdit();closeModal();
   // Bei „In anderen Coin getauscht“ (AT): welcher Einkaufswert auf den neuen Coin übergeht
   const xf=k==='tauschaus'?cryptoCalc().flow.find(f=>f.cx===idx&&f.xfer!=null):null;
   // Ab 0.46 (5.5): Rückmeldung als Toast, der von selbst verschwindet
-  render();toast((wasEdit?'Gespeichert: ':'Eingetragen: ')+KIND[k]+', '+valTxt+'.'+ovTxt+pvTxt+(xf?' '+xferText(xf.xfer,other):''),xf||ovTxt?7000:3500);return true
+  render();toast((wasEdit?'Gespeichert: ':'Eingetragen: ')+KIND[k]+', '+valTxt+'.'+pvTxt+(xf?' '+xferText(xf.xfer,other):''),xf?7000:3500);return true
 }
 /* ---------------- Excel-Export (eigener kleiner XLSX-Schreiber) ---------------- */
 const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
@@ -14192,7 +14201,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.139',VDATE='12.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.140',VDATE='12.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
