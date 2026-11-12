@@ -8,7 +8,8 @@
 # jedes Format haben, muss aber ein PNG mit durchsichtigem Hintergrund sein. Das Skript schneidet selbst auf das
 # Motiv zu (alle Pixel ab SCHWELLE_DECKKRAFT). Alle Dateien in icons/ werden neu geschrieben, und das Skript setzt
 # die eingebetteten Bilder im Tool neu ein (trading-bilanz.html bzw. index.html: Favicon 32, apple-touch-icon 180,
-# Logo im Kopf, Logo in der Begrüßung, dort als data:-Adresse, weil die Content-Security-Policy des Tools Bilder
+# Logo im Kopf, Logo in der Begrüßung, ab 0.139 der Schmetterling der Meilensteine in zwei Größen aus
+# icons/quelle/schmetterling-freigestellt.png, dort als data:-Adresse, weil die Content-Security-Policy des Tools Bilder
 # nur als data: erlaubt). Dabei passt es width und height der Logos an das Seitenverhältnis des Motivs an und
 # setzt LOGO_VERSATZ ins CSS von Tool und Anleitung. Die Anleitung verweist auf die Dateien in icons/.
 #
@@ -66,7 +67,18 @@ EINGEBETTET = [
     ('<link rel="apple-touch-icon" sizes="180x180" href="', 'icon-trading-bilanz-180.png'),
     ('<img class="hlogo" src="', 'logo-trading-bilanz-kopf.png'),
     ('<img class="ilogo" src="', 'logo-trading-bilanz-begruessung.png'),
+    ('const BFLY_K="', 'schmetterling-klein.png'),   # ab 0.139: Schmetterling der Meilensteine, im Skript des Tools
+    ('const BFLY_G="', 'schmetterling-gross.png'),
 ]
+
+# Schmetterling der Meilensteine (ab 0.139): eigenes Original, zwei Größen nach Breite, die Höhe folgt dem Motiv.
+#   groß  Feier-Fenster und geteiltes Bild · klein  Kachel, Zeile, Reiter und Titel (angezeigt ab 18 px Höhe)
+# Beide mit Palette: SCHMETTERLING_FARBEN = (Farben für deckende Pixel, Farben für halb durchsichtige Randpixel).
+# Die deckenden Farben wählt der Medianschnitt aus dem Motiv; mit der einfachen Palette der anderen Icons (FASTOCTREE)
+# zeigte das Gold im großen Bild Streifen (Prüfung 0.139, vergrößert angesehen), so nicht.
+SCHMETTERLING = os.path.join(ORDNER, 'quelle', 'schmetterling-freigestellt.png')
+SCHMETTERLINGE = [('schmetterling-gross.png', 512), ('schmetterling-klein.png', 64)]
+SCHMETTERLING_FARBEN = (128, 31)
 
 # Größen ohne Transparenz: Alles Durchsichtige wird mit dieser Farbe gefüllt.
 # iOS rundet das apple-touch-icon selbst ab und füllt Durchsichtiges schwarz.
@@ -144,6 +156,50 @@ def speichern(bild, pfad, palette, profil=None):
     if palette:
         bild = bild.quantize(256, method=Image.Quantize.FASTOCTREE)
     bild.save(pfad, 'PNG', optimize=True)
+
+
+def palette_ohne_streifen(rgba, n_innen, n_rand):
+    """Palette-Bild mit Transparenz: deckende Pixel mit Medianschnitt, halb durchsichtige Randpixel mit eigener kleiner Palette."""
+    alpha = rgba.getchannel('A')
+    innen = alpha.point(lambda v: 255 if v == 255 else 0)
+    rand = alpha.point(lambda v: 255 if 0 < v < 255 else 0)
+    rgb = rgba.convert('RGB')
+    mittel = rgb.resize((1, 1), Image.BOX).getpixel((0, 0))  # füllt das Durchsichtige, damit es keine Farbe der Palette kostet
+    pal = Image.composite(rgb, Image.new('RGB', rgb.size, mittel), innen).quantize(
+        n_innen, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+    p1 = rgb.quantize(palette=pal, dither=Image.Dither.NONE)
+    p2 = Image.composite(rgba, Image.new('RGBA', rgba.size, (0, 0, 0, 0)), rand).quantize(
+        n_rand + 1, method=Image.Quantize.FASTOCTREE)
+    pal2 = p2.getpalette('RGBA')
+    idx1 = Image.frombytes('L', p1.size, p1.tobytes())
+    idx2 = Image.frombytes('L', p2.size, p2.tobytes()).point(lambda v: min(255, v + n_innen))
+    idx = Image.composite(idx1, Image.composite(idx2, Image.new('L', rgba.size, 255), rand), innen)
+    bild = Image.frombytes('P', rgba.size, idx.tobytes())
+    farben = (pal.getpalette()[:n_innen * 3] + [0] * (n_innen * 3))[:n_innen * 3]
+    deckkraft = [255] * n_innen
+    for i in range(n_rand + 1):
+        q = pal2[i * 4:i * 4 + 4]
+        if len(q) == 4 and n_innen + i < 256:
+            farben += list(q[:3])
+            deckkraft.append(q[3])
+    deckkraft = (deckkraft + [0] * 256)[:256]
+    deckkraft[255] = 0  # Index 255 = ganz durchsichtig
+    bild.putpalette((farben + [0] * 768)[:768])
+    bild.info['transparency'] = bytes(deckkraft)
+    return bild
+
+
+def schmetterlinge():
+    """Schreibt die zwei Größen des Schmetterlings und gibt ihre Namen zurück (leer, wenn das Original fehlt)."""
+    if not os.path.exists(SCHMETTERLING):
+        return []
+    motiv = motiv_zuschneiden(Image.open(SCHMETTERLING))
+    namen = []
+    for name, breite in SCHMETTERLINGE:
+        klein = motiv.resize((breite, max(1, round(motiv.height * breite / motiv.width))), Image.LANCZOS)
+        palette_ohne_streifen(klein, *SCHMETTERLING_FARBEN).save(os.path.join(ORDNER, name), 'PNG', optimize=True)
+        namen.append(name)
+    return namen
 
 
 def nach_hoehe(motiv, hoehe):
@@ -271,6 +327,9 @@ def tool_einsetzen():
             else:
                 ersatz = anfang + daten + '"'
             neu = ersetzen_genau_einmal(neu, muster, lambda m: ersatz, datei, 'Die Stelle ' + anfang)
+        with Image.open(os.path.join(ORDNER, SCHMETTERLINGE[0][0])) as im:  # Seitenverhältnis des Schmetterlings
+            wh = 'const BFLY_WH=[%d,%d];' % im.size
+        neu = ersetzen_genau_einmal(neu, r'const BFLY_WH=\[\d+,\d+\];', lambda m: wh, datei, 'Die Stelle const BFLY_WH')
         neu = css_versatz(neu, datei, '.hlogo,.ilogo')
         datei_schreiben(pfad, text, neu, 'eingebettete Bilder und Versatz')
 
@@ -422,6 +481,7 @@ def main():
     for name, b, h in VORSCHAU:
         speichern(vorschau(motiv, b, h), os.path.join(ORDNER, name), name not in VOLLFARBE, profil)
         erzeugt.append(name)
+    erzeugt += schmetterlinge()
     for name in erzeugt:
         with Image.open(os.path.join(ORDNER, name)) as im:
             print('%-38s %4d x %-4d %7d Bytes' % (name, im.width, im.height, os.path.getsize(os.path.join(ORDNER, name))))
