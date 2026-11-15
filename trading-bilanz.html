@@ -1366,9 +1366,8 @@ table.msjr{border-collapse:collapse;margin:4px auto 6px;max-width:100%}table.msj
    Bis 0.144 stand er rechts neben dem Wort (0.144 mit frei gehaltenem Platz, 0.143 als Abzeichen über der Ecke). */
 #tabs .tsym{display:inline-flex;align-items:center;justify-content:center;width:26px;height:20px;flex:none;line-height:0}
 #tabs .tsym svg.tsy{width:26px;height:18px;display:block}
-/* Ab 0.148: vier Balken in --accent, Linie hell im Gold der Reiter-Umrandung (--tab-line), dunkel in --gold-ink (Florians Auftrag) */
+/* Ab 0.148: vier Balken in --accent; ab 0.149 die Linie hell und dunkel im Gold der Reiter-Umrandung (--tab-line, Florians Auftrag; 0.148 dunkel --gold-ink) */
 #tabs .tsym .tsb{fill:var(--accent)}#tabs .tsym .tsl{fill:none;stroke:var(--tab-line);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-@media (prefers-color-scheme:dark){#tabs .tsym .tsl{stroke:var(--gold-ink)}}
 #tabs .bft{display:inline-flex;padding:10px 8px;margin:-10px -8px;cursor:pointer;line-height:0}
 #don-modal .btn[hidden]{display:none}
 /* Ab 0.134: Karte „Anregungen, Fehler, Feedback“ im Reiter „Resonanz“: Mail-Knopf, Adresse als Text, „Adresse kopieren“ */
@@ -11868,11 +11867,13 @@ const HEART='<svg class="heart" viewBox="0 0 24 22" aria-hidden="true" focusable
 // Ab 0.136: grünes Herz statt des Zeichens 💚. Texte (FENSTER, Karten, Meldungen) behalten 💚, das Tool tauscht beim Anzeigen (herzH: Text sicher
 // einsetzen, jedes 💚 als gezeichnetes Herz in --don). Vorleseprogramme lesen das gezeichnete Herz nicht vor (aria-hidden, wie das Herz im Reiter).
 const HEART_G=HEART.replace('class="heart"','class="heart hg"');
-// Ab 0.148: Symbol des Reiters „Auswertung“, gezeichnet wie das Herz (wie 0.145, kein Bild): vier aufsteigende, schmale Balken in Blau
-// (--accent, wie die Säulen im Logo) und darüber eine steigende Linie in Gold (hell --tab-line wie die Umrandung der Reiter, dunkel --gold-ink);
+// Ab 0.148: Symbol des Reiters „Auswertung“, gezeichnet wie das Herz (wie 0.145, kein Bild): vier schmale Balken in Blau
+// (--accent, wie die Säulen im Logo) und darüber eine Linie in Gold (--tab-line wie die Umrandung der Reiter, hell und dunkel);
 // 26 × 18 px, so groß wie der Schmetterling, der bei neuen Meilensteinen an seine Stelle tritt. Schmuck: Vorleseprogramme lesen es nicht vor.
-// 0.145 und 0.146: drei Balken mit Linie in --tab-line; 0.147: ein Bild.
-const TAB_SYM='<svg class="tsy" viewBox="0 0 26 18" width="26" height="18" aria-hidden="true" focusable="false"><rect class="tsb" x="1.4" y="11.5" width="4.6" height="5.5" rx="1.2"/><rect class="tsb" x="7.6" y="9" width="4.6" height="8" rx="1.2"/><rect class="tsb" x="13.8" y="6.5" width="4.6" height="10.5" rx="1.2"/><rect class="tsb" x="20" y="4" width="4.6" height="13" rx="1.2"/><path class="tsl" d="M1.2 8.6 8 5l5 1L24.8 1.2"/></svg>';
+// Ab 0.149 gehen die Balken auf und ab wie in einem Diagramm (Höhen 6,5 / 9,5 / 7,5 / 12,5, der höchste rechts), die Linie folgt ihnen über den
+// Oberkanten, berührt keinen Balken und endet über dem vierten, ohne Punkt. 0.148: vier aufsteigende Balken (sah aus wie die Empfangsanzeige am
+// Handy), Linie dunkel in --gold-ink. 0.145 und 0.146: drei Balken mit Linie in --tab-line; 0.147: ein Bild.
+const TAB_SYM='<svg class="tsy" viewBox="0 0 26 18" width="26" height="18" aria-hidden="true" focusable="false"><rect class="tsb" x="1.4" y="10.5" width="4.6" height="6.5" rx="1.2"/><rect class="tsb" x="7.6" y="7.5" width="4.6" height="9.5" rx="1.2"/><rect class="tsb" x="13.8" y="9.5" width="4.6" height="7.5" rx="1.2"/><rect class="tsb" x="20" y="4.5" width="4.6" height="12.5" rx="1.2"/><path class="tsl" d="M1.1 9.3 9.9 5.1 15.6 7.1 22.3 2.1"/></svg>';
 // Ab 0.139: goldener Schmetterling der Meilensteine in zwei Größen (groß: Feier-Fenster und geteiltes Bild, klein: Kachel, Zeile, Reiter, Titel),
 // als data:-Adresse (GESTALTUNG Abschnitt 19). Quelle icons/quelle/schmetterling-freigestellt.png; icons/icons-erzeugen.py setzt beide Bilder
 // und das Seitenverhältnis (BFLY_WH = Breite und Höhe des großen Bilds) hier ein. Die Höhe ist fest, die Breite folgt dem Motiv.
@@ -11932,7 +11933,7 @@ function renderTabs(st){
     // Ab 0.139: Schmetterling am Reiter „Auswertung“, solange es einen neuen, noch nicht angesehenen Meilenstein gibt
     // Ab 0.141: ein Tipp auf den Schmetterling öffnet das Feier-Fenster (Fläche zum Tippen größer als das Bild, ohne mehr Platz zu nehmen),
     // vorgelesen „Auswertung, neue Meilensteine“
-    // Ab 0.145: Der Reiter „Auswertung“ hat links ein festes Symbol (TAB_SYM, ab 0.148 vier Balken mit goldener Linie, bis 0.146 drei Balken) im Feld
+    // Ab 0.145: Der Reiter „Auswertung“ hat links ein festes Symbol (TAB_SYM, ab 0.148 vier Balken mit goldener Linie, ab 0.149 auf und ab, bis 0.146 drei Balken) im Feld
     // .tsym (26 px, wie der Schmetterling breit); gibt es neue Meilensteine, steht dort der Schmetterling (18 px), nichts rückt (GESTALTUNG Abschnitt 0). Bis 0.144 stand er rechts
     // neben dem Wort (0.144 mit frei gehaltenem Platz, 0.143 als Abzeichen über der Ecke, bis 0.142 ohne frei gehaltenen Platz).
     // Der Vorlesetext „, neue Meilensteine“ steht hinter dem Wort, damit der Name „Auswertung, neue Meilensteine“ lautet.
@@ -14662,7 +14663,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.148',VDATE='15.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.149',VDATE='15.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
