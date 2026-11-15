@@ -9,8 +9,7 @@
 # Motiv zu (alle Pixel ab SCHWELLE_DECKKRAFT). Alle Dateien in icons/ werden neu geschrieben, und das Skript setzt
 # die eingebetteten Bilder im Tool neu ein (trading-bilanz.html bzw. index.html: Favicon 32, apple-touch-icon 180,
 # Logo im Kopf, Logo in der Begrüßung, ab 0.139 der Schmetterling der Meilensteine in zwei Größen aus
-# icons/quelle/schmetterling-freigestellt.png, ab 0.147 die Raupe am Reiter „Auswertung“ aus
-# icons/quelle/raupe-blau-freigestellt.png, dort als data:-Adresse, weil die Content-Security-Policy des Tools Bilder
+# icons/quelle/schmetterling-freigestellt.png, dort als data:-Adresse, weil die Content-Security-Policy des Tools Bilder
 # nur als data: erlaubt). Dabei passt es width und height der Logos an das Seitenverhältnis des Motivs an und
 # setzt LOGO_VERSATZ ins CSS von Tool und Anleitung. Die Anleitung verweist auf die Dateien in icons/.
 #
@@ -70,7 +69,6 @@ EINGEBETTET = [
     ('<img class="ilogo" src="', 'logo-trading-bilanz-begruessung.png'),
     ('const BFLY_K="', 'schmetterling-klein.png'),   # ab 0.139: Schmetterling der Meilensteine, im Skript des Tools
     ('const BFLY_G="', 'schmetterling-gross.png'),
-    ('const RAUPE_K="', 'raupe-klein.png'),          # ab 0.147: Raupe am Reiter „Auswertung“, im Skript des Tools
 ]
 
 # Schmetterling der Meilensteine (ab 0.139): eigenes Original, zwei Größen nach Breite, die Höhe folgt dem Motiv.
@@ -81,13 +79,6 @@ EINGEBETTET = [
 SCHMETTERLING = os.path.join(ORDNER, 'quelle', 'schmetterling-freigestellt.png')
 SCHMETTERLINGE = [('schmetterling-gross.png', 512), ('schmetterling-klein.png', 64)]
 SCHMETTERLING_FARBEN = (128, 31)
-
-# Raupe am Reiter „Auswertung“ (ab 0.147): eigenes Original, eine Größe nach Breite, die Höhe folgt dem Motiv.
-# Angezeigt 26 px breit (etwa 17 px hoch); 78 px Breite = dreifache Auflösung, damit sie am Handy scharf ist.
-# Ohne Palette, mit allen Farben: Mit der Palette des Schmetterlings verloren die halb durchsichtigen Kugeln der Fühler ihre Farbe
-# (weiße Ringe) und der Körper bekam helle Flecken (Prüfung 0.147, vergrößert angesehen). Datei 5 statt 2,5 KB.
-RAUPE = os.path.join(ORDNER, 'quelle', 'raupe-blau-freigestellt.png')
-RAUPEN = [('raupe-klein.png', 78)]
 
 # Größen ohne Transparenz: Alles Durchsichtige wird mit dieser Farbe gefüllt.
 # iOS rundet das apple-touch-icon selbst ab und füllt Durchsichtiges schwarz.
@@ -207,19 +198,6 @@ def schmetterlinge():
     for name, breite in SCHMETTERLINGE:
         klein = motiv.resize((breite, max(1, round(motiv.height * breite / motiv.width))), Image.LANCZOS)
         palette_ohne_streifen(klein, *SCHMETTERLING_FARBEN).save(os.path.join(ORDNER, name), 'PNG', optimize=True)
-        namen.append(name)
-    return namen
-
-
-def raupen():
-    """Schreibt die Raupe und gibt ihren Namen zurück (leer, wenn das Original fehlt)."""
-    if not os.path.exists(RAUPE):
-        return []
-    motiv = motiv_zuschneiden(Image.open(RAUPE))
-    namen = []
-    for name, breite in RAUPEN:
-        klein = motiv.resize((breite, max(1, round(motiv.height * breite / motiv.width))), Image.LANCZOS)
-        klein.save(os.path.join(ORDNER, name), 'PNG', optimize=True)
         namen.append(name)
     return namen
 
@@ -504,7 +482,6 @@ def main():
         speichern(vorschau(motiv, b, h), os.path.join(ORDNER, name), name not in VOLLFARBE, profil)
         erzeugt.append(name)
     erzeugt += schmetterlinge()
-    erzeugt += raupen()
     for name in erzeugt:
         with Image.open(os.path.join(ORDNER, name)) as im:
             print('%-38s %4d x %-4d %7d Bytes' % (name, im.width, im.height, os.path.getsize(os.path.join(ORDNER, name))))
