@@ -1391,6 +1391,23 @@ details.more .hint{margin-top:6px}
    Knöpfe, Menüs, (i), Begriffe und Felder in der Leiste leuchten weiter wie überall (Wert des Browsers). */
 .card.fold>h2,.card.fold>.sthd>h2,.card.fold>.sthd>h4{-webkit-tap-highlight-color:transparent}
 :is(.card.fold>h2,.card.fold>.sthd>h2,.card.fold>.sthd>h4) :is(button,a,input,select,textarea,label,.gl){-webkit-tap-highlight-color:initial}
+/* Ab 0.146: Titelleisten der Auswertung bleiben einzeilig (GESTALTUNG Abschnitt 20, Florians Regel). Die Stufe je Karte wählt hbFit im Skript:
+   data-hbe = engere Leiste (Abstände 6 statt 8 px, Knöpfe innen 8 statt 10 px), data-hbf = Knopfschrift 13 statt 14 px, data-hbk = Symbol
+   (Zeitraum der Meilensteine) bzw. Kurzform des Titels („Netto / Konto u. Monat“), .hbt am Reiter = Titelschrift 16 statt 18 px in allen Karten.
+   Knopftexte setzt das Skript (hbTexts). .hbm gilt nur während des Messens (alles in einer Zeile, nichts schrumpft). Im Druck gilt nichts davon. */
+#s-stats .card[data-hbe]>.sthd>h2{--hg:6px}
+#s-stats .card[data-hbe]>.sthd .h2btn{padding-left:8px!important;padding-right:8px!important}
+#s-stats .card[data-hbf]>.sthd .h2btn{font-size:13px!important}
+#s-stats .sthd>h2.hbm{flex-wrap:nowrap!important;white-space:nowrap!important}
+#s-stats .sthd>h2.hbm>*{flex-shrink:0!important;white-space:nowrap!important}
+.h2btn>svg{display:block}
+.hbts{display:none}
+@media screen{
+  #s-stats.hbt .card.fold>.sthd>h2{font-size:16px}
+  #st-matrix[data-hbk] .hbts{display:inline}
+  /* Der volle Titel bleibt für Vorleseprogramme da, nur nicht sichtbar */
+  #st-matrix[data-hbk] .hbtl{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+}
 /* Ab 0.146: zugeklappte Karten flacher (47 statt 65 px) und näher an der nächsten Karte (10 statt 16 px), offene Karten unverändert */
 .card.fold.closed{padding-top:9px;padding-bottom:9px;margin-bottom:10px}
 .card.fold.closed>*:not(h2):not(.sthd),.card.fold.closed .hclip,.card.fold.closed .hbar{display:none!important}
@@ -1795,7 +1812,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
       <div class="tscroll"><table id="t-acc"></table></div>
     </div>
     <div class="card fold stk" data-fold="st-matrix" id="st-matrix">
-      <div class="sthd"><h2><span><span class="gl" data-gl="netto" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Netto</span> pro Konto und Monat</span> <button type="button" class="ib" data-gl="k-matrix" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Netto pro Konto und Monat">i</button></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
+      <div class="sthd"><h2><span><span class="gl" data-gl="netto" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Netto</span><span class="hbtl"> pro Konto und Monat</span><span class="hbts" aria-hidden="true"> / Konto u. Monat</span></span> <button type="button" class="ib" data-gl="k-matrix" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Netto pro Konto und Monat">i</button></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
       <div class="tscroll"><table id="t-matrix"></table></div>
     </div>
     <!-- Ab 0.63: immer sichtbar, ohne Tag-Daten mit Hinweis (real-empty) statt Tabelle -->
@@ -3977,8 +3994,8 @@ const msYearOk=M=>{if(MS_Y&&!(M.ys||[]).includes(MS_Y))MS_Y='';return MS_Y};
 function msRender(){const M=MS;if(!M)return;
   const all=Object.keys(S.accounts).sort(),sel=msAccs(),y=msYearOk(M),T=MS_TXT.karte,yt=t=>y?T.jahr.replace('{t}',t).replace('{j}',y):t;
   $('fdd-msk').style.display=all.length>1?'':'none';if(all.length<2&&FP_OPEN==='msk')closeFpanel();
-  $('fb-msk').textContent=(sel.length===all.length?'Konten: alle':`${sel.length} von ${all.length} Konten`)+' ▾';
-  $('fdd-msz').style.display=(M.ys||[]).length?'':'none';$('fb-msz').textContent=(y||MS_TXT.zeit.gesamt)+' ▾';
+  // Ab 0.146: Die Texte der beiden Menü-Knöpfe hängen an der Stufe der Titelleiste (msBtns, hbFit)
+  $('fdd-msz').style.display=(M.ys||[]).length?'':'none';MS_BTN={n:sel.length,N:all.length,y,ys:M.ys||[]};msBtns();
   $('ms-note').innerHTML='';
   const L=msSort(M.list),nl=new Set(MS_NL.map(e=>e.id));
   if(!M.first&&!L.length){$('ms-list').innerHTML=`<p class="small" style="margin:0">${esc(MS_TXT.leer)}</p>`;return}
@@ -12034,7 +12051,7 @@ async function facAll(){const p=$('fp-tb'),r=p.querySelector('input[name=ftb]:ch
 // Element unter Reitern und Filterzeile ins Bild scrollen
 function scrollUnder(el){window.scrollBy(0,el.getBoundingClientRect().top-navBottom()-8)}
 // Karte aufklappen (falls zugeklappt) und merken
-function unfold(c){if(c&&c.classList.contains('closed')){c.classList.remove('closed');S.ui.fold=S.ui.fold||{};S.ui.fold[c.dataset.fold]=false;save()}}
+function unfold(c){if(c&&c.classList.contains('closed')){c.classList.remove('closed');S.ui.fold=S.ui.fold||{};S.ui.fold[c.dataset.fold]=false;save();hbFit()}}
 /* ---------------- Kontostand-Kette: fehlender Anfang, Lücke ----------------
    Hinweise unter der Lademeldung (blau, kein Fehler), aus CHAIN (chainCheck). Sie verschwinden von selbst, sobald ein Report geladen ist,
    der Anfang bzw. Lücke enthält. „Absichtlich so“ (partialOk) blendet den Anfang aus, die Investition bleibt trotzdem unbekannt,
@@ -12946,6 +12963,58 @@ function curWeek(RA,sel,rdf){
 const HB={},hbOf=id=>HB[id]||{e:0,t:0,f:0,k:0};
 // Text des Sortierknopfs in Textstufe t: „Neueste oben“ → „Neueste“ → Pfeil. Der Pfeil zeigt, wo die neueste Zeile steht (↑ oben, ↓ unten).
 const hbSortT=(t,nw)=>t>=2?(nw?'↑':'↓'):t===1?(nw?'Neueste':'Älteste'):(nw?'Neueste oben':'Älteste oben');
+// Kalender-Symbol für den Zeitraum der Meilensteine (letzte Stufen, in der Farbe der Knopfschrift)
+const HB_CAL='<svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true"><rect x="1.8" y="3" width="12.4" height="11" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M1.8 6.7H14.2M5 1.3V4.3M11 1.3V4.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+// Meilensteine, Konten: „Konten: alle ▾“ / „6 von 10 Konten ▾“ → „alle ▾“ / „6 von 10 ▾“ → „6/10 ▾“ → „6/10“. Zeitraum: „Gesamt ▾“ bzw. das Jahr, ab Stufe 3 ohne ▾.
+const msBtnK=(t,n,N)=>t===0?(n===N?'Konten: alle':`${n} von ${N} Konten`)+' ▾':t===1?(n===N?'alle':`${n} von ${N}`)+' ▾':`${n}/${N}`+(t===2?' ▾':'');
+const msBtnZ=(t,y)=>(y||MS_TXT.zeit.gesamt)+(t>=3?'':' ▾');
+// Grafiken: ohne Teilen „Bild speichern“, in der Kurzform „Bild“; mit Teilen immer „Bild ▾“
+const grafBtnT=t=>CAN_SHARE_FILE?'Bild ▾':t>=1?'Bild':'Bild speichern';
+// Stand der Menü-Knöpfe der Meilensteine (msRender): n von N Konten gewählt, y = gewähltes Jahr ('' = Gesamt), ys = Jahre im Menü
+let MS_BTN={n:0,N:0,y:'',ys:[]};
+function msBtns(){const st=hbOf('st-ms'),{n,N,y}=MS_BTN,k=$('fb-msk'),z=$('fb-msz');
+  k.textContent=msBtnK(st.t,n,N);k.setAttribute('aria-label','Konten: '+(n===N?'alle':`${n} von ${N}`));
+  if(st.k)z.innerHTML=HB_CAL;else z.textContent=msBtnZ(st.t,y);z.setAttribute('aria-label','Zeitraum: '+(y||MS_TXT.zeit.gesamt))}
+// Alle Knopftexte der Titelleisten für die aktuelle Auswahl in der gewählten Stufe
+function hbTexts(){stSortBtns();msBtns();for(const u of UNIT_DD)$('fb-'+u).textContent=(S.ui.unit!=='amt'?'Rendite':'Betrag')+' ▾';
+  const g=$('fb-gb');g.textContent=grafBtnT(hbOf('st-graf').t);if(CAN_SHARE_FILE)g.removeAttribute('aria-label');else g.setAttribute('aria-label','Bild speichern')}
+// Leitern: je Karte die Stufen in der Reihenfolge, in der sie probiert werden (GESTALTUNG Abschnitt 20). Zuerst Abstände (e), dann kürzere
+// Knopftexte (t), unter 360 px Florians Reihenfolge: kleinere Knopfschrift (f), Kalender-Symbol für den Zeitraum der Meilensteine (k),
+// Kurzform des Titels „Netto / Konto u. Monat“ (k), zuletzt für alle Karten die kleinere Titelschrift (.hbt). Passt auch das nicht, bricht
+// die Leiste um (allerletzte Notlösung). „Aufklappen ▾“ bleibt immer ganz, der Titel wird sonst nie gekürzt, kein Symbol für Konten.
+const HB_L=(()=>{const s=(e,t,f,k)=>({e,t,f:f||0,k:k||0}),sort=[s(0,0),s(1,0),s(1,1),s(1,2),s(1,2,1)],unit=[s(0,0),s(1,0),s(1,0,1)],plain=[s(0,0),s(1,0)];
+  return {'st-ov':unit,'st-graf':[s(0,0),s(1,0),s(1,1),s(1,1,1)],'st-hl':unit,'st-ms':[s(0,0),s(1,0),s(1,1),s(1,2),s(1,3),s(1,3,1),s(1,3,1,1)],'st-avg':plain,
+    'st-week':sort,'st-month':sort,'st-acc':unit,'st-matrix':[s(0,0),s(1,0),s(1,0,0,1)],'real-card':plain,'st-calc':plain}})();
+function hbSet(id,st){const c=$(id);HB[id]=st;c.toggleAttribute('data-hbe',!!st.e);c.toggleAttribute('data-hbf',!!st.f);c.toggleAttribute('data-hbk',!!st.k)}
+// Jeder mögliche Text je Knopf einer Karte in Stufe st (wie fbCands in der Filterzeile): [[Knopf, [HTML, …]], …]
+function hbCands(id,st){
+  if(id==='st-week'||id==='st-month')return [[$(id==='st-week'?'wk-sort':'mo-sort'),[hbSortT(st.t,true),hbSortT(st.t,false)]]];
+  if(id==='st-ov'||id==='st-hl'||id==='st-acc')return [[$('fb-'+{'st-ov':'u1','st-hl':'u2','st-acc':'u3'}[id]),['Rendite ▾','Betrag ▾']]];
+  if(id==='st-graf')return [[$('fb-gb'),[grafBtnT(st.t)]]];
+  if(id==='st-ms'){const N=MS_BTN.N||1;return [[$('fb-msz'),st.k?[HB_CAL]:['',...MS_BTN.ys].map(y=>esc(msBtnZ(st.t,y)))],[$('fb-msk'),Array.from({length:N},(_,i)=>esc(msBtnK(st.t,i+1,N)))]]}
+  return []}
+// Wählt je sichtbarer Karte die erste Stufe, in der die Titelleiste mit dem breitesten möglichen Text je Knopf in eine Zeile passt. Die Stufe
+// gilt damit für jede Auswahl, beim Umschalten springt nichts. Neu gerechnet nur, wenn sich HB_KEY ändert: Breite, Schriftgröße, Zahl der
+// Konten, Jahre der Meilensteine, welche Karten zu sehen und offen sind (zugeklappt zeigt eine Karte keine Knöpfe).
+let HB_KEY='';
+function hbFit(){
+  const sec=$('s-stats');if(S.ui.tab!=='stats'||!$('stats-body').getClientRects().length){HB_KEY='';return}
+  const vis=Object.keys(HB_L).filter(id=>$(id).getClientRects().length);
+  const key=[sec.clientWidth,getComputedStyle(document.body).fontSize,getComputedStyle($('fb-range')).fontSize,MS_BTN.N,MS_BTN.ys.join(),CAN_SHARE_FILE?1:0,vis.map(id=>id+($(id).classList.contains('closed')?'-':'+')).join()].join('#');
+  if(key===HB_KEY)return;HB_KEY=key;
+  sec.classList.remove('hbt');
+  const fits=(id,st)=>{const h=$(id).querySelector('.sthd>h2');hbSet(id,st);
+    for(const [b,L] of hbCands(id,st)){let w=-1,best=L[0];for(const x of L){b.innerHTML=x;const v=b.getBoundingClientRect().width;if(v>w){w=v;best=x}}b.innerHTML=best}
+    h.classList.add('hbm');const lim=h.getBoundingClientRect().right+0.02;let r=0; // der Browser bricht schon bei einem Bruchteil eines px um
+    for(const nd of h.childNodes){if(nd.nodeType===3){if(!nd.textContent.trim())continue;const g=document.createRange();g.selectNodeContents(nd);r=Math.max(r,g.getBoundingClientRect().right)}
+      else if(nd.nodeType===1&&nd.id!=='ms-bf-ov'&&nd.getClientRects().length)r=Math.max(r,nd.getBoundingClientRect().right)}
+    h.classList.remove('hbm');return r<=lim};
+  const bad=vis.filter(id=>!HB_L[id].some(st=>fits(id,st))),last=id=>HB_L[id][HB_L[id].length-1];
+  // Letzte Stufe für alle Karten gemeinsam, damit die Titel gleich groß bleiben. Sie gilt nur, wenn damit mindestens eine Leiste wieder in
+  // eine Zeile passt; sonst bleibt die Schrift, und die Leiste bricht um (allerletzte Notlösung).
+  if(bad.length){sec.classList.add('hbt');if(!bad.filter(id=>fits(id,last(id))).length)sec.classList.remove('hbt')}
+  hbTexts();
+}
 // Sortierknöpfe in „Pro Woche“ und „Pro Monat“: zeigen den Stand, vorgelesen wie vg-sort
 function stSortBtns(){for(const [id,k,c] of [['wk-sort','wkSort','st-week'],['mo-sort','moSort','st-month']]){const b=$(id),nw=S.ui[k]==='new';
   b.textContent=hbSortT(hbOf(c).t,nw);b.setAttribute('aria-label','Sortierung: '+(nw?'neueste oben, umschalten':'älteste oben, umschalten'))}}
@@ -13275,7 +13344,7 @@ function jumpTo(kind,key){
   const row=[...tb.querySelectorAll(kind==='t'?'tr.tr':kind==='d'?'tr.dy':'tr.wk')].find(x=>kind==='t'?x.dataset.p===key:kind==='d'?x.dataset.d===key:x.dataset.w===key);
   if(!row)return;
   closeFpanel();
-  if(c.classList.contains('closed')){c.classList.remove('closed');S.ui.fold=S.ui.fold||{};S.ui.fold['st-week']=false;save()}
+  unfold(c);
   OPEN_W.add(w);if(kind==='t')OPEN_D.add(d);
   weekVis();
   // Zielzeile mittig zwischen Unterkante der stehenden Köpfe (Reiter, Filterzeile, Kopf von „Pro Woche“) und Unterkante des Fensters
@@ -14212,7 +14281,7 @@ function render(){
   try{MS=msNow(rows);msCheck(MS,null,rows);MS_NL=msNeu(MS)}catch(e){console.warn('Meilensteine:',e);MS=null;MS_NL=[]}
   const st=status();renderTabs(st);
   window.__rows=rows;renderAccounts(rows);renderChain();renderMap();renderNext();renderGuideBtns();renderRates();renderRateList();renderWallet();
-  if(S.ui.tab==='stats')renderStats(rows);else renderFbar(false);
+  if(S.ui.tab==='stats'){renderStats(rows);hbFit()}else renderFbar(false);
   renderWbar(S.ui.tab==='wallet');
   if(S.ui.tab==='tax')renderTax(rows);
   window.__rows=rows;renderStale();msGlSync();
@@ -14760,7 +14829,7 @@ function initFolds(){document.querySelectorAll('.card.fold').forEach(c=>{const i
   h2.addEventListener('pointerdown',e=>{FOLD_DN=e.button===0&&!e.target.closest('input,select,textarea,button,a,label,.gl')?h2:null;FOLD_SEL=String(getSelection())});
   h2.addEventListener('click',e=>{const s=String(getSelection()),go=e.detail===0||(FOLD_DN===h2&&(!s||s===FOLD_SEL));FOLD_DN=null;if(!go)return;
     const bx=c.closest('.modal .box'),hd=c.querySelector('.sthd'),top=bx?bx.getBoundingClientRect().top+parseFloat(getComputedStyle(bx).paddingTop)+(hd?parseFloat(getComputedStyle(hd).top)||0:0):navBottom();
-    const stuck=c.getBoundingClientRect().top<top-1;const cl=!c.classList.contains('closed');c.classList.toggle('closed',cl);S.ui.fold[id]=cl;save();
+    const stuck=c.getBoundingClientRect().top<top-1;const cl=!c.classList.contains('closed');c.classList.toggle('closed',cl);S.ui.fold[id]=cl;save();hbFit();
     if(cl&&stuck){if(bx)bx.scrollBy(0,c.getBoundingClientRect().top-top);else window.scrollBy(0,c.getBoundingClientRect().top-top)}if(!bx)updateNavH();if(id==='rw-card'&&!cl)render()})})}
 initFolds();
 /* ---------------- Stehender Kopf der Tabellen ---------------- */
@@ -14834,7 +14903,7 @@ var WL_HC_ON=true;
 function wlHcAll(){if(!WL_HC_ON)return;for(const c of WL_HC){c.classList.remove('nohc');hcFix(c)}}
 {const h=$('wl-t'),bx=h.closest('.box'),f=()=>bx.style.setProperty('--wlh',h.offsetHeight+'px');if(window.ResizeObserver)new ResizeObserver(f).observe(h);f()}
 HC_BAR.addEventListener&&HC_BAR.addEventListener('change',()=>HC_CARDS.forEach(c=>hcAlign(c)));
-if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{FB_KEY='';if(S.ui.tab==='stats'){fitFbar();updateNavH();layoutTiles();hcAll();fitHL()}});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{FB_KEY='';HB_KEY='';if(S.ui.tab==='stats'){fitFbar();hbFit();updateNavH();layoutTiles();hcAll();fitHL()}});
 /* ---------------- Erste Schritte, Nächster Schritt, Fenster ---------------- */
 // Texte zum Original und zu den getrennten Speichern, einmal hier (Begrüßung, Resonanz, Erste Schritte, Sicherung)
 const ORIG_HTML='Das Original der Trading-Bilanz läuft nur unter genau dieser Adresse: <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>.<span class="odl"> Dort kannst du sie auch herunterladen und ohne Internet nutzen.</span> Kopien aus anderen Quellen können verändert sein, zum Beispiel mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.';
@@ -15282,7 +15351,7 @@ initDeviceHelp();
 // Nur bei geänderter Breite neu zeichnen. Reine Höhenänderungen (z. B. Bildschirmtastatur am Handy) lösen nichts aus, damit Eingabefelder den Fokus behalten.
 {let lastW=window.innerWidth,rt=null;
 // Ab 0.107: auch die Leiste im Reiter Wallet (fitWbar) passt sich beim Ändern der Breite an, nicht erst beim nächsten Neuzeichnen
-window.addEventListener('resize',()=>{if(window.innerWidth===lastW)return;lastW=window.innerWidth;if(FP_OPEN==='wk')placeWk();else if(TITLE_DD.includes(FP_OPEN))placeU(FP_OPEN);clearTimeout(rt);rt=setTimeout(()=>{fitTabs();fitFbar();if($('wbar').classList.contains('on'))fitWbar();fitAcc();updateNavH();if(grafRedraw)grafRedraw();if(!window.ResizeObserver&&S.ui.tab==='stats')hcAll()},150)})}
+window.addEventListener('resize',()=>{if(window.innerWidth===lastW)return;lastW=window.innerWidth;if(FP_OPEN==='wk')placeWk();else if(TITLE_DD.includes(FP_OPEN))placeU(FP_OPEN);clearTimeout(rt);rt=setTimeout(()=>{fitTabs();fitFbar();hbFit();if($('wbar').classList.contains('on'))fitWbar();fitAcc();updateNavH();if(grafRedraw)grafRedraw();if(!window.ResizeObserver&&S.ui.tab==='stats')hcAll()},150)})}
 // Kacheln neu anordnen, wenn sich ihre Breite ändert (Fenster, Drehen, Aufklappen des Überblicks)
 // Im nächsten Frame, nicht im Rückruf selbst, sonst meldet WebKit „ResizeObserver loop“
 if(window.ResizeObserver){let tw=0,q=0;new ResizeObserver(()=>{if(!q)q=requestAnimationFrame(()=>{q=0;const w=$('tiles').clientWidth;if(w&&w!==tw){tw=w;layoutTiles()}})}).observe($('tiles'))}
