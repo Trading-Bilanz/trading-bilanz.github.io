@@ -1247,7 +1247,7 @@ img.bfly{width:auto;flex:none;display:block}
 .bfw{position:relative;display:inline-flex;vertical-align:middle;line-height:0}
 .bfb{border:0;background:none;padding:0;margin:0;cursor:pointer;line-height:0;border-radius:6px}
 .bfb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.bf-ov img.bfly{height:22px}.bf-k img.bfly{height:20px}.bf-h img.bfly{height:18px}#tabs img.bfly{height:14px}
+.bf-ov img.bfly{height:22px}.bf-k img.bfly{height:20px}.bf-h img.bfly,#tabs img.bfly{height:18px}
 .bfw.fl .bfs,.bft.fl .bfs{animation:bffl 1.2s ease-out 2}
 @keyframes bffl{0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 rgba(224,170,40,0))}35%{transform:scale(1.3);filter:drop-shadow(0 0 6px rgba(224,170,40,.95))}}
 @media (prefers-reduced-motion:reduce){.bfw.fl .bfs,.bft.fl .bfs{animation:none}}
@@ -1350,11 +1350,14 @@ table.msjr{border-collapse:collapse;margin:4px auto 6px;max-width:100%}table.msj
 #ms-all,.msline a{color:var(--accent)}
 @media(max-width:560px){#ms-all{flex:1 0 100%}}
 /* Schmetterling am Reiter: die Fläche zum Tippen ist größer als das Bild (Rand nach außen), nimmt aber keinen Platz ein */
-/* ab 0.143 nimmt der Schmetterling am Reiter keinen Platz ein (GESTALTUNG Abschnitt 0): Abzeichen auf der rechten oberen Ecke des Knopfs, die Mitte
-   des Bilds (ab 0.143 14 px hoch, bis 0.142 18 px) liegt 2 px links und 1 px unter der Ecke: So bleibt es ganz in der Reiterleiste (bei 1280 px
-   schnitt die Kopfzeile ein höheres ab) und verdeckt das Wort nicht. Fläche zum Tippen etwa 32 × 36 px, sie ragt bei 360 px nicht über die Reiterzeile. fitTabs misst ohne das Abzeichen. Bis 0.142 stand er im Knopf, der wurde etwa 36 px breiter */
-#tabs button[data-t="stats"]{position:relative}
-#tabs .bft{position:absolute;top:-12px;right:-12px;display:inline-flex;padding:6px 4px 16px 8px;margin:0;cursor:pointer;line-height:0;z-index:2}
+/* Schmetterling am Reiter „Auswertung“: ab 0.144 wieder im Feld rechts neben dem Wort, 18 px (Florians Entscheidung zu Bericht 0.143). Der Platz
+   ist immer frei gehalten (unsichtbarer Platzhalter .leer), damit nichts rückt (GESTALTUNG Abschnitt 0): 4 px Abstand zum Wort und 26 px Bild,
+   zusammen 30 px. Der Innenabstand macht die Fläche zum Tippen 42 × 38 px, die negativen Ränder nehmen ihn wieder zurück. In 0.143 Abzeichen
+   über der Ecke (14 px), bis 0.142 im Feld ohne frei gehaltenen Platz (der Reiter wurde 36 px breiter). */
+#tabs .bft{display:inline-flex;padding:10px 8px;margin:-10px -8px -10px -12px;cursor:pointer;line-height:0}
+#tabs .bft.leer{visibility:hidden;pointer-events:none;cursor:default}
+/* 4 px Abstand vom Wort zum Schmetterling auch beim kleineren Abstand im Knopf am Handy (5 px, ab Stufe 2 4 px) */
+@media (max-width:700px){#tabs .bft{margin-left:-9px}#tabs.l2 .bft{margin-left:-8px}}
 #don-modal .btn[hidden]{display:none}
 /* Ab 0.134: Karte „Anregungen, Fehler, Feedback“ im Reiter „Resonanz“: Mail-Knopf, Adresse als Text, „Adresse kopieren“ */
 .fbrow{gap:10px 12px;margin-top:14px}.fbaddr{font-family:ui-monospace,Consolas,monospace;font-size:14px;overflow-wrap:anywhere}
@@ -4087,7 +4090,9 @@ function msAuto(frei){if(BOOT_BAD||!MS||S.ui.tab!=='stats'||!S.ui.ack||!(frei===
   const d=donSync(),ms=msSync(),e=msAutoPick(d,ms,MS_NL,FEN_NOW());if(!e)return null;
   ms.ao[e.id]=1;msShow([e],{auto:true});return e}
 let MS_AT=null;const msAutoLater=()=>{clearTimeout(MS_AT);MS_AT=setTimeout(()=>msAuto(),700)};
-// ---- Bild „Rekord-Karte“ (PNG 1200 × 675, immer hell, Farben fest im Bild, offline). Inhalt: Schmetterling, Titel, Rendite, Datum, Fußzeile.
+// Größe des Bilds (ab 0.144): Meilensteine im Hochformat, der Jahresrückblick bleibt quer, bis seine eigene Runde kommt (Florians Antwort 2)
+const MS_BILD={hoch:[1080,1350],quer:[1200,675]};
+// ---- Bild „Rekord-Karte“ (ab 0.144 PNG 1080 × 1350, Jahresrückblick 1200 × 675; bis 0.143 alle 1200 × 675, immer hell, Farben fest im Bild, offline). Inhalt: Schmetterling, Titel, Rendite, Datum, Fußzeile.
 // Der Betrag steht nur mit dem Häkchen „Betrag zeigen“ im Bild. Kein Risiko-Satz, kein alter Rekord, keine Kontonamen.
 // msCardSpec beschreibt das Bild (für die Tests ohne Zeichenfläche), msPng zeichnet es.
 const MS_FN={at:'Bester-Trade',ad:'Bester-Handelstag',aw:'Beste-Woche',am:'Bester-Monat',jt:'Bester-Trade-{j}',jd:'Bester-Handelstag-{j}',jw:'Beste-Woche-{j}',
@@ -4103,7 +4108,7 @@ function msCardSpec(e,amt,cur){const R=MS_TXT.rueck,o={titel:msTitle(e),gross:nu
   const b=msBlatt(e,amt,cur);o.titel=null;o.kat=b.kat;o.gross=b.gross;o.statt=b.statt;o.unter=b.unter;o.betrag=b.betrag;o.betragK=b.betragK;o.satz=b.satz;
   if(e.k==='ja')o.datum=MS_TXT.erster.replace('{d}',fD(MS.first));
   return o}
-function msPng(e,amt){const Sp=msCardSpec(e,amt,MS.cur),W=1200,H=675,ff=getComputedStyle(document.body).fontFamily||'sans-serif';
+function msPng(e,amt){const Sp=msCardSpec(e,amt,MS.cur),[W,H]=MS_BILD[e.k==='jr'?'quer':'hoch'],ff=getComputedStyle(document.body).fontFamily||'sans-serif';
   const C={bg:'#f6f5f2',card:'#ffffff',line:'#e2e0da',gold:'#C49A55',goldInk:'#86601c',ink:'#1a1a1a',ink2:'#373d43',muted:'#454b51'};
   return new Promise((ok,bad)=>{const img=new Image();img.onerror=()=>bad(new Error('Bild'));
     img.onload=()=>{try{const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
@@ -4120,15 +4125,18 @@ function msPng(e,amt){const Sp=msCardSpec(e,amt,MS.cur),W=1200,H=675,ff=getCompu
         const n=Sp.zeilen.length,cw=(W-200)/n,y0=H-176;Sp.zeilen.forEach((z,i)=>{const x=100+cw*i+cw/2;c.font=`400 22px ${ff}`;c.fillStyle=C.muted;c.fillText(z.l,x,y0);
           c.font=`700 36px ${ff}`;c.fillStyle=C.ink;c.fillText(z.v,x,y0+42);if(z.a){c.font=`400 22px ${ff}`;c.fillStyle=C.ink2;c.fillText(z.a,x,y0+72)}})}
       else{// ab 0.142: Kategorie klein oben, dann große Zahl (oder der Satz an ihrer Stelle), Zeile, Betrag, Datum, Satz (wie das Blatt);
-        // der ganze Block steht senkrecht mittig über der Fußzeile. R = Zeilen [Text, Abstand der Grundlinie zur vorigen, Schriftgröße, Stärke, Farbe]
-        const R=[[Sp.kat.toUpperCase(),52,28,700,C.goldInk]];
-        if(Sp.gross)R.push([Sp.gross,124,100,700,C.ink]);else if(Sp.statt)R.push([Sp.statt,92,58,700,C.ink]);
-        if(Sp.unter)R.push([Sp.unter,58,32,600,C.ink2]);if(Sp.betrag)R.push([Sp.betrag,54,38,600,C.ink2]);if(Sp.betragK)R.push([Sp.betragK,44,26,400,C.ink2]);
-        if(Sp.datum)R.push([Sp.datum,50,30,400,C.muted]);if(Sp.satz)R.push([Sp.satz,54,28,600,C.ink]);
-        const bh=R.length>=6?118:R.length===5?134:150,bw=bh*BFLY_WH[0]/BFLY_WH[1],tot=bh+R.reduce((s,r)=>s+r[1],0)+10;
-        let y=Math.max(46,Math.round(56+(H-56-90-tot)/2));c.drawImage(img,(W-bw)/2,y,bw,bh);y+=bh;
-        R.forEach((r,i)=>{y+=r[1];txt(r[0],y,r[2],r[3],r[4]);if(i===0){c.fillStyle=C.gold;c.fillRect(W/2-60,y+20,120,4);y+=14}})}
-      c.textAlign='right';c.font=`400 20px ${ff}`;c.fillStyle=C.muted;c.fillText(Sp.fuss,W-64,H-58);
+        // der ganze Block steht senkrecht mittig über der Fußzeile. R = Zeilen [Text, Abstand der Grundlinie zur vorigen, Schriftgröße, Stärke, Farbe].
+        // Ab 0.144 im Hochformat 1080 × 1350 (Florians Auftrag), Größen dafür; bis 0.143 quer 1200 × 675.
+        const R=[[Sp.kat.toUpperCase(),78,40,700,C.goldInk]];
+        if(Sp.gross)R.push([Sp.gross,176,150,700,C.ink]);else if(Sp.statt)R.push([Sp.statt,124,80,700,C.ink]);
+        if(Sp.unter)R.push([Sp.unter,80,46,600,C.ink2]);if(Sp.betrag)R.push([Sp.betrag,76,54,600,C.ink2]);if(Sp.betragK)R.push([Sp.betragK,60,38,400,C.ink2]);
+        if(Sp.datum)R.push([Sp.datum,68,42,400,C.muted]);if(Sp.satz)R.push([Sp.satz,74,40,600,C.ink]);
+        const bh=R.length>=6?240:R.length===5?270:300,bw=bh*BFLY_WH[0]/BFLY_WH[1],tot=bh+R.reduce((s,r)=>s+r[1],0)+30;
+        let y=Math.max(70,Math.round(70+(H-70-170-tot)/2));c.drawImage(img,(W-bw)/2,y,bw,bh);y+=bh;
+        R.forEach((r,i)=>{y+=r[1];txt(r[0],y,r[2],r[3],r[4],W-160);if(i===0){c.fillStyle=C.gold;c.fillRect(W/2-80,y+28,160,5);y+=20}})}
+      // Fußzeile: quer (Jahresrückblick) rechts unten 20 px; ab 0.144 im Hochformat mittig unten 28 px, passt sie nicht in eine Zeile, nur die Adresse
+      if(jr){c.textAlign='right';c.font=`400 20px ${ff}`;c.fillStyle=C.muted;c.fillText(Sp.fuss,W-64,H-58)}
+      else{c.textAlign='center';c.font=`400 28px ${ff}`;c.fillStyle=C.muted;const f=c.measureText(Sp.fuss).width<=W-2*96?Sp.fuss:MS_TXT.fussKurz;msPng.fuss=f;c.fillText(f,W/2,H-84)}
       cv.toBlob(b=>b?ok(b):bad(new Error('toBlob')),'image/png')}catch(x){bad(x)}};
     img.src=BFLY_G})}
 // Vorbereitetes Bild (beim Öffnen des Menüs), damit „Teilen“ in der Nutzergeste bleibt
@@ -11843,14 +11851,12 @@ function updateTaxLabel(){const s=document.querySelector('#tabs [data-t="tax"] .
 const TAB_MQ=window.matchMedia('(max-width:700px)');
 function fitTabs(){
   const box=$('tabs');if(!box)return;
-  // ab 0.143 ohne das Abzeichen am Reiter „Auswertung“ (es ragt über die Ecke und nimmt keinen Platz ein, GESTALTUNG Abschnitt 0)
-  const bft=[...box.querySelectorAll('.bft')];bft.forEach(b=>b.style.display='none');
+  // ab 0.144 mit dem Feld des Schmetterlings (immer frei gehalten), in 0.143 ohne das damalige Abzeichen über der Ecke
   const over=()=>[...box.querySelectorAll('.trow')].some(r=>r.scrollWidth>r.clientWidth+0.5);
   let lv=0;
   const set=n=>{for(let i=1;i<=8;i++)box.classList.toggle('l'+i,i<=n)};
   set(0);
   if(TAB_MQ.matches){while(lv<8&&over()){lv++;set(lv)}}
-  bft.forEach(b=>b.style.display='');
   box.dataset.fit=lv;
 }
 function renderTabs(st){
@@ -11864,7 +11870,8 @@ function renderTabs(st){
     // Ab 0.139: Schmetterling am Reiter „Auswertung“, solange es einen neuen, noch nicht angesehenen Meilenstein gibt
     // Ab 0.141: ein Tipp auf den Schmetterling öffnet das Feier-Fenster (Fläche zum Tippen größer als das Bild, ohne mehr Platz zu nehmen),
     // vorgelesen „Auswertung, neue Meilensteine“
-    const bf=k==='stats'&&msGet().neu.length>0?`<span class="bft${MS_FLASH.length?' fl':''}" data-bf="">${bflyH(14)}<span class="vh">${esc(MS_TXT.ariaReiter)}</span></span>`:'';
+    // Ab 0.144 ist das Feld immer da (ohne neuen Meilenstein unsichtbar, für Vorleseprogramme ausgeblendet, nicht antippbar), damit nichts rückt
+    const bf=k!=='stats'?'':msGet().neu.length>0?`<span class="bft${MS_FLASH.length?' fl':''}" data-bf="">${bflyH(18)}<span class="vh">${esc(MS_TXT.ariaReiter)}</span></span>`:`<span class="bft leer" aria-hidden="true">${bflyH(18)}</span>`;
     return `<button data-t="${k}" class="${S.ui.tab===k?'on':''}">${dot}<span class="lbl">${lab}</span>${bf}</button>`});
   $('tabs').innerHTML=`<div class="trow">${btns.slice(0,4).join('')}</div><div class="trow">${btns.slice(4).join('')}</div>`;
   fitTabs();
@@ -13118,6 +13125,8 @@ function renderHL(G,AK,h){
   const ext=(o,l,F,bf)=>o?F(o.v)+l(o.o,bf?bf(o.o):''):'–';
   const act=(s,u)=>s===(S.ui.flt.pf==='ex'?G.N:G.V)&&(u===undefined||u===cu);
   // Zelle mit Einheit: f(Werte einer PF-Stellung, Einheit). Breitenhalter ohne Links und ohne Schmetterling (unsichtbar, nur für die Breite).
+  // Hinweis (aus Bericht 0.143, Florians Wunsch als Kommentar, keine Regel): Wer HTML aus einem Baustein herausschneidet, schneidet den ganzen
+  // Baustein bis zu seinem Ende, nicht bis zum ersten schließenden Tag. noA schneidet deshalb von <span class="bfw…"> bis </button></span>.
   const noA=x=>x.replace(/<span class="bfw[^"]*"[^>]*><button[\s\S]*?<\/button><\/span>/g,'').replace(/<a [^>]*>|<\/a>/g,'');
   const cellU=f=>`<td>${sw(f(G.V,cu),f(G.N,cu),[noA(f(G.V,ou)),noA(f(G.N,ou))])}</td>`;
   const cell=f=>`<td>${sw(f(G.V),f(G.N))}</td>`;
@@ -14501,7 +14510,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.143',VDATE='14.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.144',VDATE='15.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -14547,7 +14556,9 @@ const MS_TXT={
   // Ab 0.142 (Startfassung, von Florian im Grundsatz bestätigt): ein Satz und eine kurze Liste
   info:{satz:'Deine Rekorde, Serien und Stufen. Der Filter oben wirkt hier nicht.',punkte:['Gesamt oder ein Jahr und die Konten wählst du rechts im Titel.',
     'Alle Werte nach PF (verteilt), Stufen in USD.','Eine Woche zählt erst nach der Abrechnung der PF.',
-    'Die ersten zwei Wochen sind dein Ausgangsstand. Sie stehen hier ohne Hinweis, sonst wäre am Anfang fast jeder Tag ein Rekord.','Auszahlungen kommen aus deinen Tag-Daten.']},
+    'Die ersten zwei Wochen sind dein Ausgangsstand. Sie stehen hier ohne Hinweis, sonst wäre am Anfang fast jeder Tag ein Rekord.','Auszahlungen kommen aus deinen Tag-Daten.',
+    // ab 0.144 (Claude, von Florian bestätigt)
+    'Wenn du ein Bild speicherst oder teilst, zeigt es nur den neuen Wert, ohne den vorigen Rekord. Den Betrag zeigt es nur mit „Betrag zeigen“.']},
   leer:'Noch keine Meilensteine. Die ersten zwei Wochen setzen den Ausgangsstand, danach zählt jeder neue Höchstwert.',
   ohneTB:'Bei {k} fehlt der Trading Benefit. Ohne ihn keine Rendite. Trag ihn im Reiter „Reports“ ein oder nimm das Konto rechts im Menü heraus.',
   ohneInv:'Bei {k} ist die Investition unbekannt. Ohne sie keine Rendite. Sieh im Reiter „Reports“ nach oder nimm das Konto rechts im Menü heraus.',
@@ -14576,7 +14587,7 @@ const MS_TXT={
   sprungZeit:'Das Tool hat den Zeitraum auf „Gesamter Zeitraum“ gestellt, damit du die Stelle siehst.',
   sprungKonten:'Das Tool hat alle Konten gewählt, damit du die Stelle siehst.',
   sprungBeide:'Das Tool hat den Zeitraum auf „Gesamter Zeitraum“ gestellt und alle Konten gewählt, damit du die Stelle siehst.',
-  fuss:'Trading-Bilanz · trading-bilanz.github.io',bildFehler:'Das Bild ließ sich nicht erzeugen.',teilenFehler:'Teilen ging nicht, das Bild ist gespeichert.'
+  fuss:'Trading-Bilanz · trading-bilanz.github.io',fussKurz:'trading-bilanz.github.io',bildFehler:'Das Bild ließ sich nicht erzeugen.',teilenFehler:'Teilen ging nicht, das Bild ist gespeichert.'
 };
 // Aufschriften im Feier-Fenster aus MS_TXT
 $('ms-all').textContent=MS_TXT.alleLink;$('ms-amtl').textContent=MS_TXT.betrag;
