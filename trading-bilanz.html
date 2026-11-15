@@ -1460,7 +1460,8 @@ main .card.stk>.sthd{top:calc(var(--navh,70px) - var(--tabsoff,0px))}
 #cx-form label{font-size:var(--fs-s);color:var(--ink2)}
 /* Reiter Wallet (0.37): „+ Eintrag“ rechts im Titel, Formular im Fenster cx-modal */
 /* Ab 0.38: Knöpfe und Menüs rechts im Kartentitel als Gruppe; passt sie nicht neben den Titel, steht sie darunter rechts */
-.tbtns{margin-left:auto;display:flex;gap:8px;align-items:center;flex:none;font-size:15px;font-weight:400}
+.tbtns{margin-left:auto;display:flex;gap:var(--hg,8px);align-items:center;flex:none;font-size:15px;font-weight:400}
+.tbtns .wdd{margin-left:0}
 .card.closed .tbtns{display:none}
 .wland{margin:0 0 12px;gap:10px}
 /* Rechenweg: aufklappbare Abgänge */
@@ -1737,22 +1738,9 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
       <!-- Ab 0.100: Leiste „Diese Woche“ (renderStats), sichtbar in der Woche des neuesten Trades, wenn sie die heutige ist -->
       <div class="cwbar" id="cwbar" hidden></div>
     </div>
-    <div class="card fold stk" data-fold="st-hl" id="st-hl">
-      <div class="sthd"><h2 class="hx">Hochs und Tiefs <button type="button" class="ib" data-gl="k-hl" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Hochs und Tiefs">i</button><span class="fdd wdd udd noprint" id="fdd-u2"><button type="button" class="btn h2btn" id="fb-u2" aria-expanded="false" aria-controls="fp-u2">Rendite ▾</button><div class="fpan" id="fp-u2" role="dialog" aria-label="Rendite oder Betrag"></div></span></h2></div>
-      <div class="hlw" id="hlw"><div class="hlb"><h3>Trades</h3><div class="tscroll"><table id="t-hl1"></table></div></div><div class="hlb"><h3>Tage und Wochen</h3><div class="tscroll"><table id="t-hl2"></table></div></div><div class="hlb"><h3>Verhältnis</h3><div class="tscroll"><table id="t-hl3"></table></div></div></div>
-    </div>
-    <!-- Ab 0.139: Karte „Meilensteine“ (msRender): Rekorde, Stufen und Serien aus den Trades. Beim ersten Mal zu. Der Filter oben wirkt nicht,
-         die Konten wählt das Menü im Titel. Nicht im Druck, nicht in Excel, CSV, Steuer und Zusammenfassung. -->
-    <div class="card fold closed stk noprint" data-fold="st-ms" id="st-ms">
-      <div class="sthd"><h2 class="hx">Meilensteine <button type="button" class="ib" data-gl="k-ms" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Meilensteine">i</button><span class="msmenus noprint"><span class="fdd wdd noprint" id="fdd-msz"><button type="button" class="btn h2btn" id="fb-msz" aria-expanded="false" aria-controls="fp-msz">Gesamt ▾</button><div class="fpan" id="fp-msz" role="dialog" aria-label="Zeitraum für Meilensteine"></div></span><span class="fdd wdd noprint" id="fdd-msk"><button type="button" class="btn h2btn" id="fb-msk" aria-expanded="false" aria-controls="fp-msk">Konten: alle ▾</button><div class="fpan" id="fp-msk" role="dialog" aria-label="Konten für Meilensteine"></div></span></span></h2></div>
-      <div id="ms-note"></div>
-      <div id="ms-list"></div>
-    </div>
-    <div class="card fold stk" data-fold="st-avg" id="st-avg">
-      <div class="sthd"><h2>Durchschnitt <button type="button" class="ib" data-gl="k-avg" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Durchschnitt">i</button></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
-      <div class="tscroll"><table id="t-avg"></table></div>
-      <p class="small noprint" style="margin:10px 0 0"><span id="avg-zd"></span> · <button type="button" class="zlink">ändern</button></p>
-    </div>
+    <!-- Ab 0.146: Reihenfolge der Karten (Florians Auftrag, ersetzt die vom 08.11.2026): Überblick · Grafiken · Hochs und Tiefs · Meilensteine ·
+         Durchschnitt · Pro Woche · Pro Monat · Pro Konto · Netto pro Konto und Monat · Dein echtes Geld · Was wäre wenn. Nichts hängt an der Lage:
+         Sprünge, Zuklappen und stehende Köpfe laufen über die Kennungen der Karten. -->
     <div class="card fold stk" data-fold="st-graf" id="st-graf">
       <div class="sthd"><h2 class="hx">Grafiken <button type="button" class="ib" data-gl="k-graf" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Grafiken">i</button><span class="tbtns noprint" id="graf-btns"><button type="button" class="btn h2btn" id="graf-fs">Vollbild</button><span class="fdd udd" id="fdd-gb"><button type="button" class="btn h2btn" id="fb-gb" aria-expanded="false" aria-controls="fp-gb">Bild ▾</button><div class="fpan" id="fp-gb" role="dialog" aria-label="Bild"></div></span></span></h2></div>
       <div class="row noprint" id="graf-controls" style="gap:10px 16px;margin-bottom:6px">
@@ -1776,13 +1764,30 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
       <div class="chart" id="graf-chart"></div>
       <div class="small" id="graf-note"></div>
     </div>
-    <div class="card fold stk" data-fold="st-month" id="st-month">
-      <div class="sthd"><h2>Pro Monat <button type="button" class="ib" data-gl="k-month" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Pro Monat">i</button></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
-      <div class="tscroll"><table id="t-month"></table></div>
+    <div class="card fold stk" data-fold="st-hl" id="st-hl">
+      <div class="sthd"><h2 class="hx">Hochs und Tiefs <button type="button" class="ib" data-gl="k-hl" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Hochs und Tiefs">i</button><span class="fdd wdd udd noprint" id="fdd-u2"><button type="button" class="btn h2btn" id="fb-u2" aria-expanded="false" aria-controls="fp-u2">Rendite ▾</button><div class="fpan" id="fp-u2" role="dialog" aria-label="Rendite oder Betrag"></div></span></h2></div>
+      <div class="hlw" id="hlw"><div class="hlb"><h3>Trades</h3><div class="tscroll"><table id="t-hl1"></table></div></div><div class="hlb"><h3>Tage und Wochen</h3><div class="tscroll"><table id="t-hl2"></table></div></div><div class="hlb"><h3>Verhältnis</h3><div class="tscroll"><table id="t-hl3"></table></div></div></div>
+    </div>
+    <!-- Ab 0.139: Karte „Meilensteine“ (msRender): Rekorde, Stufen und Serien aus den Trades. Bis 0.145 beim ersten Mal zu, ab 0.146 offen wie
+         alle Karten der Auswertung (Florians Auftrag); ein gespeicherter Zuklapp-Zustand bleibt. Der Filter oben wirkt nicht,
+         die Konten wählt das Menü im Titel. Nicht im Druck, nicht in Excel, CSV, Steuer und Zusammenfassung. -->
+    <div class="card fold stk noprint" data-fold="st-ms" id="st-ms">
+      <div class="sthd"><h2 class="hx">Meilensteine <button type="button" class="ib" data-gl="k-ms" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Meilensteine">i</button><span class="msmenus noprint"><span class="fdd wdd noprint" id="fdd-msz"><button type="button" class="btn h2btn" id="fb-msz" aria-expanded="false" aria-controls="fp-msz">Gesamt ▾</button><div class="fpan" id="fp-msz" role="dialog" aria-label="Zeitraum für Meilensteine"></div></span><span class="fdd wdd noprint" id="fdd-msk"><button type="button" class="btn h2btn" id="fb-msk" aria-expanded="false" aria-controls="fp-msk">Konten: alle ▾</button><div class="fpan" id="fp-msk" role="dialog" aria-label="Konten für Meilensteine"></div></span></span></h2></div>
+      <div id="ms-note"></div>
+      <div id="ms-list"></div>
+    </div>
+    <div class="card fold stk" data-fold="st-avg" id="st-avg">
+      <div class="sthd"><h2>Durchschnitt <button type="button" class="ib" data-gl="k-avg" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Durchschnitt">i</button></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
+      <div class="tscroll"><table id="t-avg"></table></div>
+      <p class="small noprint" style="margin:10px 0 0"><span id="avg-zd"></span> · <button type="button" class="zlink">ändern</button></p>
     </div>
     <div class="card fold stk" data-fold="st-week" id="st-week">
-      <div class="sthd"><h2>Pro Woche <button type="button" class="ib" data-gl="k-week" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Pro Woche">i</button><span class="fdd wdd noprint" id="fdd-wk"><button type="button" class="btn h2btn" id="fb-wk" aria-expanded="false" aria-controls="fp-wk">Aufklappen ▾</button><div class="fpan" id="fp-wk" role="dialog" aria-label="Aufklappen"></div></span></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
+      <div class="sthd"><h2>Pro Woche <button type="button" class="ib" data-gl="k-week" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Pro Woche">i</button><span class="tbtns noprint"><button type="button" class="btn h2btn hsort" id="wk-sort"></button><span class="fdd wdd noprint" id="fdd-wk"><button type="button" class="btn h2btn" id="fb-wk" aria-expanded="false" aria-controls="fp-wk">Aufklappen ▾</button><div class="fpan" id="fp-wk" role="dialog" aria-label="Aufklappen"></div></span></span></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
       <div class="tscroll"><table id="t-week"></table></div>
+    </div>
+    <div class="card fold stk" data-fold="st-month" id="st-month">
+      <div class="sthd"><h2>Pro Monat <button type="button" class="ib" data-gl="k-month" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Pro Monat">i</button><span class="tbtns noprint"><button type="button" class="btn h2btn hsort" id="mo-sort"></button></span></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
+      <div class="tscroll"><table id="t-month"></table></div>
     </div>
     <!-- Ab 0.112: „Pro Konto“ hinter „Pro Woche“ (Florians Auftrag) -->
     <div class="card fold stk" data-fold="st-acc" id="st-acc">
@@ -2585,6 +2590,8 @@ for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','t
   if(!S.ui.nw48){for(const m of Object.values(S.wtx||{}))delete m.nw;for(const c of S.cx||[])delete c.nw;for(const t of Object.values(S.tag||{}))delete t.nw;for(const o of Object.values(S.bxOpen||{}))delete o.nw;S.ui.nw48=1}
   // Ab 0.45 (4.7, Ergänzung 1): Sortierung der Liste, Standard „neueste oben“
   if(S.ui.vgSort!=='old')S.ui.vgSort='new';
+  // Ab 0.146: Sortierung von „Pro Woche“ (wkSort) und „Pro Monat“ (moSort) in der Auswertung, je Karte ein eigener Stand, Vorgabe „Älteste oben“
+  if(S.ui.wkSort!=='new')S.ui.wkSort='old';if(S.ui.moSort!=='new')S.ui.moSort='old';
   // ab Version 0.43: Assistent im Reiter Wallet. Mit bestehenden Daten gelten alle Schritte als erledigt, er öffnet sich nicht von selbst.
   {const z=S.ui.wz&&typeof S.ui.wz==='object'?S.ui.wz:{};S.ui.wz={st:z.st&&typeof z.st==='object'?z.st:{},seen:z.seen?1:0,bar:z.bar===true};
    if(!S.ui.wz.seen&&(Object.keys(S.tag).length||S.cx.length||Object.keys(S.wtx).length)){S.ui.wz.seen=1;S.ui.wz.st={1:'ok',2:'ok',3:'ok',4:'ok'}}}
@@ -9398,6 +9405,9 @@ $('vg-chips').addEventListener('click',e=>{e.stopPropagation();
   const b=e.target.closest('[data-chx]');if(!b)return;const k=b.dataset.chx,o=S.ui.cf.vg;
   if(k==='s'||k==='all'){o.st=[];S.ui.vgSt='all'}if(k==='n'||k==='all')S.ui.vgNew=false;if(k==='a'||k==='all')o.art=[];if(k==='w'||k==='all')o.w=[];save();render()});
 $('vg-sort').addEventListener('click',e=>{e.stopPropagation();S.ui.vgSort=S.ui.vgSort==='old'?'new':'old';save();render();$('vg-sort').focus()});
+// Ab 0.146: Sortierknöpfe in „Pro Woche“ und „Pro Monat“ (Auswertung), gebaut wie vg-sort: Der Knopf zeigt den Stand, ein Tipp schaltet um.
+// Der Text je Stufe der Titelleiste kommt aus stSortBtns (bei renderStats und nach hbFit).
+for(const [id,k] of [['wk-sort','wkSort'],['mo-sort','moSort']])$(id).addEventListener('click',e=>{e.stopPropagation();S.ui[k]=S.ui[k]==='new'?'old':'new';save();render();$(id).focus()});
 // Ab 0.44: Suche (nicht gespeichert). Baut nur die Liste neu, das Feld behält den Fokus.
 $('vg-q').addEventListener('click',e=>e.stopPropagation());
 $('vg-q').addEventListener('input',e=>{VG_Q=e.target.value;if(VG_R)renderVg(...VG_R)});
@@ -12931,7 +12941,16 @@ function curWeek(RA,sel,rdf){
   if(!rep)rep=RA[RA.length-1].d;
   return rep<=addDays(w,5)?w:null;
 }
+/* ---------------- Titelleisten der Auswertung (ab 0.146) ---------------- */
+// Stufe der Titelleiste je Karte (hbFit, Phase 3): t = Stufe der Knopftexte, e = enger, f = kleinere Knopfschrift, k = Symbol bzw. Kurzform
+const HB={},hbOf=id=>HB[id]||{e:0,t:0,f:0,k:0};
+// Text des Sortierknopfs in Textstufe t: „Neueste oben“ → „Neueste“ → Pfeil. Der Pfeil zeigt, wo die neueste Zeile steht (↑ oben, ↓ unten).
+const hbSortT=(t,nw)=>t>=2?(nw?'↑':'↓'):t===1?(nw?'Neueste':'Älteste'):(nw?'Neueste oben':'Älteste oben');
+// Sortierknöpfe in „Pro Woche“ und „Pro Monat“: zeigen den Stand, vorgelesen wie vg-sort
+function stSortBtns(){for(const [id,k,c] of [['wk-sort','wkSort','st-week'],['mo-sort','moSort','st-month']]){const b=$(id),nw=S.ui[k]==='new';
+  b.textContent=hbSortT(hbOf(c).t,nw);b.setAttribute('aria-label','Sortierung: '+(nw?'neueste oben, umschalten':'älteste oben, umschalten'))}}
 function renderStats(rows){
+  stSortBtns();
   const ok=guard('stats-guard');$('stats-body').style.display=ok?'':'none';if(!ok){CW=null;CW_IN=false;renderFbar(false);return}
   const all=Object.keys(S.accounts).sort();const sel=fltAccs();const selSet=new Set(sel);const allSel=sel.length===all.length;MISS_SEL=sel;
   // PF-Schalter: ex = PF verteilt (PF anteilig bei den Trades, in der laufenden Woche ausgerechnet), sonst PF laut MT5
@@ -13102,7 +13121,10 @@ function renderStats(rows){
   let mh='',cV=0,cN=0;
   // Investition am Anfang des Monats (invStart): beim ersten Trade, ohne Trade am sichtbaren Monatsbeginn
   const mStart=m=>rg.from&&rg.from>m+'-01'&&rg.from.slice(0,7)===m?rg.from:m+'-01';
-  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=pfz(rr);cV+=z.res;cN+=z.nN;mh+=`<tr><td>${mLabel(m)}</td><td>${positions(rr).length}</td>${netTd(z)}<td>${rtSw(rr,'sel','–')}</td><td>${invM(invStart(rr,sel,mStart(m)),sel)}</td><td>${mon(z.res)}</td>${feeTd(z)}<td>${ddSw(rr,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`}
+  // Ab 0.146: Die Zeilen entstehen immer von alt nach neu (so bleibt „Kumuliert“ je Zeile gleich); „Neueste oben“ (S.ui.moSort) dreht nur die Reihenfolge
+  const mrows=[];
+  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=pfz(rr);cV+=z.res;cN+=z.nN;mrows.push(`<tr><td>${mLabel(m)}</td><td>${positions(rr).length}</td>${netTd(z)}<td>${rtSw(rr,'sel','–')}</td><td>${invM(invStart(rr,sel,mStart(m)),sel)}</td><td>${mon(z.res)}</td>${feeTd(z)}<td>${ddSw(rr,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`)}
+  mh=(S.ui.moSort==='new'?mrows.reverse():mrows).join('');
   mh+=`<tr class="sum"><td>Summe</td><td>${PS.n}</td>${netTd(T)}<td>${rtSw(R,'sel','–')}</td><td></td><td>${mon(T.res)}</td>${feeTd(T)}<td>${ddSw(R,'sel','–')}</td><td></td></tr>`;
   $('t-month').innerHTML=`<tr><th>Monat${SM0}</th><th>Trades${SM0}</th>${TH_MW()}</tr>`+mh;
   weekTree(R,{multi:sel.length>1,sel,wkSpan,cw:CW,cwr:CWR,cwSpan:CWR.length?[rg.from&&rg.from>CW?rg.from:CW,toOrig&&toOrig<addDays(CW,6)?toOrig:addDays(CW,6)]:null});
@@ -13340,7 +13362,10 @@ function weekTree(R0,cx){
   const netD=(v,res)=>v<-0.005&&res>-0.005?fee(fCur(v)):mon(v);
   const rH=v=>retHtml({v,n:1,miss:false},'');
   const c1=t=>`<td><div class="c1">${t}</div></td>`;
-  let h='',cV=0,cN=0,py=null;const T=pfz(R0);
+  // Ab 0.146: Jede Woche ist ein Block (Wochenzeile mit ihren Tagen, Trades und Konten). Die Blöcke entstehen immer von alt nach neu, so bleiben
+  // die Werte jeder Zeile gleich (auch „Kumuliert“ und die Jahreszahl an der ersten Woche eines Jahres); „Neueste oben“ (S.ui.wkSort) dreht nur
+  // die Reihenfolge der Blöcke. Die Tage in einer Woche bleiben Montag bis Freitag von oben nach unten, die Summe bleibt unten.
+  let h='',cV=0,cN=0,py=null;const T=pfz(R0),blocks=[];
   for(const w of wks){
     const rw=W.get(w);const z=pfz(rw);cV+=z.res;cN+=z.nN;const np=positions(rw).length;
     // Jahr (zweistellig) nur bei der ersten Woche eines neuen Kalenderjahres
@@ -13373,8 +13398,9 @@ function weekTree(R0,cx){
       GL.offencw={t:'offen',h:GL.offen.h+'\n'+t};
       GL.pfcw={t:'Performance Fee der laufenden Woche',h:'Tag bucht die Performance Fee dieser Woche erst am Samstag ab. Bis dahin rechnet das Tool sie aus: Anteil der letzten Abrechnung × Ergebnis der Woche, wenn es positiv ist.\n'+t};
       return sw(gl('offencw','offen'),gl('pfcw',mon(z.fN)),gF)};
-    h+=`<tr class="wk" data-w="${w}"><td><span class="wo"><span class="tw">▸</span> ${RW(`<b>${kw}</b>`)}</span><span class="wl"><span class="tw">▸</span> ${RW(`<b>${kw}</b> · ${dm(s)}${DS}${dm(e)}${yy}`)}</span>${nk?`<span class="sm">${gl('nichtkz','nicht in den Kennzahlen')}</span>`:''}</td><td>${np}</td><td><b>${sw(mon(z.nV),mon(z.nN),gN)}</b></td><td>${rtSw(rw,'sel','–')}</td><td>${invM(invStart(rw,cx.sel,s),cx.sel)}</td><td>${mon(z.res)}</td><td>${w===cx.cw?cwPf(rw,z,gF):sw(mon(z.fV),mon(z.fN),gF)}</td><td>${ddSw(rw,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`+dh;
+    blocks.push(`<tr class="wk" data-w="${w}"><td><span class="wo"><span class="tw">▸</span> ${RW(`<b>${kw}</b>`)}</span><span class="wl"><span class="tw">▸</span> ${RW(`<b>${kw}</b> · ${dm(s)}${DS}${dm(e)}${yy}`)}</span>${nk?`<span class="sm">${gl('nichtkz','nicht in den Kennzahlen')}</span>`:''}</td><td>${np}</td><td><b>${sw(mon(z.nV),mon(z.nN),gN)}</b></td><td>${rtSw(rw,'sel','–')}</td><td>${invM(invStart(rw,cx.sel,s),cx.sel)}</td><td>${mon(z.res)}</td><td>${w===cx.cw?cwPf(rw,z,gF):sw(mon(z.fV),mon(z.fN),gF)}</td><td>${ddSw(rw,'sel','–')}</td><td>${sw(mon(cV),mon(cN))}</td></tr>`+dh);
   }
+  h=(S.ui.wkSort==='new'?blocks.reverse():blocks).join('');
   h+=`<tr class="sum"><td>Summe</td><td>${positions(R0).length}</td><td>${sw(mon(T.nV),mon(T.nN))}</td><td>${rtSw(R0,'sel','–')}</td><td></td><td>${mon(T.res)}</td><td>${sw(mon(T.fV),mon(T.fN))}</td><td>${ddSw(R0,'sel','–')}</td><td></td></tr>`;
   if(cwr.length){const T2=pfz(R);h+=`<tr class="sum2"><td>Summe mit laufender Woche</td><td>${positions(R).length}</td><td>${sw(mon(T2.nV),mon(T2.nN))}</td><td>${rtSw(R,'sel','–')}</td><td></td><td>${mon(T2.res)}</td><td>${sw(mon(T2.fV),mon(T2.fN))}</td><td>${ddSw(R,'sel','–')}</td><td></td></tr>`}
   const tb=$('t-week');
