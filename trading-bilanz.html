@@ -12298,8 +12298,14 @@ function fltBounds(){
   const sel=new Set(fltAccs());const td=rows.filter(r=>isTrade(r)&&sel.has(r.a)).map(r=>r.d);
   return td.length?[td[0],td[td.length-1]]:['',''];
 }
-// Kurzer Text im Zeitraum-Knopf (Stufe 3 bis 6): „Gesamt“, „2026“, „Okt. 2026“, „3 Monate“, „15.07. - 30.09.“
+// Kurzer Text im Zeitraum-Knopf (Filterzeile Stufe 3 bis 6, Leiste im Reiter Wallet ab Stufe 2): „Gesamt“, „2026“, „Okt. 2026“, „3 Monate“,
+// „15.07. - 30.09.“. f = der Filter, zu dem rg gehört (Auswertung S.ui.flt, Reiter Wallet S.ui.wFlt). Ab 0.150 in der Filterzeile der Auswertung
+// bei „Individuell“ ohne Leerzeichen („15.07.-30.09.“, fltDateShort), in der Leiste im Reiter Wallet wie bisher.
 const MON_S=['Jän.','Feb.','März','Apr.','Mai','Juni','Juli','Aug.','Sep.','Okt.','Nov.','Dez.'];
+const fltDateShort=f=>`${f.from?dm(f.from):'…'}-${f.to?dm(f.to):'…'}`;
+// Ab 0.150: Vorlesetext eines Zeitraum-Knopfs mit der vollen Angabe (GESTALTUNG Abschnitt 0, Florians Regel): „Zeitraum: Gesamt“,
+// „Zeitraum: 15.07.2026 - 30.09.2026, ohne laufende Woche“
+const fltRangeAria=(rg,f,cw)=>'Zeitraum: '+(f.range==='all'?'Gesamt':rg.label.replace(/\u2060/g,''))+(cw?', ohne laufende Woche':'');
 function fltRangeShort(rg,f){f=f||S.ui.flt;if(f.range==='all')return 'Gesamt';if(f.range.startsWith('y:'))return f.range.slice(2);
   if(f.range==='month'){const ym=todayLocal().slice(0,7);return `${MON_S[+ym.slice(5)-1]} ${ym.slice(0,4)}`}
   if(f.range==='last3m')return '3 Monate';return `${f.from?dm(f.from):'…'}${DS}${f.to?dm(f.to):'…'}`}
@@ -12347,8 +12353,10 @@ const wRange=()=>fltRange(walletYears(),S.ui.wFlt);
 const inRange=(d,rg)=>(!rg.from||d>=rg.from)&&(!rg.to||d<=rg.to);
 // Leiste unter den Reitern, nur im Reiter Wallet. Ab 0.44: Zeitraum · Wallets · ＋ Daten · Noch offen (Zahl, rot bei steuerlich wichtig). Das Menü „Land“ ist ab 0.82 auch im Skript weg.
 // Stufen (fitWbar, #wbar[data-st]): 1 Zeitraum lang, 2 Zeitraum kurz, 3 „Offen“ statt „Noch offen“, 4 nur Symbole. Die erste, die in eine Zeile passt.
+// Ab 0.150: Der kurze Zeitraum kommt aus dem eigenen Filter des Reiters Wallet (S.ui.wFlt). Von 0.44 bis 0.149 nahm fltRangeShort hier den
+// Filter der Auswertung (S.ui.flt): Am Handy zeigte der Knopf z. B. „Gesamt ▾“, obwohl im Reiter Wallet „Individuell“ gewählt war.
 function wbHtml(st){const T=LAST_TODO||{n:0,nW:0},rg=wRange(),n=T.n||0,badge=`<span class="wbn${T.lv==='r'?' imp':T.lv==='y'?' chk':T.lv==='g'?' inf':''}">${n?fI.format(n):''}</span>`,sym=t=>`<span class="wbi" aria-hidden="true">${t}</span>`;
-  return {wr:fbBtn(2,'range',st>=2?fltRangeShort(rg):rg.label),wl:st>=4?sym('▤'):'Adressen',dt:(st>=4?sym('＋'):'＋ Daten ')+(dtWaitN()?'<span class="wbn chk">!</span>':''),
+  return {wr:fbBtn(2,'range',st>=2?fltRangeShort(rg,S.ui.wFlt):rg.label),wl:st>=4?sym('▤'):'Adressen',dt:(st>=4?sym('＋'):'＋ Daten ')+(dtWaitN()?'<span class="wbn chk">!</span>':''),
     td:(st>=4?(n?'':sym('✓')):st>=3?'Offen ':'Noch offen ')+badge}}
 let WB_ST=1;
 function fitWbar(){const fin=$('wbar').querySelector('.fin'),cs=getComputedStyle(fin),avail=fin.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),gap=parseFloat(cs.columnGap)||0;
@@ -12357,6 +12365,8 @@ function fitWbar(){const fin=$('wbar').querySelector('.fin'),cs=getComputedStyle
   // gemessen ohne Umbruch und ohne Schrumpfen (Klasse meas), damit jede Stufe ihre volle Breite zeigt
   $('wbar').classList.add('meas');let st=1;for(;st<=4;st++){set(st);const w=ids.reduce((s,id)=>s+$(id).getBoundingClientRect().width,0)+gap*(ids.length-1);if(w<=avail+0.5)break}
   $('wbar').classList.remove('meas');WB_ST=Math.min(st,4);if(st>4)set(4);$('wbar').dataset.st=WB_ST;
+  // Ab 0.150: Vorlesetext des Zeitraums mit der vollen Angabe (GESTALTUNG Abschnitt 0), in jeder Stufe gleich
+  $('fb-wr').setAttribute('aria-label',fltRangeAria(wRange(),S.ui.wFlt,false));
   const T=LAST_TODO||{n:0,nW:0};$('wb-wl').setAttribute('aria-label','Adressen');{const n=dtWaitN();$('wb-dt').setAttribute('aria-label',`Daten hinzufügen${n?`, ${fI.format(n)} ${n===1?'Datei wartet':'Dateien warten'}`:''}`)}
   $('wb-td').setAttribute('aria-label',`Noch offen: ${T.n?fI.format(T.n)+(T.nW?`, davon ${fI.format(T.nW)} ${T.nW===1?'fehlt':'fehlen'} für die Steuer`:''):'nichts offen'}`)}
 function renderWbar(show){
@@ -12365,48 +12375,63 @@ function renderWbar(show){
   fitWbar();
   if(FP_OPEN==='wr')updFpanel();
 }
-// Beschriftung eines Filterknopfs in Stufe st: Stufe 1 mit „Zeitraum:“ bzw. „Konten:“ davor, Stufe 4 und 6 ohne Pfeil
-function fbBtn(st,k,t){const bare=st===4||st===6,lbl=st===1?{range:'Zeitraum:',acc:'Konten:'}[k]:'';
+// Beschriftung eines Filterknopfs in Stufe st: Stufe 1 mit „Zeitraum:“ bzw. „Konten:“ davor, Stufe 4 und 6 ohne Pfeil, ab 0.150 auch
+// Stufe 3 ohne Pfeil (na)
+function fbBtn(st,k,t,na){const bare=st===4||st===6||!!na,lbl=st===1?{range:'Zeitraum:',acc:'Konten:'}[k]:'';
   return (lbl?`<span class="fl">${lbl}</span>`:'')+`<span class="ft">${esc(t)}</span>`+(bare?'':'<span class="fc">▾</span>')}
 const FB_SFX=st=>st<=2?'; ohne lfd. Woche':'*';
 // Ab 0.146: Knopf „Inhalt“. Stufe 1 und 2 (PC): Text mit ▾, ab Stufe 3 das Symbol (Liste mit drei Punkten und drei Strichen), immer ohne ▾.
 const FB_TOC='<svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true"><circle cx="2.6" cy="3.5" r="1.4" fill="currentColor"/><circle cx="2.6" cy="8" r="1.4" fill="currentColor"/><circle cx="2.6" cy="12.5" r="1.4" fill="currentColor"/><path d="M6.5 3.5H14.5M6.5 8H14.5M6.5 12.5H14.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>';
 const fbToc=st=>st<=2?'<span class="ft">Inhalt</span><span class="fc">▾</span>':FB_TOC;
 // Texte der vier Filterknöpfe in Stufe st für die aktuelle Auswahl. nm = bei genau einem gewählten Konto in Stufe 1 seinen Namen zeigen.
-function fbHtml(st,nm){
-  const f=S.ui.flt,rg=fltRange(years(window.__rows||[]));const N=Object.keys(S.accounts).length,sel=fltAccs(),n=sel.length,allS=n===N;
-  // Ab 0.146: Ab Stufe 3 (Handy) steht bei einem individuellen Zeitraum „Individuell“ statt der Daten (die stehen im offenen Menü); in den
-  // Stufen 1 und 2 (PC) bleibt der volle Zeitraum. Die Datums-Aufteilung der Stufe 6 entfällt damit.
-  const rt=(st<=2?rg.label:f.range==='custom'?'Individuell':fltRangeShort(rg))+(nocwOn()?FB_SFX(st):'');
-  const at=st===1?(allS?'alle':n===1&&nm?accName(sel[0]):`${n} von ${N}`):allS?'alle Konten':st===2?`${n} von ${N} Konten`:`${n} von ${N}`;
+// o = Form der Stufe (ab 0.150): na = ohne ▾ (Stufe 3), kk = Konten kurz („alle“, „6/10“, Stufe 4), ind = „Individuell“ statt der Daten.
+// aria = Vorlesetexte mit der vollen Angabe (ab 0.150, GESTALTUNG Abschnitt 0), in jeder Stufe gleich.
+function fbHtml(st,nm,o){o=o||{};
+  const f=S.ui.flt,rg=fltRange(years(window.__rows||[]));const N=Object.keys(S.accounts).length,sel=fltAccs(),n=sel.length,allS=n===N,cw=nocwOn();
+  // Ab 0.150 (Florians Auftrag): Ab Stufe 3 (Handy) steht bei „Individuell“ wieder das Datum, kurz und ohne Leerzeichen („12.12.-24.12.“, ersetzt
+  // „Individuell“ aus 0.146). „Individuell“ nur noch als Notlösung (o.ind), wenn das Datum auch in Stufe 5 (zwei Zeilen) nicht passt.
+  // In den Stufen 1 und 2 (PC) bleibt der volle Zeitraum. Das genaue Datum mit Jahr steht im offenen Zeitraum-Menü.
+  const rt=(st<=2?rg.label:f.range==='custom'?(o.ind?'Individuell':fltDateShort(f)):fltRangeShort(rg,f))+(cw?FB_SFX(st):'');
+  const at=st===1?(allS?'alle':n===1&&nm?accName(sel[0]):`${n} von ${N}`):allS?(o.kk?'alle':'alle Konten'):st===2?`${n} von ${N} Konten`:o.kk?`${n}/${N}`:`${n} von ${N}`;
   const pf=f.pf==='ex'?'verteilt':'laut MT5';
-  return {range:fbBtn(st,'range',rt),acc:fbBtn(st,'acc',at),pf:fbBtn(st,'pf',st===4||st===6?pf:'PF '+pf),cur:fbBtn(st,'cur',CUR_EFF==='usd'?'USD':'EUR')};
+  return {range:fbBtn(st,'range',rt,o.na),acc:fbBtn(st,'acc',at,o.na),pf:fbBtn(st,'pf',st===4||st===6?pf:'PF '+pf,o.na),cur:fbBtn(st,'cur',CUR_EFF==='usd'?'USD':'EUR',o.na),
+    aria:{range:fltRangeAria(rg,f,cw),acc:'Konten: '+(allS?'alle':n===1&&nm?accName(sel[0]):`${n} von ${N}`),pf:'Performance Fee: '+pf}};
 }
-// Alle Texte, die ein Knopf in Stufe st haben kann, unabhängig von der aktuellen Auswahl. Zeitraum immer mit Zusatz der laufenden Woche.
-// „Individuell“: in Stufe 1 und 2 getrennt (cust) mit einem Muster-Datum aus breiten Ziffern, ab Stufe 3 das Wort „Individuell“ (ab 0.146).
-// nm = in Stufe 1 die Kontonamen statt „1 von N“.
-function fbCands(st,nm){
+// Alle Texte, die ein Knopf in Stufe st (Form o wie bei fbHtml) haben kann, unabhängig von den übrigen Einstellungen. Zeitraum immer mit Zusatz
+// der laufenden Woche. Ab 0.150 (Florians Auftrag) zählt das Datum nur, wenn „Individuell“ gewählt ist, dann aber nur das Datum, als Muster aus
+// breiten Ziffern: in Stufe 1 und 2 voll („28.08.2028 - 28.08.2028“), ab Stufe 3 kurz („28.08.-28.08.“), mit o.ind das Wort „Individuell“.
+// Bis 0.149 zählten in Stufe 1 und 2 immer beide und ab Stufe 3 das Wort „Individuell“. nm = in Stufe 1 die Kontonamen statt „1 von N“.
+function fbCands(st,nm,o){o=o||{};
   const N=Object.keys(S.accounts).length,ys=years(window.__rows||[]),ym=todayLocal().slice(0,7),sx=FB_SFX(st);
-  const rg=(st<=2?['Gesamter Zeitraum',...ys,fM(ym),'Letzte 3 Monate']:['Gesamt',...ys,`${MON_S[+ym.slice(5)-1]} ${ym.slice(0,4)}`,'3 Monate','Individuell']).map(t=>t+sx);
-  const cust=`28.08.2028${DS}28.08.2028`+sx;
-  const acc=st===1?['alle',`${N} von ${N}`,...(nm?Object.keys(S.accounts).map(accName):[])]:st===2?['alle Konten',`${N} von ${N} Konten`]:['alle Konten',`${N} von ${N}`];
+  const rg=(S.ui.flt.range==='custom'?(st<=2?[`28.08.2028${DS}28.08.2028`]:[o.ind?'Individuell':'28.08.-28.08.'])
+    :st<=2?['Gesamter Zeitraum',...ys,fM(ym),'Letzte 3 Monate']:['Gesamt',...ys,`${MON_S[+ym.slice(5)-1]} ${ym.slice(0,4)}`,'3 Monate']).map(t=>t+sx);
+  const acc=st===1?['alle',`${N} von ${N}`,...(nm?Object.keys(S.accounts).map(accName):[])]:st===2?['alle Konten',`${N} von ${N} Konten`]:o.kk?['alle',`${N}/${N}`]:['alle Konten',`${N} von ${N}`];
   const bare=st===4||st===6;
-  return {range:rg,cust:st<=2?[cust]:[],acc,pf:bare?['laut MT5','verteilt']:['PF laut MT5','PF verteilt'],cur:['EUR','USD']};
+  return {range:rg,acc,pf:bare?['laut MT5','verteilt']:['PF laut MT5','PF verteilt'],cur:['EUR','USD']};
 }
 // Filterzeile: Die Stufe gilt für jede mögliche Auswahl. Gemessen wird für jeden Knopf sein breitester möglicher Text (fbCands), ab 0.146
-// samt dem Knopf „Inhalt“. Gewählt wird die erste Stufe, in der alle Knöpfe so in eine Zeile passen: 1 mit Kontonamen, 1, 2, 3, 3 eng,
-// 4, 4 eng, 4 eng mit schmaleren Lücken (eng = Knöpfe innen 2 px je Seite weniger, ab 0.146). In Stufe 1 und 2 zählt auch der volle
-// individuelle Zeitraum mit; ab Stufe 3 steht dort „Individuell“. Die Sonderregel bis 0.145 („bei Individuell darf die Zeile umbrechen“, cw)
-// gibt es nicht mehr. Sonst Stufe 5 (Stufe 3 in höchstens zwei Zeilen), sonst Stufe 6 (Stufe 4 mit Umbruch, so viele Zeilen wie nötig).
-// Neu gerechnet nur, wenn sich FB_KEY ändert: Breite, Schriftgröße, Konten und Kontonamen, Jahre in den Daten, Monat.
+// samt dem Knopf „Inhalt“. Gewählt wird die erste Stufe, in der alle Knöpfe so in eine Zeile passen (FB_FORMEN, ab 0.150 Florians Folge):
+//   1 mit Kontonamen, 1, 2 (PC) ·
+//   a) 3, 3 eng (eng = Knöpfe innen 2 px je Seite weniger, ab 0.146) ·
+//   b) 3 ohne ▾ (Texte wie Stufe 3: „PF verteilt“, „alle Konten“, „10 von 10“), 3 ohne ▾ eng (ab 0.150) ·
+//   c) 4 („verteilt“, ohne ▾), 4 eng, 4 eng mit schmaleren Lücken ·
+//   d) 4 mit Konten kurz („alle“ bzw. „6/10“, vorgelesen „Konten: 6 von 10“), eng, mit schmaleren Lücken (ab 0.150; nur mit mehreren Konten) ·
+//   e) sonst Stufe 5 (Stufe 3 in höchstens zwei Zeilen), sonst Stufe 6 (Stufe 4 mit Umbruch, so viele Zeilen wie nötig) ·
+//   f) bei „Individuell“: passt das Datum auch in Stufe 5 nicht, steht dort „Individuell“ (Stufe 5, sonst 6).
+// Das Datum zählt nur, wenn „Individuell“ gewählt ist (ab 0.150, fbCands): Beim Wählen von „Individuell“ darf die Zeile in eine kürzere Stufe
+// wechseln und beim Zurückwechseln wieder zurück (Florians Entscheidung). Der Knopf „Inhalt“ ist ab Stufe 3 immer das Symbol ohne ▾.
+// Die Sonderregel bis 0.145 („bei Individuell darf die Zeile umbrechen“) gibt es nicht mehr.
+// Neu gerechnet nur, wenn sich FB_KEY ändert: Breite, Schriftgröße, Konten und Kontonamen, Jahre in den Daten, Monat, ab 0.150 „Individuell“.
 let FB_KEY='',FB_FIX={st:1,nm:false,eng:0};
+const FB_FORMEN=[[1,{nm:1}],[1],[2],[3],[3,{eng:1}],[3,{na:1}],[3,{na:1,eng:1}],[4],[4,{eng:1}],[4,{eng:2}],[4,{kk:1}],[4,{kk:1,eng:1}],[4,{kk:1,eng:2}]];
 function fitFbar(){
   const fb=$('fbar');if(!fb.classList.contains('on'))return;
   const fin=fb.querySelector('.fin'),accs=Object.keys(S.accounts).sort(),multi=accs.length>1;
-  const key=[fin.clientWidth,getComputedStyle($('fb-range')).fontSize,accs.map(a=>a+'='+accName(a)).join('|'),years(window.__rows||[]).join(),todayLocal().slice(0,7)].join('#');
+  const key=[fin.clientWidth,getComputedStyle($('fb-range')).fontSize,accs.map(a=>a+'='+accName(a)).join('|'),years(window.__rows||[]).join(),todayLocal().slice(0,7),S.ui.flt.range==='custom'].join('#');
   if(key!==FB_KEY){FB_KEY=key;FB_FIX=fbChoose(fb,fin,multi)}
-  const {st,nm,eng}=FB_FIX,h=fbHtml(st,nm&&multi&&fltAccs().length===1);
+  const {st,nm,eng}=FB_FIX,h=fbHtml(st,nm&&multi&&fltAccs().length===1,FB_FIX);
   for(const k of ['range','acc','pf','cur'])$('fb-'+k).innerHTML=h[k];
+  for(const k of ['range','acc','pf'])$('fb-'+k).setAttribute('aria-label',h.aria[k]);
   $('fb-toc').innerHTML=fbToc(st);
   fb.dataset.stage=st;if(eng)fb.dataset.eng=eng;else delete fb.dataset.eng;fin.classList.toggle('wrap',st>=5);
 }
@@ -12414,18 +12439,19 @@ function fbChoose(fb,fin,multi){
   const ks=multi?['range','acc','pf','cur','toc']:['range','pf','cur','toc'];
   const cs=getComputedStyle(fin),avail=fin.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
   fin.classList.remove('wrap');
-  // Breite jedes Knopfs mit jedem möglichen Text, je Stufe (eng = engere Knöpfe); die Lücke zwischen den Knöpfen gehört zur Stufe (g)
-  const widths=(st,nm,eng)=>{fb.dataset.stage=st;if(eng)fb.dataset.eng=eng;else delete fb.dataset.eng;const c=fbCands(st,nm),w={g:parseFloat(getComputedStyle(fin).columnGap)||0};
-    for(const k of [...ks,'cust']){if(k==='toc'){const b=$('fb-toc');b.innerHTML=fbToc(st);w.toc=b.getBoundingClientRect().width;continue}
-      const b=$('fb-'+(k==='cust'?'range':k));w[k]=Math.max(0,...c[k].map(t=>{b.innerHTML=fbBtn(st,k==='cust'?'range':k,t);return b.getBoundingClientRect().width}))}
+  // Breite jedes Knopfs mit jedem möglichen Text, je Stufe und Form (eng = engere Knöpfe); die Lücke zwischen den Knöpfen gehört zur Stufe (g)
+  const widths=(st,o)=>{fb.dataset.stage=st;if(o.eng)fb.dataset.eng=o.eng;else delete fb.dataset.eng;const c=fbCands(st,!!o.nm,o),w={g:parseFloat(getComputedStyle(fin).columnGap)||0};
+    for(const k of ks){if(k==='toc'){const b=$('fb-toc');b.innerHTML=fbToc(st);w.toc=b.getBoundingClientRect().width;continue}
+      const b=$('fb-'+k);w[k]=Math.max(0,...c[k].map(t=>{b.innerHTML=fbBtn(st,k,t,o.na);return b.getBoundingClientRect().width}))}
     return w};
-  const row=w=>ks.map(k=>k==='range'?Math.max(w.range,w.cust):w[k]);
+  const row=w=>ks.map(k=>w[k]);
   const one=(a,g)=>a.reduce((s,x)=>s+x,0)+g*(a.length-1)<=avail+0.02;
   const lines=(a,g)=>{let n=1,x=0;for(const v of a){if(x&&x+g+v>avail+0.02){n++;x=v}else x+=(x?g:0)+v}return a.every(v=>v<=avail+0.02)?n:99};
-  for(const [st,nm,eng] of [[1,true,0],[1,false,0],[2,false,0],[3,false,0],[3,false,1],[4,false,0],[4,false,1],[4,false,2]]){if(nm&&!multi)continue;
-    const w=widths(st,nm,eng);if(one(row(w),w.g))return {st,nm,eng}}
-  const w5=widths(5,false,0);if(lines(row(w5),w5.g)<=2)return {st:5,nm:false,eng:0};
-  return {st:6,nm:false,eng:0};
+  const form=(st,o)=>({st,nm:!!o.nm,eng:o.eng||0,na:!!o.na,kk:!!o.kk,ind:!!o.ind});
+  for(const [st,o0] of FB_FORMEN){const o=o0||{};if((o.nm||o.kk)&&!multi)continue;
+    const w=widths(st,o);if(one(row(w),w.g))return form(st,o)}
+  for(const o of S.ui.flt.range==='custom'?[{},{ind:1}]:[{}]){const w5=widths(5,o);if(lines(row(w5),w5.g)<=2)return form(5,o)}
+  return form(6,{ind:S.ui.flt.range==='custom'?1:0});
 }
 function renderFbar(show){
   $('fbar').classList.toggle('on',show);
