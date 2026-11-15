@@ -9,4 +9,4 @@ Zur Anleitung: https://trading-bilanz.github.io/anleitung.html
 
 Für AiTech-Community.
 
-Icon, Schmetterling und Raupe mit ChatGPT erstellt.
+Icon und Schmetterling mit ChatGPT erstellt.
