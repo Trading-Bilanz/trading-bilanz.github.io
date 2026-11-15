@@ -382,7 +382,7 @@ a.jl:hover,a.jl:focus-visible{text-decoration-thickness:2px}
 button.zlink{border:0;background:none;padding:0;font:inherit;cursor:pointer}
 #t-week tr.hl td,#t-oc tr.hl td{animation:hl 2.2s ease-out}
 /* Titelzeile mit kleinem Knopf rechts (Schalter Rendite/Betrag in „Überblick“, „Hochs und Tiefs“ und „Pro Konto“) */
-.card>h2.hx,.sthd>h2.hx{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card>h2.hx,.sthd>h2.hx{display:flex;align-items:center;gap:var(--hg,8px);flex-wrap:wrap}
 /* Ab 0.49 (5.2): langer Titel (Krypto-Karte im Reiter Steuer): der Text bricht um, das (i) bleibt rechts daneben in der Mitte */
 .card>h2.hx.hxn{flex-wrap:nowrap}
 /* Offenes Menü im stehenden Titel: dessen Karte liegt über dem stehenden Titel der nächsten Karte (fpo, gesetzt in openFpanel) */
@@ -1372,8 +1372,27 @@ kbd{display:inline-block;border:1px solid var(--line);border-bottom-width:2px;bo
 details.more summary{font-size:var(--fs-s);font-weight:600;color:var(--accent)}
 details.more .hint{margin-top:6px}
 .card.fold>h2,.card.fold>.sthd>h2,.card.fold>.sthd>h4{cursor:pointer;user-select:none}
-.card.fold>h2::before,.card.fold>.sthd>h2::before,.card.fold>.sthd>h4::before{content:'▾';display:inline-block;width:20px;color:var(--muted);transition:transform .15s}
+.sthd>.rlsub{margin:-4px 0 6px 28px;color:var(--muted)}
+/* Ab 0.146: Das Zeichen steht mittig in seinem Feld (text-align), so sitzt der Pfeil offen und zugeklappt mittig zur Titelzeile (gedreht wird
+   um die Feldmitte). Der Abstand Pfeil → Titel ist für alle Karten gleich (--ag), auch wenn eine Titelleiste engere Abstände hat (--hg, Stufe
+   „eng“ der Auswertung): so bleiben alle Titel bündig. Am Handy (bis 700 px) ist das Feld 14 statt 20 px breit, der Abstand 6 statt 8 px. */
+.card.fold>h2::before,.card.fold>.sthd>h2::before,.card.fold>.sthd>h4::before{content:'▾';display:inline-block;width:20px;text-align:center;flex:none;color:var(--muted);transition:transform .15s;margin-right:calc(var(--ag,8px) - var(--hg,8px))}
+.card.fold>h2:not(.hx)::before{margin-right:0}
 .card.fold.closed>h2::before,.card.fold.closed>.sthd>h2::before,.card.fold.closed>.sthd>h4::before{transform:rotate(-90deg)}
+@media (max-width:700px){
+  .card.fold>h2,.card.fold>.sthd>h2,.card.fold>.sthd>h4{--ag:6px}
+  .card.fold>h2::before,.card.fold>.sthd>h2::before,.card.fold>.sthd>h4::before{width:14px}
+  .card.fold>h2:not(.hx)::before{margin-right:6px}
+  .sthd>.rlsub{margin-left:20px}
+  /* „Überblick“ hat am Handy weniger Innenabstand (Kacheln): Die Titelleiste rückt um den Unterschied ein und steht wie in den anderen Karten */
+  .card.ov>.sthd{padding-left:8px;padding-right:8px}
+}
+/* Ab 0.146: Beim Antippen leuchtet die Titelleiste nicht auf (der Browser markiert sonst die ganze Fläche mit dem Klick-Listener).
+   Knöpfe, Menüs, (i), Begriffe und Felder in der Leiste leuchten weiter wie überall (Wert des Browsers). */
+.card.fold>h2,.card.fold>.sthd>h2,.card.fold>.sthd>h4{-webkit-tap-highlight-color:transparent}
+:is(.card.fold>h2,.card.fold>.sthd>h2,.card.fold>.sthd>h4) :is(button,a,input,select,textarea,label,.gl){-webkit-tap-highlight-color:initial}
+/* Ab 0.146: zugeklappte Karten flacher (47 statt 65 px) und näher an der nächsten Karte (10 statt 16 px), offene Karten unverändert */
+.card.fold.closed{padding-top:9px;padding-bottom:9px;margin-bottom:10px}
 .card.fold.closed>*:not(h2):not(.sthd),.card.fold.closed .hclip,.card.fold.closed .hbar{display:none!important}
 .card.fold.closed>h2,.card.fold.closed>.sthd>h2{margin:0}
 /* Tabellen der Auswertung stehen ganz in der Seite, die Seite scrollt normal. Kartentitel und eine Kopie der Kopfzeile (.sthd) bleiben unter
@@ -1384,9 +1403,8 @@ details.more .hint{margin-top:6px}
 .card.stk>.sthd{position:-webkit-sticky;position:sticky;top:var(--navh,70px);z-index:4;background:var(--card);padding-top:8px;margin-top:-8px}
 /* Ab 0.116: in der Seite unter der sichtbaren Unterkante der nav (Reiter ggf. hinausgeschoben, --tabsoff); Fenster haben eigene Regeln */
 main .card.stk>.sthd{top:calc(var(--navh,70px) - var(--tabsoff,0px))}
-.sthd>h2{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sthd>h2{display:flex;align-items:center;gap:var(--hg,8px);flex-wrap:wrap}
 /* Ab 0.47: Zusatz klein unter dem Titel („Dein echtes Geld“), damit der Titel nicht umbricht und das (i) mittig bleibt */
-.sthd>.rlsub{margin:-4px 0 6px 28px;color:var(--muted)}
 .card.fold.closed>.sthd>.rlsub{display:none}
 #graf-controls label,#graf-controls select{max-width:100%}
 .hclip{overflow:hidden;overflow:clip}
