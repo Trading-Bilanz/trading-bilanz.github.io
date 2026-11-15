@@ -532,6 +532,20 @@ nav button.fonly,.fpan button.fonly{flex:none;min-height:32px;padding:0 0 0 10px
 #fp-toc{left:auto;right:0;min-width:220px}
 #fp-toc .fgrp{margin:0}
 #fp-toc .tocx{border-top:1px solid var(--line);margin-top:8px;padding-top:6px}
+/* Ab 0.150 (Florians Auftrag): Das Menü ist nur so breit wie nötig: der längste Eintrag (in fett, damit es beim Wechsel von „Du bist hier“
+   nicht zuckt: ::after hält den Platz, unsichtbar und nicht vorgelesen) und die beiden Knöpfe nebeneinander (etwa 280 px). Höchstens so
+   breit wie der Platz, unter dem Knopf rechtsbündig an dessen rechter Kante, am Handy und am PC gleich (popPlace mit right). Drei Gruppen
+   mit dünnen Linien ohne Überschriften, darunter abgesetzt „Alle aufklappen“ links und „Alle zuklappen“ rechts als kleine Knöpfe wie
+   „Alle auswählen“ im Menü Konten; passen sie nicht nebeneinander (schmales Fenster), stehen sie untereinander. „Du bist hier“ (tocMark):
+   fett, Strich links in --accent, Fläche --accent-soft über die ganze Breite des Menüs, vorgelesen als aktuelle Stelle (aria-current). */
+#fp-toc{min-width:0;width:max-content}
+@media (max-width:700px){#fbar #fp-toc{width:max-content;max-width:calc(100vw - 16px);border:1px solid var(--line);border-radius:var(--radius)}}
+#fp-toc .tocg+.tocg{border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+#fp-toc .tocg .wopt{display:block;margin:0 -16px;padding:6px 16px;width:calc(100% + 32px)}
+#fp-toc .tocg .wopt::after{content:attr(data-t);display:block;height:0;overflow:hidden;visibility:hidden;font-weight:700}
+#fp-toc .tocg .wopt[aria-current]{font-weight:700;background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+#fp-toc .tocx{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin-top:6px;padding-top:10px}
+#fp-toc .tocx .fall{margin:0}
 #fbar[data-eng] .fsel{padding-left:8px;padding-right:8px}
 @media (max-width:700px){#fbar[data-eng] .fsel{padding-left:6px;padding-right:6px}#fbar[data-eng="2"] .fin{gap:4px}}
 /* Letzte Stufe: Ist ein einzelner Knopf breiter als die Zeile, bricht sein Text um. Die Seite scrollt nie seitlich. */
@@ -1419,10 +1433,29 @@ details.more .hint{margin-top:6px}
   /* Der volle Titel bleibt für Vorleseprogramme da, nur nicht sichtbar */
   #st-matrix[data-hbk] .hbtl{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 }
-/* Ab 0.146: zugeklappte Karten flacher (47 statt 65 px) und näher an der nächsten Karte (10 statt 16 px), offene Karten unverändert */
+/* Ab 0.146: zugeklappte Karten flacher und näher an der nächsten Karte (10 statt 16 px). Ab 0.150 in den Reitern 51 px hoch (0.146: 47 px). */
 .card.fold.closed{padding-top:9px;padding-bottom:9px;margin-bottom:10px}
 .card.fold.closed>*:not(h2):not(.sthd),.card.fold.closed .hclip,.card.fold.closed .hbar{display:none!important}
 .card.fold.closed>h2,.card.fold.closed>.sthd>h2{margin:0}
+/* Ab 0.150 (Florians Auftrag, Variante A): Der Kartentitel steht offen und zugeklappt an derselben Stelle. Bis 0.149 rutschte er beim
+   Aufklappen 9 px nach unten (18 statt 9 px Innenabstand oben), mit Knöpfen 11 px (die Zeile wurde dazu 31 statt 27 px hoch).
+   - Innenabstand oben offen wie zu 9 px, mit dem Rand 10 px bis zur Titelzeile (auch „Überblick“ am Handy, sonst 14 px).
+   - Die erste Titelzeile ist immer so hoch wie ein Knopf in der Leiste (--trh: 14 px Schrift × 1,5 + 2 × 4 px innen + 2 × 1 px Rand = 31 px),
+     mit und ohne Knöpfe, auch mit der kleineren Titelschrift (.hbt): Das Pfeil-Feld ist so hoch, der Pfeil steht mittig darin, der Titel mittig
+     in der Zeile. Bricht eine Leiste um (z. B. „Alle Vorgänge“ am Handy), gilt das für die erste Zeile.
+   - Unter der Zeile bleiben wie bisher 6 px bis zum Inhalt (Florians Freigabe: in Karten ohne Knöpfe 2 px mehr Luft unter dem Titeltext).
+   - Feste Karten mit dem Titel oben (Kurse „Wechselkurse“, Steuer „Jahresabrechnung“, Sicherung, Resonanz) ebenso: 10 px, Zeile 31 px.
+   - Der stehende Titel (.sthd: 8 px unter der Filterzeile) bleibt, wie er ist.
+   Nur am Bildschirm und nur in den Reitern (main): Fenster wie „Adressen“ (dort springt nichts) und der Druck bleiben, wie sie sind. */
+:root{--trh:31px}
+@media screen{
+  main .card.fold{padding-top:9px}
+  main :is(.card.fold>h2,.card.fold>.sthd>h2)::before{height:var(--trh);line-height:var(--trh)}
+  main .sthd>.rlsub{margin-top:-6px}
+  main .card:not(.fold):has(>h2:first-child,>.sthd:first-child>h2:first-child){padding-top:9px}
+  main .card:not(.fold)>h2.hx:first-child,main .card:not(.fold)>.sthd:first-child>h2:first-child{min-height:var(--trh)}
+  main .card:not(.fold)>h2:not(.hx):first-child{padding-top:calc((var(--trh) - 1.5em)/2);padding-bottom:calc((var(--trh) - 1.5em)/2)}
+}
 /* Tabellen der Auswertung stehen ganz in der Seite, die Seite scrollt normal. Kartentitel und eine Kopie der Kopfzeile (.sthd) bleiben unter
    Reitern und Filterzeile stehen, solange man über der Tabelle ist. Die Kopie liegt außerhalb des seitlich scrollenden Bereichs und wird
    nur mitgeschoben (hcAlign). Echte Tabelle und Kopie haben dieselben festen Spaltenbreiten (hcFix). Keine Höhe hängt an der Bildschirmhöhe. */
@@ -12418,10 +12451,19 @@ const tocCards=()=>[...$('s-stats').querySelectorAll('.card.fold')].filter(c=>c.
 function cardTitle(c){const h=c.querySelector('.sthd>h2,h2').cloneNode(true);h.querySelectorAll('button,.fdd,.tbtns,.msmenus,.hbts,#ms-bf-ov').forEach(x=>x.remove());return h.textContent.replace(/\s+/g,' ').trim()}
 // Sprung zu einer Karte: klappt sie auf, falls sie zu ist (gespeichert wie beim Titel), und setzt ihren Titel direkt unter die Filterzeile
 function tocJump(id){const c=$(id);if(!c||!c.getClientRects().length)return;unfold(c);updateNavH();scrollUnder(c)}
+// Ab 0.150 (Florians Auftrag): drei Gruppen im Menü (ohne Überschriften, mit Linien). Eine Karte, die hier fehlt, kommt in eine letzte Gruppe.
+const TOC_GRP=[['st-ov','st-graf','st-hl','st-ms','st-avg'],['st-week','st-month','st-acc','st-matrix'],['real-card','st-calc']];
+// „Du bist hier“: die Karte, die direkt unter der Filterzeile beginnt oder dort gerade durchläuft, also die erste sichtbare Karte, deren
+// Unterkante unter der Linie liegt (sichtbare Unterkante der Filterzeile, am Handy auch bei ausgeblendeten Reitern). Liegt die Linie in der
+// Lücke zwischen zwei Karten, gilt die nächste darunter; ganz oben auf der Seite „Überblick“. Neu bestimmt beim Öffnen und beim Scrollen (fpFit).
+function tocHere(){const y=navBottom()+0.5,c=tocCards().find(c=>c.getBoundingClientRect().bottom>y);return c?c.id:null}
+function tocMark(){const id=tocHere();for(const b of $('fp-toc').querySelectorAll('[data-toc]')){if(b.dataset.toc===id)b.setAttribute('aria-current','location');else b.removeAttribute('aria-current')}}
 // „Alle zuklappen“ und „Alle aufklappen“: Aktionen wie in „Aufklappen ▾“, der Zustand jeder Karte wird gespeichert
 function tocAll(zu){S.ui.fold=S.ui.fold||{};for(const c of tocCards()){c.classList.toggle('closed',zu);S.ui.fold[c.dataset.fold]=zu}save();updateNavH();hbFit();if(!zu)hcAll()}
 function buildFpanel(which){
-  if(which==='toc'){$('fp-toc').innerHTML=`<div class="fgrp">${tocCards().map(c=>`<button type="button" class="wopt" data-toc="${esc(c.id)}">${esc(cardTitle(c))}</button>`).join('')}</div><div class="fgrp tocx"><button type="button" class="wopt" data-tocall="1">Alle zuklappen</button><button type="button" class="wopt" data-tocall="0">Alle aufklappen</button></div>`;return}
+  if(which==='toc'){const C=tocCards(),A=TOC_GRP.flat(),G=[...TOC_GRP.map(g=>C.filter(c=>g.includes(c.id))),C.filter(c=>!A.includes(c.id))].filter(g=>g.length);
+    $('fp-toc').innerHTML=G.map(g=>`<div class="fgrp tocg">${g.map(c=>{const t=esc(cardTitle(c));return `<button type="button" class="wopt" data-toc="${esc(c.id)}" data-t="${t}">${t}</button>`}).join('')}</div>`).join('')
+      +'<div class="fgrp tocx"><button type="button" class="btn fall" data-tocall="0">Alle aufklappen</button><button type="button" class="btn fall" data-tocall="1">Alle zuklappen</button></div>';tocMark();return}
   // Ab 0.100: Menü „Bild ▾“ der Grafik (Karte und Vollbild)
   if(which==='gb'||which==='gb2'){$('fp-'+which).innerHTML='<div class="fgrp"><button type="button" class="wopt" data-gimg="save">Speichern</button><button type="button" class="wopt" data-gimg="share">Teilen</button></div>';return}
   // Ab 0.139: Menü „Bild ▾“ an einem Meilenstein (Karte und Feier-Fenster) und „Konten für Meilensteine“ im Titel der Karte
@@ -12573,7 +12615,7 @@ function openFpanel(which){
 let FP_UP=null;
 function fpFit(){
   if(!FP_OPEN)return;const p=$('fp-'+FP_OPEN),b=$('fb-'+FP_OPEN);if(!b||!b.getClientRects().length)return;
-  const nav=document.querySelector('nav'),inNav=nav.contains(b);
+  const nav=document.querySelector('nav'),inNav=nav.contains(b);if(FP_OPEN==='toc')tocMark();
   FP_UP=popPlace(b,p,{top:inNav||GFS?0:nav.getBoundingClientRect().bottom,up:FP_UP,right:TITLE_DD.includes(FP_OPEN)||FP_OPEN==='wk'||FP_OPEN==='toc'});
 }
 // Beim Scrollen der Seite und bei jeder Größenänderung (auch nur der Höhe) neu einpassen, einmal pro Frame
@@ -14663,7 +14705,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.149',VDATE='15.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.150',VDATE='15.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
