@@ -288,6 +288,8 @@ tr.sum td b,tr.gesamt td b,.tdbk tr.tdcur td b,.tdrund li.tdcur>.tdar b{font-wei
 /* Ab 0.59 (2): Hinweis nach einem Sprung (chGo) leuchtet einmal auf, als Ring, weil er selbst eine Fläche hat */
 @keyframes hlring{0%,35%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 3px transparent}}
 #chainmsg .msg.hl{animation:hlring 2.2s ease-out}
+/* Ab 0.151: Sprung aus „Namen vergibst du unter Reports.“ (accGo): die Karte „Deine Konten“ leuchtet einmal auf */
+#acc-card.hlc{animation:hlring 2.2s ease-out}
 /* Spaltenzahl der Kacheln (5, 4 oder 2) und ggf. kleinere Schrift der Werte setzt layoutTiles() nach gemessenen Breiten.
    .tile>.v: nur der Kachelwert selbst, nicht verschachtelte .v (z. B. aus sw()) */
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px}
@@ -364,12 +366,18 @@ button.ib:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #glpop .glh b{color:var(--ink)}
 #glpop .glx{position:sticky;top:4px;z-index:2;display:block;margin:4px 4px -32px auto;width:28px;height:28px;border:0;border-radius:6px;background:var(--card);color:var(--muted);font:20px/1 system-ui,sans-serif;cursor:pointer}
 #glpop .glx:hover,#glpop .glx:focus-visible{background:var(--bg);color:var(--ink)}
-/* Ab 0.46: × in Menüs (.fpan) und im Antippen-Feld: oben rechts, bleibt beim Scrollen stehen */
+/* Ab 0.46: × in Menüs (.fpan) und im Antippen-Feld: oben rechts, bleibt beim Scrollen stehen (ab 0.151 in den Menüs nicht mehr, siehe .fpan>.fpx) */
 .tx{position:sticky;top:0;z-index:2;display:block;width:28px;height:28px;margin:-6px -8px 0 auto;padding:0;border:0;border-radius:6px;background:var(--card);color:var(--muted);font:20px/1 system-ui,sans-serif;cursor:pointer}
 .tx:hover,.tx:focus-visible{background:var(--bg);color:var(--ink)}
-/* Ab 0.49 (2.1): eigene Kopfzeile für das × (Menüs Status, Art, Wallet); top -12px, weil sticky ab dem Innenabstand zählt */
-.fpan>.fpxh{position:sticky;top:-12px;z-index:3;display:flex;justify-content:flex-end;margin:-12px -16px 8px;padding:4px 8px;background:var(--card);border-bottom:1px solid var(--line)}
-.fpan>.fpxh>.tx{position:static;margin:0}
+/* Ab 0.151 (Florians Regel, ersetzt das stehende × aus 0.46 und die Kopfzeile .fpxh aus 0.49): In allen Menüs (.fpan) steht das × rechts in
+   der ersten Zeile und scrollt mit dem Menü. Die erste Zeile (fx1, gesetzt in openFpanel) lässt rechts 24 px frei, damit das × keinen Text
+   überdeckt; die Höhe richtet fpX nach ihr aus. #glpop und #adpop behalten das stehende × (.tx oben). */
+.fpan>.fpx{position:absolute;top:6px;right:8px;margin:0;background:transparent}
+.fpan .fx1{margin-right:24px!important} /* !important: die Zeile „Alle“ hat ihren Abstand im style-Attribut */
+.fpan button.wopt.fx1{width:calc(100% - 24px)}
+/* Menü „Inhalt“: Die Fläche von „Du bist hier“ geht über die ganze Breite (0.150); bei der ersten Zeile hält nur der Text Abstand zum ×,
+   das × liegt durchsichtig auf der Fläche */
+#fp-toc .tocg .wopt.fx1{margin-right:-16px!important;width:calc(100% + 32px);padding-right:40px}
 @media (max-width:700px){#glpop{width:85vw}}
 @keyframes hl{0%,35%{background:var(--accent-soft)}100%{background:transparent}}
 /* Datum-Links der Karte „Gewinn und Verlust“ springen nach „Pro Woche“ (jumpTo), die Zeile leuchtet dort einmal auf */
@@ -447,7 +455,7 @@ button.zlink{border:0;background:none;padding:0;font:inherit;cursor:pointer}
 #wbar.on{display:block}
 #wbar .fin{max-width:1180px;margin:0 auto;padding:5px 16px;display:flex;gap:8px;align-items:center;flex-wrap:nowrap}
 /* Ab 0.44: Leiste „Zeitraum · Wallets · ＋ Daten · Noch offen · Land“ in einer Zeile; Stufen wählt fitWbar (#wbar[data-st]) */
-#wbar .wbb{flex:none}
+#wbar .wbb{flex:none;font-weight:600} /* ab 0.151 (Florians Auftrag): Knöpfe ohne Beschriftung fett wie in der Filterzeile der Auswertung (.fsel .ft) */
 #wbar.meas .fdd,#wbar.meas .fsel{flex:none!important;max-width:none!important}#wbar.meas .fsel .ft{white-space:nowrap!important}
 #wbar[data-st] .fsel .ft{white-space:nowrap}
 #wbar .wbn{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--accent);color:var(--on-mid);font-size:12px;font-weight:700}
@@ -536,7 +544,7 @@ nav button.fonly,.fpan button.fonly{flex:none;min-height:32px;padding:0 0 0 10px
    nicht zuckt: ::after hält den Platz, unsichtbar und nicht vorgelesen) und die beiden Knöpfe nebeneinander (etwa 280 px). Höchstens so
    breit wie der Platz, unter dem Knopf rechtsbündig an dessen rechter Kante, am Handy und am PC gleich (popPlace mit right). Drei Gruppen
    mit dünnen Linien ohne Überschriften, darunter abgesetzt „Alle aufklappen“ links und „Alle zuklappen“ rechts als kleine Knöpfe wie
-   „Alle auswählen“ im Menü Konten; passen sie nicht nebeneinander (schmales Fenster), stehen sie untereinander. „Du bist hier“ (tocMark):
+   „Alle“ im Menü Konten (bis 0.150 „Alle auswählen“); passen sie nicht nebeneinander (schmales Fenster), stehen sie untereinander. „Du bist hier“ (tocMark):
    fett, Strich links in --accent, Fläche --accent-soft über die ganze Breite des Menüs, vorgelesen als aktuelle Stelle (aria-current). */
 #fp-toc{min-width:0;width:max-content}
 @media (max-width:700px){#fbar #fp-toc{width:max-content;max-width:calc(100vw - 16px);border:1px solid var(--line);border-radius:var(--radius)}}
@@ -569,6 +577,7 @@ button.wopt:hover,button.wopt:focus-visible{color:var(--accent)}
 .card.closed .wdd{display:none}
 #fcust,.fcust{gap:10px;margin:4px 0 0 24px}
 #fcust label,.fcust label{font-size:var(--fs-s);color:var(--ink2)}
+#wrcust.wrzu{visibility:hidden;height:0;margin-top:0;overflow:hidden}
 .printonly{display:none}
 @media (max-width:700px){
   .tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
@@ -2035,7 +2044,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <p class="hint">Das Tool speichert alles im Speicher dieses Browsers. Wenn du den Browserverlauf samt Website-Daten löschst, ist es weg. Speichere deshalb regelmäßig eine Sicherungsdatei (eine .json-Datei mit all deinen Daten). Damit kannst du auch auf einem anderen Computer weitermachen.</p>
     <p class="hint"><b>Gut zu wissen:</b> <span data-gtk></span></p>
     <div class="row"><button class="btn primary" id="btn-backup">Sicherung speichern</button>
-    <button class="btn" id="btn-restore">Sicherung laden</button><input type="file" id="restorefile" accept=".json" hidden></div>
+    <button class="btn" id="btn-restore">Sicherung laden</button><input type="file" id="restorefile" accept=".json" hidden><span class="small bkzieh">oder die Datei einfach ins Tool ziehen</span></div>
     <p class="small">„Sicherung speichern“ legt eine Datei wie <code>Trading-Bilanz-Sicherung-2026-10-04.json</code> an, meist im Ordner „Downloads“. „Sicherung laden“ liest so eine Datei wieder ein und <b>ersetzt dabei alles</b>, was gerade im Tool steht.</p>
     <div id="datamsg"></div>
   </div>
@@ -7824,6 +7833,7 @@ function toastAct(t,lab,fn,ms){toastShow(t,lab,fn)}
 // (zweiter Knopf, Esc, Klick daneben). Liegt über allen Fenstern; das Fenster darunter bleibt offen.
 let ASK=null;
 // Ab 0.50 (1.2): o.stay: Esc und Klick daneben liefern null (weder Ja noch Nein, z. B. „auf der Karte bleiben“)
+// Ab 0.151 (Florians Auftrag): o.noOut: ein Klick daneben tut nichts (Rückfrage „Sicherung laden“); Esc und die Knöpfe wie sonst
 function askBox(o){if(typeof o==='string')o={text:o};return new Promise(res=>{const b=$('ask-box');if(ASK)ASK.done(false);
   $('ask-t').textContent=fdlTxt(o.title||'Rückfrage');$('ask-body').innerHTML=fdlHtml(o.html||`<p>${esc(o.text||'').replace(/\n\n/g,'</p><p>')}</p>`);
   // Ab 0.125: fdlHtml setzt die aufklappbare Liste der Dateien hinter den Absatz (ab drei Dateien)
@@ -7835,9 +7845,9 @@ function askBox(o){if(typeof o==='string')o={text:o};return new Promise(res=>{co
   // zurück. Der Knopf „ok“ (Ergebnis true) ist dann grau und steht rechts daneben (z. B. „Zurück zum Formular“ · „Trotzdem speichern“).
   {const okB=`<button type="button" class="btn${o.okPlain||o.back?'':o.danger?' danger':' primary'}" data-ask="1">${esc(o.ok||'Ja')}</button>`,noB=`<button type="button" class="btn${o.back?' primary':o.noDanger?' danger':''}" data-ask="0">${esc(o.no||'Abbrechen')}</button>`;
   $('ask-btns').innerHTML=`${o.more?`<button type="button" class="btn primary" data-ask="x">${esc(o.more.t)}</button>`:''}${o.alt?`<button type="button" class="btn" data-ask="2">${esc(o.alt)}</button>`:''}${o.back?noB+okB:okB+noB}`}$('ask-btns').classList.toggle('ask3',!!o.more);$('ask-btns').classList.toggle('ask4',!!(o.more&&o.alt));$('ask-box').classList.toggle('ask4',!!(o.more&&o.alt));
-  const prev=document.activeElement;ASK={esc:o.stay?null:false,more:o.more,done:v=>{b.classList.remove('on');ASK=null;if(prev&&prev.focus&&document.contains(prev))prev.focus({preventScroll:true});res(v)}};
+  const prev=document.activeElement;ASK={esc:o.stay?null:false,out:!o.noOut,more:o.more,done:v=>{b.classList.remove('on');ASK=null;if(prev&&prev.focus&&document.contains(prev))prev.focus({preventScroll:true});res(v)}};
   b.classList.add('on');b.querySelector(o.more?'[data-ask="x"]':o.back?'[data-ask="0"]':'[data-ask="1"]').focus()})}
-$('ask-box').addEventListener('click',e=>{if(!ASK)return;const a=e.target.closest('[data-ask]');if(a){if(a.dataset.ask==='x'){if(ASK.more)ASK.more.fn(a);return}ASK.done(a.dataset.ask==='2'?'alt':a.dataset.ask==='1')}else if(e.target===$('ask-box'))ASK.done(ASK.esc)});
+$('ask-box').addEventListener('click',e=>{if(!ASK)return;const a=e.target.closest('[data-ask]');if(a){if(a.dataset.ask==='x'){if(ASK.more)ASK.more.fn(a);return}ASK.done(a.dataset.ask==='2'?'alt':a.dataset.ask==='1')}else if(e.target===$('ask-box')&&ASK.out)ASK.done(ASK.esc)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ASK){e.preventDefault();e.stopPropagation();ASK.done(ASK.esc)}},true);
 /* ---------------- Ab 0.51 (2, Regel 14): Pflichtfelder im Reiter Wallet ----------------
    Der Hauptknopf ist nie gesperrt, weil etwas fehlt. Ein Klick prüft und ruft needMark(root, list) mit den fehlenden Feldern auf:
@@ -7934,13 +7944,19 @@ function apWhoH(a,k,lock,op){const A=esc(a),own=!!(op&&op.own);
    Unter dem Auslöser, wenn darunter genug Platz ist, sonst darüber (dort, wo mehr Platz ist); höchstens so hoch wie der freie Platz (dann scrollt
    es innen); seitlich mindestens 8 px im Fenster, auch am Handy. Lage fixed. o = {top (obere Grenze, z. B. Unterkante der Reiter), up (beim
    Öffnen gewählt, bleibt beim Scrollen), right (rechts am Auslöser ausrichten)}. Rückgabe: up. Genutzt von Gegenseite, Begriffen, Antippen-Feld
-   und allen Menüs (.fpan, fpFit). */
+   und allen Menüs (.fpan, fpFit).
+   Ab 0.151 (Florians Auftrag): Bekommt die Fläche wegen der Höhe eine Scrollleiste, die Platz einnimmt (am PC etwa 15 px; am Handy liegt
+   sie über dem Inhalt und zählt 0), wird sie um deren Breite breiter, höchstens bis 8 px vor den Fensterrand (die Grenze aus dem CSS gilt dann
+   nicht). Bis 0.150 ging die Scrollleiste von der festgehaltenen Breite ab: Im Konten-Menü stand am PC dann „nur“ statt „nur dieses“, und
+   weil fpFit danach mit „nur“ neu maß, ragte bei einem langen Namen sogar „nur“ hinaus. */
 function popPlace(t,p,o){o=o||{};const M=8,G=4,r=t.getBoundingClientRect(),vw=document.documentElement.clientWidth,vh=window.innerHeight,top0=Math.max(M,o.top||0),st=p.scrollTop;
   // in Ruhelage messen (links oben, volle Breite verfügbar), dann die Breite festhalten, damit sie am Rand nicht schrumpft
   Object.assign(p.style,{position:'fixed',margin:'0',left:'0px',top:'0px',right:'auto',bottom:'auto',width:'',maxWidth:'',maxHeight:'none'});
-  p.style.width=Math.min(p.offsetWidth,vw-2*M)+'px';const full=p.offsetHeight;p.style.maxHeight='';
+  const w0=Math.min(p.offsetWidth,vw-2*M);p.style.width=w0+'px';const full=p.offsetHeight;p.style.maxHeight='';
   const below=vh-M-(r.bottom+G),above=r.top-G-top0,up=o.up!=null?o.up:(full>below&&above>below);
-  const room=Math.max(0,up?above:below);if(full>room)p.style.maxHeight=room+'px';
+  const room=Math.max(0,up?above:below);if(full>room){p.style.maxHeight=room+'px';
+    const cs=getComputedStyle(p),sb=p.offsetWidth-p.clientWidth-parseFloat(cs.borderLeftWidth)-parseFloat(cs.borderRightWidth);
+    if(sb>0.5&&w0<vw-2*M){p.style.maxWidth='none';p.style.width=Math.min(w0+Math.ceil(sb),vw-2*M)+'px'}}
   const ph=p.offsetHeight,pw=p.offsetWidth;p.style.top=(up?r.top-G-ph:r.bottom+G)+'px';
   p.style.left=Math.max(M,Math.min(vw-M-pw,o.right?r.right-pw:r.left))+'px';p.scrollTop=st;return up}
 // Ab 0.46 (Regel 6): Scrollen innerhalb einer Tafel oder eines Menüs (jede hat genau eine scrollende Fläche) löst kein Neu-Platzieren aus.
@@ -12486,6 +12502,36 @@ function tocHere(){const y=navBottom()+0.5,c=tocCards().find(c=>c.getBoundingCli
 function tocMark(){const id=tocHere();for(const b of $('fp-toc').querySelectorAll('[data-toc]')){if(b.dataset.toc===id)b.setAttribute('aria-current','location');else b.removeAttribute('aria-current')}}
 // „Alle zuklappen“ und „Alle aufklappen“: Aktionen wie in „Aufklappen ▾“, der Zustand jeder Karte wird gespeichert
 function tocAll(zu){S.ui.fold=S.ui.fold||{};for(const c of tocCards()){c.classList.toggle('closed',zu);S.ui.fold[c.dataset.fold]=zu}save();updateNavH();hbFit();if(!zu)hcAll()}
+/* ---------------- Ab 0.151 (Florians Auftrag): ein Baustein für beide Konten-Auswahlen ----------------
+   Konten der Filterzeile (fp-acc, S.ui.flt.off) und Konten für Meilensteine (fp-msk, S.ui.ms.off) kommen aus denselben Funktionen, damit jede
+   Änderung beide trifft: oben „Alle“ (bis 0.150 in den Meilensteinen „Alle auswählen“), je Konto ein Häkchen und „nur dieses“ (wird es eng, „nur“,
+   fitAcc0), unten „Namen vergibst du unter Reports.“ (bis 0.150 nur in der Filterzeile), dann „Schließen“. Das letzte gewählte Häkchen ist gesperrt.
+   Ist nichts gewählt (z. B. das einzige gewählte Konto wurde entfernt), zählen alle, und das Menü zeigt alle Häkchen gesetzt (Florians Antwort 3a;
+   bis 0.150 zeigte die Filterzeile dann leere Häkchen und „Wähle mindestens ein Konto. Bis dahin zählen alle.“). Je Menü eine Einstellung:
+   sel = gezählte Konten, set(on) = Auswahl übernehmen (false, wenn sie leer wäre), d = Namen der Datenfelder (bleiben wie bis 0.150). */
+const ACC_PICK={
+  acc:{sel:()=>fltAccs(),set:on=>{const all=Object.keys(S.accounts);if(!on.length)return false;S.ui.flt.off=all.filter(a=>!on.includes(a));save();return true},d:{all:'fall',acc:'facc',only:'fonly'}},
+  msk:{sel:()=>msAccs(),set:on=>msSetAcc(on),d:{all:'msall',acc:'msacc',only:'msonly'}}};
+function accPickH(w){const D=ACC_PICK[w].d,all=Object.keys(S.accounts).sort(),nm=a=>{const x=S.accounts[a];return x&&x.name?`${esc(x.name)} <span class="an">(${a})</span>`:a};
+  return `<div class="fgrp"><div class="row" style="gap:6px;margin:0 0 6px"><button type="button" class="btn fall" data-${D.all}="1">Alle</button></div>${all.map(a=>`<div class="facc"><label class="fopt"><input type="checkbox" data-${D.acc}="${esc(a)}"><span>${nm(a)}</span></label><button type="button" class="fonly" data-${D.only}="${esc(a)}">nur dieses</button></div>`).join('')}<p class="small facch" style="margin:4px 0 0">Namen vergibst du unter <button type="button" class="flink" data-accgo>Reports</button>.</p></div>${FDONE}`}
+function accPickUpd(w){const K=ACC_PICK[w],p=$('fp-'+w),all=Object.keys(S.accounts),sel=K.sel();
+  p.querySelectorAll(`[data-${K.d.acc}]`).forEach(i=>{i.checked=sel.includes(i.getAttribute('data-'+K.d.acc));i.disabled=i.checked&&sel.length===1});
+  const b=p.querySelector(`[data-${K.d.all}]`);if(b)b.disabled=sel.length===all.length}
+// Klick auf „Alle“ oder „nur dieses“ in einem der beiden Menüs; true, wenn der Klick dorthin gehörte
+function accPickClick(e){const p=e.target.closest&&e.target.closest('#fp-acc,#fp-msk');if(!p)return false;const K=ACC_PICK[p.id.slice(3)];
+  if(e.target.closest('[data-accgo]')){e.preventDefault();accGo();return true}
+  if(e.target.closest(`[data-${K.d.all}]`)){K.set(Object.keys(S.accounts));render();return true}
+  const o=e.target.closest(`[data-${K.d.only}]`);if(o){K.set([o.getAttribute('data-'+K.d.only)]);render();return true}
+  return false}
+// Ab 0.151 (Florians Auftrag, Phase 6): Link „Reports“ im Satz „Namen vergibst du unter Reports.“: Menü zu, Reiter Reports, Karte „Deine Konten“
+// aufgeklappt direkt unter den Reitern (wie ein Sprung aus dem Menü „Inhalt“, scrollUnder), dann leuchtet sie einmal auf (Ring wie bei
+// „Zur Lücke“, hlring). Wie goUnder (ab 0.59), nur mit der ganzen Karte als Ziel.
+function accGo(){const c=$('acc-card');glClose();closeFpanel();S.ui.tab='reports';unfold(c);save();render();updateNavH();scrollUnder(c);
+  c.classList.remove('hlc');void c.offsetWidth;c.classList.add('hlc')}
+$('acc-card').addEventListener('animationend',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('hlc')});
+// Häkchen: gerechnet von den gezählten Konten aus (so geht es auch nach einer leeren Auswahl richtig weiter)
+function accPickChange(e){const t=e.target,p=t.closest&&t.closest('#fp-acc,#fp-msk');if(!p)return false;const K=ACC_PICK[p.id.slice(3)],a=t.getAttribute('data-'+K.d.acc);if(!a)return false;
+  const on=K.sel().filter(x=>x!==a);if(t.checked)on.push(a);K.set(on);render();return true}
 function buildFpanel(which){
   if(which==='toc'){const C=tocCards(),A=TOC_GRP.flat(),G=[...TOC_GRP.map(g=>C.filter(c=>g.includes(c.id))),C.filter(c=>!A.includes(c.id))].filter(g=>g.length);
     $('fp-toc').innerHTML=G.map(g=>`<div class="fgrp tocg">${g.map(c=>{const t=esc(cardTitle(c));return `<button type="button" class="wopt" data-toc="${esc(c.id)}" data-t="${t}">${t}</button>`}).join('')}</div>`).join('')
@@ -12495,9 +12541,8 @@ function buildFpanel(which){
   // Ab 0.139: Menü „Bild ▾“ an einem Meilenstein (Karte und Feier-Fenster) und „Konten für Meilensteine“ im Titel der Karte
   if(which==='msb'){$('fp-msb').innerHTML='<div class="fgrp"><button type="button" class="wopt" data-msim="save">Speichern</button><button type="button" class="wopt" data-msim="share">Teilen</button></div>';return}
   // Ab 0.142: „nur dieses“ wie im Konten-Menü der Filterzeile; Menü „Zeitraum“ der Karte: „Gesamt“ und die Jahre mit Trades der gezählten Konten, absteigend
-  if(which==='msk'){const all=Object.keys(S.accounts).sort(),nm=a=>{const x=S.accounts[a];return x&&x.name?`${esc(x.name)} <span class="an">(${a})</span>`:a};
-    $('fp-msk').innerHTML=`<div class="fgrp"><div class="row" style="gap:6px;margin:0 0 6px"><button type="button" class="btn fall" data-msall="1">Alle auswählen</button></div>${all.map(a=>`<div class="facc"><label class="fopt"><input type="checkbox" data-msacc="${esc(a)}"><span>${nm(a)}</span></label><button type="button" class="fonly" data-msonly="${esc(a)}">nur dieses</button></div>`).join('')}</div>${FDONE}`;
-    updFpanel();return}
+  // Ab 0.151: aus dem gemeinsamen Baustein der Konten-Auswahl (accPickH)
+  if(which==='msk'){$('fp-msk').innerHTML=accPickH('msk');updFpanel();return}
   if(which==='msz'){const opts=[['',MS_TXT.zeit.gesamt],...((MS&&MS.ys)||[]).map(y=>[y,y])];
     $('fp-msz').innerHTML=`<div class="fgrp">${opts.map(([v,l])=>`<label class="fopt"><input type="radio" name="msz" value="${v}"><span>${esc(l)}</span></label>`).join('')}</div>${FDONE}`;
     updFpanel();return}
@@ -12536,7 +12581,8 @@ function buildFpanel(which){
   }else if(which==='vs'){
     // Ab 0.48 (3.10): Status mit Mehrfachauswahl wie die Konto-Auswahl der Auswertung; oben „Nur neue (n)“ (3.9)
     const nN=vgBuild(S).filter(vgNew).length;
-    $('fp-vs').innerHTML=`<div class="fgrp"><label class="fopt fnew"><input type="checkbox" data-vgnew><span>Nur neue (${fI.format(nN)})</span></label>${fltAll('st')}${VG_ST_OPTS().map(([v,l])=>fltOpt('st',v,l)).join('')}</div>${FDONE}`;
+    // Ab 0.151 (Florians Regel zum ×): „Alle“ steht oben (mit dem ×), darunter „Nur neue“, dann die Status
+    $('fp-vs').innerHTML=`<div class="fgrp">${fltAll('st')}<label class="fopt fnew"><input type="checkbox" data-vgnew><span>Nur neue (${fI.format(nN)})</span></label>${VG_ST_OPTS().map(([v,l])=>fltOpt('st',v,l)).join('')}</div>${FDONE}`;
   }else if(which==='va'){
     // Ab 0.45 (4.8): Art in zwei Gruppen, je mit einem Häkchen für die ganze Gruppe. Ab 0.48 (3.10): dazu oben „Alle“ und je Art „nur diese“
     // Ab 0.48 (Nachtrag 1, 2.2): je Wort in „Was“ ein Eintrag mit demselben Zeichen; die Gruppen sind nur Überschriften
@@ -12550,19 +12596,16 @@ function buildFpanel(which){
     const o=[['days','Alle Tage'],['trades','Alle Trades'],...(fltAccs().length>1?[['accs','Alle Konten']]:[]),['none','Alles zuklappen']];
     $('fp-wk').innerHTML=`<div class="fgrp">${o.map(([v,l])=>`<button type="button" class="wopt" data-wk="${v}">${l}</button>`).join('')}</div>`;
   }else{
-    // Konten: „nur dieses“ liegt außerhalb des Labels, ein Klick darauf ändert kein Häkchen, sondern wählt nur dieses Konto
-    const all=Object.keys(S.accounts).sort();
-    const nm=a=>{const x=S.accounts[a];return x&&x.name?`${esc(x.name)} <span class="an">(${a})</span>`:a};
-    // Ab 0.44: „Alle“ und „Keine“ (ohne gewähltes Konto zählen alle, bis du eines wählst)
-    $('fp-acc').innerHTML=`<div class="fgrp"><div class="row" style="gap:6px;margin:0 0 6px"><button type="button" class="btn fall" data-fall="1">Alle</button></div><p class="fhint" id="facc-none" hidden>Wähle mindestens ein Konto. Bis dahin zählen alle.</p>${all.map(a=>`<div class="facc"><label class="fopt"><input type="checkbox" data-facc="${esc(a)}"><span>${nm(a)}</span></label><button type="button" class="fonly" data-fonly="${esc(a)}">nur dieses</button></div>`).join('')}<p class="small facch" style="margin:4px 0 0">Namen vergibst du unter Reports.</p></div>${FDONE}`;
+    // Konten (ab 0.151 aus dem gemeinsamen Baustein accPickH, wie die Konten-Auswahl der Meilensteine)
+    $('fp-acc').innerHTML=accPickH('acc');
   }
   updFpanel();
 }
 // Konten-Menü an die Breite anpassen: „nur dieses“, wenn es eng wird „nur“, danach darf der Kontoname umbrechen (Nummer darunter)
-function fitAcc(){if(FP_OPEN==='msk'){fitAcc0('fp-msk');return}if(FP_OPEN!=='acc')return;fitAcc0();fitAccNote()}
+function fitAcc(){if(!ACC_PICK[FP_OPEN])return;fitAcc0('fp-'+FP_OPEN);fitAccNote('fp-'+FP_OPEN)}
 // Ab 0.49 (6.1): „Namen vergibst du unter Reports.“ bricht nicht um: Das Menü wird so breit, wie der Satz braucht, solange Platz ist (bis 8 px
 // vor den Fensterrand). Sonst darf er umbrechen. Grund: Die Breite des Menüs wird auf ganze Pixel gesetzt, in Firefox ist die Schrift etwas breiter.
-function fitAccNote(){const p=$('fp-acc'),n=p&&p.querySelector('.facch');if(!n)return;n.style.whiteSpace='nowrap';const need=Math.ceil(n.scrollWidth-n.clientWidth);
+function fitAccNote(id){const p=$(id||'fp-acc'),n=p&&p.querySelector('.facch');if(!n)return;n.style.whiteSpace='nowrap';const need=Math.ceil(n.scrollWidth-n.clientWidth);
   if(need<=0)return;const vw=document.documentElement.clientWidth,w=p.offsetWidth+need+1;if(w<=vw-16)p.style.width=w+'px';else n.style.whiteSpace=''}
 function fitAcc0(id){
   const p=$(id||'fp-acc'),bs=[...p.querySelectorAll('.fonly')];
@@ -12587,7 +12630,10 @@ function updFpanel(){
   }else if(FP_OPEN==='wr'){
     const f=S.ui.wFlt;
     $('fp-wr').querySelectorAll('input[name=wrange]').forEach(i=>i.checked=i.value===f.range);
-    $('wrcust').style.display=f.range==='custom'?'':'none';
+    // Ab 0.151 (Florians Auftrag): Die Zeile mit Anfang und Ende bleibt im Aufbau, ohne „Individuell“ unsichtbar und ohne Höhe (wrzu). So ist das
+    // Menü immer so breit wie bei „Individuell“ und der Satz darunter immer gleich lang; bis 0.150 war es ohne „Individuell“ schmaler (am PC 240
+    // statt 346 px, 7 statt 4 Zeilen). Das Zeitraum-Menü der Auswertung (fcust) bleibt, wie es ist.
+    $('wrcust').classList.toggle('wrzu',f.range!=='custom');
     for(const [id,v] of [['wr-from',f.from],['wr-to',f.to]]){const i=$(id);if(document.activeElement!==i)i.value=v||''}
     $('wrmsg').innerHTML=f.range==='custom'&&wRange().bad?`<div class="msg warn">${fltBadMsg(f)}</div>`:'';
   }else if(CF_KEY[FP_OPEN]){
@@ -12609,16 +12655,8 @@ function updFpanel(){
     $('fcur-miss').innerHTML=CUR_MISS?`<p class="fhint" style="margin:6px 0 4px">Für Euro fehlen Kurse für ${nTage(CUR_MISS.days.length)}.</p><button type="button" class="btn" data-rl="fcur-rlm">Kurse laden</button>`:'';
   }else if(FP_OPEN==='msz'){
     $('fp-msz').querySelectorAll('input[name=msz]').forEach(i=>i.checked=i.value===MS_Y);
-  }else if(FP_OPEN==='msk'){
-    // Ab 0.139: Konten für Meilensteine. Mindestens ein Konto bleibt gewählt (das letzte Häkchen ist gesperrt).
-    const all=Object.keys(S.accounts),sel=msAccs();
-    $('fp-msk').querySelectorAll('[data-msacc]').forEach(i=>{i.checked=sel.includes(i.dataset.msacc);i.disabled=i.checked&&sel.length===1});
-    const b=$('fp-msk').querySelector('[data-msall]');if(b)b.disabled=sel.length===all.length;
-  }else if(FP_OPEN==='acc'){
-    // Ab 0.44: gewählt laut S.ui.flt.off (kann nach „Keine“ leer sein; fltAccs rechnet dann mit allen)
-    const all=Object.keys(S.accounts),sel=all.filter(a=>!f.off.includes(a));
-    $('fp-acc').querySelectorAll('[data-facc]').forEach(i=>{i.checked=sel.includes(i.dataset.facc);i.disabled=i.checked&&sel.length===1});
-    $('fp-acc').querySelector('[data-fall]').disabled=sel.length===all.length;$('facc-none').hidden=!!sel.length;
+  }else if(ACC_PICK[FP_OPEN]){
+    accPickUpd(FP_OPEN);
   }
   fpFit(); // Inhalt kann höher geworden sein (z. B. Felder bei „Individuell“)
 }
@@ -12627,9 +12665,10 @@ function openFpanel(which){
   which=which||'range';closeFpanel();
   FP_OPEN=which;buildFpanel(which);
   // Ab 0.46 (Regel 7): × oben rechts in jedem Menü
-  // Ab 0.49 (2.1): in Status, Art und Wallet steht das × in einer eigenen Kopfzeile (beim Scrollen nie über einem Eintrag)
-  {const p=$('fp-'+which);if(!p.querySelector(':scope>.fpx,:scope>.fpxh'))p.insertAdjacentHTML('afterbegin',CF_KEY[which]?'<div class="fpxh"><button type="button" class="tx fpx" aria-label="Menü schließen">×</button></div>':'<button type="button" class="tx fpx" aria-label="Menü schließen">×</button>');p.scrollTop=0}
-  $('fp-'+which).classList.add('on');$('fb-'+which).setAttribute('aria-expanded','true');
+  // Ab 0.151 (Florians Regel): rechts in der ersten Zeile, scrollt mit (fx1, fpX); bis 0.150 stehend, in Status, Art und Wallet mit Kopfzeile .fpxh
+  {const p=$('fp-'+which);if(!p.querySelector(':scope>.fpx'))p.insertAdjacentHTML('afterbegin','<button type="button" class="tx fpx" aria-label="Menü schließen">×</button>');p.scrollTop=0}
+  // erst sichtbar machen, dann die erste Zeile suchen (fpRow1 braucht die Lage)
+  $('fp-'+which).classList.add('on');{const r=fpRow1($('fp-'+which));if(r)r.classList.add('fx1')}$('fb-'+which).setAttribute('aria-expanded','true');
   // Karte mit offenem Menü liegt über dem stehenden Titel der nächsten Karte (CSS .card.fpo)
   const c=$('fb-'+which).closest('.card');if(c)c.classList.add('fpo');
   // Ab 0.48 (Nachtrag 1, 5.1): erst platzieren (popPlace setzt die Breite), dann „nur dieses“ bzw. „nur“ prüfen und noch einmal platzieren.
@@ -12643,7 +12682,19 @@ function fpFit(){
   if(!FP_OPEN)return;const p=$('fp-'+FP_OPEN),b=$('fb-'+FP_OPEN);if(!b||!b.getClientRects().length)return;
   const nav=document.querySelector('nav'),inNav=nav.contains(b);if(FP_OPEN==='toc')tocMark();
   FP_UP=popPlace(b,p,{top:inNav||GFS?0:nav.getBoundingClientRect().bottom,up:FP_UP,right:TITLE_DD.includes(FP_OPEN)||FP_OPEN==='wk'||FP_OPEN==='toc'});
+  fpX(p);
 }
+// Ab 0.151: erste Zeile eines Menüs (das erste sichtbare Element, Gruppen .fgrp werden durchschritten), dort steht das ×
+function fpRow1(p){let e=[...p.children].find(x=>!x.classList.contains('fpx')&&x.getClientRects().length);
+  while(e&&e.matches('.fgrp'))e=[...e.children].find(x=>x.getClientRects().length);return e||null}
+// × mittig zur ersten Zeile: zu ihrem sichtbaren Inhalt (Häkchen und Text, Knopf „Alle“ ohne seinen Abstand nach unten); bei einem Absatz oder
+// einem Knopf mit Text mittig zur ersten Textzeile. Lage im Menü (mit dem Scrollstand), damit es mitscrollt.
+function fpX(p){const x=p.querySelector(':scope>.fpx'),r=p.querySelector('.fx1');if(!x||!r||!r.getClientRects().length)return;
+  const K=[...r.children].filter(k=>k.getClientRects().length);let a,b;
+  if(r.tagName==='P'||!K.length){const g=document.createRange();g.selectNodeContents(r);const L=g.getClientRects()[0]||r.getBoundingClientRect();a=L.top;b=L.bottom}
+  else{a=Math.min(...K.map(k=>k.getBoundingClientRect().top));b=Math.max(...K.map(k=>k.getBoundingClientRect().bottom))}
+  const P=p.getBoundingClientRect(),bt=parseFloat(getComputedStyle(p).borderTopWidth)||0;
+  x.style.top=Math.round((a+b)/2-P.top-bt+p.scrollTop-x.offsetHeight/2)+'px'}
 // Beim Scrollen der Seite und bei jeder Größenänderung (auch nur der Höhe) neu einpassen, einmal pro Frame
 {let q=0;const f=e=>{if(FP_OPEN&&!q&&!popOwnScroll(e))q=requestAnimationFrame(()=>{q=0;fpFit()})};
  document.addEventListener('scroll',f,{capture:true,passive:true});window.addEventListener('resize',f)}
@@ -14471,14 +14522,13 @@ $('fdd-wk').addEventListener('click',e=>{e.stopPropagation();
 $('fdd-msk').addEventListener('click',e=>{e.stopPropagation();const t=e.target;
   if(t.closest('#fb-msk')){if(FP_OPEN==='msk')closeFpanel();else openFpanel('msk');return}
   if(t.classList.contains('f-done')){closeFpanel();return}
-  if(t.closest('[data-msall]')){msSetAcc(Object.keys(S.accounts));render();return}
-  const o=t.closest('[data-msonly]');if(o){msSetAcc([o.dataset.msonly]);render()}});
+  accPickClick(e)});
 // Ab 0.142: Menü „Zeitraum“ der Karte (Gesamt oder ein Jahr); die Wahl gilt bis zum Neuladen
 $('fdd-msz').addEventListener('click',e=>{e.stopPropagation();const t=e.target;
   if(t.closest('#fb-msz')){if(FP_OPEN==='msz')closeFpanel();else openFpanel('msz');return}
   if(t.classList.contains('f-done'))closeFpanel()});
 $('fdd-msz').addEventListener('change',e=>{if(e.target.name!=='msz')return;MS_Y=e.target.value;msRender();updFpanel()});
-$('fdd-msk').addEventListener('change',e=>{const a=e.target.dataset.msacc;if(!a)return;const on=msAccs().filter(x=>x!==a);if(e.target.checked)on.push(a);msSetAcc(on);render()});
+$('fdd-msk').addEventListener('change',accPickChange);
 // Schmetterlinge: Tipp öffnet das Feier-Fenster mit allen neuen Meilensteinen, × blendet nur diesen einen aus. In der Capture-Phase, damit der
 // Tipp neben „Überblick“ die Karte nicht zuklappt.
 document.addEventListener('click',e=>{const t=e.target;if(!t.closest)return;
@@ -14559,7 +14609,7 @@ $('t-week').addEventListener('click',e=>{const tr=e.target.closest('tr');if(!tr)
 for(const w of ['range','acc','pf','cur','toc'])$('fb-'+w).onclick=()=>{if(FP_OPEN===w)closeFpanel();else openFpanel(w)};
 // Ab 0.146: Menü „Inhalt“. Ein Tipp auf eine Karte schließt das Menü und springt, die zwei Aktionen unten klappen alle Karten zu oder auf.
 $('fp-toc').addEventListener('click',e=>{const b=e.target.closest('[data-toc]'),a=e.target.closest('[data-tocall]');if(b){closeFpanel();tocJump(b.dataset.toc)}else if(a){closeFpanel();tocAll(a.dataset.tocall==='1')}});
-$('fbar').addEventListener('change',e=>{const t=e.target,f=S.ui.flt;
+$('fbar').addEventListener('change',e=>{const t=e.target,f=S.ui.flt;if(accPickChange(e))return;
   if(t.name==='frange'){if(t.value==='custom'&&f.range!=='custom'){const [a,b]=fltBounds();f.from=a;f.to=b}f.range=t.value}
   else if(t.id==='f-from')f.from=t.value;
   else if(t.id==='f-to')f.to=t.value;
@@ -14567,16 +14617,14 @@ $('fbar').addEventListener('change',e=>{const t=e.target,f=S.ui.flt;
   else if(t.name==='fcur')f.cur=t.value==='usd'?'usd':'eur';
   else if(t.id==='f-nocw')f.nocw=t.checked;
   else if(t.id==='f-zd')f.zeroDays=t.checked;
-  else if(t.dataset.facc){const a=t.dataset.facc;f.off=f.off.filter(x=>x!==a);if(!t.checked)f.off.push(a)}
   else return;
   save();render()});
 $('fbar').addEventListener('click',e=>{const t=e.target,f=S.ui.flt;
   if(t.classList.contains('f-done')){closeFpanel();return}
   // „Wozu?“ und „Was heißt das?“ klappen nur die Erklärung auf und zu, das Häkchen bleibt, das Menü bleibt offen
   const why=t.closest('#f-why,#f-zwhy,#f-pfwhy');if(why){e.preventDefault();const x=$(why.getAttribute('aria-controls'));x.hidden=!x.hidden;why.setAttribute('aria-expanded',String(!x.hidden));fpFit();return}
-  if(t.closest('[data-fall]')){f.off=[];save();render();return}
-
-  const o=t.closest('[data-fonly]');if(o){const a=o.dataset.fonly;f.off=Object.keys(S.accounts).filter(x=>x!==a);save();render()}});
+  // Ab 0.151: „Alle“ und „nur dieses“ der Konten laufen über den gemeinsamen Baustein
+  accPickClick(e)});
 // Klick außerhalb des offenen Menüs (und seines Knopfs) schließt es
 document.addEventListener('click',e=>{if(FP_OPEN&&!$('fdd-'+FP_OPEN).contains(e.target))closeFpanel()});
 // Ab 0.46: × im Menü (Capture, damit der Knopf das Menü nicht wieder öffnet)
@@ -14697,16 +14745,28 @@ function saveBackup(){const fn=`Trading-Bilanz-Sicherung-${new Date().toISOStrin
 // Ab 0.123: in einem Tab mit altem Stand zuerst die Rückfrage (bkGate)
 $('btn-backup').onclick=()=>bkGate(()=>{saveBackup();msg('datamsg','ok','Sicherung gespeichert. Lege die Datei an einen sicheren Ort.');maybeDonate('sicherung')});
 $('btn-restore').onclick=()=>$('restorefile').click();
-$('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+// Ab 0.151 (Florians Auftrag, Phase 7, und seine Regel in GESTALTUNG Abschnitt 11): ein Ablauf für „Sicherung laden“ (Knopf, auch aus dem Hinweis
+// beim Start) und eine Sicherung, die irgendwo ins Tool gezogen wird (dropFiles, auch über eine Ablagefläche oder deren Dateiauswahl). Danach steht
+// in beiden Fällen derselbe Stand im Speicher. Unterschied nur in der Rückfrage: Der Knopf fragt wie bisher, sobald etwas im Tool steht („„…“
+// laden? Das ersetzt alles, was jetzt im Tool steht.“, mit „Sicherung speichern“); beim Ziehen kommt immer genau eine Rückfrage „Sicherung erkannt“
+// (Florians Wortlaut: „„…“ ist eine Sicherung. Laden?“, mit Daten im Tool dazu „Das ersetzt alles, was jetzt im Tool ist.“; „Laden“ blau ·
+// „Abbrechen“), keine zweite Bestätigung. Beide Rückfragen schließen nicht mit einem Klick daneben (noOut). Rückgabe: true, wenn geladen.
+async function bkLoad(f,o){o=o||{};
   // Ab 0.70: zuerst lesen und prüfen. Keine Sicherung: sofort die rote Meldung, ohne Rückfrage, nichts ändert sich
   // Ab 0.84 (G-18): Kein JSON (oder nicht lesbar) zeigt denselben Satz wie eine JSON-Datei ohne Konten (G-17). G-19 (Aufbereiten scheitert, unten) hat einen
   // eigenen Satz. In beiden Fällen steht die Meldung des Browsers nur in der Konsole
   // Ab 0.85: Kommt „Sicherung laden“ aus dem Hinweis beim Start (BOOT_BAD), stehen die Meldungen dort (#boot-msg)
   const mid=BOOT_BAD?'boot-msg':'datamsg';
+  // Beim Ziehen steht man meist nicht im Reiter „Sicherung“: Eine Meldung dort kommt dann zusätzlich als Toast
+  const bad=t=>{msg(mid,'bad',t);if(o.drop&&!BOOT_BAD&&S.ui.tab!=='data')toast(t.replace(/<[^>]+>/g,''))};
   let j;try{j=JSON.parse(await readText(f))}catch(err){console.warn('Sicherung laden:',err);j=null}
-  if(!j||!j.deals||!j.accounts){msg(mid,'bad',`Datei konnte nicht geladen werden: „${esc(f.name)}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`);e.target.value='';return}
+  if(!j||!j.deals||!j.accounts){bad(`Datei konnte nicht geladen werden: „${esc(f.name)}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`);return false}
+  if(o.drop){if(!(await askBox({title:'Sicherung erkannt',text:`„${f.name}“ ist eine Sicherung. Laden?${stateHasData()?' Das ersetzt alles, was jetzt im Tool ist.':''}`,ok:'Laden',noOut:true})))return false;
+    // Ein noch offenes Fenster (nur „＋ Daten“ bleibt beim Ziehen offen) gehört zum alten Stand: schließen, wie beim Knopf im Reiter „Sicherung“
+    while(MODAL){const M=MODAL;closeModal();if(MODAL===M)break}}
   // Ab 0.50 Nachtrag 5 (S1): Rückfrage, sobald irgendetwas im Tool steht (vorher nur mit Konten aus Reports), mit „Sicherung speichern“
-  if(stateHasData()&&!(await askBox({title:'Sicherung laden',text:`„${f.name}“ laden? Das ersetzt alles, was jetzt im Tool steht.`,ok:'Laden',danger:true,more:ASK_BK}))){e.target.value='';return}
+  // Ab 0.151 (Florians Auftrag, Phase 8): Ein Klick daneben schließt diese Rückfrage nicht (noOut), nur ihre Knöpfe und Esc
+  else if(stateHasData()&&!(await askBox({title:'Sicherung laden',text:`„${f.name}“ laden? Das ersetzt alles, was jetzt im Tool steht.`,ok:'Laden',danger:true,more:ASK_BK,noOut:true})))return false;
   // Ab 0.85 (Fund 2 aus 0.84): zuerst probeweise: einlesen, aufbereiten und zeichnen, ohne den alten Stand anzutasten und ohne zu speichern (SAVE_OFF).
   // Erst wenn alles geklappt hat, ersetzt die Sicherung den alten Stand und wird gespeichert. Scheitert ein Schritt, zeichnet das Tool den alten Stand
   // wieder, im Speicher hat sich nichts geändert (G-19).
@@ -14716,10 +14776,11 @@ $('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
   const f0=old&&old.ui&&old.ui.don&&old.ui.don.first;
   try{S=Object.assign(blank(),j);fixState();provOpen();{const d=S.ui.don||(S.ui.don={n:0,last:null});if(f0&&(!d.first||!(new Date(d.first)<=new Date(f0))))d.first=f0;donGet()}S.ui.tab='data';render()}
   catch(err){console.warn('Sicherung laden:',err);S=old;SAVE_OFF=false;SAVE_DUE=false;RV=null;try{render()}catch(e2){console.warn(e2)}
-    msg(mid,'bad',`Die Sicherung „${esc(f.name)}“ ließ sich nicht laden. Sie ist vielleicht beschädigt. Deine bisherigen Daten sind unverändert. Probiere eine andere Sicherung.`);e.target.value='';return}
+    bad(`Die Sicherung „${esc(f.name)}“ ließ sich nicht laden. Sie ist vielleicht beschädigt. Deine bisherigen Daten sind unverändert. Probiere eine andere Sicherung.`);return false}
   SAVE_OFF=false;SAVE_DUE=false;if(BOOT_BAD){BOOT_BAD=false;BOOT_RAW='';modalOn($('boot-modal'),false)}save(true);rateGoneToast();
   const nA=Object.keys(S.accounts).length,nD=Object.keys(S.deals).length;
-  msg('datamsg','ok',`Sicherung geladen: ${nA} ${nA===1?'Konto':'Konten'}, ${nD} ${nD===1?'Buchung':'Buchungen'}.`);e.target.value=''};
+  msg('datamsg','ok',`Sicherung geladen: ${nA} ${nA===1?'Konto':'Konten'}, ${nD} ${nD===1?'Buchung':'Buchungen'}.`);return true}
+$('restorefile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{await bkLoad(f)}finally{e.target.value=''}};
 // Ab 0.85 (G-54): Hinweis beim Start, wenn sich der gespeicherte Stand nicht laden ließ. Die Knöpfe gehen dieselben Wege wie im Reiter „Sicherung“.
 // Ab 0.87 (0.3): erster Satz nur noch „Lade eine Sicherung …“ (der Titel sagt schon, dass der Stand sich nicht laden ließ)
 function bootShow(){$('boot-b').innerHTML='<p>Lade eine Sicherung oder lösche alles und fang neu an.</p><p class="small">Bis du etwas wählst, bleibt der gespeicherte Stand unverändert in diesem Browser.</p>';
@@ -14731,7 +14792,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.150',VDATE='15.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.151',VDATE='16.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -15321,7 +15382,8 @@ const dtPane=p=>{if(!DT.open)dtOpen(p);else{DT.pane=p;render();dtRender()}};
 // Ab 0.61: Knopf „Weiter zu den Börsen“ bzw. „Weiter zu den Wallet-Dateien“ in der Meldung nach Übernehmen oder Abbrechen (dtWaitH)
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-dtwait]');if(!b)return;const p=b.dataset.dtwait;dtPane(p);
   const v=$(p==='bx'?'bxprev':'wfprev').querySelector('.tprev')||$(p==='bx'?'bx-load':'wf-load');if(v)v.scrollIntoView({behavior:'smooth',block:'nearest'})});
-async function dropFiles(files){files=[...(files||[])];if(!files.length)return;
+// o.n = Zahl aller gezogenen Dateien, wenn eine Ablagefläche nur einen Teil weiterreicht (zoneFiles)
+async function dropFiles(files,o){files=[...(files||[])];if(!files.length)return;o=o||{};
   // Begrüßung offen: nichts verarbeiten (der Browser öffnet die Datei trotzdem nicht)
   if($('intro-modal').classList.contains('on')||$('taxack-modal').classList.contains('on')||$('boot-modal').classList.contains('on'))return;
   // Ab 0.134: nach dem Sprung-Link ohne bestätigte Begrüßung zuerst die Begrüßung, nichts verarbeiten
@@ -15334,6 +15396,9 @@ async function dropFiles(files){files=[...(files||[])];if(!files.length)return;
   while(MODAL&&MODAL.id!=='dt-modal'){const M=MODAL;closeModal();if(MODAL===M)break}
   const say=[],pl=(n,a,b)=>`${fI.format(n)}\u00a0${n===1?a:b}`;let tb=[];
   const G={rep:[],rate:[],bx:[],wf:[],bk:[],'':[]};files.forEach((f,i)=>G[K[i]].push(f));
+  // Ab 0.151 (Florians Regel, GESTALTUNG Abschnitt 11): Eine Sicherung allein gezogen wird geladen, vorher kommt die Rückfrage (bkLoad).
+  // Bis 0.150 nur der Toast „Eine Sicherung lädst du im Reiter „Sicherung“ mit „Sicherung laden“.“ (G-41)
+  if(G.bk.length===1&&files.length===1&&(o.n||1)===1){await bkLoad(G.bk[0],{drop:true});return}
   if(G.rep.length){const r=await loadFiles(G.rep);tb=r.nw;if(r.n||!r.curBad.length)say.push(`${pl(r.n,'Report','Reports')} geladen, ${pl(r.added,'neue Buchung','neue Buchungen')}.`);say.push(...r.curBad)}
   for(const f of G.rate){const r=await importRates(f)||{};say.push(r.err?`„${f.name}“: ${r.err}`:`EZB-Datei geladen, ${r.nw?pl(r.nw,'neuer Kurs','neue Kurse'):'keine neuen Kurse'}.`)}
   if(G.bx.length){const L=[];for(const f of G.bx){let t='';try{t=await readText(f)}catch(e){}L.push({name:f.name,text:t})}bxQueue(L);
@@ -15342,7 +15407,8 @@ async function dropFiles(files){files=[...(files||[])];if(!files.length)return;
     // Vor dem ersten Einlesen gilt weiter „Für Fortgeschrittene“ mit „Verstanden“: Bis dahin warten die Dateien (ab 0.61 auch früher gezogene)
     if(!S.ui.wfOk){WF_PEND=(WF_PEND||[]).concat(G.wf);msg('wfmsg','info',`${pl(WF_PEND.length,'Wallet-Datei wartet','Wallet-Dateien warten')}. Das Tool liest sie ein, sobald du „Verstanden“ klickst.`)}
     else await wfLoad(G.wf)}
-  if(G.bk.length)say.push('Eine Sicherung lädst du im Reiter „Sicherung“ mit „Sicherung laden“.');
+  // Ab 0.151: mehrere Dateien mit einer Sicherung dabei: die anderen laden wie immer, zur Sicherung ein Hinweis, sie einzeln zu ziehen (G-59)
+  if(G.bk.length)say.push(G.bk.length===1?`„${G.bk[0].name}“ ist eine Sicherung. Zieh sie einzeln ins Tool, dann kannst du sie laden.`:`${fI.format(G.bk.length)} Sicherungen sind dabei. Zieh die, die du laden willst, einzeln ins Tool.`);
   for(const f of G[''])say.push(`Das Tool kennt diese Datei nicht: ${f.name}.`);
   // Ab 0.61: Sprung nur, wo du etwas tun musst: zuerst wartende Börsen-, dann Wallet-Dateien, sonst der Trading Benefit neuer Konten
   const wait=dtWaitNext();
@@ -15355,7 +15421,7 @@ async function dropFiles(files){files=[...(files||[])];if(!files.length)return;
 // Ablagefelder: Dateien ihrer Art und unbekannte liest das Feld wie bisher (fn), andere gehen über dropFiles an ihren Ort
 async function zoneFiles(files,own,fn){files=[...(files||[])];if(!files.length)return;const K=await Promise.all(files.map(fileKind));
   const mine=files.filter((f,i)=>K[i]===own||K[i]===''),other=files.filter((f,i)=>K[i]!==own&&K[i]!=='');
-  if(mine.length)await fn(mine);if(other.length)await dropFiles(other)}
+  if(mine.length)await fn(mine);if(other.length)await dropFiles(other,{n:files.length})}
 // Ziehen über der Seite: Hinweis zeigen, der Browser öffnet eine danebengefallene Datei nicht selbst
 let DRAG_N=0;
 const dragFiles=e=>!!e.dataTransfer&&[...(e.dataTransfer.types||[])].includes('Files');
