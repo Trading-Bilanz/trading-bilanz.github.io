@@ -48,6 +48,8 @@
   --tab-line:#C49A55;
   /* Ab 0.142: Gold als Schrift (Überschriften der Karte „Meilensteine“, mindestens 4,5 : 1) und als Fläche der Marken */
   --gold-ink:#86601c; --gold-soft:#faf3e6;
+  /* Ab 0.154: Jahresrückblick (aus Florians Testseite): Morgenlicht oben im Fenster (--jr-dawn, dunkel gedämpft) und Goldstaub (drei Funken) */
+  --jr-dawn:#fbeccc; --jr-st1:#f6d77e; --jr-st2:#e0aa28; --jr-st3:#fff3c4;
   /* Ab 0.97: gelber Streifen der Begrüßung offline (.ystr), gelber als --sig-y (Farbton 50° statt 42°), Text 16,1 : 1, Link 5,66 : 1.
      Ab 0.98 ist seine Fläche --warn-bg (dieselbe für alle gelben Flächen), hier nur noch der Rand */
   --ystr-line:#ccaa00;
@@ -72,6 +74,7 @@
     --btn:#2f6db5; --btn-dk:#245891;
     --tab-line:#D4B27A;
     --gold-ink:#d9b97f; --gold-soft:#2c271f;
+    --jr-dawn:#3a3020;
     --ystr-line:#e8cf4a;
     --go-line:#9c8a6a; --go-bg:#2a251e; --go-dk:#b8a582;
     color-scheme:dark;
@@ -1389,6 +1392,97 @@ table.msjr{border-collapse:collapse;margin:4px auto 6px;max-width:100%}table.msj
 #ms-modal .mft{align-items:center;justify-content:flex-end}#ms-all{margin-right:auto}
 #ms-all,.msline a{color:var(--accent)}
 @media(max-width:560px){#ms-all{flex:1 0 100%}}
+/* Ab 0.154: Jahresrückblick in der Karte „Meilensteine“: Abschnitt „Rückblick“ (ein Wert wie die Rekorde, darunter der Link), Link-Zeile
+   „Jahresrückblicke“ wie „Verlauf“ (Zeilen mit Jahr, Titel, Rendite; am Handy oben Jahr und Rendite, darunter der Titel), graue Marke „unvollständig“
+   neben der Rendite */
+.jrkv{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding-bottom:8px}
+.jrkv>.msv{border-left:0;padding-left:0}
+button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
+.jrmk{display:inline-block;margin-left:8px;padding:0 7px;border:1px solid var(--line);border-radius:999px;font-size:var(--fs-xxs);font-weight:400;line-height:1.6;color:var(--muted);vertical-align:middle;white-space:nowrap}
+#st-ms .jrvh+.msvh,#st-ms .jrvl+.msvh{margin-top:8px}
+.mse.jre{grid-template-columns:92px minmax(0,1fr) auto}
+@media(max-width:560px){.mse.jre .msew{grid-column:3;grid-row:1}.mse.jre .mset{grid-column:1/4;grid-row:2}}
+/* Ab 0.154: Jahresrückblick (#jr-modal). Am PC 780 px breit, damit die Reihen von Seite 2 passen (Testseite), sonst wie die übrigen Fenster.
+   Morgenlicht: zarter heller Verlauf oben (--jr-dawn, dunkel gedämpft), liegt hinter dem Inhalt und scrollt mit. Schmetterling 140 × 96 px (Handy
+   105 × 72): in Ruhe das ganze Bild mit Schimmer, während der Flügelschläge drei Teile (Schnittlinien der Testseite als clip-path, Bild als
+   Hintergrund aus dem Skript), nur die Flügel drehen sich. Monatsbalken in Gold (--tab-line), Verlustmonate --neg gedämpft, Monate ohne Trades eine
+   flache Linie. Seite 2: Gruppen mit goldenen Überschriften, Kacheln wie die Ehrentafel (.msv), PC je Reihe so viele Spalten wie Kacheln (--n),
+   Handy zwei Spalten (jrFit). Einladung als hellgrüner Kasten (--ok-bg). Bei „Bewegung reduzieren“ steht alles still. */
+.modal .box.jrbox{max-width:780px}
+#jr-body{position:relative;z-index:1}
+.jrmorgen{position:absolute;left:0;right:0;top:0;height:560px;pointer-events:none;z-index:0;background:radial-gradient(130% 100% at 50% 0%,var(--jr-dawn) 0%,rgba(0,0,0,0) 70%)}
+.jrspielt .jrmorgen{animation:jrmorgen 2.2s ease-out both}
+@keyframes jrmorgen{from{opacity:0}to{opacity:1}}
+#jr-nav{position:relative;height:0;z-index:6}
+#jr-ar{top:150px;right:-18px}#jr-ar.l{right:auto;left:-18px;top:2px}
+.jrs1{text-align:center}.jrs2,.jrs3{text-align:left}.jrs2 .jrkopf,.jrabs{text-align:center}
+.jrbf{position:relative;width:140px;height:96px;margin:0 auto;perspective:420px;cursor:pointer}
+.jrbf>.bfs{display:block}.jrbf .bfs.g{--bfd:2.2s}
+.jrteil{position:absolute;inset:0;display:none;pointer-events:none;background-position:center;background-size:100% 100%;background-repeat:no-repeat}
+.jrfl-l{clip-path:polygon(0 0,31.25% 0,32.62% 7.14%,45.9% 28.57%,46.09% 28.57%,46.09% 100%,0 100%);transform-origin:46.09% 50%}
+.jrfl-r{clip-path:polygon(68.75% 0,100% 0,100% 100%,54.1% 100%,54.1% 28.57%,67.38% 7.14%);transform-origin:54.1% 50%}
+.jrkoerper{clip-path:polygon(31.25% 0,68.75% 0,67.38% 7.14%,54.1% 28.57%,54.1% 100%,46.09% 100%,46.09% 28.57%,45.9% 28.57%,32.62% 7.14%)}
+.jrschlaegt .jrteil{display:block}.jrschlaegt .jrbf>.bfs{visibility:hidden}
+.jrschlaegt .jrfl-l{animation:jrschl .62s ease-in-out 0s 3 both}.jrschlaegt .jrfl-r{animation:jrschr .62s ease-in-out 0s 3 both}
+@keyframes jrschl{0%,100%{transform:rotateY(0)}50%{transform:rotateY(64deg)}}
+@keyframes jrschr{0%,100%{transform:rotateY(0)}50%{transform:rotateY(-64deg)}}
+.jrstaub{position:absolute;left:50%;top:22px;width:0;height:0;pointer-events:none}
+.jrkorn{position:absolute;border-radius:50%;opacity:0;animation:jrkorn var(--d) ease-out var(--w) 1 both}
+@keyframes jrkorn{0%{opacity:0;transform:translate(0,0)}12%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y))}}
+@media(max-width:560px){.jrbf{width:105px;height:72px}.jrbf img.bfly{width:105px;height:72px}}
+.jrh{margin:10px 0 0;font-size:22px;overflow-wrap:break-word;text-wrap:balance}
+.jrgr{font-size:44px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:400px){.jrgr{font-size:38px}}
+.jrnet{font-size:26px;font-weight:700;line-height:1.2;margin-top:10px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.jrkl{font-size:var(--fs-xs);color:var(--ink2);margin-top:2px}
+.jrmiss{margin:10px auto 0;max-width:30em}
+.jrmon{margin:18px auto 4px;max-width:420px}
+.jrbal{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;height:96px}
+.jrbal .sp{position:relative}
+.jrbal .z{position:absolute;left:0;right:0;height:1px;background:var(--line)}
+.jrbal i{position:absolute;left:0;right:0;border-radius:3px 3px 0 0;background:var(--tab-line);transform-origin:50% 100%}
+.jrbal i.m{border-radius:0 0 3px 3px;background:var(--neg);opacity:.55;transform-origin:50% 0}
+.jrbal i.o{height:2px;border-radius:1px;background:var(--line)}
+.jrspielt .jrbal i:not(.o){animation:jrwachs .45s cubic-bezier(.2,.7,.3,1) var(--w) both}
+@keyframes jrwachs{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.jrml{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;font-size:11px;color:var(--ink2);margin-top:4px}
+.msgl.jrtr{margin-top:18px}
+.jrleit{margin:14px auto 0;max-width:30em;font-weight:600;text-wrap:balance}
+.jrweiter{margin:18px 0 4px}
+.jrunv{margin:10px 0 0;font-size:var(--fs-xs);color:var(--muted)}
+.jrkat{font-size:var(--fs-xs);letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink);font-weight:700}
+.jrs2 .jrkat+.jrh{margin-top:4px}
+.jrgrp{margin-top:18px}
+.jrgrp>h3{margin:0 0 6px;font-size:var(--fs-xxs);letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink);font-weight:700}
+.jrbody{border-top:1px solid var(--line)}
+.jrreihe{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr))}
+.jrk{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;padding:8px 10px 10px 12px;border-bottom:1px solid var(--line);border-left:1px solid var(--line)}
+.jrk.jrf{border-left:0;padding-left:0}
+.jrk>.k{font-size:var(--fs-xs);color:var(--ink2);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.jrk>.v{font-size:22px;font-weight:700;line-height:1.25;font-variant-numeric:tabular-nums;white-space:nowrap}
+.jrk>.v.none{font-size:var(--fs-s);font-weight:400;line-height:27.5px;color:var(--muted);white-space:normal}
+.jrk>.s{font-size:var(--fs-xs);color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:640px){.jrbody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.jrreihe{display:contents}
+  .jrk,.jrk.jrf{border-left:0;padding:8px 8px 10px 0}.jrk.jrr{border-left:1px solid var(--line);padding-left:10px}.jrk.jrw{grid-column:1/-1}.jrk>.s{white-space:normal}}
+.jrpl{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.jrpl .msmk{cursor:default}
+.jrabs{margin-top:6px}
+.jrwunsch{font-size:16px;font-weight:600;margin:16px auto 0;max-width:28em;text-wrap:balance}
+.jrein{margin:18px 0 4px;background:var(--ok-bg);border-radius:12px;padding:14px 16px;text-align:center}
+.jrein p{margin:0 0 10px}.jrein p:last-child{margin:0}
+.jrs3 .jrh{margin:10px 0 6px}
+.jrblk{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
+.jrlab{margin-bottom:4px}
+.jradr{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.jradrt{flex:1 1 220px;min-width:0}
+.jradr .qr{width:150px;height:150px;padding:8px}
+.jrdanke{margin:8px 0 0}
+button.zlink.jrzur{color:var(--accent);padding:0}
+#jr-foot{flex:1 0 100%;min-width:0}#jr-foot[hidden],#jr-weakl[hidden]{display:none}.jrs1{padding-top:6px}
+#jr-modal .mft{align-items:center;justify-content:flex-end}#jr-all{margin-right:auto;color:var(--accent)}
+.fpan .jrbk{margin:6px 10px 2px;font-size:var(--fs-xxs);letter-spacing:.05em;text-transform:uppercase;color:var(--gold-ink);font-weight:700}
+.fpan .jrbk .small{text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink2)}
+@media (prefers-reduced-motion:reduce){#jr-modal .jrmorgen,#jr-modal .jrbal i,#jr-modal .jrteil{animation:none!important}.jrkorn{display:none}}
 /* Schmetterling am Reiter: die Fläche zum Tippen ist größer als das Bild (Rand nach außen), nimmt aber keinen Platz ein */
 /* Reiter „Auswertung“ ab 0.145: festes Feld links (26 × 18 px) mit dem Symbol (Balken, goldene Linie) oder, bei neuen Meilensteinen, dem
    Schmetterling (18 px hoch, 26 px breit). Beide füllen das Feld, so wirkt der Abstand zum Wort wie bei den Punkten der anderen Reiter, und es rückt
@@ -2003,19 +2097,19 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <p>Am liebsten in USDC oder USDT. Aber ganz ehrlich: Als Vater, der sein Kind in Freiheit aufwachsen lassen will, freue ich mich über alles, was zu mir fließen möchte. 🙂</p>
     <p>Und wenn gerade nichts übrig ist: Erzähle anderen in der Community davon. Auch das trägt uns alle.</p>
     <div class="row" style="gap:20px;align-items:flex-start;margin-top:14px">
-      <div class="qr" role="img" aria-label="QR-Code der Wallet-Adresse" title="QR-Code der Wallet-Adresse"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33"><path stroke="#000" d="M2 2.5h7m3 0h2m4 0h1m1 0h3m1 0h7m-29 1h1m5 0h1m3 0h1m2 0h1m1 0h1m4 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h4m3 0h1m3 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m1 0h4m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m5 0h1m4 0h2m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h2m2 0h2m1 0h4m1 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m2 0h1m1 0h1m1 0h1m2 0h1m-20 1h1m1 0h5m4 0h3m1 0h4m3 0h5m-27 1h1m2 0h2m4 0h1m1 0h2m1 0h1m4 0h6m3 0h1m-29 1h1m3 0h1m1 0h2m3 0h3m1 0h1m1 0h2m1 0h2m1 0h2m2 0h1m-25 1h3m1 0h2m3 0h1m2 0h1m4 0h1m1 0h3m-25 1h2m1 0h2m1 0h1m1 0h1m1 0h2m1 0h2m1 0h2m2 0h2m1 0h1m1 0h3m-28 1h1m1 0h1m5 0h1m2 0h2m5 0h2m2 0h1m1 0h2m1 0h2m-28 1h6m1 0h2m1 0h5m5 0h5m-26 1h1m1 0h1m1 0h1m4 0h2m1 0h1m2 0h1m2 0h2m4 0h2m1 0h1m-28 1h1m1 0h7m1 0h2m1 0h1m2 0h3m2 0h1m4 0h3m-29 1h4m1 0h1m1 0h4m1 0h1m1 0h1m4 0h2m1 0h4m2 0h1m-29 1h1m1 0h2m1 0h2m2 0h1m2 0h4m1 0h1m6 0h1m-25 1h1m2 0h2m3 0h3m4 0h1m2 0h1m1 0h3m4 0h1m-28 1h1m2 0h1m1 0h4m3 0h7m1 0h8m-20 1h1m1 0h2m5 0h1m2 0h1m3 0h1m1 0h1m1 0h1m-29 1h7m7 0h3m1 0h3m1 0h1m1 0h1m2 0h1m-28 1h1m5 0h1m1 0h1m2 0h2m1 0h2m2 0h3m3 0h1m2 0h2m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h2m3 0h4m1 0h9m-29 1h1m1 0h3m1 0h1m1 0h2m2 0h1m7 0h2m1 0h1m3 0h2m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h3m1 0h1m2 0h1m1 0h2m1 0h1m-28 1h1m5 0h1m2 0h2m2 0h1m1 0h1m4 0h1m2 0h1m1 0h1m1 0h1m-28 1h7m1 0h4m1 0h7m1 0h2m1 0h1m1 0h1"/></svg></div>
+      <div class="qr" id="don-qr" role="img" aria-label="QR-Code der Wallet-Adresse" title="QR-Code der Wallet-Adresse"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33"><path stroke="#000" d="M2 2.5h7m3 0h2m4 0h1m1 0h3m1 0h7m-29 1h1m5 0h1m3 0h1m2 0h1m1 0h1m4 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h4m3 0h1m3 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m1 0h4m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m5 0h1m4 0h2m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h2m2 0h2m1 0h4m1 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m2 0h1m1 0h1m1 0h1m2 0h1m-20 1h1m1 0h5m4 0h3m1 0h4m3 0h5m-27 1h1m2 0h2m4 0h1m1 0h2m1 0h1m4 0h6m3 0h1m-29 1h1m3 0h1m1 0h2m3 0h3m1 0h1m1 0h2m1 0h2m1 0h2m2 0h1m-25 1h3m1 0h2m3 0h1m2 0h1m4 0h1m1 0h3m-25 1h2m1 0h2m1 0h1m1 0h1m1 0h2m1 0h2m1 0h2m2 0h2m1 0h1m1 0h3m-28 1h1m1 0h1m5 0h1m2 0h2m5 0h2m2 0h1m1 0h2m1 0h2m-28 1h6m1 0h2m1 0h5m5 0h5m-26 1h1m1 0h1m1 0h1m4 0h2m1 0h1m2 0h1m2 0h2m4 0h2m1 0h1m-28 1h1m1 0h7m1 0h2m1 0h1m2 0h3m2 0h1m4 0h3m-29 1h4m1 0h1m1 0h4m1 0h1m1 0h1m4 0h2m1 0h4m2 0h1m-29 1h1m1 0h2m1 0h2m2 0h1m2 0h4m1 0h1m6 0h1m-25 1h1m2 0h2m3 0h3m4 0h1m2 0h1m1 0h3m4 0h1m-28 1h1m2 0h1m1 0h4m3 0h7m1 0h8m-20 1h1m1 0h2m5 0h1m2 0h1m3 0h1m1 0h1m1 0h1m-29 1h7m7 0h3m1 0h3m1 0h1m1 0h1m2 0h1m-28 1h1m5 0h1m1 0h1m2 0h2m1 0h2m2 0h3m3 0h1m2 0h2m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h2m3 0h4m1 0h9m-29 1h1m1 0h3m1 0h1m1 0h2m2 0h1m7 0h2m1 0h1m3 0h2m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h3m1 0h1m2 0h1m1 0h2m1 0h1m-28 1h1m5 0h1m2 0h2m2 0h1m1 0h1m4 0h1m2 0h1m1 0h1m1 0h1m-28 1h7m1 0h4m1 0h7m1 0h2m1 0h1m1 0h1"/></svg></div>
       <div style="flex:1;min-width:240px">
         <div class="small" style="margin-bottom:4px">Wallet-Adresse (<strong>EVM</strong>)</div>
         <div class="addr" id="don-addr">0xa05d81c8a5c966fdb5cce33d6871108870b32f6e</div>
         <div class="row" style="margin-top:8px"><button class="btn primary" id="btn-copyaddr">Adresse kopieren</button><span id="copymsg" class="small"></span></div>
         <!-- Ab 0.134: nur in der heruntergeladenen Datei (.offl). Der Satz kommt vom Skript (Sprung-Link aus DL_URL, JUMP_URL). -->
         <p class="small offl" id="don-cmp" style="margin-top:8px"></p>
-        <p class="small" style="margin-top:12px">Funktioniert auf allen <strong>EVM-Netzwerken</strong>, z. B. Ethereum, Arbitrum, Base, Optimism, Polygon, BNB Smart Chain, Avalanche, Linea.</p>
-        <div class="msg warn"><b>Bitte nicht über TRON (TRC20), Solana oder Bitcoin senden.</b> Diese Netzwerke haben andere Adressen, die Spende käme nicht an. Wenn du von einer Börse aus sendest, wähle als Netzwerk z. B. „Ethereum (ERC20)“, „BNB Smart Chain (BEP20)“, „Arbitrum One“, „Base“ oder „Polygon“.</div>
+        <p class="small" id="don-netz" style="margin-top:12px">Funktioniert auf allen <strong>EVM-Netzwerken</strong>, z. B. Ethereum, Arbitrum, Base, Optimism, Polygon, BNB Smart Chain, Avalanche, Linea.</p>
+        <div class="msg warn" id="don-warn"><b>Bitte nicht über TRON (TRC20), Solana oder Bitcoin senden.</b> Diese Netzwerke haben andere Adressen, die Spende käme nicht an. Wenn du von einer Börse aus sendest, wähle als Netzwerk z. B. „Ethereum (ERC20)“, „BNB Smart Chain (BEP20)“, „Arbitrum One“, „Base“ oder „Polygon“.</div>
       </div>
     </div>
     <h3 style="margin-top:18px">Lieber per PayPal?</h3>
-    <p><a class="btn primary" href="https://www.paypal.com/donate?hosted_button_id=KHXGUFJ6FVVRN" target="_blank" rel="noopener">Mit PayPal spenden&nbsp;↗</a></p>
+    <p><a class="btn primary" id="don-paypal" href="https://www.paypal.com/donate?hosted_button_id=KHXGUFJ6FVVRN" target="_blank" rel="noopener">Mit PayPal spenden&nbsp;↗</a></p>
     <div class="msg info" style="margin-top:16px" data-orig></div>
     <p class="small" style="margin:14px 0 0"><a href="https://weltenwandel.at" target="_blank" rel="noopener">Mehr von mir&nbsp;↗</a></p>
   </div>
@@ -2149,6 +2243,16 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <div class="row mft"><div id="ms-foot"><div class="msdots" id="ms-dots" aria-hidden="true"></div><div class="msfr"><span id="ms-img"></span><label class="fopt msamt"><input type="checkbox" id="ms-amt"><span id="ms-amtl"></span></label></div><div id="ms-lines"></div></div><a href="#" id="ms-all">Alle Meilensteine</a><button type="button" class="btn" data-mclose>Schließen</button></div>
 </div></div>
 <span class="fdd" id="ms-menu-home" hidden><div class="fpan" id="fp-msb" role="dialog" aria-label="Bild"></div></span>
+<!-- Ab 0.154: Jahresrückblick (jrShow). Drei Ansichten in #jr-body (Seite 1, „Dein Jahr in Zahlen“, „Wertschätzung teilen“), der runde Pfeil am Rand
+     (#jr-nav), Morgenlicht (.jrmorgen) hinter dem Inhalt. Fest unten: Punkte, „Bild ▾“ mit seinem Menü (#fp-jrb), „Betrag zeigen“, „Schwächste
+     Werte zeigen“ (#jr-foot, in der dritten Ansicht verborgen), „Alle Meilensteine“, „Schließen“. Öffnet über openModal; von selbst geöffnet
+     schließt es nicht mit einem Klick daneben (GESTALTUNG Abschnitt 0, „Fenster, die von selbst kommen“). -->
+<div class="modal noprint" id="jr-modal"><div class="box jrbox" role="dialog" aria-modal="true" aria-labelledby="jr-t"><button type="button" class="mx" id="jr-x" aria-label="Schließen">×</button>
+  <div class="jrmorgen" aria-hidden="true"></div>
+  <div id="jr-nav"><button type="button" class="msar" id="jr-ar">›</button></div>
+  <div id="jr-body"></div>
+  <div class="row mft"><div id="jr-foot"><div class="msdots" id="jr-dots" aria-hidden="true"></div><div class="msfr"><span class="fdd" id="fdd-jrb"><button type="button" class="btn" id="fb-jrb">Bild ▾</button><div class="fpan" id="fp-jrb" role="dialog" aria-label="Bild"></div></span><label class="fopt msamt"><input type="checkbox" id="jr-amt"><span id="jr-amtl"></span></label><label class="fopt msamt" id="jr-weakl"><input type="checkbox" id="jr-weak"><span id="jr-weakt"></span></label></div></div><a href="#" id="jr-all">Alle Meilensteine</a><button type="button" class="btn" data-mclose>Schließen</button></div>
+</div></div>
 <!-- Fenster „Erste Schritte“ und „Datenschutz“: schließen mit ×, Esc oder Klick daneben (openModal/closeModal) -->
 <div class="modal noprint" id="steps-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="steps-t"><button type="button" class="mx" aria-label="Schließen">×</button>
   <h2 id="steps-t">Erste Schritte</h2>
@@ -3744,11 +3848,24 @@ const mostTxt=m=>m.weeks===1?`${m.c} von ${m.last.n}`:`${m.c}, in ${m.weeks} Woc
 const MS_NET=[100,500,1000,2500,5000,10000,25000,50000,100000,250000,500000,1000000],MS_RET=[10,25,50,100],MS_WINS=[100,500,1000,2500,5000,10000];
 const MS_RUN={rg:[25,50,100,250,500],rd:[25,50,100,250],rw:[10,25,52,100]};
 const msWkYear=w=>addDays(w,3).slice(0,4),MS_SERK=['rg','rd','rw'];
+// Ab 0.154: gemeinsame Grundlage von msCalc und jrCalc (Jahresrückblick). Trades der gezählten Konten sel als Kopien mit der Investition der
+// gezählten Konten zum Zeitpunkt des Trades (cS) und den Beträgen in der Währung cur (ohne Kurs USD), dazu laufende Woche (cw), Datenstand
+// (dataEnd: neueste Buchung oder neuestes Report-Datum), erster Trade, gezähltes Fenster (win) und Positionen in Zeitfolge (P). Bis 0.153 in msCalc.
+function msBasis(rows,sel,o){
+  o=o||{};const set=new Set(sel),RD=o.rd||repDay,T0=rows.filter(r=>set.has(r.a)),TR=T0.filter(isTrade);
+  const cur=o.cur==='eur'&&!TR.some(r=>!r.rate)?'eur':'usd',b={T0,TR,cur,RD};if(!TR.length)return b;
+  const capC=new Map(),capS=t=>{if(capC.has(t))return capC.get(t);let s=0;for(const a of sel){const c=CAP(a,t);if(c==null){s=null;break}s+=c}capC.set(t,s);return s};
+  const T=b.T=TR.map(r=>Object.assign({},r,{cS:capS(r.x.t)},cur==='usd'?{eur:r.amt,exE:r.exU}:null));
+  b.miss=T.some(r=>r.cS==null);b.cw=curWeek(T0,sel,RD);
+  let dataEnd=T0[T0.length-1].d;for(const a of sel){const rd=RD(a);if(rd>dataEnd)dataEnd=rd}
+  b.dataEnd=dataEnd;b.first=T[0].d;b.win=cntWin(b.first,null,null,dataEnd);
+  b.P=positions(T,'sel').sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:0);
+  return b}
 function msCalc(rows,sel,o){
-  o=o||{};const today=o.today||todayLocal(),set=new Set(sel),list=[],RD=o.rd||repDay;
-  const T0=rows.filter(r=>set.has(r.a)),TR=T0.filter(isTrade);
+  o=o||{};const today=o.today||todayLocal(),list=[],RD=o.rd||repDay;
+  const BS=msBasis(rows,sel,o),T0=BS.T0,TR=BS.TR;
   const tags=(o.tags||[]).filter(t=>t.status==='ok').map(t=>({t,d:tagD(t),tm:tagT(t)||tagD(t)})).sort((p,q)=>p.tm<q.tm?-1:p.tm>q.tm?1:String(p.t.id)<String(q.t.id)?-1:1);
-  const cur=o.cur==='eur'&&!TR.some(r=>!r.rate)?'eur':'usd';
+  const cur=BS.cur;
   const res={list,cur,best:{},yb:{},miss:false,missAcc:sel.filter(a=>INV[a]!=='ok'),first:null,cw:null,B:null,t:rows.length?rows[rows.length-1].x.t:null,as:null,tg:tags.map(x=>String(x.t.id))};
   // Abrechnungsstand über alle Konten: Montag der laufenden Woche, sonst der Tag nach dem Datenstand. Alles davor ist abgerechnet bekannt.
   if(rows.length){const all=[...new Set(rows.map(r=>r.a))],cwA=curWeek(rows,all,RD);let de=rows[rows.length-1].d;for(const a of all){const rd=RD(a);if(rd>de)de=rd}res.as=cwA||addDays(de,1)}
@@ -3766,13 +3883,11 @@ function msCalc(rows,sel,o){
      if(first){first=false;const e=eu(x),E=o.cur==='eur'&&isFinite(e);add('ea',t.id,x.d,Object.assign({a:E?e:t.usd,ac:E?'eur':'usd',tg:String(t.id)},vorD(x.d)))}
      if(arm&&ce>0&&ca>=ce-0.005){arm=false;const E=o.cur==='eur'&&isFinite(caE);add('ee',t.id,x.d,Object.assign({a:E?caE:ca,ac:E?'eur':'usd',tg:String(t.id)},vorD(x.d)))}}}
   if(!TR.length)return res;
-  // ---- Zeilen der gezählten Konten als Kopien: cS = Investition der gezählten Konten zum Zeitpunkt des Trades, Beträge in der Währung cur
-  const capC=new Map(),capS=t=>{if(capC.has(t))return capC.get(t);let s=0;for(const a of sel){const c=CAP(a,t);if(c==null){s=null;break}s+=c}capC.set(t,s);return s};
-  const T=TR.map(r=>Object.assign({},r,{cS:capS(r.x.t)},cur==='usd'?{eur:r.amt,exE:r.exU}:null));
-  const miss=res.miss=T.some(r=>r.cS==null);
-  const cw=res.cw=curWeek(T0,sel,RD);let dataEnd=T0[T0.length-1].d;for(const a of sel){const rd=RD(a);if(rd>dataEnd)dataEnd=rd}
-  const first=res.first=T[0].d,B=res.B=addDays(monday(first),14),win=cntWin(first,null,null,dataEnd);
-  const P=positions(T,'sel').sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:0);
+  // ---- Zeilen der gezählten Konten als Kopien (ab 0.154 aus msBasis): cS = Investition der gezählten Konten zum Zeitpunkt des Trades,
+  // Beträge in der Währung cur
+  const T=BS.T,miss=res.miss=BS.miss,cw=res.cw=BS.cw;
+  const first=res.first=BS.first,B=res.B=addDays(monday(first),14),win=BS.win;
+  const P=BS.P;
   const pk=p=>p.t+'|'+p.sym,sat=w=>addDays(w,5);
   // Ausgangsstand je Jahr: zwei Kalenderwochen ab der ersten Woche des Jahres mit Trades
   const YB={};for(const p of P){const y=msWkYear(p.wk);if(!(y in YB))YB[y]=addDays(p.wk,14)}
@@ -3868,12 +3983,13 @@ function msCalc(rows,sel,o){
    if(!cr)crossB();if(b&&b.c>0)res.best.mw={n:b.c,w:b.w};res.yb.mw=by}
   // ---- Jahrestag: jedes Jahr seit dem ersten Trade der gezählten Konten, sobald der Tag da ist (Uhr des Geräts). Er wartet zwei Monate.
   {for(let n=1;n<200;n++){const ad=addMonths(first,12*n);if(ad>today)break;add('ja',n,ad,{n,clock:true,from:ad,until:addMonths(ad,2)})}}
-  // ---- Jahresrückblick: jedes vergangene Kalenderjahr mit Trades. Er wartet vom 1. Jänner bis Ende Februar des Folgejahrs.
+  // ---- Jahresrückblick: jedes vergangene Kalenderjahr mit Trades. Ab 0.154 (Florians Auftrag) ohne die Grenze Ende Februar: voll = die Daten
+  // des Jahres sind vollständig (jrFehlt), erst dann öffnet er sich von selbst (msAutoPick). Werte für die Karte: Netto-Gewinn, Rendite, Trades.
+  // Bis 0.153 wartete er vom 1. Jänner bis Ende Februar (until) und trug die drei Bestwerte und den letzten Trade (bw, bd, bt, last).
   {const ys=[...new Set(P.map(p=>p.d.slice(0,4)))].sort();
-   for(const y of ys){if(y>=today.slice(0,4))continue;const rr=T.filter(r=>r.y===y),nu=rr.reduce((s,r)=>s+r.exU,0),b=x=>x?x.v:null;
-     add('jr',y,y+'-12-31',{y,clock:true,from:(+y+1)+'-01-01',until:monthEnd((+y+1)+'-02'),
-       st:{net:sumTrades(rr,true).v,netU:nu,r:miss?null:retSum(rr,'sel',true).v,n:P.filter(p=>p.d.slice(0,4)===y).length,last:rr[rr.length-1].d,
-         bw:yW[y]?{r:yW[y].v,a:yW[y].x.aX,d:yW[y].x.key}:null,bd:yD[y]?{r:yD[y].v,a:yD[y].x.a,d:yD[y].x.d}:null,bt:yT[y]?{r:yT[y].v,a:yT[y].x.exE,d:yT[y].x.d,sym:yT[y].x.sym}:null}})}}
+   for(const y of ys){if(y>=today.slice(0,4))continue;const rr=T.filter(r=>r.y===y),nu=rr.reduce((s,r)=>s+r.exU,0),fehlt=jrFehlt(BS,sel,y);
+     add('jr',y,y+'-12-31',{y,clock:true,from:(+y+1)+'-01-01',voll:!fehlt.length,fehlt,
+       st:{net:sumTrades(rr,true).v,netU:nu,r:miss?null:retSum(rr,'sel',true).v,n:P.filter(p=>p.d.slice(0,4)===y).length}})}}
   // ---- Ab 0.142: Werte der Karte. val.G = Gesamt (heutiger Bestwert), val.Y[Jahr] = bester Wert des Jahres; je Art der Eintrag mit Blatt
   // (null: noch kein Wert). Hat ein Jahreswert keinen Eintrag (Ausgangsstand des Jahres), entsteht ein Blatt aus dem Wert (px).
   {const byId=new Map(list.map(e=>[e.id,e])),G={},Y={},ys=res.ys=[...new Set(P.map(p=>p.d.slice(0,4)))].sort().reverse();
@@ -3888,6 +4004,101 @@ function msCalc(rows,sel,o){
   res.netU=T.reduce((s,r)=>s+r.exU,0);
   return res;
 }
+/* ---------------- Jahresrückblick (ab 0.154): Rechnung ----------------
+   jrCalc(rows, sel, y, o) liefert alle Werte des Jahres y für das Fenster und die Bilder. Reine Rechnung, ändert nichts, speichert nichts; das
+   Tool rechnet sie bei jedem Öffnen neu. Grundlage wie bei den Meilensteinen (msBasis): gezählte Konten der Karte, immer nach PF, Rendite auf
+   deren Investition, Beträge in der Währung o.cur (ohne Kurs USD). Der Filter der Auswertung wirkt nicht, „Tage ohne Trade mitzählen“ gilt
+   immer (Vorgabe an, Florians Antwort 7 zum Plan 0.154). o.M = Liste der Meilensteine (msCalc) mit denselben Zeilen, Konten und Währung.
+   - Kalenderjahr wie die Auswertung mit dem Zeitraum des Jahres: Rendite, Netto-Gewinn, Trades (Positionen), Trefferquote (Vorzeichen vor PF),
+     Handelstage, Monate (Balken: alle; Bestwert, schwächster und Ø: nur ganze), Tage, Trades, Max. Drawdown, „Verhältnis“ (wie die Tabelle in
+     „Hochs und Tiefs“), stärkster Wochentag (wie die Grafik „Nach Wochentag“, Durchschnitt, nur Wochentage mit Trades).
+   - Wochen nach der Donnerstag-Regel wie die Karte (Florians Antwort 5): Eine Woche zählt zu dem Jahr, in dem ihr Donnerstag liegt; ganz ist
+     sie wie in der Karte (alle fünf Handelstage im Datenstand, abgerechnet). So geht am Jahreswechsel keine Woche verloren, und Karte und
+     Rückblick zeigen dieselbe beste Woche. Beste und schwächste Woche, Ø pro Woche (Wochen ohne Trade mit 0) und „Wochen im Plus“ (Florians
+     Antwort 6: Zähler und Nenner aus denselben Wochen, den ganzen Wochen mit Trades; im Plus = Netto-Gewinn nach PF über 0).
+   - Serien aus den Meilensteinen (o.M.yb): volle Länge über den Jahreswechsel, „läuft noch“. Die längste Verlustserie (Verlust-Trades am Stück,
+     Vorzeichen vor PF) ebenso über den Jahreswechsel, bei gleicher Länge die letzte wie in „Hochs und Tiefs“.
+   - Geld des Jahres aus den Tag-Daten wie „Dein echtes Geld“ (Einzahlungen nur „Mein Geld“), ohne Tag-Zeile im Jahr null.
+   - Meilensteine des Jahres: Stufen, Auszahlungen und Jahrestage mit Datum im Jahr (alle, nicht nur die höchste).
+   - Vollständig (voll, jrFehlt): Jedes gezählte Konto mit Trades im Dezember hat einen Report vom 1. Jänner des Folgejahrs oder später
+     (Report-Datum, in der Zeile „Date:“ bzw. „Datum:“ des Reports). Konten ohne Trades im Dezember halten nichts auf.
+   Fehlt die Investition eines gezählten Kontos (miss), sind alle Werte nach Rendite null. */
+// Konten, die das Jahr y noch aufhalten: gezählt, mit Trades im Dezember, ohne Report vom 1. Jänner des Folgejahrs oder später; je Konto der
+// Datenstand (Report-Datum, sonst die neueste Buchung). BS = msBasis.
+function jrFehlt(BS,sel,y){const ny=(+y+1)+'-01-01',dz=y+'-12-01',ye=y+'-12-31',out=[];
+  for(const a of sel){if(!BS.TR.some(r=>r.a===a&&r.d>=dz&&r.d<=ye))continue;const rd=BS.RD(a);if(rd>=ny)continue;
+    let last='';for(const r of BS.T0)if(r.a===a&&r.d>last)last=r.d;out.push({a,bis:rd>last?rd:last})}
+  return out}
+function jrCalc(rows,sel,y,o){
+  o=o||{};const BS=msBasis(rows,sel,o),M=o.M||msCalc(rows,sel,o),cur=BS.cur,today=o.today||todayLocal(),ny=(+y+1)+'-01-01';
+  const res={y,cur,miss:false,missAcc:sel.filter(a=>INV[a]!=='ok'),fehlt:[],voll:false,n:0};
+  if(!BS.T)return res;
+  const {T,P,win,cw}=BS,miss=res.miss=!!BS.miss,R=T.filter(r=>r.y===y),rN=v=>miss?null:v;
+  res.fehlt=jrFehlt(BS,sel,y);res.voll=today>=ny&&!res.fehlt.length;
+  if(!R.length)return res;
+  const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+  // erster Extremwert bei Gleichstand (wie „Hochs und Tiefs“ und die Kacheln); f = Wert oder null
+  const ext=(l,f,dir)=>{let b=null,bv=null;for(const x of l){const v=f(x);if(v==null)continue;if(b===null||(dir>0?v>bv:v<bv)){b=x;bv=v}}return b};
+  // ---- Ergebnis
+  const PY=positions(R,'sel');res.n=PY.length;res.win=PY.filter(p=>p.eur>0).length;res.tage=new Set(R.map(r=>r.d)).size;
+  res.r=rN(retSum(R,'sel',true).v);res.net=sumTrades(R,true).v;res.netU=R.reduce((s,r)=>s+r.exU,0);
+  // Verlustjahr: Rendite unter 0, wie angezeigt gerundet (ohne Investition: Netto-Gewinn in USD unter 0)
+  res.verlust=res.r!=null?Math.round(res.r*10000)<0:Math.round(res.netU*100)<0;
+  // ---- Rendite je Monat (Balken), Jänner bis Dezember; n = Zahl der Trade-Zeilen (0: Monat ohne Trades)
+  res.mon=[];for(let m=1;m<=12;m++){const k=y+'-'+String(m).padStart(2,'0'),rr=R.filter(r=>r.ym===k);res.mon.push({m:k,n:rr.length,r:rN(retSum(rr,'sel',true).v),a:sumTrades(rr,true).v})}
+  // ---- Trades, Tage, Wochen, Monate
+  const pr=p=>miss||p.rMiss?null:p.rX;
+  const DM=new Map();for(const r of R){if(!DM.has(r.d))DM.set(r.d,[]);DM.get(r.d).push(r)}
+  const DY=[...DM.keys()].sort().map(d=>{const rr=DM.get(d);return {d,r:rN(retSum(rr,'sel',true).v),a:sumTrades(rr,true).v}});
+  const WK=periods(T,win,'week','sel',cw).filter(p=>p.full&&msWkYear(p.key)===y);
+  const MO=periods(T,win,'month','sel',cw).filter(p=>p.full&&p.key.slice(0,4)===y);
+  const DA=periods(T,win,'day','sel',cw).filter(p=>p.key.slice(0,4)===y);
+  const tOf=p=>p&&{r:pr(p),a:p.exE,d:p.d},dOf2=x=>x&&{r:x.r,a:x.a,d:x.d},wOf=p=>p&&{r:rN(p.rX),a:p.aX,w:p.key},mOf=p=>p&&{r:rN(p.rX),a:p.aX,m:p.key};
+  const pw=p=>rN(p.rX);
+  res.best={t:tOf(ext(PY,pr,1)),d:dOf2(ext(DY,x=>x.r,1)),w:wOf(ext(WK,pw,1)),m:mOf(ext(MO,pw,1))};
+  res.worst={t:tOf(ext(PY,pr,-1)),d:dOf2(ext(DY,x=>x.r,-1)),w:wOf(ext(WK,pw,-1)),m:mOf(ext(MO,pw,-1))};
+  // ohne Investition: Extremwerte nach Rendite gibt es nicht; die Kachel zeigt dann „–“ (k = es gibt Trades, Wochen bzw. Monate)
+  res.has={t:PY.length>0,d:DY.length>0,w:WK.length>0,m:MO.length>0};
+  res.avg={t:res.r!=null&&res.n?res.r/res.n:null,d:rN(mean(DA.map(p=>p.rX))),w:WK.length?rN(mean(WK.map(p=>p.rX))):null,m:MO.length?rN(mean(MO.map(p=>p.rX))):null};
+  {const WT=WK.filter(p=>p.n);res.wPlus={n:WT.filter(p=>p.aX>0).length,of:WT.length}}
+  {const dd=maxDD(R,'sel',true);res.dd=miss||!dd.n?null:{v:dd.v,d:dd.d}}
+  // ---- Längste Verlustserie über alle Positionen der gezählten Konten; sie zählt für jedes Jahr, das sie berührt
+  {let best=null,c=null;for(const p of P){c=p.eur<0?(c?{n:c.n+1,s:c.s,e:p}:{n:1,s:p,e:p}):null;
+     if(c&&c.s.d.slice(0,4)<=y&&c.e.d.slice(0,4)>=y&&(!best||c.n>=best.n))best=c}
+   res.vs=best&&{n:best.n,ab:best.s.d,end:best.e.d,lauf:best.e===P[P.length-1]}}
+  // ---- Serien aus den Meilensteinen: die längste, die das Jahr berührt (bei gleicher Länge die erste, wie die Karte)
+  {const yb=M.yb||{},sr=(k,eOf)=>{const c=(yb[k]||{})[y];return c&&c.n>0?{n:c.n,ab:c.s.d,end:eOf(c.e.d),lauf:!!c.lauf}:null};
+   const w=(yb.mw||{})[y];res.ser={rg:sr('rg',d=>d),rd:sr('rd',d=>d),rw:sr('rw',d=>addDays(d,6)),mw:w&&w.c>0?{n:w.c,of:w.n,w:w.w}:null}}
+  // ---- Stärkster Wochentag: Summe der Rendite je Wochentag ÷ Zahl dieses Wochentags im Jahr (im gezählten Fenster); nur Wochentage mit Trades
+  if(!miss){const s=win.s>y+'-01-01'?win.s:y+'-01-01',e=win.e<y+'-12-31'?win.e:y+'-12-31',cnt=[0,0,0,0,0,0,0],sum=[0,0,0,0,0,0,0],has=[];
+    for(let d=s;d<=e;d=addDays(d,1))cnt[wdIdx(d)]++;
+    for(const x of DY){const i=wdIdx(x.d);has[i]=true;sum[i]+=x.r}
+    let bi=-1,bv=null;for(let i=0;i<7;i++){if(!has[i]||!cnt[i])continue;const v=sum[i]/cnt[i];if(bi<0||v>bv){bi=i;bv=v}}
+    res.wd=bi<0?null:{i:bi,v:bv}}else res.wd=null;
+  // ---- Verhältnis wie die Tabelle in „Hochs und Tiefs“ (nach PF, Rendite): Summen, größter Trade in Handelstagen (geteilt durch Ø pro
+  // Handelstag), Profit-Faktor aus den Renditen
+  if(!miss){const N=glKz(R,'sel',null,[]).N,dA=res.avg.d,h=(o,sg)=>!o?false:dA==null||!(dA>0)?null:sg*o.v/dA;
+    res.vh={sumW:N.sumW.r,sumL:N.sumL.r,pf:N.pf,htgW:h(N.bigW.r,1),htgL:h(N.bigL.r,-1)}}else res.vh=null;
+  // ---- Geld des Jahres aus den Tag-Daten (in Euro nur, wenn jeder Kurs da ist)
+  {const L=(o.tags||[]).filter(t=>t.status==='ok'&&String(tagD(t)).slice(0,4)===y);
+   if(L.length){let ein=0,aus=0,einE=0,ausE=0;for(const t of L){const ri=rateInfo(tagD(t),tagT(t)),e=ri?t.usd/ri.v:NaN;if(t.kind==='ein'){if(t.own){ein+=t.usd;einE+=e}}else{aus+=t.usd;ausE+=e}}
+     const E=cur==='eur'&&isFinite(einE)&&isFinite(ausE);res.geld={ein:E?einE:ein,aus:E?ausE:aus,c:E?'eur':'usd'};res.geld.net=res.geld.ein-res.geld.aus}else res.geld=null}
+  // ---- Meilensteine des Jahres (Reihenfolge der Art, dann der Stufe; „Ausgezahlt wie eingezahlt“ nur einmal)
+  {const ORD=['sn','sr','sg','ea','ee','ja'],seen=new Set();
+   res.ms=(M.list||[]).filter(e=>ORD.includes(e.k)&&e.d.slice(0,4)===y&&!(e.k==='sr'&&M.miss)).sort((a,b)=>ORD.indexOf(a.k)-ORD.indexOf(b.k)||(a.n||0)-(b.n||0))
+     .filter(e=>{const k=e.k+'|'+(e.k==='ee'||e.k==='ea'?'':e.n);if(seen.has(k))return false;seen.add(k);return true}).map(e=>({k:e.k,n:e.n||0,id:e.id}))}
+  return res}
+// Leitsatz vor dem Knopf (ab 0.154): je Jahr einmal zufällig gewählt und gemerkt (S.ui.ms.jl, Schlüssel aus MS_TXT.jr.leit), damit der Rückblick
+// beim Wiedersehen und im Bild gleich ist. Passt der gemerkte nicht mehr zur Art des Jahres (Gewinn- oder Verlustjahr), wählt das Tool neu.
+function jrLeitPick(alt,verlust,rnd){const L=MS_TXT.jr.leit,ok=Object.keys(L).filter(k=>L[k].art==='beide'||L[k].art===(verlust?'verlust':'gewinn'));
+  return ok.includes(alt)?alt:ok[Math.min(ok.length-1,Math.floor((rnd==null?Math.random():rnd)*ok.length))]}
+function jrLeit(y,verlust){const ms=msSync(),k=jrLeitPick(ms.jl[y],verlust);if(ms.jl[y]!==k){ms.jl[y]=k;ms.v=(ms.v|0)+1;save()}return MS_TXT.jr.leit[k].t}
+// Florians Regel (ab 0.154, nur Jahresrückblick, GESTALTUNG Abschnitt 25): „Im Jahresrückblick bekommen in einer Gruppe, in der mindestens ein
+// Wert negativ ist, die positiven Werte ein „+“. Sonst nirgends im Tool.“ Werte mit Vorzeichen (Florians Antwort 8 zum Plan 0.154): Rendite,
+// Netto-Gewinn, Beträge, Bestwerte und schwächste Werte, Durchschnitte, Summe der Gewinne und der Verluste, Max. Drawdown, Netto-Einsatz; nicht
+// Trefferquote, Anzahlen, Serien, Profit-Faktor, „in Handelstagen“, Eingezahlt, Ausgezahlt. L = Texte der Gruppe, wie sie dastehen ({t, s: mit
+// Vorzeichen}); negativ ist ein Text mit Minus vorne, positiv einer ohne Minus mit einer Ziffer über 0 (0,00 % bleibt ohne Zeichen).
+function jrPlus(L){const S2=L.filter(x=>x&&x.s);if(!S2.some(x=>/^-/.test(x.t)))return L;for(const x of S2)if(!/^[-+]/.test(x.t)&&/[1-9]/.test(x.t))x.t='+'+x.t;return L}
 // Liste für die Anzeige: neueste zuerst (Datum, bei gleichem Tag in der Reihenfolge der Rechnung)
 function msSort(list){return list.map((e,i)=>[e,i]).sort((a,b)=>a[0].d<b[0].d?1:a[0].d>b[0].d?-1:a[1]-b[1]).map(x=>x[0])}
 /* Stand der Meilensteine: S.ui.ms (Browser-Speicher, reist mit der Sicherung). Gespeichert wird nur, was gesehen, ausgeblendet und gezählt ist:
@@ -3900,7 +4111,10 @@ function msSort(list){return list.map((e,i)=>[e,i]).sort((a,b)=>a[0].d<b[0].d?1:
      neu  neue, noch nicht gesehene Meilensteine (je Art nur der letzte Stand): Sie tragen die Schmetterlinge (ab 0.142 bis ihr Blatt zu sehen war)
      gs   bis 0.141: angesehen (dann kein Schmetterling am Reiter „Auswertung“); ab 0.142 ohne Wirkung
      x    bis 0.141: einzeln ausgeblendete Schmetterlinge (Orte); ab 0.142 beim ersten Rechnen als gesehen übernommen und geleert
-     jf   gesehene (bis 0.141 ausgeblendete) Jahrestage und Jahresrückblicke, ao = schon einmal von selbst geöffnet
+     jf   gesehene (bis 0.141 ausgeblendete) Jahrestage und Jahresrückblicke, ao = schon einmal von selbst geöffnet; ab 0.154 gilt ein
+          Jahresrückblick nur als gesehen, wenn seine Daten beim Ansehen vollständig waren
+     jl   ab 0.154: Leitsatz je Jahr im Jahresrückblick (Schlüssel aus MS_TXT.jr.leit)
+     rb   ab 0.154: „Betrag zeigen“ im Jahresrückblick (fehlt = aus), rs = „Schwächste Werte zeigen“ (fehlt = an)
      b    ab 0.142: „Betrag zeigen“ (fehlt = an)
      fs   bis 0.141: zuletzt gezeigter Freude-Satz; v = Zähler der Änderungen (msSync nimmt den neueren Stand)
    Was die Zählregeln der Fenster berührt, liegt in S.ui.don (donSync): lz = letzte leise Zeile, fe = letztes von selbst geöffnetes Feier-Fenster,
@@ -3912,7 +4126,7 @@ function msSort(list){return list.map((e,i)=>[e,i]).sort((a,b)=>a[0].d<b[0].d?1:
    Ältere Reports, ein weiteres Konto mit älteren Trades, ein anderer Trading Benefit, ein entferntes Konto und „Sicherung laden“ bleiben
    still, eine geänderte Kontenauswahl rechnet ausdrücklich still (o.still). Bis 0.140 galten zwei gemeinsame Marken über alle Konten (t, as). Auszahlungen: Das erste Einfügen von Tag-Daten ist still, danach
    zählt eine Tag-Zeile, die das Tool noch nicht kannte. Jahrestag und Jahresrückblick warten nach der Uhr des Geräts (from bis until). */
-function msGet(){const m=S.ui.ms&&typeof S.ui.ms==='object'?S.ui.ms:(S.ui.ms={});for(const k of ['off','kz','neu','x'])if(!Array.isArray(m[k]))m[k]=[];for(const k of ['jf','ao'])if(!m[k]||typeof m[k]!=='object')m[k]={};return m}
+function msGet(){const m=S.ui.ms&&typeof S.ui.ms==='object'?S.ui.ms:(S.ui.ms={});for(const k of ['off','kz','neu','x'])if(!Array.isArray(m[k]))m[k]=[];for(const k of ['jf','ao','jl'])if(!m[k]||typeof m[k]!=='object')m[k]={};return m}
 // Mehrere Tabs: vor jeder Prüfung frisch aus dem Speicher lesen (wie donSync); der Stand mit dem höheren Zähler gilt
 function msSync(){const m=msGet();if(BOOT_BAD)return m;let o=null;try{const j=JSON.parse(localStorage.getItem(KEY)||'null');o=j&&j.ui&&j.ui.ms}catch(e){}
   if(o&&typeof o==='object'&&(o.v|0)>(m.v|0)){S.ui.ms=o;return msGet()}return m}
@@ -3950,8 +4164,10 @@ function msCheck(M,o,rows){rows=rows||window.__rows||[];
   const isNew=e=>e.clock?false:e.tg?!!(ms.tg&&ms.tg.length&&!ms.tg.includes(e.tg)):!!known&&!known.has(msSig(e));
   // Ab 0.142: Einträge aus dem Ausgangsstand (vor) sind nie neu
   for(const e of M.list)if(!e.clock&&!e.vor&&!ms.neu.includes(e.id)&&(e.tg||!still)&&isNew(e))add.push(e.id);
-  for(const e of M.list)if(e.clock&&today>=e.from&&today<=e.until&&!ms.jf[e.id]&&!ms.neu.includes(e.id))add.push(e.id);
-  let neu=[...ms.neu,...add].filter(id=>{const e=by.get(id);return e&&!e.vor&&(!e.clock||(today<=e.until&&!ms.jf[e.id]))});
+  // Ab 0.154 nur der Jahrestag: Der Jahresrückblick wartet ohne Schmetterling und kommt von selbst in sein eigenes Fenster (msAutoPick, Florians
+  // Antwort 4 zum Plan 0.154); ein Rückblick aus einem älteren Stand fällt aus der Liste der neuen
+  for(const e of M.list)if(e.clock&&e.k==='ja'&&today>=e.from&&today<=e.until&&!ms.jf[e.id]&&!ms.neu.includes(e.id))add.push(e.id);
+  let neu=[...ms.neu,...add].filter(id=>{const e=by.get(id);return e&&!e.vor&&e.k!=='jr'&&(!e.clock||(today<=e.until&&!ms.jf[e.id]))});
   const last=new Map();for(const id of neu){const e=by.get(id),a=msArt(e),p=last.get(a);if(!p||e.d>p.d||(e.d===p.d&&(e.n||0)>=(p.n||0)))last.set(a,e)}
   neu=neu.filter(id=>last.get(msArt(by.get(id))).id===id);
   const real=add.filter(id=>neu.includes(id));
@@ -4016,6 +4232,17 @@ function msbHome(){if(FP_OPEN==='msb')closeFpanel();const p=$('fp-msb'),h=$('ms-
 // Zeile öffnet das Feier-Fenster bei diesem Blatt, die Pfeile gehen durch den Abschnitt (data-msg r, s, e, v). Bis 0.141: Kacheln „Deine
 // Bestwerte“, „Erreichte Stufen“ mit der nächsten Stufe gestrichelt, Werte aus dem Ausgangsstand ohne Blatt.
 let MS_ALL=false,MS_Y='';   // Verlauf offen, gewähltes Jahr ('' = Gesamt); beides bis zum Neuladen, nicht gespeichert
+// Ab 0.154: Link-Zeile „Jahresrückblicke“ offen (bis zum Neuladen)
+let MS_JR=false;
+// Ab 0.154: Jahresrückblick in der Karte. Bei einem vergangenen Jahr ganz oben der Abschnitt „Rückblick“ (ein Wert im Stil der Rekorde: Titel,
+// Rendite groß, Netto-Gewinn und Trades, darunter „Rückblick ansehen ›“), bei „Gesamt“ über dem Verlauf die Link-Zeile „Jahresrückblicke“ (eine
+// Zeile je Jahr, das neueste oben). Fehlen Daten, steht neben der Rendite die graue Marke „unvollständig“ (keine Kontonummern in der Karte).
+const jrMkH=e=>e.voll?'':`<span class="jrmk">${esc(MS_TXT.jr.marke)}</span>`;
+function jrKarteH(M,y){const X=MS_TXT.jr;
+  if(y){const e=M.list.find(x=>x.k==='jr'&&x.y===y);if(!e)return '';const st=e.st;
+    return `<h3 class="msh3">${esc(X.karte)}</h3><div class="jrkv"><button type="button" class="msv" data-jr="${esc(y)}"><span class="k">${esc(X.titel.replace('{j}',y))}</span><span class="v">${esc(st.r==null?'–':fR.format(st.r))}${jrMkH(e)}</span><span class="s">${esc(X.netto2.replace('{v}',msMon(st.net,M.cur)))} · ${esc(`${fI.format(st.n)} ${st.n===1?'Trade':'Trades'}`)}</span></button><button type="button" class="zlink jrka" data-jr="${esc(y)}">${esc(X.ansehen)}</button></div>`}
+  const L=M.list.filter(x=>x.k==='jr').sort((a,b)=>a.y<b.y?1:-1);if(!L.length)return '';
+  return `<h3 class="msvh jrvh"><button type="button" class="zlink msvt" data-jrmore aria-expanded="${MS_JR}">${esc(X.liste)} (${fI.format(L.length)})</button></h3>`+(MS_JR?`<div class="msvl jrvl"><div class="msl">${L.map(e=>`<div class="mse jre" data-jr="${esc(e.y)}"><span class="msed">${esc(e.y)}</span><span class="mset"><button type="button" class="zlink msn">${esc(X.titel.replace('{j}',e.y))}</button></span><span class="msew">${esc(e.st.r==null?'–':fR.format(e.st.r))}${jrMkH(e)}</span></div>`).join('')}</div></div>`:'')}
 const MS_REK=['at','ad','aw','am'],MS_SER=['rg','rd','rw','mw'],MS_STU=['sn','sr','sg'];
 const msIsSer=k=>/^j?r[gdw]$/.test(k),msIsMw=k=>/^j?mw$/.test(k),msIsRek=k=>/^[aj][tdwm]$/.test(k);
 // Kategorie eines Eintrags im Verlauf
@@ -4060,18 +4287,20 @@ function msRender(){const M=MS;if(!M)return;
   const L=msSort(M.list),nl=new Set(MS_NL.map(e=>e.id));
   if(!M.first&&!L.length){$('ms-list').innerHTML=`<p class="small" style="margin:0">${esc(MS_TXT.leer)}</p>`;return}
   const inY=e=>!y||e.d.slice(0,4)===y||(e.lauf&&e.ab&&e.ab.slice(0,4)<=y),LY=L.filter(e=>!y||e.d.slice(0,4)===y);
-  let h='';
+  let h=y?jrKarteH(M,y):'';
   if(M.first){h+=`<h3 class="msh3">${esc(yt(T.rek))}</h3>`+(M.miss?`<p class="small msmiss">${msMissTxt(M.missAcc)}</p>`:`<div class="msvals">${MS_REK.map(k=>msValH(M,k,'r',y,nl)).join('')}</div>`);
     h+=`<h3 class="msh3">${esc(yt(T.ser))}</h3><div class="msvals">${MS_SER.map(k=>msValH(M,k,'s',y,nl)).join('')}</div>`;
     if(M.miss&&!y)h+='';}
   const er=msErrH(M,LY,nl);if(er)h+=`<h3 class="msh3">${esc(yt(T.err))}</h3><div class="msmks">${er}</div>`;
   const V=L.filter(inY);
+  if(!y)h+=jrKarteH(M,'');
   if(V.length){h+=`<h3 class="msvh"><button type="button" class="zlink msvt" data-msmore aria-expanded="${MS_ALL}">${esc(yt(T.verlauf))} (${fI.format(V.length)})</button></h3>`;
     if(MS_ALL){const lauf=V.filter(e=>e.lauf),rest=V.filter(e=>!e.lauf),ys=[...new Set(rest.map(e=>e.d.slice(0,4)))];
       h+=`<div class="msvl">${lauf.length?`<div class="msl">${lauf.map(e=>msEntryH(e,M.cur)).join('')}</div>`:''}${ys.map(z=>`${y?'':`<h4>${z}</h4>`}<div class="msl">${rest.filter(e=>e.d.slice(0,4)===z).map(e=>msEntryH(e,M.cur)).join('')}</div>`).join('')}</div>`}}
   $('ms-list').innerHTML=h}
 // Einträge eines Teils der Karte in der Reihenfolge, in der sie dort stehen (für die Pfeile im Feier-Fenster)
-function msSect(g){if(!MS)return [];return [...$('ms-list').querySelectorAll(`[data-ms][data-msg="${g}"]`)].map(b=>msById(b.dataset.ms)).filter(Boolean)}
+// ab 0.154 ohne Jahresrückblick (eigenes Fenster)
+function msSect(g){if(!MS)return [];return [...$('ms-list').querySelectorAll(`[data-ms][data-msg="${g}"]`)].map(b=>msById(b.dataset.ms)).filter(e=>e&&e.k!=='jr')}
 // ---- Schmetterlinge (data-bf = Eintrag, dessen Blatt zuerst kommt; leer: das neueste)
 let MS_NL=[];
 const BF_H={ov:22,k:20,h:18};
@@ -4095,12 +4324,12 @@ function donSg(d){if(d.sg)return d.sg;return d.until&&d.last&&Math.abs(fenDay(d.
 // „Schon gespendet“ und 14 Tage nach einem Spenden-Fenster.
 function msLeiseOk(d,now){const day=fenDay(now),ago=x=>x?day-fenDay(x):Infinity,sg=donSg(d);return ago(d.lz)>=30&&!(sg&&ago(sg)<365)&&ago(d.last)>=14}
 // Zeile unter den Blättern (ab 0.142 je Blatt höchstens eine Einladung, die zum gezeigten Blatt gehört): Jahrestag die Frage nach dem Jahr (zählt
-// als Feedback-Frage: fb), Jahresrückblick die Zeile zum Mitfeiern (steht immer, nach „Schon gespendet“ mit eigenem Wortlaut, im Verlustjahr nur
-// dieser), alle anderen die leise Zeile nach Regel 5. Ob Regel 5 die leise Zeile erlaubt, entscheidet msZeilen einmal beim Öffnen (sonst
+// als Feedback-Frage: fb), bis 0.153 der Jahresrückblick die Zeile zum Mitfeiern, alle anderen die leise Zeile nach Regel 5. Ob Regel 5 die leise Zeile erlaubt, entscheidet msZeilen einmal beim Öffnen (sonst
 // fehlte sie ab dem zweiten Blatt, weil sie gerade gezeigt wurde). Rückgabe: zeile(e) = {t: Text, lz: leise Zeile, fb: Feedback-Frage} oder null;
 // ändert nichts (gemerkt wird erst, wenn das Blatt zu sehen ist: msPage). Bis 0.141 standen alle Zeilen des Fensters zugleich unter den Blättern.
-function msZeilen(L,d,now){const day=fenDay(now),sg=donSg(d),sgOn=!!sg&&day-fenDay(sg)<365,ok=msLeiseOk(d,now);
-  return {zeile:e=>e.k==='ja'?{t:MS_TXT.jahrestag,fb:true}:e.k==='jr'?(sgOn?{t:MS_TXT.rueckDanke}:e.st.netU>=0?{t:MS_TXT.leise,lz:true}:null):ok?{t:MS_TXT.leise,lz:true}:null}}
+function msZeilen(L,d,now){const ok=msLeiseOk(d,now);
+  // ab 0.154 ohne Jahresrückblick (er hat sein eigenes Fenster, jrShow); bis 0.153 seine Zeile (rueckDanke bzw. die leise Zeile im Gewinnjahr)
+  return {zeile:e=>e.k==='ja'?{t:MS_TXT.jahrestag,fb:true}:ok?{t:MS_TXT.leise,lz:true}:null}}
 // Ab 0.142 ohne eigene Lösung für die Lücke nach „Trading-“ vor „J“ (msJZug aus 0.141 zurückgebaut, Florians Entscheidung: Die Lücke kommt aus
 // der Schrift und darf bleiben).
 // Inhalt eines Blatts und des Bilds (außer Jahresrückblick), ab 0.142: oben klein die Kategorie, große Zahl, Zeile darunter, Betrag (nach
@@ -4120,13 +4349,10 @@ function msBlatt(e,amt,cur){const B=MS_TXT.blatt,U=MS_TXT.unter,yj=t=>t.replace(
   else if(e.k==='ee'){o.kat=B.aus;o.gross='100 %';o.unter=U.ee;if(amt&&e.a!=null)o.betragK=msMon(e.a,e.ac||cur);o.satz=MS_TXT.einsatz}
   else{o.kat=isY?yj(B.jrekord):B.rekord;if(e.r!=null)o.gross=fR.format(e.r);o.unter=MS_TXT.titel[isY?'a'+e.k.slice(1):e.k].replace(' {j}','');if(amt&&e.a!=null)o.betrag=msMon(e.a,e.ac||cur)}
   return o}
-function msSheetH(e,cur){const R=MS_TXT.rueck,amt=MS_AMT;let h=`<div id="ms-bf" class="msbfl">${bflyH(96,true)}</div>`;
-  if(e.k==='jr'){h+=`<h2 id="ms-h" class="msh"><span id="ms-t">${esc(msTitle(e))}</span></h2><div class="msgl"></div>`;
-    const s=e.st,row=(l,v,x)=>`<tr><td>${esc(l)}</td><td><b>${v}</b>${x?` <span class="small">${x}</span>`:''}</td></tr>`,
-      b=(o,dt)=>o?[fR.format(o.r),[amt?msMon(o.a,cur):'',dt].filter(Boolean).join(' · ')]:['–',''];
-    const bw=b(s.bw,s.bw&&'ab '+fD(s.bw.d)),bd=b(s.bd,s.bd&&fD(s.bd.d)),bt=b(s.bt,s.bt&&fD(s.bt.d));
-    h+=`<table class="msjr">${amt?row(R.netto,msMon(s.net,cur)):''}${row(R.rendite,s.r==null?'–':fR.format(s.r))}${row(R.trades,fI.format(s.n))}${row(R.woche,bw[0],bw[1])}${row(R.tag,bd[0],bd[1])}${row(R.trade,bt[0],bt[1])}</table><p class="small msi">${esc(R.stand.replace('{d}',fD(s.last)))}</p>`}
-  else{const b=msBlatt(e,amt,cur),dt=msDate(e);
+// Ab 0.154 ohne den Jahresrückblick (eigenes Fenster jrShow); bis 0.153 hatte er hier ein Blatt mit Tabelle (Netto-Gewinn, Rendite, Trades, drei
+// Bestwerte, „Stand: letzter Trade am …“)
+function msSheetH(e,cur){const amt=MS_AMT;let h=`<div id="ms-bf" class="msbfl">${bflyH(96,true)}</div>`;
+  {const b=msBlatt(e,amt,cur),dt=msDate(e);
     h+=`<h2 id="ms-h" class="msh mskat"><span id="ms-t">${esc(b.kat)}</span></h2><div class="msgl"></div>`;
     if(b.gross)h+=`<div class="msgr${b.gross.length>9?' lang':''}">${esc(b.gross)}</div>`;
     if(b.statt)h+=`<div class="msst">${esc(b.statt)}</div>`;
@@ -4185,16 +4411,20 @@ function msJump(e){if(!e||!e.j)return;const need=msJumpNeed(e,window.__rows||[])
 // Reiter, aber erst nach der Begrüßung). Sie zählen als das Fenster dieses Tages (don.fe) und kommen in der ersten Woche nicht von selbst.
 // War an dem Tag schon ein Fenster da oder läuft eine Eingabe, öffnen sie sich beim nächsten Mal. Der Jahrestag kommt vor dem Rückblick.
 // frei wie bei fenTry. Rückgabe: der geöffnete Eintrag oder null.
-function msAutoPick(d,ms,L,now){const day=fenDay(now),ago=x=>x?day-fenDay(x):Infinity;
+// Ab 0.154 (Florians Auftrag und Antwort 2 zum Plan): Der Jahresrückblick kommt von selbst, sobald die Daten des Jahres vollständig sind (voll),
+// ohne Grenze Ende Februar, aber nur für das zuletzt vergangene Jahr (nach der Uhr des Geräts); ältere Jahre nur von Hand. Nicht, wenn er schon
+// einmal von selbst kam (ao) oder mit vollständigen Daten angesehen wurde (jf). L = neue Meilensteine (Jahrestag), M = ganze Liste (Rückblicke).
+function msAutoPick(d,ms,L,now,M){const day=fenDay(now),ago=x=>x?day-fenDay(x):Infinity;
   if(day-fenDay(d.first)<7||ago(d.last)===0||ago(d.fb)===0||ago(d.fe)===0)return null;
-  const P=L.filter(e=>e.clock&&!ms.ao[e.id]);return P.find(e=>e.k==='ja')||P.find(e=>e.k==='jr')||null}
+  const ja=L.find(e=>e.clock&&e.k==='ja'&&!ms.ao[e.id]);if(ja)return ja;
+  const vj=String(now.getFullYear()-1);return ((M&&M.list)||[]).find(e=>e.k==='jr'&&e.y===vj&&e.voll&&!ms.ao[e.id]&&!ms.jf[e.id])||null}
 function msAuto(frei){if(BOOT_BAD||!MS||S.ui.tab!=='stats'||!S.ui.ack||!(frei===undefined?fenFrei():frei))return null;
-  const d=donSync(),ms=msSync(),e=msAutoPick(d,ms,MS_NL,FEN_NOW());if(!e)return null;
-  ms.ao[e.id]=1;msShow([e],{auto:true});return e}
+  const d=donSync(),ms=msSync(),e=msAutoPick(d,ms,MS_NL,FEN_NOW(),MS);if(!e)return null;
+  ms.ao[e.id]=1;if(e.k==='jr')jrShow(e.y,{auto:true});else msShow([e],{auto:true});return e}
 let MS_AT=null;const msAutoLater=()=>{clearTimeout(MS_AT);MS_AT=setTimeout(()=>msAuto(),700)};
-// Größe des Bilds (ab 0.144): Meilensteine im Hochformat, der Jahresrückblick bleibt quer, bis seine eigene Runde kommt (Florians Antwort 2)
-const MS_BILD={hoch:[1080,1350],quer:[1200,675]};
-// ---- Bild „Rekord-Karte“ (ab 0.144 PNG 1080 × 1350, Jahresrückblick 1200 × 675; bis 0.143 alle 1200 × 675, immer hell, Farben fest im Bild, offline). Inhalt: Schmetterling, Titel, Rendite, Datum, Fußzeile.
+// Größe des Bilds (ab 0.144): Meilensteine im Hochformat; der Jahresrückblick war bis 0.153 quer (1200 × 675), ab 0.154 hat er eigene Bilder (jrBild)
+const MS_BILD={hoch:[1080,1350]};
+// ---- Bild „Rekord-Karte“ (ab 0.144 PNG 1080 × 1350; bis 0.143 alle 1200 × 675, immer hell, Farben fest im Bild, offline). Inhalt: Schmetterling, Titel, Rendite, Datum, Fußzeile.
 // Der Betrag steht nur mit dem Häkchen „Betrag zeigen“ im Bild. Kein Risiko-Satz, kein alter Rekord, keine Kontonamen.
 // msCardSpec beschreibt das Bild (für die Tests ohne Zeichenfläche), msPng zeichnet es.
 const MS_FN={at:'Bester-Trade',ad:'Bester-Handelstag',aw:'Beste-Woche',am:'Bester-Monat',jt:'Bester-Trade-{j}',jd:'Bester-Handelstag-{j}',jw:'Beste-Woche-{j}',
@@ -4202,15 +4432,13 @@ const MS_FN={at:'Bester-Trade',ad:'Bester-Handelstag',aw:'Beste-Woche',am:'Beste
   ja:'Jahrestag-{n}',ea:'Erste-Auszahlung',ee:'Ausgezahlt-wie-eingezahlt',jr:'Trading-Jahr-{j}',
   jm:'Bester-Monat-{j}',jrg:'Gewinn-Trades-am-Stueck-{n}-{j}',jrd:'Tage-im-Plus-{n}-{j}',jrw:'Plus-Wochen-{n}-{j}',jmw:'Gewinn-Trades-in-einer-Woche-{n}-{j}'};
 const msFile=e=>`Trading-Bilanz_${MS_FN[e.k].replace('{n}',e.n||0).replace('{j}',e.y||'')}_${msToday()}.png`;
-function msCardSpec(e,amt,cur){const R=MS_TXT.rueck,o={titel:msTitle(e),gross:null,unter:null,betrag:null,datum:msDate(e),zeilen:[],fuss:MS_TXT.fuss};
-  if(e.k==='jr'){const s=e.st,b=(l,x)=>x?{l,v:fR.format(x.r),a:amt?msMon(x.a,cur):null}:null;
-    o.gross=s.r==null?null:fR.format(s.r);o.grossL=R.rendite;o.datum=nW(s.n,'Trade','Trades');o.betrag=amt?R.netto+': '+msMon(s.net,cur):null;
-    o.zeilen=[b(R.woche,s.bw),b(R.tag,s.bd),b(R.trade,s.bt)].filter(Boolean);return o}
+// Ab 0.154 ohne den Jahresrückblick (eigene Bilder, jrBild); bis 0.153 quer 1200 × 675 mit drei Bestwerten (zeilen)
+function msCardSpec(e,amt,cur){const o={titel:msTitle(e),gross:null,unter:null,betrag:null,datum:msDate(e),zeilen:[],fuss:MS_TXT.fuss};
   // ab 0.142 wie das Blatt (msBlatt): Kategorie klein, große Zahl, Zeile darunter, Betrag nur mit Häkchen, Datum; ohne „vorher“ (Florians Antwort 7)
   const b=msBlatt(e,amt,cur);o.titel=null;o.kat=b.kat;o.gross=b.gross;o.statt=b.statt;o.unter=b.unter;o.betrag=b.betrag;o.betragK=b.betragK;o.satz=b.satz;
   if(e.k==='ja')o.datum=MS_TXT.erster.replace('{d}',fD(MS.first));
   return o}
-function msPng(e,amt){const Sp=msCardSpec(e,amt,MS.cur),[W,H]=MS_BILD[e.k==='jr'?'quer':'hoch'],ff=getComputedStyle(document.body).fontFamily||'sans-serif';
+function msPng(e,amt){const Sp=msCardSpec(e,amt,MS.cur),[W,H]=MS_BILD.hoch,ff=getComputedStyle(document.body).fontFamily||'sans-serif';
   const C={bg:'#f6f5f2',card:'#ffffff',line:'#e2e0da',gold:'#C49A55',goldInk:'#86601c',ink:'#1a1a1a',ink2:'#373d43',muted:'#454b51'};
   return new Promise((ok,bad)=>{const img=new Image();img.onerror=()=>bad(new Error('Bild'));
     img.onload=()=>{try{const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
@@ -4221,12 +4449,8 @@ function msPng(e,amt){const Sp=msCardSpec(e,amt,MS.cur),[W,H]=MS_BILD[e.k==='jr'
       // Schrift so groß wie möglich, höchstens fs, bis der Text in mw passt
       const fit=(t,fs,wt,mw)=>{let s=fs;for(;s>14;s-=2){c.font=`${wt} ${s}px ${ff}`;if(c.measureText(t).width<=mw)break}return s};
       const txt=(t,y,fs,wt,col,mw)=>{fit(t,fs,wt,mw||W-200);c.fillStyle=col;c.fillText(t,W/2,y)};
-      const jr=Sp.zeilen.length>0;
-      if(jr){const bh=140,bw=bh*BFLY_WH[0]/BFLY_WH[1];let y=58;c.drawImage(img,(W-bw)/2,y,bw,bh);y+=bh+58;txt(Sp.titel,y,50,700,C.ink);c.fillStyle=C.gold;c.fillRect(W/2-60,y+22,120,4);if(Sp.gross){y+=100;txt(Sp.gross,y,76,700,C.ink);c.font=`400 24px ${ff}`;c.fillStyle=C.muted;c.fillText(Sp.grossL+' · '+Sp.datum,W/2,y+36);y+=36}else{y+=70;txt(Sp.datum,y,34,400,C.ink2)}
-        if(Sp.betrag){y+=40;txt(Sp.betrag,y,28,600,C.ink2)}
-        const n=Sp.zeilen.length,cw=(W-200)/n,y0=H-176;Sp.zeilen.forEach((z,i)=>{const x=100+cw*i+cw/2;c.font=`400 22px ${ff}`;c.fillStyle=C.muted;c.fillText(z.l,x,y0);
-          c.font=`700 36px ${ff}`;c.fillStyle=C.ink;c.fillText(z.v,x,y0+42);if(z.a){c.font=`400 22px ${ff}`;c.fillStyle=C.ink2;c.fillText(z.a,x,y0+72)}})}
-      else{// ab 0.142: Kategorie klein oben, dann große Zahl (oder der Satz an ihrer Stelle), Zeile, Betrag, Datum, Satz (wie das Blatt);
+      {
+        // ab 0.142: Kategorie klein oben, dann große Zahl (oder der Satz an ihrer Stelle), Zeile, Betrag, Datum, Satz (wie das Blatt);
         // der ganze Block steht senkrecht mittig über der Fußzeile. R = Zeilen [Text, Abstand der Grundlinie zur vorigen, Schriftgröße, Stärke, Farbe].
         // Ab 0.144 im Hochformat 1080 × 1350 (Florians Auftrag), Größen dafür; bis 0.143 quer 1200 × 675.
         const R=[[Sp.kat.toUpperCase(),78,40,700,C.goldInk]];
@@ -4236,9 +4460,8 @@ function msPng(e,amt){const Sp=msCardSpec(e,amt,MS.cur),[W,H]=MS_BILD[e.k==='jr'
         const bh=R.length>=6?240:R.length===5?270:300,bw=bh*BFLY_WH[0]/BFLY_WH[1],tot=bh+R.reduce((s,r)=>s+r[1],0)+30;
         let y=Math.max(70,Math.round(70+(H-70-170-tot)/2));c.drawImage(img,(W-bw)/2,y,bw,bh);y+=bh;
         R.forEach((r,i)=>{y+=r[1];txt(r[0],y,r[2],r[3],r[4],W-160);if(i===0){c.fillStyle=C.gold;c.fillRect(W/2-80,y+28,160,5);y+=20}})}
-      // Fußzeile: quer (Jahresrückblick) rechts unten 20 px; ab 0.144 im Hochformat mittig unten 28 px, passt sie nicht in eine Zeile, nur die Adresse
-      if(jr){c.textAlign='right';c.font=`400 20px ${ff}`;c.fillStyle=C.muted;c.fillText(Sp.fuss,W-64,H-58)}
-      else{c.textAlign='center';c.font=`400 28px ${ff}`;c.fillStyle=C.muted;const f=c.measureText(Sp.fuss).width<=W-2*96?Sp.fuss:MS_TXT.fussKurz;msPng.fuss=f;c.fillText(f,W/2,H-84)}
+      // Fußzeile: ab 0.144 im Hochformat mittig unten 28 px, passt sie nicht in eine Zeile, nur die Adresse (bis 0.153 beim Rückblick quer rechts unten)
+      {c.textAlign='center';c.font=`400 28px ${ff}`;c.fillStyle=C.muted;const f=c.measureText(Sp.fuss).width<=W-2*96?Sp.fuss:MS_TXT.fussKurz;msPng.fuss=f;c.fillText(f,W/2,H-84)}
       cv.toBlob(b=>b?ok(b):bad(new Error('toBlob')),'image/png')}catch(x){bad(x)}};
     img.src=BFLY_G})}
 // Vorbereitetes Bild (beim Öffnen des Menüs), damit „Teilen“ in der Nutzergeste bleibt
@@ -4252,6 +4475,243 @@ function msImgShare(id){const go=({b,n})=>{const f=new File([b],n,{type:'image/p
     return navigator.share({files:[f]}).then(()=>fenBack(()=>maybeDonate('bild')),x=>{if(x&&x.name==='AbortError')return;download(n,b,'image/png');toast(MS_TXT.teilenFehler);maybeDonate('bild')})};
   const P=MSP;if(P&&P.id===id&&P.amt===MS_AMT&&P.M===MS&&P.b)return go({b:P.b,n:msFile(P.e)});return msPrep(id).then(go,()=>toast(MS_TXT.bildFehler))}
 
+/* ---------------- Jahresrückblick (ab 0.154): Fenster, Effekte, Karte, Bilder ----------------
+   Florians Auftrag „Jahresrückblick neu“ (0.154), Vorlage: Testseite „Rückblick-Effekte zum Ausprobieren.html“ (Aufbau, Reihenfolge, Beschriftungen,
+   Effekte), gebaut mit den Bauteilen des Tools. Ein eigenes Fenster (#jr-modal, jrShow) mit drei Ansichten (JR.v): 1 = Seite 1 (Schmetterling,
+   Titel, Rendite, Netto-Gewinn mit „Betrag zeigen“, Monatsbalken, Leitsatz, Knopf), 2 = „Dein Jahr in Zahlen“ (Gruppen als Kacheln wie die
+   Ehrentafel, Neujahrswunsch, Einladung), 3 = „Wertschätzung teilen“ (Adresse, QR-Code, PayPal wie im Reiter „Resonanz“). Fest unten (.mft):
+   Punkte, „Bild ▾“, „Betrag zeigen“, „Schwächste Werte zeigen“ (nur Seite 2), „Alle Meilensteine“, „Schließen“; in Ansicht 3 nur die letzten
+   beiden. Beide Häkchen wirken auf Fenster und Bild und bleiben gespeichert (S.ui.ms.rb, rs; Florians Antwort 9). Alle Texte in MS_TXT.jr.
+   Effekte bei jedem Öffnen (jrPlay): Balken wachsen, Flügelschlag (drei Schläge, nur die Flügel: Schnittlinien der Testseite als clip-path, in
+   Ruhe das ganze Bild), Schimmer danach im Takt (msGlTick), Goldstaub, Morgenlicht. Ein Tipp auf den Schmetterling spielt alles noch einmal ab;
+   er ist kein Knopf (Florians Antwort 12). „Bewegung reduzieren“: alles ruhig, sofort der Endzustand. */
+let JR=null,JR_JUMP=null,JR_T=[],JRP=null;
+const jrAmt=()=>msGet().rb===true,jrWeak=()=>msGet().rs!==false;
+// Rechnung für das Fenster: Konten der Karte „Meilensteine“, Währung wie die Liste der Meilensteine (MS.cur)
+function jrNow(y){const M=MS;return jrCalc(window.__rows||[],msAccs(),y,{cur:M?M.cur:'usd',today:msToday(),tags:Object.values(S.tag||{}),M})}
+// Zeitraum einer Serie wie in der Karte: „05.08. - 21.08.2026“, über den Jahreswechsel mit beiden Jahren, eine laufende „seit …, läuft noch“
+function jrSpan(z){if(z.lauf)return MS_TXT.seit.replace('{d}',fD(z.ab))+', '+MS_TXT.lauf;if(z.ab===z.end)return fD(z.end);
+  return (z.ab.slice(0,4)===z.end.slice(0,4)?fD(z.ab).slice(0,6):fD(z.ab))+DS+fD(z.end)}
+// Hinweis bei unvollständigen Daten (nie im Bild): ein Konto mit Nummer und Datenstand, mehrere nur die Zahl
+function jrUnvTxt(st){const X=MS_TXT.jr,f=st.fehlt||[];if(!f.length)return '';
+  return f.length===1?X.unvoll1.replace('{k}',f[0].a).replace('{d}',fD(f[0].bis)):X.unvollN.replace('{n}',fI.format(f.length))}
+const jrCur=c=>c==='eur'?'€':'USD';
+/* Inhalt von Seite 2 und der Bilder als Gruppen (jrModel). o.amt = „Betrag zeigen“, o.weak = „Schwächste Werte zeigen“, o.art = 'fenster', 'kurz'
+   (Bild „Kurzfassung“: nie Beträge; Ergebnis mit „Wochen im Plus“; Bestwerte, Durchschnitt, schwächste Werte mit Max. Drawdown) oder 'alle'
+   (Bild „Alle Werte“: alle Gruppen außer den Meilensteinen des Jahres). Je Gruppe {id, h, reihen: [[Kachel]], pl: Plaketten}; Kachel {k, v, s}
+   mit Texten {t, s: mit Vorzeichen, none: Text statt Wert}. Die Plus-Regel (jrPlus) wirkt je Gruppe auf alles, was die Gruppe zeigt. */
+function jrModel(st,o){const X=MS_TXT.jr,K=X.k,Sx=X.s,O=X.ohne,cur=st.cur,amt=!!o.amt&&o.art!=='kurz',art=o.art||'fenster',C=jrCur(cur);
+  const R=v=>({t:v==null?'–':fR.format(v),s:v!=null}),N=t=>({t,none:true}),T=t=>({t}),M2=v=>({t:msMon(v,cur),s:true}),kc=(k,c)=>k.replace('{c}',c||C);
+  const tile=(k,v,s)=>({k,v,s:(s||[]).filter(Boolean)}),G=[];
+  const ext=(b,has,none,sub)=>b?tile(null,R(b.r),sub(b)):tile(null,has?T('–'):N(none),[]);
+  const lbl=(t,k)=>Object.assign(t,{k});
+  // Ergebnis
+  {const hit=tile(K.hit,T(st.n?fP.format(st.win/st.n):'–'),[T(Sx.hit.replace('{w}',fI.format(st.win)).replace('{n}',`${fI.format(st.n)} ${st.n===1?'Trade':'Trades'}`))]);
+   const tr=tile(K.trades,T(fI.format(st.n)),[T(`${fI.format(st.tage)} ${st.tage===1?'Handelstag':'Handelstage'}`)]);
+   const wp=st.wPlus&&st.wPlus.of?tile(K.wPlus,T(fI.format(st.wPlus.n)),[T(Sx.wPlus.replace('{n}',`${fI.format(st.wPlus.of)} ${st.wPlus.of===1?'Woche':'Wochen'}`))]):tile(K.wPlus,N(O.w));
+   const r=[tile(K.rendite,R(st.r)),hit,tr];if(art==='kurz')r.push(wp);else if(amt)r.push(tile(kc(K.netto),{t:fN.format(st.net),s:true}));
+   G.push({id:'erg',h:X.gr.erg,reihen:[r]})}
+  // Bestwerte und schwächste Werte: Datum, mit „Betrag zeigen“ der Betrag in einer eigenen kleinen Zeile (nie in der Kurzfassung)
+  const dat={t:b=>T(fD(b.d)),d:b=>T(fD(b.d)),w:b=>T(Sx.woche.replace('{d}',fD(b.w))),m:b=>T(fM(b.m))};
+  const four=(B,ks)=>ks.map(x=>lbl(ext(B[x],st.has[x],O[x],b=>[dat[x](b),amt&&b.a!=null?M2(b.a):null]),{t:K.trade,d:K.tag,w:K.woche,m:K.monat}[x]));
+  G.push({id:'best',h:X.gr.best,reihen:[four(st.best,['t','d','w','m'])]});
+  // Durchschnitt
+  {const a=st.avg,nv=(v,has,none)=>v!=null?R(v):has?T('–'):N(none);
+   G.push({id:'avg',h:X.gr.avg,reihen:[[tile(K.pTrade,R(a.t)),tile(K.pTag,R(a.d)),tile(K.pWoche,nv(a.w,st.has.w,O.w)),tile(K.pMonat,nv(a.m,st.has.m,O.m))]]})}
+  if(art!=='kurz'){
+    // Beständigkeit: Wochen im Plus, Serien aus den Meilensteinen, meiste Gewinn-Trades in einer Woche, stärkster Wochentag
+    const S2=st.ser||{},ser=(k,z)=>z?tile(K[k],T(fI.format(z.n)),[T(jrSpan(z))]):tile(K[k],N(O[k]));
+    const wp=st.wPlus&&st.wPlus.of?tile(K.wPlus,T(fI.format(st.wPlus.n)),[T(Sx.wPlus.replace('{n}',`${fI.format(st.wPlus.of)} ${st.wPlus.of===1?'Woche':'Wochen'}`))]):tile(K.wPlus,N(O.w));
+    const mw=S2.mw?tile(K.mw,T(fI.format(S2.mw.n)),[T(Sx.mw.replace('{d}',fD(S2.mw.w)))]):tile(K.mw,N(O.mw));
+    // der Durchschnitt des Wochentags steht in der kleinen Zeile hinter „Ø“; in dieser Gruppe hat sonst kein Wert ein Vorzeichen, die Plus-Regel ändert hier nichts
+    const wd=st.wd?tile(K.wd,T(WDL[st.wd.i]),[T(Sx.wd.replace('{v}',fR.format(st.wd.v)))]):tile(K.wd,T('–'));
+    G.push({id:'bst',h:X.gr.bst,reihen:[[wp,ser('rg',S2.rg),ser('rd',S2.rd)],[ser('rw',S2.rw),mw,wd]]});
+    // Verhältnis wie die Tabelle in „Hochs und Tiefs“
+    const v=st.vh,htg=x=>x===false?N(O.htg):x==null?T('–'):T(fmtDec(x,1));
+    G.push({id:'vh',h:X.gr.vh,reihen:v?[[tile(K.sumW,R(v.sumW)),tile(K.sumL,R(v.sumL)),tile(K.pf,v.pf==null?N(O.pf):T(Sx.pf.replace('{v}',fmtDec(v.pf,1))))],[tile(K.htgW,htg(v.htgW)),tile(K.htgL,htg(v.htgL))]]
+      :[[tile(K.sumW,T('–')),tile(K.sumL,T('–')),tile(K.pf,T('–'))],[tile(K.htgW,T('–')),tile(K.htgL,T('–'))]]})}
+  if(o.weak){const W=four(st.worst,['t','d','w','m']),dd=st.dd?tile(K.dd,R(st.dd.v),[st.dd.v<0&&st.dd.d?T(Sx.dd.replace('{d}',fD(st.dd.d))):null]):tile(K.dd,T('–'));
+    const vs=st.vs?tile(K.vs,T(`${fI.format(st.vs.n)} ${st.vs.n===1?'Trade':'Trades'}`),[T(jrSpan(st.vs))]):tile(K.vs,N(O.vs));
+    G.push({id:'weak',h:X.gr.weak,reihen:art==='kurz'?[[W[0],W[1],W[2],dd]]:[[W[0],W[1],W[2]],[W[3],dd,vs]]})}
+  if(amt&&st.geld&&art!=='kurz'){const g=st.geld,c=jrCur(g.c);
+    G.push({id:'geld',h:X.gr.geld,reihen:[[tile(kc(K.ein,c),T(fN.format(g.ein))),tile(kc(K.aus,c),T(fN.format(g.aus))),tile(kc(K.einsatz,c),{t:fN.format(g.net),s:true},[T(Sx.einsatz)])]]})}
+  if(art==='fenster'){const L=(st.ms||[]).filter(e=>e.k!=='sn'||amt).map(e=>(MS_TXT.marke[e.k]||'').replace('{n}',fI.format(e.n)));
+    if(L.length)G.push({id:'ms',h:X.gr.ms,reihen:[],pl:L})}
+  for(const g of G)jrPlus(g.reihen.flat().flatMap(t=>[t.v,...t.s]));
+  return G}
+// Rendite und Netto-Gewinn auf Seite 1 (eine Gruppe für die Plus-Regel)
+function jrKopf(st,amt){const r={t:st.r==null?'–':fR.format(st.r),s:st.r!=null},n=amt?{t:fN.format(st.net),s:true}:null;jrPlus([r,n]);return {r:r.t,n:n&&n.t}}
+// ---- Seite 1. Monatsbalken: Rendite je Monat (ohne Investition der Betrag), Gold, Verlustmonate gedämpft orange unter der Nulllinie, Monate ohne
+// Trades nur eine flache Linie; Höhe 96 px, der größte Ausschlag nach oben und nach unten füllt sie zusammen.
+function jrBalkenH(st){const X=MS_TXT.jr,v=m=>st.miss?m.a:m.r,V=st.mon.map(m=>m.n?v(m)||0:0),P=Math.max(0,...V),Nn=Math.max(0,...V.map(x=>-x)),H=96,k=H/((P+Nn)||1),z=Math.round(P*k);
+  const lab=st.mon.filter(m=>m.n).map(m=>`${MON[+m.m.slice(5)-1]} ${st.miss?msMon(m.a,st.cur):fR.format(m.r)}`).join(', ');
+  return `<div class="jrmon"><div class="jrbal" role="img" aria-label="${esc(X.monate+': '+(lab||'–'))}">${st.mon.map((m,i)=>{const x=V[i],h=Math.max(3,Math.round(Math.abs(x)*k));
+    return `<div class="sp"><div class="z" style="top:${z}px"></div>${m.n?`<i class="${x<0?'m':''}" style="--w:${(0.3+i*0.11).toFixed(2)}s;${x<0?`top:${z}px`:`bottom:${H-z}px`};height:${h}px"></i>`:`<i class="o" style="top:${Math.max(0,z-1)}px"></i>`}</div>`}).join('')}</div>
+    <div class="jrml" aria-hidden="true">${X.mb.map(b=>`<span>${b}</span>`).join('')}</div><div class="jrkl">${esc(X.monate)}</div></div>`}
+function jrS1H(){const X=MS_TXT.jr,st=JR.st,amt=jrAmt(),k=jrKopf(st,amt),u=jrUnvTxt(st);
+  return `<div class="jrs1"><div class="jrbf" id="jr-bf" aria-hidden="true">${bflyH(96,true)}<span class="jrteil jrfl-l"></span><span class="jrteil jrfl-r"></span><span class="jrteil jrkoerper"></span><span class="jrstaub" id="jr-staub"></span></div>
+    <h2 class="jrh" id="jr-t">${esc(X.titel.replace('{j}',JR.y))}</h2><div class="msgl"></div>
+    <div class="jrgr">${esc(k.r)}</div><div class="jrkl">${esc(X.rendite)}</div>
+    ${k.n!=null?`<div class="jrnet">${esc(k.n)}</div><div class="jrkl">${esc(X.netto.replace('{c}',jrCur(st.cur)))}</div>`:''}
+    ${st.miss?`<p class="small msmiss jrmiss">${msMissTxt(st.missAcc)}</p>`:''}
+    ${jrBalkenH(st)}<div class="msgl jrtr"></div><p class="jrleit">${esc(JR.leit)}</p>
+    <div class="jrweiter"><button type="button" class="btn primary" data-jrgo="2">${esc(X.weiter)}</button></div>
+    ${u?`<p class="jrunv">${esc(u)}</p>`:''}</div>`}
+// Kacheln einer Gruppe: Reihen wie im Modell (PC: Spaltenzahl je Reihe, --n); am Handy fließen alle Kacheln der Gruppe in zwei Spalten (jrFit)
+function jrGrpH(g){if(g.pl)return `<div class="jrgrp"><h3>${esc(g.h)}</h3><div class="jrpl">${g.pl.map(t=>`<span class="msmk">${esc(t)}</span>`).join('')}</div></div>`;
+  const tH=(t,i)=>`<div class="jrk${i===0?' jrf':''}"><span class="k">${esc(t.k)}</span><span class="v${t.v.none?' none':''}">${esc(t.v.t)}</span>${t.s.map(x=>`<span class="s">${esc(x.t)}</span>`).join('')}</div>`;
+  return `<div class="jrgrp"><h3>${esc(g.h)}</h3><div class="jrbody">${g.reihen.map(r=>`<div class="jrreihe" style="--n:${r.length}">${r.map(tH).join('')}</div>`).join('')}</div></div>`}
+function jrS2H(){const X=MS_TXT.jr,st=JR.st,u=jrUnvTxt(st),G=jrModel(st,{amt:jrAmt(),weak:jrWeak(),art:'fenster'}),sg=jrSgOn();
+  const ein=sg?`<div class="jrein"><p>${herzH('💚 '+X.danke)}</p></div>`:`<div class="jrein"><p>${herzH('💚 '+(st.verlust?X.einladungV:X.einladung))}</p><button type="button" class="btn primary" data-jrgo="3">${esc(X.wert)}</button></div>`;
+  return `<div class="jrs2"><div class="jrkopf"><div class="jrkat">${esc(X.titel.replace('{j}',JR.y))}</div><h2 class="jrh" id="jr-t">${esc(X.zahlen)}</h2><div class="msgl"></div>${u?`<p class="jrunv">${esc(u)}</p>`:''}</div>
+    ${G.map(jrGrpH).join('')}<div class="jrabs"><div class="msgl jrtr"></div><p class="jrwunsch">${esc(X.wunsch)}</p>${ein}</div></div>`}
+// „Schon gespendet“ in den letzten 12 Monaten (365 Tage): dann steht im Kasten der Danke-Satz statt Einladung und Knopf (Florians Antwort 11)
+function jrSgOn(){const d=donGet(),sg=donSg(d);return !!sg&&fenDay(FEN_NOW())-fenDay(sg)<365}
+// ---- Ansicht „Wertschätzung teilen“: QR-Code, Adresse, Netzwerk-Hinweis und PayPal aus dem Reiter „Resonanz“ (eine Quelle)
+function jrS3H(){const X=MS_TXT.jr,q=s=>{const e=document.querySelector(s);return e&&e.outerHTML?e.outerHTML.replace(/ id="don-[a-z]+"/,''):''},adr=($('don-addr').textContent||'').trim(),zur=`<button type="button" class="zlink jrzur" data-jrgo="2">${esc(X.zurueck)}</button>`;
+  return `<div class="jrs3">${zur}<h2 class="jrh" id="jr-t">${herzH('💚 '+X.wert)}</h2><p>${esc(X.wDank)}</p>
+    <div class="jrblk"><div class="small jrlab">${esc(X.wAdr)}</div><div class="jradr"><div class="jradrt"><div class="addr" id="jr-adr">${esc(adr)}</div>
+      <div class="row" style="margin-top:8px"><button type="button" class="btn primary" id="jr-copy">${esc(X.kopieren)}</button><span id="jr-copymsg" class="small"></span></div></div>${q('#don-qr')}</div>
+      ${q('#don-netz')}${q('#don-warn')}</div>
+    <div class="jrblk"><div class="small jrlab">${esc(X.paypal)}</div><p style="margin:6px 0 0">${q('#don-paypal')}</p></div>
+    <div class="jrblk"><p style="margin:0">${esc(X.sagen)}</p><p class="small" style="margin:8px 0 0"><button type="button" class="zlink" id="jr-schon">${esc(X.schon)}</button></p>
+      <p id="jr-danke" class="jrdanke"${JR.sgNow?'':' hidden'}>${herzH('💚 '+X.danke)}</p></div>
+    <p style="margin:16px 0 0">${zur}</p></div>`}
+// Öffnet den Rückblick des Jahres y (o.auto: von selbst, Regel 6; zählt als das Fenster dieses Tages, schließt nicht mit einem Klick daneben).
+// Gesehen (ms.jf) nur mit vollständigen Daten: Wer ihn vorher von Hand ansieht, bekommt ihn trotzdem von selbst, sobald alles da ist
+// (Florians Antwort 3). Rückgabe: JR oder null (keine Trades im Jahr).
+function jrShow(y,o){o=o||{};if(!MS)return null;const st=jrNow(String(y));if(!st.n)return null;
+  if(FP_OPEN)closeFpanel();JR={y:String(y),st,v:1,auto:!!o.auto,leit:jrLeit(String(y),st.verlust),lz:false,sgNow:false};JRP=null;
+  const ms=msSync(),id='jr|'+JR.y;
+  if(st.voll&&!ms.jf[id]){ms.jf[id]=1;ms.v=(ms.v|0)+1;save()}
+  if(o.auto){const d=donSync();d.fe=FEN_NOW().toISOString();ms.v=(ms.v|0)+1;save()}
+  openModal('jr-modal');jrView(1);jrPlay();return JR}
+// Zeigt Ansicht v (1, 2, 3), oben beginnend. keep: Scrollstand behalten (nach einem Häkchen)
+function jrView(v,keep){if(!JR)return;const X=MS_TXT.jr,bx=$('jr-modal').querySelector('.box'),top=bx.scrollTop;JR.v=v;if(FP_OPEN==='jrb')closeFpanel();JRP=null;
+  $('jr-body').innerHTML=v===1?jrS1H():v===2?jrS2H():jrS3H();
+  $('jr-dots').innerHTML=v<3?`<span${v===1?' class="on"':''}></span><span${v===2?' class="on"':''}></span>`:'';
+  $('jr-foot').hidden=v===3;$('jr-weakl').hidden=v!==2;
+  const b=$('fb-jrb');b.textContent=v===1&&!CAN_SHARE_FILE?X.bildS:X.bild;if(v===1&&!CAN_SHARE_FILE){b.removeAttribute('aria-expanded');b.removeAttribute('aria-controls')}else{b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','fp-jrb')}
+  const ar=$('jr-ar');ar.hidden=v===3;ar.textContent=v===1?'›':'‹';ar.classList.toggle('l',v===2);ar.setAttribute('aria-label',v===1?X.ariaWeiter:X.ariaZurueck);
+  $('jr-amt').checked=jrAmt();$('jr-weak').checked=jrWeak();
+  bx.scrollTop=keep?top:0;
+  if(v===2){jrFit();
+    // Regel 5 (GESTALTUNG Abschnitt 24): Die Einladung zählt wie die leise Zeile, sobald Seite 2 mit ihr zu sehen war (einmal je Öffnen)
+    if(!JR.lz&&!jrSgOn()){JR.lz=true;donGet().lz=FEN_NOW().toISOString();save()}}
+  if(v===1&&keep)jrStill()}
+// Effekte beim Öffnen und nach einem Tipp auf den Schmetterling (Zeiten aus der Testseite): Balken wachsen nacheinander (je 0,45 s, 0,11 s Abstand),
+// nach 0,25 s drei Flügelschläge (je 0,62 s; während der Schläge ist das Bild in Flügel und Körper zerlegt), danach Schimmer (der Streif des großen
+// Schmetterlings beginnt 2,2 s nach dem Öffnen und läuft dann im Takt von 6 s), Goldstaub (24 Funken, einmal), Morgenlicht (blendet in 2,2 s ein).
+const jrRuhig=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+function jrPlay(){const bx=$('jr-modal').querySelector('.box');JR_T.forEach(clearTimeout);JR_T=[];bx.classList.remove('jrspielt','jrschlaegt');
+  const bf=$('jr-bf');if(bf){const g=bf.querySelector('.bfs');if(g)g.outerHTML=bflyH(96,true);msGlSync()}
+  const s=$('jr-staub');if(s)s.innerHTML='';
+  if(jrRuhig())return;
+  void bx.offsetWidth;bx.classList.add('jrspielt');jrStaub();
+  JR_T.push(setTimeout(()=>bx.classList.add('jrschlaegt'),250),setTimeout(()=>bx.classList.remove('jrschlaegt'),250+3*620+30))}
+// Seite 1 nach einem Häkchen neu gezeichnet: ohne Effekte, Endzustand
+function jrStill(){const bx=$('jr-modal').querySelector('.box');JR_T.forEach(clearTimeout);JR_T=[];bx.classList.remove('jrspielt','jrschlaegt')}
+function jrStaub(){const s=$('jr-staub');if(!s)return;let h='';
+  for(let i=0;i<24;i++){const g=2+Math.random()*2.6,x0=(Math.random()-.5)*130,y0=Math.random()*50,f=['--jr-st1','--jr-st2','--jr-st3'][i%3];
+    h+=`<span class="jrkorn" style="left:${x0.toFixed(1)}px;top:${y0.toFixed(1)}px;width:${g.toFixed(1)}px;height:${g.toFixed(1)}px;background:var(${f});box-shadow:0 0 6px var(${f});--x:${((Math.random()-.5)*40).toFixed(1)}px;--y:${(70+Math.random()*110).toFixed(1)}px;--d:${(2.4+Math.random()*1.4).toFixed(2)}s;--w:${(0.35+Math.random()*0.9).toFixed(2)}s"></span>`}
+  s.innerHTML=h}
+// Am Handy (bis 640 px) fließen die Kacheln einer Gruppe in zwei Spalten. Eine Kachel, deren Beschriftung oder Wert in der halben Breite nicht in
+// eine Zeile passt, nimmt die ganze Breite, ebenso eine, die sonst allein in ihrer Reihe stünde (jrw); jrr = rechte Spalte. Die kleinen Zeilen
+// darunter dürfen am Handy umbrechen. Platz: links die halbe Breite ohne 8 px rechts, rechts ohne 10 px links und 8 px rechts.
+function jrFit(){const b=$('jr-body');if(!b||!JR||JR.v!==2)return;const eng=matchMedia('(max-width:640px)').matches;
+  for(const g of b.querySelectorAll('.jrbody')){const K=[...g.querySelectorAll('.jrk')];K.forEach(k=>k.classList.remove('jrr','jrw'));if(!eng||!K.length)continue;
+    const half=g.clientWidth/2-18,wide=K.map(k=>[...k.querySelectorAll(':scope>.k,:scope>.v:not(.none)')].some(c=>c.scrollWidth>half));
+    let col=0;K.forEach((k,i)=>{if(wide[i]){if(col===1)K[i-1].classList.add('jrw');k.classList.add('jrw');col=0;return}if(col===1){k.classList.add('jrr');col=0}else col=1});
+    if(col===1)K[K.length-1].classList.add('jrw')}}
+// Nach dem Schließen: Effekte aus, Sprung „Alle Meilensteine“, Herz im Reiter „Resonanz“, danach ein wartendes Fenster nach einem Anlass (Bild)
+function jrClosed(){JR_T.forEach(clearTimeout);JR_T=[];if(FP_OPEN==='jrb')closeFpanel();const bx=$('jr-modal').querySelector('.box');bx.classList.remove('jrspielt','jrschlaegt');
+  const j=JR_JUMP;JR_JUMP=null;JR=null;JRP=null;
+  if(j)goTo('stats','st-ms');else render();
+  msPulse();
+  if(FEN_NACH){const a=FEN_NACH;FEN_NACH=null;clearTimeout(FEN_T);FEN_T=setTimeout(()=>fenTry(a),700)}}
+// ---- Bilder des Jahresrückblicks (ab 0.154): immer hell, ohne Bewegung, Farben fest im Bild, Fußzeile mit dem Toolnamen wie bei den Meilensteinen;
+// nie Hinweise auf fehlende Daten, kein „Letzter Trade am …“, keine Kontonamen. Was das Fenster zeigt („Betrag zeigen“, „Schwächste Werte
+// zeigen“), kommt ins Bild. Arten: s1 = Seite 1 (1080 × 1350, mit Morgenlicht, Leitsatz; Netto-Gewinn nur mit „Betrag zeigen“), kurz =
+// „Kurzfassung“ (1080 × 1350, nie Beträge, Inhalt senkrecht mittig, ohne schwächste Werte größer), alle = „Alle Werte“ (1080 breit, Höhe nach
+// Inhalt, alle Gruppen von Seite 2 außer den Meilensteinen des Jahres). jrBildSpec beschreibt das Bild (für die Tests ohne Zeichenfläche),
+// jrLayout rechnet die Lage (auch die Höhe von „Alle Werte“), jrPng zeichnet. Speichern oder Teilen zählt als Anlass „bild“.
+const JR_C={bg:'#f6f5f2',card:'#ffffff',line:'#e2e0da',gold:'#C49A55',goldInk:'#86601c',ink:'#1a1a1a',ink2:'#373d43',muted:'#454b51',dawn:'#fbeccc',neg:'#c2410c'};
+function jrBildSpec(k,st,o){const X=MS_TXT.jr,y=String(o.y);
+  if(k==='s1'){const kp=jrKopf(st,!!o.amt);return {art:'s1',W:1080,H:1350,titel:X.titel.replace('{j}',y),rendite:kp.r,renditeL:X.rendite,netto:kp.n,nettoL:kp.n!=null?X.netto.replace('{c}',jrCur(st.cur)):null,
+    mon:st.mon.map(m=>({n:m.n,v:m.n?(st.miss?m.a:m.r)||0:0})),mb:X.mb,monL:X.monate,leit:o.leit,fuss:MS_TXT.fuss}}
+  const G=jrModel(st,{amt:!!o.amt,weak:!!o.weak,art:k}),sp={art:k,W:1080,H:1350,kat:X.titel.replace('{j}',y),titel:X.zahlen,gruppen:G,fuss:MS_TXT.fuss};
+  if(k==='alle')sp.H=jrLayout(sp).H;return sp}
+// Lage der Bilder „Kurzfassung“ und „Alle Werte“ (Maße der Vorlagen bei Maßstab s = 1): Kopf (Schmetterling, Kategorie, Titel, goldene Linie),
+// je Gruppe die Überschrift und die Reihen (Linie, Beschriftung, Wert, kleine Zeilen, Linie). Kurzfassung: s so groß wie möglich (höchstens 1,25),
+// der Inhalt steht mittig zwischen Kartenrand oben und Fußzeile. Rückgabe {H, s, y0}.
+function jrLayout(sp){const m=s=>{let h=96*s+40*s+60*s+27*s;for(const g of sp.gruppen){h+=51*s+15*s;for(const r of g.reihen){const n=Math.max(0,...r.map(t=>t.s.length));h+=33*s+49*s+(n?33*s+(n-1)*28*s+18*s:26*s)}}return h};
+  if(sp.art==='alle'){const h=m(1),y0=36+70;return {s:1,y0,H:Math.round(y0+h+70+110+36)}}
+  const top=36,bot=sp.H-84-28,av=bot-top,s=Math.max(0.85,Math.min(1.25,(av-160)/m(1))),h=m(s);return {s,y0:Math.round(top+(av-h)/2),H:sp.H}}
+function jrPng(sp){const W=sp.W,ff=getComputedStyle(document.body).fontFamily||'sans-serif',C=JR_C,L=sp.art==='s1'?null:jrLayout(sp),H=L?L.H:sp.H;
+  return new Promise((ok,bad)=>{const img=new Image();img.onerror=()=>bad(new Error('Bild'));
+    img.onload=()=>{try{const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');
+      c.fillStyle=C.bg;c.fillRect(0,0,W,H);
+      const rr=(x,y,w,h,r)=>{c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()};
+      rr(36,36,W-72,H-72,28);c.fillStyle=C.card;c.fill();
+      // Morgenlicht nur auf Seite 1, oben in der Karte (wie im Fenster)
+      if(sp.art==='s1'){c.save();rr(36,36,W-72,H-72,28);c.clip();const g=c.createRadialGradient(W/2,36,0,W/2,36,700);g.addColorStop(0,C.dawn);g.addColorStop(.7,'rgba(251,236,204,0)');
+        c.translate(W/2,36);c.scale(1.3,1);c.translate(-W/2,-36);c.fillStyle=g;c.fillRect(0,0,W,900);c.restore()}
+      c.lineWidth=2;c.strokeStyle=C.line;rr(36,36,W-72,H-72,28);c.stroke();
+      c.textBaseline='alphabetic';
+      const font=(px,wt)=>{c.font=`${wt||400} ${Math.round(px)}px ${ff}`};
+      // Text in höchstens mw Breite (die Schrift wird kleiner, bis er passt); al = Ausrichtung, sp = Buchstabenabstand
+      const txt=(t,x,y,px,wt,col,mw,al,ls)=>{let p=px;for(;p>12;p-=1){font(p,wt);if('letterSpacing' in c)c.letterSpacing=ls?Math.round(p*ls)+'px':'0px';if(!mw||c.measureText(t).width<=mw)break}c.fillStyle=col;c.textAlign=al||'left';c.fillText(t,x,y);if('letterSpacing' in c)c.letterSpacing='0px'};
+      const line=(x,y,w,col,hh)=>{c.fillStyle=col;c.fillRect(x,y,w,hh||2)};
+      const BW=h=>h*BFLY_WH[0]/BFLY_WH[1];
+      if(sp.art==='s1'){
+        // Seite 1: Teile von oben nach unten (Abstand der Grundlinie zur vorigen), der Block steht senkrecht mittig zwischen Kartenrand und Fußzeile.
+        // Der Leitsatz bricht ausgeglichen um: so viele Zeilen wie nötig, jede so kurz wie möglich (keine einzelnen Wörter am Ende).
+        const wrap=(t,px,wt,mw)=>{font(px,wt);const ws=String(t||'').split(' '),g=m=>{const o=[];let cur='';for(const w of ws){const x=cur?cur+' '+w:w;if(c.measureText(x).width>m&&cur){o.push(cur);cur=w}else cur=x}if(cur)o.push(cur);return o};
+          const n=g(mw).length;let lo=0,hi=mw;for(let k=0;k<20;k++){const mid=(lo+hi)/2;if(g(mid).length>n)lo=mid;else hi=mid}return g(hi)};
+        const lines=wrap(sp.leit,38,600,W-240),hh=140+64+30+132+60+(sp.netto!=null?84+44:0)+56+200+40+42+46+62+52*(lines.length-1);
+        let y=Math.round(36+(H-84-28-36-hh)/2);
+        c.drawImage(img,(W-BW(140))/2,y,BW(140),140);y+=140+64;txt(sp.titel,W/2,y,56,700,C.ink,W-200,'center');
+        y+=30;line(W/2-70,y-3,140,C.gold,5);y+=132;txt(sp.rendite,W/2,y,112,700,C.ink,W-200,'center');y+=60;txt(sp.renditeL,W/2,y,30,400,C.ink2,0,'center');
+        if(sp.netto!=null){y+=84;txt(sp.netto,W/2,y,64,700,C.ink,W-200,'center');y+=44;txt(sp.nettoL,W/2,y,30,400,C.ink2,0,'center')}
+        // Monatsbalken: 12 Spalten, 200 px hoch, Verlustmonate unter der Nulllinie, Monate ohne Trades eine flache Linie
+        y+=56;const bw=720,gap=14,cw=(bw-11*gap)/12,x0=(W-bw)/2,V=sp.mon.map(m=>m.v),P=Math.max(0,...V),N=Math.max(0,...V.map(v=>-v)),k=200/((P+N)||1),z=y+Math.round(P*k);
+        sp.mon.forEach((m,i)=>{const x=x0+i*(cw+gap);line(x,z,cw,C.line,2);if(!m.n){line(x,z-1,cw,C.line,4);return}
+          const h=Math.max(4,Math.round(Math.abs(m.v)*k));if(m.v<0){c.globalAlpha=.55;c.fillStyle=C.neg;c.fillRect(x,z,cw,h);c.globalAlpha=1}else{c.fillStyle=C.gold;c.fillRect(x,z-h,cw,h)}});
+        y+=200+40;sp.mb.forEach((b,i)=>txt(b,x0+i*(cw+gap)+cw/2,y,26,400,C.ink2,0,'center'));y+=42;txt(sp.monL,W/2,y,26,400,C.ink2,0,'center');
+        y+=46;line(W/2-70,y-3,140,C.gold,5);
+        lines.forEach((l,i)=>{y+=i?52:62;txt(l,W/2,y,38,600,C.ink,W-200,'center')})}
+      else{const s=L.s,x0=94,Wc=W-188;let y=L.y0;
+        // Einheitliche Schriftgrößen im ganzen Bild: Beschriftungen, Werte, Texte statt Wert und kleine Zeilen je so groß, dass der längste Text seiner
+        // Art in seine Spalte passt (sonst stünden in einer Reihe verschiedene Größen)
+        const fitPx=(t,px,wt,mw)=>{let p=px;for(;p>12;p-=1){font(p,wt);if(c.measureText(t).width<=mw)break}return p};
+        let pk=22*s,pv=44*s,pn=24*s,ps=21*s;
+        for(const g of sp.gruppen)for(const r of g.reihen){const cw=Wc/r.length;r.forEach((t,i)=>{const mw=cw-(i?24:0)-12;pk=fitPx(t.k,pk,400,mw);if(t.v.none)pn=fitPx(t.v.t,pn,400,mw);else pv=fitPx(t.v.t,pv,700,mw);for(const z of t.s)ps=fitPx(z.t,ps,400,mw)})}
+        c.drawImage(img,(W-BW(96*s))/2,y,BW(96*s),96*s);y+=96*s+40*s;txt(sp.kat.toUpperCase(),W/2,y,28*s,700,C.goldInk,Wc,'center',.06);
+        y+=60*s;txt(sp.titel,W/2,y,48*s,700,C.ink,Wc,'center');y+=27*s;line(W/2-60,y,120,C.gold,4);
+        for(const g of sp.gruppen){y+=51*s;txt(g.h.toUpperCase(),x0,y,22*s,700,C.goldInk,Wc,'left',.06);y+=15*s;line(x0,y,Wc,C.line,2);
+          for(const r of g.reihen){const n=r.length,cw=Wc/n,ns=Math.max(0,...r.map(t=>t.s.length)),top=y,rh=33*s+49*s+(ns?33*s+(ns-1)*28*s+18*s:26*s);
+            r.forEach((t,i)=>{const x=x0+i*cw+(i?24:0),mw=cw-(i?24:0)-12;let yy=top+33*s;txt(t.k,x,yy,pk,400,C.ink2,mw);yy+=49*s;
+              if(t.v.none)txt(t.v.t,x,yy,pn,400,C.muted,mw);else txt(t.v.t,x,yy,pv,700,C.ink,mw);
+              t.s.forEach((z,j)=>{yy+=j?28*s:33*s;txt(z.t,x,yy,ps,400,C.ink2,mw)});if(i)line(x0+i*cw,top,2,C.line,rh)});
+            y=top+rh;line(x0,y,Wc,C.line,2)}}}
+      // Fußzeile wie bei den Meilensteinen: mittig unten 28 px, passt sie nicht in eine Zeile, nur die Adresse
+      font(28,400);c.textAlign='center';c.fillStyle=C.muted;const f=c.measureText(sp.fuss).width<=W-2*96?sp.fuss:MS_TXT.fussKurz;c.fillText(f,W/2,H-84);
+      cv.toBlob(b=>b?ok(b):bad(new Error('toBlob')),'image/png')}catch(x){bad(x)}};
+    img.src=BFLY_G})}
+const jrFile=k=>`Trading-Bilanz_${MS_TXT.jr.datei[k].replace('{j}',JR?JR.y:'')}_${msToday()}.png`;
+// Menü „Bild ▾“: Seite 1 „Speichern“ und „Teilen“; Seite 2 „Kurzfassung (ohne Beträge)“ und „Alle Werte“ mit je „Speichern“ und „Teilen“
+// (ohne Teilen nur die Speichern-Einträge). Die erste Zeile trägt das × (GESTALTUNG Abschnitt 2).
+function jrMenuH(){const X=MS_TXT.jr,b=k=>`<button type="button" class="wopt" data-jrim="${k}:save">${esc(X.speichern)}</button>${CAN_SHARE_FILE?`<button type="button" class="wopt" data-jrim="${k}:share">${esc(X.teilen)}</button>`:''}`;
+  if(!JR||JR.v!==2)return `<div class="fgrp">${b('s1')}</div>`;
+  return `<div class="fgrp"><p class="jrbk">${esc(X.kurz)} <span class="small">${esc(X.kurzK)}</span></p>${b('kurz')}</div><div class="fgrp"><p class="jrbk">${esc(X.alle)}</p>${b('alle')}</div>`}
+// Bilder der gezeigten Seite vorbereiten (beim Öffnen des Menüs), damit „Teilen“ in der Nutzergeste bleibt
+function jrPrep(){if(!JR)return;const amt=jrAmt(),weak=jrWeak(),key=[JR.y,JR.v,amt,weak].join('|');if(JRP&&JRP.key===key)return;
+  const P={key,b:{},p:{}};for(const k of JR.v===1?['s1']:['kurz','alle']){P.p[k]=jrPng(jrBildSpec(k,JR.st,{y:JR.y,amt,weak,leit:JR.leit}));P.p[k].then(b=>{P.b[k]=b},()=>{})}JRP=P}
+function jrBlob(k){jrPrep();const P=JRP;return P.p[k]?P.p[k]:jrPng(jrBildSpec(k,JR.st,{y:JR.y,amt:jrAmt(),weak:jrWeak(),leit:JR.leit}))}
+function jrImgSave(k){if(!JR)return;const n=jrFile(k);return jrBlob(k).then(b=>{download(n,b,'image/png');maybeDonate('bild')},()=>toast(MS_TXT.bildFehler))}
+function jrImgShare(k){if(!JR)return;const n=jrFile(k),go=b=>{const f=new File([b],n,{type:'image/png'});
+    return navigator.share({files:[f]}).then(()=>fenBack(()=>maybeDonate('bild')),x=>{if(x&&x.name==='AbortError')return;download(n,b,'image/png');toast(MS_TXT.teilenFehler);maybeDonate('bild')})};
+  const P=JRP;if(P&&P.b[k])return go(P.b[k]);return jrBlob(k).then(go,()=>toast(MS_TXT.bildFehler))}
 
 /* ---------------- Tag Wallet und Krypto ---------------- */
 /*TAG-LESER-START*/
@@ -12548,6 +13008,8 @@ function buildFpanel(which){
   if(which==='gb'||which==='gb2'){$('fp-'+which).innerHTML='<div class="fgrp"><button type="button" class="wopt" data-gimg="save">Speichern</button><button type="button" class="wopt" data-gimg="share">Teilen</button></div>';return}
   // Ab 0.139: Menü „Bild ▾“ an einem Meilenstein (Karte und Feier-Fenster) und „Konten für Meilensteine“ im Titel der Karte
   if(which==='msb'){$('fp-msb').innerHTML='<div class="fgrp"><button type="button" class="wopt" data-msim="save">Speichern</button><button type="button" class="wopt" data-msim="share">Teilen</button></div>';return}
+  // Ab 0.154: Menü „Bild ▾“ im Jahresrückblick (jrMenuH: Seite 1 ein Bild, Seite 2 „Kurzfassung“ und „Alle Werte“)
+  if(which==='jrb'){$('fp-jrb').innerHTML=jrMenuH();return}
   // Ab 0.142: „nur dieses“ wie im Konten-Menü der Filterzeile; Menü „Zeitraum“ der Karte: „Gesamt“ und die Jahre mit Trades der gezählten Konten, absteigend
   // Ab 0.151: aus dem gemeinsamen Baustein der Konten-Auswahl (accPickH)
   if(which==='msk'){$('fp-msk').innerHTML=accPickH('msk');updFpanel();return}
@@ -14547,7 +15009,10 @@ document.addEventListener('click',e=>{const t=e.target;if(!t.closest)return;
 // Karte „Meilensteine“: Klick auf einen Eintrag öffnet das Feier-Fenster für diesen einen; „Alle anzeigen“ und „Weniger anzeigen“
 $('ms-list').addEventListener('click',e=>{const t=e.target;if(!t.closest)return;
   if(t.closest('[data-msmore]')){MS_ALL=!MS_ALL;msRender();const b=$('ms-list').querySelector('[data-msmore]');if(b)b.focus({preventScroll:true});return}
-  const r=t.closest('[data-ms]'),en=r&&msById(r.dataset.ms);if(en)msShow(msSect(r.dataset.msg),{start:en.id})});
+  if(t.closest('[data-jrmore]')){MS_JR=!MS_JR;msRender();const b=$('ms-list').querySelector('[data-jrmore]');if(b)b.focus({preventScroll:true});return}
+  // Ab 0.154: Jahresrückblick (Link-Zeilen, Abschnitt „Rückblick“, Eintrag im Verlauf) im eigenen Fenster
+  const j=t.closest('[data-jr]');if(j){jrShow(j.dataset.jr);return}
+  const r=t.closest('[data-ms]'),en=r&&msById(r.dataset.ms);if(en&&en.k==='jr'){jrShow(en.y);return}if(en)msShow(msSect(r.dataset.msg),{start:en.id})});
 // Bild-Knopf an einem Meilenstein (Karte und Feier-Fenster): ohne Teilen speichert er direkt, sonst öffnet er das Menü „Speichern“ / „Teilen“
 document.addEventListener('click',e=>{const t=e.target;if(!t.closest)return;
   const o=t.closest('[data-msim]');if(o){const b=$('fb-msb'),id=b&&b.dataset.msimg;closeFpanel();if(id){if(o.dataset.msim==='share')msImgShare(id);else msImgSave(id)}return}
@@ -14805,7 +15270,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.153',VDATE='16.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.154',VDATE='16.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -14829,7 +15294,7 @@ const FENSTER=[
 ];
 /* MS_TXT: alle Texte der Meilensteine (ab 0.139, Startfassungen): Karte „Meilensteine“, Feier-Fenster, Jahrestag, Jahresrückblick und das
    Bild „Rekord-Karte“. Jeder Text steht nur hier. Platzhalter: {n} = Zahl (Stufe oder Länge), {j} = Jahr, {k} = „Konto 12345678“ bzw.
-   „den Konten … und …“, {w} = alter Wert, {d} = Datum. Der Teil in {…} bei leise, jahrestag und rueckDanke wird der Link in den Reiter
+   „den Konten … und …“, {w} = alter Wert, {d} = Datum. Der Teil in {…} bei leise und jahrestag wird der Link in den Reiter
    „Resonanz“. 💚 erscheint als gezeichnetes grünes Herz.
      titel        Titel je Anlass: at/ad/aw/am Allzeit-Rekorde, jt/jd/jw/jm Jahres-Rekorde, sn/sr/sg Stufen, rg/rd/rw/mw Serien,
                   jrg/jrd/jrw/jmw Jahres-Bestserien (ab 0.142), ja1 und ja Jahrestag, ea/ee Auszahlungen, jr Jahresrückblick
@@ -14839,7 +15304,8 @@ const FENSTER=[
      Die Freude-Sätze (0.139 bis 0.141) entfallen ab 0.142, sie stehen in TEXTE-FASSUNGEN.md.
      leise        leise Zeile im Feier-Fenster (GESTALTUNG Abschnitt 24, Regel 5) und Zeile im Jahresrückblick ohne „Schon gespendet“
      jahrestag    Zeile im Fenster des Jahrestags (zählt als Feedback-Frage für das Jahr)
-     rueckDanke   Zeile im Jahresrückblick nach „Schon gespendet“ */
+     jr           ab 0.154: alle Texte des Jahresrückblicks (Fenster, Karte, Bilder; Platzhalter für Florians Fassungsrunde). Bis 0.153 standen hier
+                  rueck (Tabelle im Blatt) und rueckDanke (Zeile nach „Schon gespendet“). {c} = Währung („USD“ oder „€“), {k} = Kontonummer. */
 const MS_TXT={
   titel:{at:'Dein bester Trade',ad:'Dein bester Handelstag',aw:'Deine beste Woche',am:'Dein bester Monat',
     jt:'Dein bester Trade {j}',jd:'Dein bester Handelstag {j}',jw:'Deine beste Woche {j}',
@@ -14877,8 +15343,36 @@ const MS_TXT={
   einsatz:'Was jetzt noch für dich arbeitet, ist reiner Gewinn.',
   leise:'Wenn du deine Freude auch mit mir teilen willst: {hier entlang →}',
   jahrestag:'Wie war dein Jahr mit der Trading-Bilanz? Ich freue mich über deine Worte oder eine Wertschätzung. {Hier entlang →}',
-  rueckDanke:'Von Herzen danke, dass du mich und dieses Tool unterstützt hast! 💚 Wenn du mir von deinem Jahr mit der Trading-Bilanz erzählen magst: {hier entlang →}',
-  rueck:{netto:'Netto-Gewinn',rendite:'Rendite',trades:'Trades',woche:'Beste Woche',tag:'Bester Handelstag',trade:'Bester Trade',stand:'Stand: letzter Trade am {d}'},
+  // Ab 0.154: Jahresrückblick. Leitsätze (leit, Florians Wahl aus dem Auftrag zu 0.154, art: beide, gewinn = nur Gewinnjahre, verlust = nur
+  // Verlustjahre), Neujahrswunsch und Einladung aus der Testseite (Florian), Einladung im Verlustjahr (einladungV, Platzhalter von Claude Code),
+  // Danke-Satz nach „Ich habe schon gespendet“ (Florians Wahl). Alles andere: Beschriftungen aus dem Auftrag und der Testseite.
+  jr:{titel:'Dein Trading-Jahr {j}',rendite:'Rendite',netto:'Netto-Gewinn ({c})',monate:'Rendite je Monat',mb:['J','F','M','A','M','J','J','A','S','O','N','D'],
+    weiter:'Dein Jahr in Zahlen ›',unvoll1:'Noch nicht vollständig: Daten von Konto {k} bis {d}.',unvollN:'Noch nicht vollständig: {n} Konten noch ohne Report bis Jahresende.',
+    marke:'unvollständig',
+    leit:{rund:{t:'Ein Jahr wird rund. Schau es dir in Ruhe noch einmal an.',art:'beide'},wuerdigen:{t:'Bevor das Neue beginnt, darf das Alte noch einmal gewürdigt werden.',art:'beide'},
+      feiere:{t:'Feiere das Alte, um gestärkt ins Neue zu gehen.',art:'gewinn'},weg:{t:'Auch dieses Jahr gehört zu deinem Weg. Schau es dir in Ruhe an.',art:'verlust'}},
+    zahlen:'Dein Jahr in Zahlen',
+    gr:{erg:'Ergebnis',best:'Bestwerte',avg:'Durchschnitt',bst:'Beständigkeit',vh:'Verhältnis',weak:'Schwächste Werte',geld:'Geld des Jahres',ms:'Meilensteine des Jahres'},
+    k:{rendite:'Rendite',hit:'Trefferquote',trades:'Trades',netto:'Netto-Gewinn ({c})',trade:'Trade',tag:'Handelstag',woche:'Woche',monat:'Monat',
+      pTrade:'pro Trade',pTag:'pro Handelstag',pWoche:'pro Woche',pMonat:'pro Monat',wPlus:'Wochen im Plus',rg:'Gewinn-Trades am Stück',rd:'Tage am Stück im Plus',
+      rw:'Plus-Wochen in Folge',mw:'Meiste Gewinn-Trades',wd:'Stärkster Wochentag',sumW:'Summe der Gewinne',sumL:'Summe der Verluste',pf:'Profit-Faktor',
+      htgW:'Größter Gewinn-Trade in Handelstagen',htgL:'Größter Verlust-Trade in Handelstagen',dd:'Max. Drawdown',vs:'Längste Verlustserie',
+      ein:'Eingezahlt ({c})',aus:'Ausgezahlt ({c})',einsatz:'Netto-Einsatz ({c})'},
+    s:{hit:'{w} von {n}',wPlus:'von {n}',mw:'in der Woche ab {d}',wd:'Ø {v} pro Handelstag',dd:'am {d}',woche:'ab {d}',pf:'{v} zu 1',einsatz:'eingezahlt minus ausgezahlt'},
+    ohne:{t:'kein Trade',d:'kein Handelstag',w:'noch keine ganze Woche',m:'noch kein ganzer Monat',rg:'kein Gewinn-Trade',rd:'kein Tag im Plus',rw:'keine Plus-Woche',
+      mw:'kein Gewinn-Trade',vs:'kein Verlust-Trade',pf:'kein Verlust',htg:'keiner'},
+    wunsch:'Möge das neue Jahr dich in Fülle und Liebe baden.',
+    einladung:'Mit der Fülle ist es wie mit der Liebe: Sie wird mehr, wenn man sie teilt.',
+    einladungV:'Auch in diesem Jahr hat dir die Trading-Bilanz hoffentlich Klarheit geschenkt. Wenn du etwas zurückgeben magst, freue ich mich.',
+    wert:'Wertschätzung teilen',zurueck:'← Zurück zum Rückblick',
+    wDank:'Danke, dass du die Trading-Bilanz nutzt. Wenn sie dir in diesem Jahr Freude gemacht oder geholfen hat und du etwas zurückgeben magst, freue ich mich sehr.',
+    wAdr:'Wallet-Adresse (EVM), am liebsten USDC oder USDT',kopieren:'Adresse kopieren',paypal:'Lieber per PayPal?',
+    sagen:'Und wenn gerade nichts übrig ist: Erzähle anderen in der Community davon. Auch das trägt uns alle.',
+    schon:'Ich habe schon gespendet',danke:'Was du gegeben hast, fließt weiter, zu allen, die das Tool nutzen. Danke von Herzen.',
+    betrag:'Betrag zeigen',weak:'Schwächste Werte zeigen',bild:'Bild ▾',bildS:'Bild speichern',kurz:'Kurzfassung',kurzK:'(ohne Beträge)',alle:'Alle Werte',
+    speichern:'Speichern',teilen:'Teilen',ariaWeiter:'Weiter zu Seite 2',ariaZurueck:'Zurück zu Seite 1',ariaBild:'Bild',
+    karte:'Rückblick',ansehen:'Rückblick ansehen ›',liste:'Jahresrückblicke',netto2:'{v} Netto-Gewinn',
+    datei:{s1:'Trading-Jahr-{j}',kurz:'Trading-Jahr-{j}-Kurzfassung',alle:'Trading-Jahr-{j}-Alle-Werte'}},
   sprungZeit:'Das Tool hat den Zeitraum auf „Gesamter Zeitraum“ gestellt, damit du die Stelle siehst.',
   sprungKonten:'Das Tool hat alle Konten gewählt, damit du die Stelle siehst.',
   sprungBeide:'Das Tool hat den Zeitraum auf „Gesamter Zeitraum“ gestellt und alle Konten gewählt, damit du die Stelle siehst.',
@@ -14887,6 +15381,28 @@ const MS_TXT={
 // Aufschriften im Feier-Fenster aus MS_TXT
 $('ms-all').textContent=MS_TXT.alleLink;$('ms-amtl').textContent=MS_TXT.betrag;
 $('ms-prev').setAttribute('aria-label',MS_TXT.ariaPrev);$('ms-next').setAttribute('aria-label',MS_TXT.ariaNext);
+// Ab 0.154: Jahresrückblick (Fenster #jr-modal, jrShow)
+// ---- Ereignisse im Fenster: Seiten (Knöpfe, Pfeil, Pfeiltasten), Schmetterling, „Alle Meilensteine“, Adresse kopieren, „Ich habe schon gespendet“,
+// Menü „Bild“ (auf Seite 1 ohne Teilen direkt „Bild speichern“). Die Bilder werden beim Öffnen des Menüs vorbereitet (Teilen bleibt in der Nutzergeste).
+$('jr-modal').addEventListener('click',e=>{const t=e.target;if(!t.closest||!JR)return;
+  const go=t.closest('[data-jrgo]');if(go){jrView(+go.dataset.jrgo);const f=$('jr-body').querySelector('h2');if(f&&go.dataset.jrgo!=='1'){f.tabIndex=-1;f.focus({preventScroll:true})}return}
+  if(t.closest('#jr-ar')){jrView(JR.v===1?2:1);return}
+  if(t.closest('#jr-bf')){if(JR.v===1)jrPlay();return}
+  if(t.closest('#jr-all')){e.preventDefault();JR_JUMP=1;closeModal();return}
+  if(t.closest('#jr-copy')){addrCopy($('jr-adr'),$('jr-copymsg'),'Adresse kopiert. Danke! 💚');return}
+  // wie „Schon gespendet“ im Spenden-Fenster: Datum (sg) und 12 Monate Ruhe; der Danke-Satz erscheint an Ort und Stelle
+  if(t.closest('#jr-schon')){const d=donGet();d.sg=FEN_NOW().toISOString();donPause(365);save();JR.sgNow=true;$('jr-danke').hidden=false;return}
+  const im=t.closest('[data-jrim]');if(im){const [k,w]=im.dataset.jrim.split(':');closeFpanel();if(w==='share')jrImgShare(k);else jrImgSave(k);return}
+  if(t.closest('#fb-jrb')){if(JR.v===1&&!CAN_SHARE_FILE){jrImgSave('s1');return}if(FP_OPEN==='jrb'){closeFpanel();return}openFpanel('jrb');jrPrep();return}});
+$('jr-modal').addEventListener('change',e=>{const t=e.target;if(!JR||(t.id!=='jr-amt'&&t.id!=='jr-weak'))return;
+  const ms=msSync();ms[t.id==='jr-amt'?'rb':'rs']=!!t.checked;ms.v=(ms.v|0)+1;save();JRP=null;if(JR.v<3)jrView(JR.v,true)});
+document.addEventListener('keydown',e=>{if(!MODAL||MODAL.id!=='jr-modal'||!JR||JR.v===3||(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')||e.altKey||e.ctrlKey||e.metaKey)return;
+  const t=e.target;if(t&&t.matches&&t.matches('input:not([type=checkbox]),textarea,select'))return;if(FP_OPEN==='jrb')return;
+  const v=e.key==='ArrowLeft'?1:2;if(v===JR.v)return;e.preventDefault();jrView(v)});
+window.addEventListener('resize',()=>{if(MODAL&&MODAL.id==='jr-modal')jrFit()});
+// Aufschriften aus MS_TXT, Bild des Schmetterlings für die drei Teile des Flügelschlags (data:-Adresse aus diesem Skript, wie die Maske des Schimmers)
+$('jr-amtl').textContent=MS_TXT.jr.betrag;$('jr-weakt').textContent=MS_TXT.jr.weak;$('jr-all').textContent=MS_TXT.alleLink;
+{const st=document.createElement('style');st.textContent=`.jrteil{background-image:url("${BFLY_G}")}`;document.head.appendChild(st)}
 // Sprung-Link: die Adresse des Tools mit #resonanz am Ende öffnet direkt den Reiter „Resonanz“ (jumpIs, jumpGo)
 const JUMP='#resonanz',JUMP_URL=DL_URL+'/'+JUMP,FB_MAIL='florian@weltenwandel.at';
 // Über den Sprung-Link gekommen und noch im Reiter „Resonanz“ (JUMP_ON): Die Begrüßung wartet, bis die Person einen anderen Reiter wählt oder die
@@ -14975,7 +15491,8 @@ function maybeDonate(anlass){fenZaehl();clearTimeout(FEN_T);FEN_T=setTimeout(()=
 // frei: darf jetzt ein Fenster kommen (im Tool fenFrei(), in den Tests gestellt). Rückgabe: der gezeigte Eintrag oder null.
 function fenTry(anlass,frei){
   // Ab 0.139: Bild aus dem Feier-Fenster: Das Fenster nach dem Anlass kommt erst, wenn das Feier-Fenster zu ist (msClosed), wie beim Vollbild
-  if(GFS||(MODAL&&MODAL.id==='ms-modal')){FEN_NACH=anlass;return null}
+  // Ab 0.154 ebenso aus dem Jahresrückblick (jrClosed)
+  if(GFS||(MODAL&&(MODAL.id==='ms-modal'||MODAL.id==='jr-modal'))){FEN_NACH=anlass;return null}
   if(BOOT_BAD||!(frei===undefined?fenFrei():frei))return null;
   const d=donSync(),now=FEN_NOW(),e=fenPick(d,now,anlass);if(!e)return null;
   const iso=now.toISOString();if(e.art==='feedback')d.fb=iso;else{d.last=iso;d.until=fenPlus(now,91).toISOString()}
@@ -15178,6 +15695,8 @@ document.addEventListener('click',e=>{if(!MODAL||!e.target.closest)return;
   if(e.target===MODAL){const M=MODAL;if(M.id==='dt-modal')return;
     // Ab 0.139 (GESTALTUNG Abschnitt 0, Regel 7): Das von selbst geöffnete Feier-Fenster (Jahrestag, Jahresrückblick) schließt nicht mit einem Klick daneben
     if(M.id==='ms-modal'&&MS_CUR&&MS_CUR.auto)return;
+    // Ab 0.154: ebenso der von selbst geöffnete Jahresrückblick
+    if(M.id==='jr-modal'&&JR&&JR.auto)return;
     if(M.id==='td-modal'){tdLeave(closeModal);return}if(!modalDirty(M)){closeModal();return}
     askBox({title:'Nicht gespeichert',text:'Du hast in diesem Fenster etwas eingegeben und noch nicht gespeichert.',ok:'Verwerfen',no:'Weiter bearbeiten',danger:true}).then(v=>{if(!v||MODAL!==M)return;
       if(M.id==='dt-modal'){$('tagpaste').value='';TAGP=null;renderTagPrev();msg('tagmsg','','')}delete M.dataset.dirty;closeModal()})}});
@@ -15201,6 +15720,8 @@ function closeModal(){if(!MODAL)return;const was=MODAL;modalOn(MODAL,false);MODA
   if(sess){MODAL_FROM=null;setTimeout(()=>cxSessFlash(sess),30);return}
   if(was.id==='dt-modal')dtClose();
   // Ab 0.139: Feier-Fenster zu (angesehen bzw. ausgeblendet, Herz pulsiert, Sprung). msClosed zeichnet neu, der Fokus geht an den Schmetterling neben „Überblick“.
+  // Ab 0.154: Jahresrückblick zu (Effekte aus, Sprung „Alle Meilensteine“, Herz, wartendes Fenster nach einem Anlass)
+  if(was.id==='jr-modal'){MODAL_FROM=null;jrClosed();return}
   if(was.id==='ms-modal'){MODAL_FROM=null;msClosed();const b=document.querySelector('#ms-bf-ov .bfb');if(b&&b.getClientRects&&b.getClientRects().length)b.focus({preventScroll:true});return}
   if(MODAL_FROM&&MODAL_FROM.isConnected)MODAL_FROM.focus();MODAL_FROM=null}
 /* ---------------- Ab 0.44: „＋ Daten“ (Fenster dt-modal) ----------------
