@@ -7840,8 +7840,8 @@ function toastAct(t,lab,fn,ms){toastShow(t,lab,fn)}
 // (zweiter Knopf, Esc, Klick daneben). Liegt über allen Fenstern; das Fenster darunter bleibt offen.
 let ASK=null;
 // Ab 0.50 (1.2): o.stay: Esc und Klick daneben liefern null (weder Ja noch Nein, z. B. „auf der Karte bleiben“)
-// Ab 0.151 (Florians Auftrag): o.noOut: ein Klick daneben tut nichts (Rückfrage „Sicherung laden“); Esc und die Knöpfe wie sonst. Ab 0.152
-// Florians Regel (GESTALTUNG Abschnitt 0): für jede Rückfrage, die alles ersetzt oder löscht („Sicherung laden“, „Sicherung erkannt“, „Alles löschen“)
+// 0.151 und 0.152 gab es o.noOut (ein Klick daneben tat nichts: „Sicherung laden“, ab 0.152 auch „Sicherung erkannt“ und „Alles löschen“).
+// Ab 0.153 (Florians Entscheidung, Regel R2 aufgehoben) ist der Schalter weg: Ein Klick daneben schließt jede Rückfrage wie „Abbrechen“.
 function askBox(o){if(typeof o==='string')o={text:o};return new Promise(res=>{const b=$('ask-box');if(ASK)ASK.done(false);
   $('ask-t').textContent=fdlTxt(o.title||'Rückfrage');$('ask-body').innerHTML=fdlHtml(o.html||`<p>${esc(o.text||'').replace(/\n\n/g,'</p><p>')}</p>`);
   // Ab 0.125: fdlHtml setzt die aufklappbare Liste der Dateien hinter den Absatz (ab drei Dateien)
@@ -7853,9 +7853,9 @@ function askBox(o){if(typeof o==='string')o={text:o};return new Promise(res=>{co
   // zurück. Der Knopf „ok“ (Ergebnis true) ist dann grau und steht rechts daneben (z. B. „Zurück zum Formular“ · „Trotzdem speichern“).
   {const okB=`<button type="button" class="btn${o.okPlain||o.back?'':o.danger?' danger':' primary'}" data-ask="1">${esc(o.ok||'Ja')}</button>`,noB=`<button type="button" class="btn${o.back?' primary':o.noDanger?' danger':''}" data-ask="0">${esc(o.no||'Abbrechen')}</button>`;
   $('ask-btns').innerHTML=`${o.more?`<button type="button" class="btn primary" data-ask="x">${esc(o.more.t)}</button>`:''}${o.alt?`<button type="button" class="btn" data-ask="2">${esc(o.alt)}</button>`:''}${o.back?noB+okB:okB+noB}`}$('ask-btns').classList.toggle('ask3',!!o.more);$('ask-btns').classList.toggle('ask4',!!(o.more&&o.alt));$('ask-box').classList.toggle('ask4',!!(o.more&&o.alt));
-  const prev=document.activeElement;ASK={esc:o.stay?null:false,out:!o.noOut,more:o.more,done:v=>{b.classList.remove('on');ASK=null;if(prev&&prev.focus&&document.contains(prev))prev.focus({preventScroll:true});res(v)}};
+  const prev=document.activeElement;ASK={esc:o.stay?null:false,more:o.more,done:v=>{b.classList.remove('on');ASK=null;if(prev&&prev.focus&&document.contains(prev))prev.focus({preventScroll:true});res(v)}};
   b.classList.add('on');b.querySelector(o.more?'[data-ask="x"]':o.back?'[data-ask="0"]':'[data-ask="1"]').focus()})}
-$('ask-box').addEventListener('click',e=>{if(!ASK)return;const a=e.target.closest('[data-ask]');if(a){if(a.dataset.ask==='x'){if(ASK.more)ASK.more.fn(a);return}ASK.done(a.dataset.ask==='2'?'alt':a.dataset.ask==='1')}else if(e.target===$('ask-box')&&ASK.out)ASK.done(ASK.esc)});
+$('ask-box').addEventListener('click',e=>{if(!ASK)return;const a=e.target.closest('[data-ask]');if(a){if(a.dataset.ask==='x'){if(ASK.more)ASK.more.fn(a);return}ASK.done(a.dataset.ask==='2'?'alt':a.dataset.ask==='1')}else if(e.target===$('ask-box'))ASK.done(ASK.esc)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ASK){e.preventDefault();e.stopPropagation();ASK.done(ASK.esc)}},true);
 /* ---------------- Ab 0.51 (2, Regel 14): Pflichtfelder im Reiter Wallet ----------------
    Der Hauptknopf ist nie gesperrt, weil etwas fehlt. Ein Klick prüft und ruft needMark(root, list) mit den fehlenden Feldern auf:
@@ -14758,7 +14758,8 @@ $('btn-restore').onclick=()=>$('restorefile').click();
 // in beiden Fällen derselbe Stand im Speicher. Unterschied nur in der Rückfrage: Der Knopf fragt wie bisher, sobald etwas im Tool steht („„…“
 // laden? Das ersetzt alles, was jetzt im Tool steht.“, mit „Sicherung speichern“); beim Ziehen kommt immer genau eine Rückfrage „Sicherung erkannt“
 // (Florians Wortlaut: „„…“ ist eine Sicherung. Laden?“, mit Daten im Tool dazu „Das ersetzt alles, was jetzt im Tool ist.“; „Laden“ blau ·
-// „Abbrechen“), keine zweite Bestätigung. Beide Rückfragen schließen nicht mit einem Klick daneben (noOut). Rückgabe: true, wenn geladen.
+// „Abbrechen“), keine zweite Bestätigung. Rückgabe: true, wenn geladen.
+// Ab 0.153 (Florians Entscheidung) schließen beide Rückfragen wieder mit einem Klick daneben wie „Abbrechen“ (0.151 und 0.152 nicht, noOut).
 async function bkLoad(f,o){o=o||{};
   // Ab 0.70: zuerst lesen und prüfen. Keine Sicherung: sofort die rote Meldung, ohne Rückfrage, nichts ändert sich
   // Ab 0.84 (G-18): Kein JSON (oder nicht lesbar) zeigt denselben Satz wie eine JSON-Datei ohne Konten (G-17). G-19 (Aufbereiten scheitert, unten) hat einen
@@ -14771,12 +14772,12 @@ async function bkLoad(f,o){o=o||{};
   if(!j||!j.deals||!j.accounts){bad(`Datei konnte nicht geladen werden: „${esc(f.name)}“ ist keine Trading-Bilanz-Sicherungsdatei. Wähle eine .json-Datei, die du zuvor mit „Sicherung speichern“ erzeugt hast.`);return false}
   // Ab 0.152 (Florians Antwort 1 zu Bericht 0.151, GESTALTUNG Abschnitt 8): Mit Daten im Tool dieselben Knöpfe wie beim Knopf „Sicherung laden“:
   // „Sicherung speichern“ (blau) · „Laden“ (rot) · „Abbrechen“. Bei leerem Tool „Laden“ (blau) · „Abbrechen“.
-  if(o.drop){const voll=stateHasData();if(!(await askBox({title:'Sicherung erkannt',text:`„${f.name}“ ist eine Sicherung. Laden?${voll?' Das ersetzt alles, was jetzt im Tool ist.':''}`,ok:'Laden',noOut:true,...(voll?{danger:true,more:ASK_BK}:{})})))return false;
+  if(o.drop){const voll=stateHasData();if(!(await askBox({title:'Sicherung erkannt',text:`„${f.name}“ ist eine Sicherung. Laden?${voll?' Das ersetzt alles, was jetzt im Tool ist.':''}`,ok:'Laden',...(voll?{danger:true,more:ASK_BK}:{})})))return false;
     // Ein noch offenes Fenster (nur „＋ Daten“ bleibt beim Ziehen offen) gehört zum alten Stand: schließen, wie beim Knopf im Reiter „Sicherung“
     while(MODAL){const M=MODAL;closeModal();if(MODAL===M)break}}
   // Ab 0.50 Nachtrag 5 (S1): Rückfrage, sobald irgendetwas im Tool steht (vorher nur mit Konten aus Reports), mit „Sicherung speichern“
-  // Ab 0.151 (Florians Auftrag, Phase 8): Ein Klick daneben schließt diese Rückfrage nicht (noOut), nur ihre Knöpfe und Esc
-  else if(stateHasData()&&!(await askBox({title:'Sicherung laden',text:`„${f.name}“ laden? Das ersetzt alles, was jetzt im Tool steht.`,ok:'Laden',danger:true,more:ASK_BK,noOut:true})))return false;
+  // 0.151 (Phase 8) und 0.152 schloss ein Klick daneben diese Rückfrage nicht (noOut); ab 0.153 (Florians Entscheidung) wieder wie „Abbrechen“
+  else if(stateHasData()&&!(await askBox({title:'Sicherung laden',text:`„${f.name}“ laden? Das ersetzt alles, was jetzt im Tool steht.`,ok:'Laden',danger:true,more:ASK_BK})))return false;
   // Ab 0.85 (Fund 2 aus 0.84): zuerst probeweise: einlesen, aufbereiten und zeichnen, ohne den alten Stand anzutasten und ohne zu speichern (SAVE_OFF).
   // Erst wenn alles geklappt hat, ersetzt die Sicherung den alten Stand und wird gespeichert. Scheitert ein Schritt, zeichnet das Tool den alten Stand
   // wieder, im Speicher hat sich nichts geändert (G-19).
@@ -14800,10 +14801,11 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ab 0.66 (Florians Wunsch): Nach dem Löschen lädt das Tool die Seite neu. So startet es wie beim ersten Öffnen, mit der Begrüßung
 // (Land, ab 0.77 mit „Erste Schritte“ und „Ohne Einführung starten“) und frisch aufbereitetem Zustand (fixState). Vorher blieb die Begrüßung bis zum nächsten Neuladen aus
 // und die Auswertung zeigte nach neuen Reports nichts. Der Toast „Alles gelöscht.“ kommt nach dem Neuladen (sessionStorage).
-// Ab 0.152 (Florians Regel, GESTALTUNG Abschnitt 0): Eine Rückfrage, die alles ersetzt oder löscht, schließt nicht mit einem Klick daneben (noOut)
-$('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK,noOut:true})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
+// 0.152 schloss „Alles löschen“ nicht mit einem Klick daneben (Regel R2, noOut). Ab 0.153 ist R2 aufgehoben (Florians Entscheidung):
+// Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
+$('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.152',VDATE='16.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.153',VDATE='16.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
