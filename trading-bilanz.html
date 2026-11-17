@@ -3788,7 +3788,8 @@ function avgKz(R,win,scope,zero,ress,cw){
 }
 // Werte der Karte „Hochs und Tiefs“ in beiden PF-Stellungen (V vor PF, N nach PF), je Einheit (a = Betrag, r = Rendite) mit eigenem
 // Extremwert und dem Trade, Tag oder der Woche dazu. Gewinn- und Verlust-Trades nach dem Vorzeichen vor PF (wie die Trefferquote),
-// ein Trade mit genau 0 zählt bei keinem. Gleichstand: bei Extremwerten der erste, bei Folgen („am Stück“) und „Meiste in einer Woche“ die letzte.
+// ein Trade mit genau 0 zählt bei keinem. Gleichstand: immer der erste (ab 0.157, Florians Regel „Bei Gleichstand zeigt das Tool überall das erste.“,
+// GESTALTUNG Abschnitt 25); bis 0.156 bei Folgen („am Stück“) und „Meiste in einer Woche“ die letzte.
 // Beste und schwächste Woche nur aus den gezählten ganzen Wochen (wks = avgKz(...).week.ps), wie die Durchschnitte.
 // „Meiste Gewinn-/Verlust-Trades in einer Woche“ zählt alle Wochen mit Trades, auch angefangene.
 function glKz(R,scope,win,wks){
@@ -3798,7 +3799,7 @@ function glKz(R,scope,win,wks){
   const W=(wks||[]).map(p=>({w:p.key,n:p.n,aI:p.aI,aX:p.aX,rI:p.rI,rX:p.rX}));
   const ext=(l,f,dir)=>{let b=null,bv=null;for(const x of l){const v=f(x);if(v==null)continue;if(b===null||(dir>0?v>bv:v<bv)){b=x;bv=v}}return b?{o:b,v:bv}:null};
   // Längste Folge in l, deren Wert f das Vorzeichen sgn hat (0 unterbricht): {n, s = erstes Element, e = letztes}
-  const run=(l,f,sgn)=>{let best=null,cur=null;for(const x of l){if(sgn*f(x)>0){cur=cur?{n:cur.n+1,s:cur.s,e:x}:{n:1,s:x,e:x};if(!best||cur.n>=best.n)best=cur}else cur=null}return best};
+  const run=(l,f,sgn)=>{let best=null,cur=null;for(const x of l){if(sgn*f(x)>0){cur=cur?{n:cur.n+1,s:cur.s,e:x}:{n:1,s:x,e:x};if(!best||cur.n>best.n)best=cur}else cur=null}return best};
   const sum=a=>a.reduce((s,x)=>s+x,0);
   const PW=P.filter(p=>p.eur>0),PL=P.filter(p=>p.eur<0);
   const one=ex=>{
@@ -3818,14 +3819,15 @@ function glKz(R,scope,win,wks){
       pfA:aa.some(v=>v<0)?sum(aa.filter(v=>v>0))/-sum(aa.filter(v=>v<0)):null};
   };
   // Meiste Gewinn- bzw. Verlust-Trades in einer Woche (Positionen, Vorzeichen vor PF; es ändert sich mit dem PF-Schalter nicht)
+  // Ab 0.157: bei mehreren Wochen gleichauf die erste (first; bis 0.156 die letzte, last)
   const most=sgn=>{const m=new Map();for(const p of P){const o=m.get(p.wk)||{w:p.wk,c:0,n:0};o.n++;if(sgn*p.eur>0)o.c++;m.set(p.wk,o)}
     const l=[...m.values()].sort((x,y)=>x.w<y.w?-1:1);const mx=Math.max(0,...l.map(o=>o.c));const top=l.filter(o=>o.c===mx);
-    return mx?{c:mx,weeks:top.length,last:top[top.length-1]}:null};
+    return mx?{c:mx,weeks:top.length,first:top[0]}:null};
   return {V:one(false),N:one(true),miss:retSum(R,scope,false).miss,n:P.length,nW:PW.length,nL:PL.length,
     runW:run(P,p=>p.eur,1),runL:run(P,p=>p.eur,-1),mostW:most(1),mostL:most(-1)};
 }
-// Text „Meiste in einer Woche“: eine Woche „9 von 10“, mehrere gleichauf „1, in 8 Wochen“ (Link dann zur letzten)
-const mostTxt=m=>m.weeks===1?`${m.c} von ${m.last.n}`:`${m.c}, in ${m.weeks} Wochen`;
+// Text „Meiste in einer Woche“: eine Woche „9 von 10“, mehrere gleichauf „1, in 8 Wochen“ (Link dann ab 0.157 zur ersten, bis 0.156 zur letzten)
+const mostTxt=m=>m.weeks===1?`${m.c} von ${m.first.n}`:`${m.c}, in ${m.weeks} Wochen`;
 
 /* ---------------- Meilensteine (ab 0.139): Rechenkern ----------------
    msCalc(rows, sel, o) liefert aus den Buchungen (rows wie nach enrich und addAnalysis), den gezählten Konten (sel) und den Tag-Zeilen (o.tags)
@@ -4031,7 +4033,7 @@ function msCalc(rows,sel,o){
      Serie „Plus-Wochen in Folge“ jede abgerechnete Woche mit Trades, auch eine angeschnittene; 0.154 und 0.155 nur ganze Wochen).
    - Serien (ab 0.156): der Stand am 31.12. des Jahres, gezählt ab dem echten Beginn der Serie; aus denselben Elementen wie die Meilensteine
      (o.M.sl). Lief die Serie danach weiter, steht „seit …, lief ins neue Jahr weiter“. Die längste Verlustserie (Verlust-Trades am Stück,
-     Vorzeichen vor PF) ebenso, bei gleicher Länge die letzte wie in „Hochs und Tiefs“. 0.154 und 0.155: volle Länge über den Jahreswechsel.
+     Vorzeichen vor PF) ebenso, bei gleicher Länge ab 0.157 die erste wie überall (bis 0.156 die letzte). 0.154 und 0.155: volle Länge über den Jahreswechsel.
    - Geld des Jahres aus den Tag-Daten wie „Dein echtes Geld“ (Einzahlungen nur „Mein Geld“), ohne Tag-Zeile im Jahr null.
    - Meilensteine des Jahres: Stufen, Auszahlungen und Jahrestage mit Datum im Jahr (alle, nicht nur die höchste).
    - Vollständig (voll, jrFehlt): Jedes gezählte Konto mit Trades im Dezember hat einen Report vom 1. Jänner des Folgejahrs oder später
@@ -4090,16 +4092,17 @@ function jrCalc(rows,sel,y,o){
   // längste Serie mit mindestens einem Element im Jahr. Was nach dem Jahresende kommt, ändert die Zahl nie; es sagt nur, ob die Serie ins neue
   // Jahr weiterlief (weiter). lauf: Die Serie reicht bis zum letzten bekannten Element (läuft noch). 0.154 und 0.155: volle Länge über den
   // Jahreswechsel wie die Karte „Meilensteine“; die Karte bleibt dabei.
-  // l = Elemente in Zeitfolge {plus, d}, yOf = Jahr eines Elements, eOf = Ende eines Elements; letzte: bei gleicher Länge die letzte Serie
-  const serY=(l,yOf,eOf,letzte)=>{let best=null,c=null;const fin=()=>{if(c&&c.iny&&(!best||(letzte?c.n>=best.n:c.n>best.n)))best=c;c=null};
+  // l = Elemente in Zeitfolge {plus, d}, yOf = Jahr eines Elements, eOf = Ende eines Elements; bei gleicher Länge die erste Serie (ab 0.157 auch
+  // bei der Verlustserie; bis 0.156 nahm sie mit dem Schalter „letzte“ die letzte)
+  const serY=(l,yOf,eOf)=>{let best=null,c=null;const fin=()=>{if(c&&c.iny&&(!best||c.n>best.n))best=c;c=null};
     for(let i=0;i<l.length;i++){const x=l[i],yy=yOf(x.d);
       if(yy>y){if(c&&x.plus)c.weiter=true;break}
       if(!x.plus){fin();continue}
       if(!c)c={n:0,s:x,iny:false};c.n++;c.e=x;if(yy===y)c.iny=true;if(i===l.length-1)c.lauf=true}
     fin();return best&&{n:best.n,ab:best.s.d,end:eOf(best.e.d),lauf:!!best.lauf,weiter:!!best.weiter}};
   const dJ=d=>d.slice(0,4),dE=d=>d;
-  // Längste Verlustserie über alle Positionen der gezählten Konten (Vorzeichen vor PF, bei gleicher Länge die letzte wie in „Hochs und Tiefs“)
-  res.vs=serY(P.map(p=>({plus:p.eur<0,d:p.d})),dJ,dE,true);
+  // Längste Verlustserie über alle Positionen der gezählten Konten (Vorzeichen vor PF; bei gleicher Länge ab 0.157 die erste wie überall, bis 0.156 die letzte)
+  res.vs=serY(P.map(p=>({plus:p.eur<0,d:p.d})),dJ,dE);
   // Serien aus denselben Elementen wie die Meilensteine (bei gleicher Länge die erste, wie die Karte); „Meiste Gewinn-Trades“ ist der Wert des Jahres
   {const w=((M.yb||{}).mw||{})[y];
    res.ser={rg:serY(SL.rg||[],dJ,dE),rd:serY(SL.rd||[],dJ,dE),rw:serY(SL.rw||[],msWkYear,d=>addDays(d,6)),mw:w&&w.c>0?{n:w.c,of:w.n,w:w.w}:null}}
@@ -12130,7 +12133,7 @@ function xlsxAll(rows,o){
   // (a) Trades: Werte ohne PF-Bezug links, dann je PF Ø und Größter
   xGroupTable(hut,'Trades',[{h:'ohne PF-Bezug',cols:[{h:'Anzahl',c:it=>it.n},{h:'von',c:()=>GE.n},{h:'Anteil',c:it=>GE.n?X.P(it.n/GE.n):''},
       {h:'Trades am Stück',sub:true,c:it=>it.run?it.run.n:0},{h:'ab',c:it=>it.run?X.D(it.run.s.d):''},
-      {h:'Meiste in einer Woche',sub:true,c:it=>it.most?it.most.c:0},{h:'Wochen gleichauf',c:it=>it.most?it.most.weeks:''},{h:'Woche ab (letzte)',c:it=>it.most?X.D(it.most.last.w):''}]},
+      {h:'Meiste in einer Woche',sub:true,c:it=>it.most?it.most.c:0},{h:'Wochen gleichauf',c:it=>it.most?it.most.weeks:''},{h:'Woche ab (erste)',c:it=>it.most?X.D(it.most.first.w):''}]},
     ...PF.map(([h,,s])=>({h,cols:[{h:'Ø Rendite',c:it=>P0(GE[s][it.k].r)},{h:'Größter Rendite',c:it=>miss?'':P0(GE[s][it.b].r&&GE[s][it.b].r.v)},{h:'Datum',c:it=>miss?'':D0(GE[s][it.b].r&&GE[s][it.b].r.o)},
       {h:'Ø Betrag EUR',sub:true,c:it=>E0(GE[s][it.k].a)},{h:'Größter EUR',c:it=>E0(GE[s][it.b].a&&GE[s][it.b].a.v)},{h:'Datum',c:it=>D0(GE[s][it.b].a&&GE[s][it.b].a.o)},
       {h:'Ø Betrag USD',c:it=>N0(GU[s][it.k].a)},{h:'Größter USD',c:it=>N0(GU[s][it.b].a&&GU[s][it.b].a.v)},{h:'Datum',c:it=>D0(GU[s][it.b].a&&GU[s][it.b].a.o)}]}))],
@@ -13934,7 +13937,7 @@ function renderHL(G,AK,h){
   // „am Stück“: Zahl, darunter der Link „ab …“ zum ersten Trade bzw. Tag der Folge
   const runT=(r,bf)=>r?String(r.n)+sm(jlink('t',r.s.t+'|'+r.s.sym,'ab '+dS(r.s.d))+(bf?bf(r):'')):'–';
   const runD=(r,t,none,bf)=>r?`${r.n} ${t}`+sm(jlink('d',r.s.d,'ab '+dS(r.s.d))+(bf?bf(r):'')):none;
-  const most=(m,none,bf)=>m?mostTxt(m)+sm(jlink('w',m.last.w,wkSub(m.last.w))+(bf?bf(m):'')):none;
+  const most=(m,none,bf)=>m?mostTxt(m)+sm(jlink('w',m.first.w,wkSub(m.first.w))+(bf?bf(m):'')):none;
   const noW='–<span class="sm hlno">noch keine ganze Woche</span>';
   // „Meiste pro Woche“ zählt Trades, deshalb in der Tabelle „Trades“ (Gewinne: meiste Gewinn-Trades, Verluste: meiste Verlust-Trades)
   // Ab 0.49 (6.2): Zeichen und Wort bleiben zusammen
@@ -13943,7 +13946,7 @@ function renderHL(G,AK,h){
     `<tr><td>Ø${pfS}</td>${cellU((s,u)=>Fu(u)(s.avgW[u]))}${cellU((s,u)=>Fu(u)(s.avgL[u]))}</tr>`+
     `<tr><td>Größter${pfS}</td>${cellU((s,u)=>ext(s.bigW[u],lT,Fu(u)))}${cellU((s,u)=>ext(s.bigL[u],lT,Fu(u)))}</tr>`+
     `<tr><td>Am Stück</td><td>${runT(G.runW,r=>msBf('h:rg',['rg','jrg'],r.s.t+'|'+r.s.sym))}</td><td>${runT(G.runL)}</td></tr>`+
-    `<tr><td>${gl('meiste','Meiste pro Woche')}</td><td>${most(G.mostW,'kein Gewinn-Trade',m=>msBf('h:mw',['mw','jmw'],m.last.w))}</td><td>${most(G.mostL,'kein Verlust-Trade')}</td></tr>`;
+    `<tr><td>${gl('meiste','Meiste pro Woche')}</td><td>${most(G.mostW,'kein Gewinn-Trade',m=>msBf('h:mw',['mw','jmw'],m.first.w))}</td><td>${most(G.mostL,'kein Verlust-Trade')}</td></tr>`;
   $('t-hl2').innerHTML=`<tr><th></th><th>Beste</th><th>Schwächste</th></tr>`+
     `<tr><td>${gl('tag','Handels&shy;tag')}${pfS}</td>${cellU((s,u)=>ext(s.bestD[u],lD,Fu(u),act(s,u)?x=>msBf('h:ad',['ad','jd'],x.d):null))}${cellU((s,u)=>ext(s.worstD[u],lD,Fu(u)))}</tr>`+
     `<tr><td>${gl('ganz','Woche')}${pfS}</td>${cellU((s,u)=>s.bestW[u]?ext(s.bestW[u],lW,Fu(u)):noW)}${cellU((s,u)=>s.worstW[u]?ext(s.worstW[u],lW,Fu(u)):noW)}</tr>`+
@@ -14321,7 +14324,8 @@ function renderGrafChart(points,opts,tgt){
       if(vs.length>1&&vs[1].x0<vs[0].x0+vs[0].tw+4)vs[1].yb=pt+6;
       for(const o of vs)s+=`<text class="vll" x="${o.x0}" y="${o.yb}" font-size="${FS}" fill="var(--ink)">${esc(o.t)}</text>`;
     }
-    // Höchster und tiefster Wert beschriftet (Pro Zeitraum, Ø pro Trade, Nach Wochentag; Gleichstand der letzte), außen am Balkenende bzw. am Punkt.
+    // Höchster und tiefster Wert beschriftet (Pro Zeitraum, Ø pro Trade, Nach Wochentag), außen am Balkenende bzw. am Punkt. Gleichstand: ab 0.157 der
+    // erste Balken (Florians Erlaubnis im Auftrag 0.157, vorläufig, Florian überlegt eine andere Lösung; bis 0.156 der letzte), auch im Bild der Grafik.
     // Ein schmaler Rand in der Hintergrundfarbe (stroke var(--card), paint-order stroke; im Bild hell) unterbricht dort Ø-Linie und Gitterlinien.
     // Ab 0.105: Die Beschriftung (mit Rand) berührt nie einen Balken, die andere Beschriftung oder den Rand der Zeichenfläche. Passt sie an ihrer
     // normalen Stelle, bleibt sie dort (ohne Linie). Sonst nimmt sie die nächstgelegene freie Stelle: mittig über dem Balken, nach links oder nach rechts
@@ -14330,7 +14334,7 @@ function renderGrafChart(points,opts,tgt){
     // Balken, die Linie selbst nur, solange sich so eine freie Stelle findet. Findet sich keine, zeichnet draw() neu mit größerem Rand oben bzw. unten
     // (Platz über bzw. unter allen Balken); reicht auch das nicht, die Stelle mit der kleinsten Überdeckung (data-lage="notfall").
     if(opts.ext){
-      let iMax=0,iMin=0;points.forEach((p,i)=>{if(p.v>=points[iMax].v)iMax=i;if(p.v<=points[iMin].v)iMin=i});
+      let iMax=0,iMin=0;points.forEach((p,i)=>{if(p.v>points[iMax].v)iMax=i;if(p.v<points[iMin].v)iMin=i});
       const L=[{i:iMax,hi:true}];if(iMin!==iMax)L.push({i:iMin,hi:false});
       const isL=opts.kind==='line',R=Math.min(3.5,Math.max(1.5,bw*0.45));
       // Hindernisse: Balken bzw. Punkte als Rechtecke, bei „Linie“ dazu die Strecken der Linie
