@@ -3793,13 +3793,12 @@ function tradeStats(list,key){ // list of {eur,t}
   for(const p of list){n++;sum+=p[key];if(p[key]>0)win++;if(!best||p[key]>best[key])best=p;if(!worst||p[key]<worst[key])worst=p}
   return {n,win,best,worst,avg:n?sum/n:0};
 }
-// Handelstage (Mo bis Fr) der Woche w, die zwischen s und e liegen (je 'YYYY-MM-DD', null = offen). Feiertage zählen mit.
-function tradeDays(w,s,e){let n=0;for(let i=0;i<5;i++){const d=addDays(w,i);if((!s||d>=s)&&(!e||d<=e))n++}return n}
 
 /* ---------------- Durchschnitte, Gewinn und Verlust (Zählweise) ----------------
    Reine Rechnungen ohne Oberfläche: Auswertung (gewählte Konten und Zeitraum, Scope 'sel' bzw. 'own') und Excel (alle Konten, Scope 'all').
    Gezähltes Fenster win = {s,e}: ab dem ersten Trade (nicht der ersten Buchung) bzw. dem Anfang des Zeitraums, bis zum Ende des Zeitraums,
-   höchstens bis zum Datenstand. Handelstage sind Mo bis Fr, Feiertage zählen mit. Ganze Woche: alle 5 Handelstage im Fenster.
+   höchstens bis zum Datenstand (ab 0.159: bis zum Tag davor, wenn am Datenstand kein Trade liegt, siehe cntWin). Handelstage: Block „Handelstag“
+   unten (bis 0.158 Mo bis Fr, Feiertage zählten mit). Ganze Woche: alle Handelstage der Woche nach dem Kalender im Fenster (bis 0.158 alle 5).
    Ganzer Monat: alle Handelstage des Kalendermonats im Fenster. Ab 0.100: Die laufende Woche (cw, aus curWeek, PF noch nicht gebucht) ist nie
    ganz, unabhängig vom PF-Schalter, und ein Monat mit Trades der laufenden Woche auch nicht. Nach der Abrechnung gilt wieder die Regel oben. zero = Tage, Wochen und Monate ohne Trade zählen mit 0 (S.ui.flt.zeroDays). */
 const wdIdx=d=>(new Date(d+'T12:00:00Z').getUTCDay()+6)%7;
@@ -3808,19 +3807,43 @@ function quantile(a,p){if(!a.length)return null;const s=a.slice().sort((x,y)=>x-
 const median=a=>quantile(a,0.5);
 const nW=(n,one,many)=>`${n} ${n===1?one:many}`;
 const meanOf=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
-function cntWin(first,from,to,dataEnd){if(!first)return null;return {s:from&&from>first?from:first,e:to&&to<dataEnd?to:dataEnd}}
-// Erster und letzter Handelstag (Mo bis Fr) eines Monats 'YYYY-MM'
-function mWdays(ym){let f=ym+'-01',l=monthEnd(ym);while(wdIdx(f)>4)f=addDays(f,1);while(wdIdx(l)>4)l=addDays(l,-1);return [f,l]}
-// Tage (Mo bis Fr im Fenster, dazu Tage mit Trade), Wochen oder Monate, die das Fenster schneiden. Je Periode: Trades, Zahl der Positionen,
+/* ---------------- Handelstag (ab 0.159): eine Wurzel ----------------
+   Florians Regel (GESTALTUNG Abschnitt 0): „Handelstag ist jeder Montag bis Freitag außer dem 25.12. und dem 01.01. Ein Tag mit Trade zählt
+   immer, auch an einem Feiertag. Der letzte Tag der Daten zählt nur, wenn an ihm schon ein Trade liegt.“
+   Alle Stellen, die Handelstage zählen, holen sie von hier (CLAUDE.md „Code“, Landkarte KENNZAHLEN.md): Kachel „Ø pro Handelstag“, Karte
+   „Durchschnitt“, ganze Wochen und Monate (periods), „Tage ohne Trade mitzählen“ in den Grafiken (winKeys), „Nach Wochentag“ (Durchschnitt),
+   Leiste „Diese Woche“, Karte „Meilensteine“, Jahresrückblick, Excel mit allen Daten (Blätter „Tage“, „Wochen“, „Monate“, „Durchschnitt“).
+   - htKal(d): Handelstag nach dem Kalender (Montag bis Freitag außer HT_FREI).
+   - htListe(a, b, win, tage): alle Handelstage von a bis b, die im Fenster win liegen (win = null: ohne Grenze): die nach dem Kalender, dazu
+     jeder Tag mit Trade (tage: Set oder Map der Tage mit Trade), auch ein Feiertag, Samstag oder Sonntag.
+   - htGanz(a, b, win): Der Zeitraum a bis b (eine Woche, ein Monat) ist ganz, wenn jeder seiner Handelstage nach dem Kalender im Fenster liegt.
+     Eine Woche mit dem 25.12. oder dem 01.01. hat so vier Handelstage und ist trotzdem ganz.
+   - cntWin(…, dataEnd, lastT): Der letzte Tag der Daten ist der Datenstand dataEnd (Datum des neuesten Reports der gezählten Konten, sonst
+     die letzte Buchung). Liegt an ihm kein Trade (lastT = letzter Tag mit Trade der gezählten Konten), endet das gezählte Fenster am Tag davor.
+     Grund: Eine Sicherung am frühen Morgen zählte den Tag schon als „Tag ohne Trade“.
+   Bis 0.158 zählten acht Stellen selbst (tradeDays, periods, mWdays, winKeys, wdCnt in renderStats, die Wochentage in jrCalc, die Monate in
+   xlsxAll, die Leiste „Diese Woche“), Montag bis Freitag mit Feiertagen und mit dem letzten Tag der Daten. */
+const HT_FREI=['12-25','01-01'];
+const htKal=d=>wdIdx(d)<5&&!HT_FREI.includes(d.slice(5));
+function htListe(a,b,win,tage){const out=[],s=win&&win.s>a?win.s:a,e=win&&win.e<b?win.e:b;
+  for(let d=s;d<=e;d=addDays(d,1))if(htKal(d)||(tage&&tage.has(d)))out.push(d);
+  return out}
+function htGanz(a,b,win){for(let d=a;d<=b;d=addDays(d,1))if(htKal(d)&&(d<win.s||d>win.e))return false;return true}
+// Letzter Tag mit Trade in den Zeilen rows ('' ohne Trade), für cntWin
+function lastTradeDay(rows){let l='';for(const r of rows)if(isTrade(r)&&r.d>l)l=r.d;return l}
+function cntWin(first,from,to,dataEnd,lastT){if(!first)return null;const de=lastT&&lastT<dataEnd?addDays(dataEnd,-1):dataEnd;return {s:from&&from>first?from:first,e:to&&to<de?to:de}}
+// Erster und letzter Handelstag (nach dem Kalender) eines Monats 'YYYY-MM'
+function mWdays(ym){let f=ym+'-01',l=monthEnd(ym);while(!htKal(f))f=addDays(f,1);while(!htKal(l))l=addDays(l,-1);return [f,l]}
+// Tage (Handelstage im Fenster: htListe, Tage mit Trade sind immer dabei), Wochen oder Monate, die das Fenster schneiden. Je Periode: Trades, Zahl der Positionen,
 // ganz ja/nein, Betrag vor/nach PF (in der Währung der Zeilen), Rendite vor/nach PF auf die Investition des Scopes.
 function periods(R,win,res,scope,cw){
   const g=new Map();for(const r of R){if(!isTrade(r))continue;const k=bucketKey(r,res);if(!g.has(k))g.set(k,[]);g.get(k).push(r)}
   const ks=new Set(g.keys());
-  if(res==='day'){for(let d=win.s;d<=win.e;d=addDays(d,1))if(wdIdx(d)<5)ks.add(d)}
+  if(res==='day'){for(const d of htListe(win.s,win.e))ks.add(d)}
   else if(res==='week'){for(let w=monday(win.s);w<=win.e;w=addDays(w,7))ks.add(w)}
   else{for(let m=win.s.slice(0,7);m<=win.e.slice(0,7);m=addMonths(m+'-01',1).slice(0,7))ks.add(m)}
   return [...ks].sort().map(k=>{const rr=g.get(k)||[];let full=true;
-    if(res==='week')full=tradeDays(k,win.s,win.e)===5&&k!==cw;else if(res==='month'){const [f,l]=mWdays(k);full=f>=win.s&&l<=win.e&&!(cw&&rr.some(r=>r.wk===cw))}
+    if(res==='week')full=htGanz(k,addDays(k,4),win)&&k!==cw;else if(res==='month')full=htGanz(k+'-01',monthEnd(k),win)&&!(cw&&rr.some(r=>r.wk===cw));
     const ri=retSum(rr,scope,false),rx=retSum(rr,scope,true);
     return {key:k,rows:rr,n:rr.length?positions(rr,scope).length:0,full,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v,rI:ri.v,rX:rx.v}});
 }
@@ -3932,7 +3955,7 @@ function msBasis(rows,sel,o){
   const T=b.T=TR.map(r=>Object.assign({},r,{cS:capS(r.x.t)},cur==='usd'?{eur:r.amt,exE:r.exU}:null));
   b.miss=T.some(r=>r.cS==null);b.cw=curWeek(T0,sel,RD);
   let dataEnd=T0[T0.length-1].d;for(const a of sel){const rd=RD(a);if(rd>dataEnd)dataEnd=rd}
-  b.dataEnd=dataEnd;b.first=T[0].d;b.win=cntWin(b.first,null,null,dataEnd);
+  b.dataEnd=dataEnd;b.first=T[0].d;b.lastT=lastTradeDay(TR);b.win=cntWin(b.first,null,null,dataEnd,b.lastT);
   b.P=positions(T,'sel').sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:0);
   return b}
 function msCalc(rows,sel,o){
@@ -4172,8 +4195,9 @@ function jrCalc(rows,sel,y,o){
   {const w=((M.yb||{}).mw||{})[y];
    res.ser={rg:serY(SL.rg||[],dJ,dE),rd:serY(SL.rd||[],dJ,dE),rw:serY(SL.rw||[],msWkYear,d=>addDays(d,6)),mw:w&&w.c>0?{n:w.c,of:w.n,w:w.w}:null}}
   // ---- Stärkster Wochentag: Summe der Rendite je Wochentag ÷ Zahl dieses Wochentags im Jahr (im gezählten Fenster); nur Wochentage mit Trades
-  if(!miss){const s=win.s>y+'-01-01'?win.s:y+'-01-01',e=win.e<y+'-12-31'?win.e:y+'-12-31',cnt=[0,0,0,0,0,0,0],sum=[0,0,0,0,0,0,0],has=[];
-    for(let d=s;d<=e;d=addDays(d,1))cnt[wdIdx(d)]++;
+  // Ab 0.159: gezählt werden die Handelstage (htListe), ein Samstag oder Sonntag also nur mit Trade; bis 0.158 jeder Tag im Fenster
+  if(!miss){const cnt=[0,0,0,0,0,0,0],sum=[0,0,0,0,0,0,0],has=[];
+    for(const d of htListe(y+'-01-01',y+'-12-31',win,DM))cnt[wdIdx(d)]++;
     for(const x of DY){const i=wdIdx(x.d);has[i]=true;sum[i]+=x.r}
     let bi=-1,bv=null;for(let i=0;i<7;i++){if(!has[i]||!cnt[i])continue;const v=sum[i]/cnt[i];if(bi<0||v>bv){bi=i;bv=v}}
     res.wd=bi<0?null:{i:bi,v:bv}}else res.wd=null;
@@ -4404,7 +4428,7 @@ function zaehlSig(R,sel,win,cw){const T=R.filter(isTrade),K='K:'+[...sel].sort()
   const ps=res=>periods(T,win,res,'sel',cw).filter(p=>p.rows.length).map(p=>p.key+(p.full?'+':'-')+p.rows.length).join(',');
   return [K,'T:'+T.map(r=>r.a+':'+r.x.id).join(','),'W:'+ps('week'),'M:'+ps('month')].join('|')}
 function msZaehlSig(M){const BS=M.bs,y=MS_Y;if(!BS||!BS.T)return 'K:'+[...msAccs()].sort().join(',')+'|leer';
-  return y?zaehlSig(BS.T.filter(r=>r.d.slice(0,4)===y),msAccs(),cntWin(BS.first,y+'-01-01',y+'-12-31',BS.dataEnd),BS.cw):zaehlSig(BS.T,msAccs(),BS.win,BS.cw)}
+  return y?zaehlSig(BS.T.filter(r=>r.d.slice(0,4)===y),msAccs(),cntWin(BS.first,y+'-01-01',y+'-12-31',BS.dataEnd,BS.lastT),BS.cw):zaehlSig(BS.T,msAccs(),BS.win,BS.cw)}
 function msNote(){const el=$('ms-note');if(!el)return;const M=MS,h=M&&AW_SIG!=null&&msZaehlSig(M)!==AW_SIG?`<p class="small" style="margin:0">${esc(MS_TXT.karte.fz)}</p>`:'';if(el.innerHTML!==h)el.innerHTML=h}
 function msRender(){const M=MS;if(!M)return;
   const all=Object.keys(S.accounts).sort(),sel=msAccs(),y=msYearOk(M),T=MS_TXT.karte,yt=t=>y?T.jahr.replace('{t}',t).replace('{j}',y):t;
@@ -12167,7 +12191,7 @@ function xlsxAll(rows,o){
   const {C}=o,accs=Object.keys(S.accounts).sort(),zero=S.ui.flt.zeroDays!==false,XPF='Ergebnis nach PF (am Abbuchungstag)';
   const RU=curRows(rows,'usd'),U=new Map(rows.map((r,i)=>[r,RU[i]])),u=rr=>rr.map(r=>U.get(r));
   let dataEnd=rows[rows.length-1].d;for(const a of accs){const rd=repDay(a);if(rd>dataEnd)dataEnd=rd}
-  const win=cntWin(tr[0].d,null,null,dataEnd);
+  const win=cntWin(tr[0].d,null,null,dataEnd,lastTradeDay(tr));
   // Ab 0.100: laufende Woche aller Konten (PF noch nicht gebucht), sie ist keine ganze Woche (wie in der Auswertung)
   const cw=curWeek(rows,accs);
   const capAll=tm=>{let s=0;for(const a of accs){const c=CAP(a,tm);if(c==null)return null;s+=c}return s};
@@ -12179,7 +12203,7 @@ function xlsxAll(rows,o){
   const dd=(rr,ex)=>{if(miss)return '';const o=maxDD(rr,'all',ex);return X.P(o.n?o.v:0)};
   const grp=(l,f)=>{const m=new Map();for(const r of l){const k=f(r);if(!m.has(k))m.set(k,[]);m.get(k).push(r)}return m};
   const cumF=(L,k,n,v)=>X.F(n>2?`${L[k+'C']}${n-1}+${L[k]}${n}`:`${L[k]}${n}`,v,k==='nE'?2:5);
-  // Tage: jeder Mo bis Fr ab dem ersten Trade bis zum Datenstand, dazu Tage mit Trade am Wochenende
+  // Tage: jeder Handelstag im gezählten Fenster (winKeys, htListe), dazu jeder Tag mit Trade (Wochenende, 25.12., 01.01.)
   const byD=grp(tr,r=>r.d);
   const days=[...new Set([...winKeys(win,'day'),...byD.keys()])].sort().map(d=>{const rr=byD.get(d)||[],ru=u(rr);
     const eI=sumTrades(rr,false).v,uI=sumTrades(ru,false).v;return {d,rr,n:rr.length?positions(rr,'all').length:0,eI,uI,eP:sumTrades(rr,true).v-eI,uP:sumTrades(ru,true).v-uI}});
@@ -12201,11 +12225,16 @@ function xlsxAll(rows,o){
     {h:'Ergebnis USD',w:13,c:x=>X.N(x.zu.res)},{h:'Performance Fee USD',w:14,c:x=>X.N(x.zu.fee)},{h:'Gewinnauszahlungen USD',w:15,c:x=>X.N(x.zu.pw)},
     {h:'Netto-Gewinn PF verteilt USD',w:15,k:'nU',c:x=>X.N(x.zu.nN)},{h:'Kumuliert USD',w:14,k:'nUC',c:(x,n,L)=>cumF(L,'nU',n,x.cU)}];
   const cum=l=>{let e=0,v=0;for(const x of l){e+=x.z.nN;v+=x.zu.nN;x.cE=e;x.cU=v}return l};
-  const W=cum(per([...new Set([...rows.map(r=>r.wk),...winKeys(win,'week')])].sort(),r=>r.wk,w=>{const td=tradeDays(w,win.s,win.e);return {end:addDays(w,6),td,full:td===5}}));
+  // Ab 0.159: „Handelstage“ und „ganze Woche“ bzw. „ganzer Monat“ aus der Wurzel (htListe, periods), wie die Blätter „Durchschnitt“ und
+  // „Hochs und Tiefs“. Die laufende Woche ist damit auch hier nie ganz, ein Monat mit ihren Trades auch nicht (bis 0.158 rechneten diese zwei
+  // Blätter selbst: ganz = 5 Tage Mo bis Fr bzw. erster und letzter Mo bis Fr im Fenster, ohne Blick auf die laufende Woche).
+  const fullOf=res=>new Map(periods(rows,win,res,'all',cw).map(p=>[p.key,p.full]));
+  const fullW=fullOf('week'),fullM=fullOf('month');
+  const W=cum(per([...new Set([...rows.map(r=>r.wk),...winKeys(win,'week')])].sort(),r=>r.wk,w=>({end:addDays(w,6),td:htListe(w,addDays(w,6),win,byD).length,full:!!fullW.get(w)})));
   const wochen=xSheet('Wochen',[{h:'KW',w:6,c:x=>isoWeek(x.k)},{h:'von',w:11,c:x=>X.D(x.k)},{h:'bis',w:11,c:x=>X.D(addDays(x.k,6))},{h:'Trades',w:8,c:x=>x.n},
     {h:'Ergebnis',w:13,c:x=>X.E(x.z.res)},{h:'Performance Fee',w:15,c:x=>X.E(x.z.fee)},{h:XPF,w:15,c:x=>X.E(x.z.tax)},{h:'Gewinnauszahlungen',w:18,c:x=>X.E(x.z.pw)},
     ...newCols('ganze Woche')],W);
-  const M=cum(per([...new Set([...rows.map(r=>r.ym),...winKeys(win,'month')])].sort(),r=>r.ym,m=>{const [f,l]=mWdays(m);let td=0;for(let d=f;d<=l;d=addDays(d,1))if(wdIdx(d)<5&&d>=win.s&&d<=win.e)td++;return {end:monthEnd(m),td,full:f>=win.s&&l<=win.e}}));
+  const M=cum(per([...new Set([...rows.map(r=>r.ym),...winKeys(win,'month')])].sort(),r=>r.ym,m=>({end:monthEnd(m),td:htListe(m+'-01',monthEnd(m),win,byD).length,full:!!fullM.get(m)})));
   const P=positions(rows,'all');
   const monate=xSheet('Monate',[{h:'Monat',w:16,c:x=>fM(x.k)},{h:'Trades',w:8,c:x=>x.n},{h:'Ergebnis',w:13,c:x=>X.E(x.z.res)},{h:'Performance Fee',w:15,c:x=>X.E(x.z.fee)},
     {h:XPF,w:18,c:x=>X.E(x.z.tax)},{h:'Gewinnauszahlungen',w:18,c:x=>X.E(x.z.pw)},{h:'Krypto Gewinn/Verlust',w:18,c:x=>X.E(C.byM[x.k]||0)},
@@ -13590,7 +13619,7 @@ ${ECB_CITE}`},
   avg:{t:'Durchschnitt',h:'Die Summe aller Werte geteilt durch ihre Anzahl. Eine einzelne sehr gute Woche hebt ihn deutlich. Liegen Durchschnitt und Median nah beieinander, war das Ergebnis gleichmäßig.'},
   median:{t:'Median',h:'Der mittlere Wert, wenn man alle der Größe nach ordnet: Die Hälfte liegt darüber, die Hälfte darunter. Beispiel: fünf Wochen mit 1 %, 1 %, 1 %, 1 % und 6 %. Der Durchschnitt ist 2 %, der Median 1 %. Eine einzelne sehr gute Woche hebt den Durchschnitt, den Median kaum.'},
   betrag:{t:'Ø Betrag',h:'Beträge hängen davon ab, wie viel gerade investiert war. Hast du Gewinne wieder eingezahlt, Geld nachgelegt, Kapital abgezogen oder kam ein Konto später dazu, zeigen Ø und Median in Betrag den Schnitt der Vergangenheit, nicht, was du mit deiner heutigen Investition erwarten kannst. Dafür ist die Rendite in % da.'},
-  tag:{t:'Handelstag',h:'Montag bis Freitag, gezählt ab deinem ersten Trade. Feiertage zählen mit, auch wenn der Markt geschlossen war. Ob Tage ohne Trade mitzählen, stellst du im Zeitraum-Menü unter „Zählweise“ ein.'},
+  tag:{t:'Handelstag',h:'Montag bis Freitag außer dem 25.12. und dem 01.01., gezählt ab deinem ersten Trade. Ein Tag mit Trade zählt immer, auch an einem Feiertag. Der letzte Tag deiner Daten zählt erst, wenn an ihm ein Trade liegt. Ob Tage ohne Trade mitzählen, stellst du im Zeitraum-Menü unter „Zählweise“ ein.'},
   ganz:{t:'ganze Wochen',h:'Durchschnitte pro Woche und pro Monat sowie die beste und schlechteste Woche rechnen nur mit ganzen Wochen und Monaten. Angefangene am Rand des Zeitraums zählen nicht. Die laufende Woche zählt erst als ganz, wenn Tag die Performance Fee abgebucht hat.'},
   rand:{t:'angeschnittene Periode',h:'Der gewählte Zeitraum beginnt oder endet mitten in dieser Periode. Gezählt werden nur die Tage im Zeitraum.'},
   offen:{t:'offen',h:'Tag hat die Performance Fee für diese Woche noch nicht abgebucht, das passiert am Samstag. Bei „PF verteilt“ rechnet das Tool sie bis dahin aus.'},
@@ -13860,7 +13889,7 @@ function renderStats(rows){
   for(const r of [...R,...CWR]){if(!isTrade(r))continue;let s=0,miss=false;for(const a of sel){const c=CAP(a,r.x.t);if(c==null){miss=true;break}s+=c}r.cS=miss?null:s}
   // Ab 0.157: was die Auswertung zählt (zaehlSig), für die Zeile oben in der Karte „Meilensteine“ (msNote); Fenster wie unten (cntWin)
   {let de=RA.length?RA[RA.length-1].d:'';for(const a of sel){const rd=repDay(a);if(rd>de)de=rd}const f=(RA.find(isTrade)||{}).d;
-   AW_SIG=zaehlSig(R,sel,f&&!rg.bad?cntWin(f,rg.from,rg.to,de):null,CW);msNote()}
+   AW_SIG=zaehlSig(R,sel,f&&!rg.bad?cntWin(f,rg.from,rg.to,de,lastTradeDay(RA)):null,CW);msNote()}
   // Angeschnittene Wochen und Monate: Die gewählten Konten haben dort auch Buchungen außerhalb des Zeitraums
   const cutW=new Set(),cutM=new Set();
   if(!rg.bad&&(rg.from||rg.to))for(const r of RA)if(!inRg(r)){cutW.add(r.wk);cutM.add(r.ym)}
@@ -13891,15 +13920,17 @@ function renderStats(rows){
   $('stats-empty').innerHTML=rg.bad?`<div class="msg warn">${fltBadMsg()}</div>`:empty?'<div class="card"><p style="margin:0">In diesem Zeitraum gibt es bei den gewählten Konten keine Trades.</p></div>':'';
   for(const id of ['st-ov','st-avg','st-graf','st-hl','st-acc','st-month','st-week','st-matrix','st-calc'])$(id).style.display=empty?'none':'';
   if(empty){grafRedraw=null;return}
-  // Gezähltes Fenster (cntWin): Handelstage Mo bis Fr ab dem ersten Trade der gewählten Konten bzw. ab dem Anfang des Zeitraums,
-  // bis zum Ende des Zeitraums, höchstens bis zum Datenstand (Datum des neuesten Reports, sonst letzte Buchung)
+  // Gezähltes Fenster (cntWin): Handelstage (Block „Handelstag“) ab dem ersten Trade der gewählten Konten bzw. ab dem Anfang des Zeitraums,
+  // bis zum Ende des Zeitraums, höchstens bis zum Datenstand (Datum des neuesten Reports, sonst letzte Buchung; ab 0.159 ohne den Datenstand
+  // selbst, wenn an ihm kein Trade liegt: lastT)
   let dataEnd=RA[RA.length-1].d;
   for(const a of sel){const rd=repDay(a);if(rd>dataEnd)dataEnd=rd}
   const firstT=(RA.find(isTrade)||{}).d,zero=S.ui.flt.zeroDays!==false;
-  const win=cntWin(firstT,rg.from,rg.to,dataEnd),tdS=win.s,tdE=win.e;
-  // Anzahl jedes Wochentags für „Nach Wochentag (Durchschnitt)“: alle Tage im Fenster, ohne „Tage ohne Trade mitzählen“ nur Tage mit Trade
-  const wdCnt=[0,0,0,0,0,0,0];
-  if(zero){for(let d=tdS;d<=tdE;d=addDays(d,1))wdCnt[wdIdx(d)]++}else for(const d of new Set(R.filter(isTrade).map(r=>r.d)))wdCnt[wdIdx(d)]++;
+  const lastT=lastTradeDay(RA),win=cntWin(firstT,rg.from,rg.to,dataEnd,lastT),tdS=win.s,tdE=win.e;
+  // Anzahl jedes Wochentags für „Nach Wochentag (Durchschnitt)“: die Handelstage im Fenster (htListe; ab 0.159, bis 0.158 alle Tage im Fenster,
+  // auch Samstage und Sonntage ohne Trade), ohne „Tage ohne Trade mitzählen“ nur Tage mit Trade
+  const wdCnt=[0,0,0,0,0,0,0],tDays=new Set(R.filter(isTrade).map(r=>r.d));
+  for(const d of zero?htListe(tdS,tdE,null,tDays):tDays)wdCnt[wdIdx(d)]++;
   const T=pfz(R);const P=positions(R);const PS=tradeStats(P,'eur'),PN=tradeStats(P,'exE'),PX=ex?PN:PS;
   const rS=retSum(R,'sel',ex),dT=maxDD(R,'sel',ex);
   // Durchschnitte nach Zählweise (Kacheln, Karte „Durchschnitt“, Grafik, Rechner)
@@ -13954,14 +13985,17 @@ function renderStats(rows){
   $('tiles').innerHTML=tiles.map(([k,v,s,alt],i)=>`<div class="tile${tbf[i]?' hasbf':''}"><div class="k">${k}</div><div class="v"${alt?` data-alt="${esc(alt)}"`:''}>${v}</div>${s?`<div class="s">${s}</div>`:''}${tbf[i]||''}</div>`).join('');
   // Ab 0.100: Leiste „Diese Woche“. Sichtbar, wenn die Woche (Mo bis So) des neuesten Trades der gewählten Konten die heutige Woche ist (Uhr des Geräts)
   // und im gewählten Zeitraum liegt, also bis Sonntag 23:59, auch nach der Abrechnung. Stand: laufend (CW) vor Samstag „bisher · n von 5 Handelstagen“
-  // (n = Handelstage bis zum Datenstand), ab Samstag „Handel vorbei“ (mit „· PF noch offen“, wenn die Woche vor PF im Plus ist), sonst „abgerechnet“.
+  // (n = Handelstage der Woche bis zum Datenstand, ab 0.159 aus htListe: der Datenstand zählt nur mit Trade, in einer Woche mit dem 25.12. oder
+  // dem 01.01. ohne Trade „von 4“), ab Samstag „Handel vorbei“ (mit „· PF noch offen“, wenn die Woche vor PF im Plus ist), sonst „abgerechnet“.
   // Werte wie die erste Kachel (PF verteilt: Netto-Gewinn, PF laut MT5: Ergebnis vor PF) und die Rendite nach PF-Schalter, immer beide.
   {const bar=$('cwbar');let lt=null;for(const r of RA)if(isTrade(r))lt=r;
    const W=lt?lt.wk:null,inO=r=>(!rg.from||r.d>=rg.from)&&(!toOrig||r.d<=toOrig);
    const on=!!W&&!rg.bad&&W===monday(todayLocal())&&RA.some(r=>isTrade(r)&&r.wk===W&&inO(r));
    bar.hidden=!on;
    if(on){const rw=nocwOn()?CWR:R.filter(r=>r.wk===W),z=pfz(rw);
-     let st=CW!==W?'abgerechnet':dataEnd<addDays(W,5)?`bisher · ${tradeDays(W,null,dataEnd)} von 5 Handelstagen`:z.res>0?'Handel vorbei · PF noch offen':'Handel vorbei';
+     // Handelstage der Woche W (Montag bis Freitag): alle und die bis zum gezählten Ende der Daten
+     const wT=new Set(RA.filter(r=>isTrade(r)&&r.wk===W).map(r=>r.d)),wE=addDays(W,4),wN=htListe(W,wE,null,wT).length,wB=htListe(W,wE,cntWin(W,null,null,dataEnd,lastT),wT).length;
+     let st=CW!==W?'abgerechnet':dataEnd<addDays(W,5)?`bisher · ${wB} von ${wN} Handelstagen`:z.res>0?'Handel vorbei · PF noch offen':'Handel vorbei';
      if(nocwOn())st+=' · nicht in den Kennzahlen';
      bar.innerHTML=`<div class="cwt"><div class="cwh">${jlink('w',W,'Diese Woche')}</div><div class="s">${st}</div></div><div class="cwv"><div><div class="k">${ex?gl('netto','Netto-Gewinn'):gl('vorpf','Ergebnis vor PF')}</div><div class="v">${monT(ex?z.nN:z.res)}</div></div><div><div class="k">${gl('rendite','Rendite')}</div><div class="v">${retHtml(retSum(rw,'sel',ex),'–',true)}</div></div></div>`}
    else bar.innerHTML=''}
@@ -13991,7 +14025,7 @@ function renderStats(rows){
     const ra=R.filter(r=>r.a===a);const z=pfz(ra);const cl=ra.filter(r=>r.cat==='close');
     const tI=tradeStats(cl,'eur'),tN=tradeStats(cl,'exE');
     const cap=capCur(a,endT); if(cap==null)capOk=false;else capSum+=cap; // ab 0.113 in der Währung der Auswertung
-    h+=`<tr><td class="acc">${accCell(a)}</td><td>${fI.format(tI.n)}</td>${netTd(z)}<td>${rtSw(ra,'own','–',[a])}</td><td>${cap==null?gl(invKey([a]),INV[a]==='nofac'?'Trading Benefit fehlt':'unbekannt'):invM(cap)}</td><td>${mon(z.res)}</td>${feeTd(z)}${utd([[trd(tI.best,'eur'),trd(tN.best,'exE')],[trd(tI.worst,'eur'),trd(tN.worst,'exE')],[tI.n?mon(tI.avg):'–',tI.n?mon(tN.avg):'–']],trR(positions(ra,'own'),ra,'own',retSum(ra,'own',false).miss,[a]))}<td>${(()=>{const f=RA.find(r=>r.a===a&&isTrade(r));return f&&ra.some(isTrade)?wkAvg(avgKz(ra,cntWin(f.d,rg.from,rg.to,dataEnd),'own',zero,['week'],CW),[a]):'–'})()}</td><td>${tI.n?fP.format(tI.win/tI.n):'–'}</td><td>${ddSw(ra,'own','–',[a])}</td></tr>`;
+    h+=`<tr><td class="acc">${accCell(a)}</td><td>${fI.format(tI.n)}</td>${netTd(z)}<td>${rtSw(ra,'own','–',[a])}</td><td>${cap==null?gl(invKey([a]),INV[a]==='nofac'?'Trading Benefit fehlt':'unbekannt'):invM(cap)}</td><td>${mon(z.res)}</td>${feeTd(z)}${utd([[trd(tI.best,'eur'),trd(tN.best,'exE')],[trd(tI.worst,'eur'),trd(tN.worst,'exE')],[tI.n?mon(tI.avg):'–',tI.n?mon(tN.avg):'–']],trR(positions(ra,'own'),ra,'own',retSum(ra,'own',false).miss,[a]))}<td>${(()=>{const f=RA.find(r=>r.a===a&&isTrade(r));return f&&ra.some(isTrade)?wkAvg(avgKz(ra,cntWin(f.d,rg.from,rg.to,dataEnd,lastT),'own',zero,['week'],CW),[a]):'–'})()}</td><td>${tI.n?fP.format(tI.win/tI.n):'–'}</td><td>${ddSw(ra,'own','–',[a])}</td></tr>`;
   }
   // Ab 0.109: „Treffer&shy;quote“ darf im Spaltenkopf umbrechen (mit 8 px Innenabstand, siehe CSS :where(#s-stats)), so passt „Pro Konto“ mit s2r bei 1280 px
   // Ab 0.111 bleibt der Umbruch; den Innenabstand (10, 8 oder 6 px) wählt tpFit nach Regel A
@@ -14323,9 +14357,9 @@ function periodPoints(rows,res,unit,ex,fill){
   for(const k of [...ks].sort()){const g=m.get(k);const o=g?grpVal(g,unit,ex):{v:0};if(o){const p=mkPt(k,bucketLabel(k,res),o);if(!g)p.leer=true;out.push(p)}}
   return out;
 }
-// Tage (Mo bis Fr), Wochen (Montag) oder Monate ('YYYY-MM'), die das gezählte Fenster schneiden
+// Tage (Handelstage nach dem Kalender, htListe), Wochen (Montag) oder Monate ('YYYY-MM'), die das gezählte Fenster schneiden
 function winKeys(win,res){const ks=[];
-  if(res==='day'){for(let d=win.s;d<=win.e;d=addDays(d,1))if(wdIdx(d)<5)ks.push(d)}
+  if(res==='day'){for(const d of htListe(win.s,win.e))ks.push(d)}
   else if(res==='week'){for(let w=monday(win.s);w<=win.e;w=addDays(w,7))ks.push(w)}
   else for(let m=win.s.slice(0,7);m<=win.e.slice(0,7);m=addMonths(m+'-01',1).slice(0,7))ks.push(m);
   return ks}
@@ -15472,7 +15506,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.158',VDATE='17.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.159',VDATE='17.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
