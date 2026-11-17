@@ -15331,7 +15331,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.156',VDATE='17.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.157',VDATE='17.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -15931,7 +15931,15 @@ $('tagpaste').addEventListener('input',()=>{if(DT.open)dtFoot()});
 new MutationObserver(()=>{if(DT.open)dtFoot()}).observe($('dt-panes'),{childList:true,subtree:true,attributes:true,attributeFilter:['disabled','hidden']});
 // Öffnen: pane = Bereich ('tag', 'bx', 'wf', 'files', 'hand' oder '')
 // Ab 0.120: Wechselt das Öffnen den Reiter (z. B. eine Datei in einem anderen Reiter losgelassen), springt die Seite zuerst ganz nach oben (tabTop)
+// Ab 0.157 (Fund „＋ Daten zweimal geöffnet“ aus Bericht 0.155): Ist „＋ Daten“ schon offen (auch unter einem anderen Fenster, dtAuf), wechselt
+// dtOpen nur den Bereich und zeichnet neu, wie dtPane. Bis 0.156 öffnete es immer über openModal; das schloss zuerst das offene „＋ Daten“
+// selbst (dtClose: intern „zu“) und öffnete es gleich wieder. Danach war das Fenster offen, das Tool hielt es für zu: Kacheln und „!“ zeichneten
+// sich erst nach dem Schließen neu, die feste Knopfleiste blieb leer und der Toast „Noch nicht übernommen: …“ kam noch einmal. Über die
+// Oberfläche ging das mit dem Knopf „＋ Daten öffnen“ im Toast, wenn „＋ Daten“ inzwischen wieder offen war (seit 0.61). Ein Fenster über
+// „＋ Daten“ (z. B. ein Formular) bleibt jetzt offen; bis 0.156 ging es dabei ohne Rückfrage zu.
+const dtAuf=()=>{const m=$('dt-modal');return MODAL===m||!!(MODAL_UNDER&&MODAL_UNDER.m===m)};
 function dtOpen(pane){if(S.ui.tab!=='wallet'){S.ui.tab='wallet';save();render();tabTop()}
+  if(DT.open&&dtAuf()){DT.pane=pane||'';render();dtRender();return}
   DT.open=true;DT.pane=pane||'';
   S.ui.wz.seen=1;save();openModal('dt-modal');render();dtRender()}
 // Schließen (×, Esc, „Fertig“, Klick daneben): Hinweise frei
