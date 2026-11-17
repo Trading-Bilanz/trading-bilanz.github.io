@@ -4555,7 +4555,7 @@ function jrModel(st,o){const X=MS_TXT.jr,K=X.k,Sx=X.s,O=X.ohne,cur=st.cur,amt=!!
   const lbl=(t,k)=>Object.assign(t,{k});
   // Ergebnis
   {const hit=tile(K.hit,T(st.n?fP.format(st.win/st.n):'–'),[T(Sx.hit.replace('{w}',fI.format(st.win)).replace('{n}',`${fI.format(st.n)} ${st.n===1?'Trade':'Trades'}`))]);
-   const tr=tile(K.trades,T(fI.format(st.n)),[T(`${fI.format(st.tage)} ${st.tage===1?'Handelstag':'Handelstage'}`)]);
+   const tr=tile(K.trades,T(fI.format(st.n)),[T((st.tage===1?Sx.tage1:Sx.tage).replace('{n}',fI.format(st.tage)))]);
    const wp=st.wPlus&&st.wPlus.of?tile(K.wPlus,T(fI.format(st.wPlus.n)),[T(Sx.wPlus.replace('{n}',`${fI.format(st.wPlus.of)} ${st.wPlus.of===1?'Woche':'Wochen'}`))]):tile(K.wPlus,N(O.w));
    const r=[tile(K.rendite,R(st.r)),hit,tr];if(art==='kurz')r.push(wp);else if(amt)r.push(tile(kc(K.netto),{t:fN.format(st.net),s:true}));
    G.push({id:'erg',h:X.gr.erg,reihen:[r]})}
@@ -15423,7 +15423,9 @@ const MS_TXT={
       rw:'Plus-Wochen in Folge',mw:'Meiste Gewinn-Trades',wd:'Stärkster Wochentag',sumW:'Summe der Gewinne',sumL:'Summe der Verluste',pf:'Profit-Faktor',
       htgW:'Größter Gewinn-Trade',htgL:'Größter Verlust-Trade',dd:'Max. Drawdown',vs:'Längste Verlustserie',
       ein:'Eingezahlt ({c})',aus:'Ausgezahlt ({c})',einsatz:'Netto-Einsatz ({c})'},
-    s:{hit:'{w} von {n}',wPlus:'von {n}',mw:'in der Woche ab {d}',wd:'Ø {v} pro Handelstag',dd:'am {d}',woche:'ab {d}',pf:'{v} zu 1',htg:'in Handelstagen',einsatz:'eingezahlt minus ausgezahlt'},
+    // Ab 0.157 (Florians Entscheidung): Zeile unter „Trades“ „an 85 Tagen“ bzw. „an 1 Tag“ (Tage mit Trades; bis 0.156 „85 Handelstage“, „Handelstag“
+    // meint überall Montag bis Freitag)
+    s:{hit:'{w} von {n}',tage:'an {n} Tagen',tage1:'an 1 Tag',wPlus:'von {n}',mw:'in der Woche ab {d}',wd:'Ø {v} pro Handelstag',dd:'am {d}',woche:'ab {d}',pf:'{v} zu 1',htg:'in Handelstagen',einsatz:'eingezahlt minus ausgezahlt'},
     ohne:{t:'kein Trade',d:'kein Handelstag',w:'noch keine ganze Woche',m:'noch kein ganzer Monat',rg:'kein Gewinn-Trade',rd:'kein Tag im Plus',rw:'keine Plus-Woche',
       mw:'kein Gewinn-Trade',vs:'kein Verlust-Trade',pf:'kein Verlust',htg:'keiner'},
     wunsch:'Möge das neue Jahr dich in Fülle und Liebe baden.',
