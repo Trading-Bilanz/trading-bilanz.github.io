@@ -4429,7 +4429,16 @@ function zaehlSig(R,sel,win,cw){const T=R.filter(isTrade),K='K:'+[...sel].sort()
   return [K,'T:'+T.map(r=>r.a+':'+r.x.id).join(','),'W:'+ps('week'),'M:'+ps('month')].join('|')}
 function msZaehlSig(M){const BS=M.bs,y=MS_Y;if(!BS||!BS.T)return 'K:'+[...msAccs()].sort().join(',')+'|leer';
   return y?zaehlSig(BS.T.filter(r=>r.d.slice(0,4)===y),msAccs(),cntWin(BS.first,y+'-01-01',y+'-12-31',BS.dataEnd,BS.lastT),BS.cw):zaehlSig(BS.T,msAccs(),BS.win,BS.cw)}
-function msNote(){const el=$('ms-note');if(!el)return;const M=MS,h=M&&AW_SIG!=null&&msZaehlSig(M)!==AW_SIG?`<p class="small" style="margin:0">${esc(MS_TXT.karte.fz)}</p>`:'';if(el.innerHTML!==h)el.innerHTML=h}
+// Ab 0.159 (Florians Beschluss): Die Zeile erscheint oder verschwindet erst beim Schließen eines Menüs, nie während es offen ist. Sonst sprang
+// der Inhalt der Karte beim Anklicken eines Kontos um etwa zwei Zeilen (Florian am Handy). Das gilt für alle Menüs, die sie ändern können
+// (MS_NOTE_FP): Zeitraum und Konten der Karte (msz, msk), Zeitraum der Filterzeile mit seinen Häkchen (range) und Konten der Filterzeile (acc).
+// Solange eines davon offen ist, merkt msNote nur vor (MS_NOTE_W); closeFpanel holt es nach. Die Werte der Karte ändern sich weiter sofort.
+const MS_NOTE_FP=['msz','msk','range','acc'];
+let MS_NOTE_W=false;
+function msNote(){const el=$('ms-note');if(!el)return;
+  if(MS_NOTE_FP.includes(FP_OPEN)){MS_NOTE_W=true;return}
+  MS_NOTE_W=false;
+  const M=MS,h=M&&AW_SIG!=null&&msZaehlSig(M)!==AW_SIG?`<p class="small" style="margin:0">${esc(MS_TXT.karte.fz)}</p>`:'';if(el.innerHTML!==h)el.innerHTML=h}
 function msRender(){const M=MS;if(!M)return;
   const all=Object.keys(S.accounts).sort(),sel=msAccs(),y=msYearOk(M),T=MS_TXT.karte,yt=t=>y?T.jahr.replace('{t}',t).replace('{j}',y):t;
   $('fdd-msk').style.display=all.length>1?'':'none';if(all.length<2&&FP_OPEN==='msk')closeFpanel();
@@ -13402,6 +13411,8 @@ function closeFpanel(){
   // Ab 0.58 (5): Der Knopf von „für alle ▾“ kann beim Neuzeichnen von „Deine Konten“ weg sein
   $('fp-'+w).classList.remove('on');const b=$('fb-'+w);if(b)b.setAttribute('aria-expanded','false');
   const c=$('fp-'+w).closest('.card')||(b&&b.closest('.card'));if(c)c.classList.remove('fpo');
+  // Ab 0.159: Zeile der Karte „Meilensteine“ nachziehen, wenn sie bei offenem Menü gewartet hat (msNote)
+  if(MS_NOTE_W)msNote();
   return w;
 }
 /* ---------------- Begriffe und ⓘ (Popups) ----------------
