@@ -72,12 +72,14 @@ EINGEBETTET = [
 ]
 
 # Schmetterling der Meilensteine (ab 0.139): eigenes Original, zwei Größen nach Breite, die Höhe folgt dem Motiv.
-#   groß  Feier-Fenster und geteiltes Bild · klein  Kachel, Zeile, Reiter und Titel (angezeigt ab 18 px Höhe)
+#   groß  Feier-Fenster, Jahresrückblick und geteiltes Bild · klein  Kachel, Zeile, Reiter und Titel (angezeigt ab 18 px Höhe)
 # Beide mit Palette: SCHMETTERLING_FARBEN = (Farben für deckende Pixel, Farben für halb durchsichtige Randpixel).
 # Die deckenden Farben wählt der Medianschnitt aus dem Motiv; mit der einfachen Palette der anderen Icons (FASTOCTREE)
 # zeigte das Gold im großen Bild Streifen (Prüfung 0.139, vergrößert angesehen), so nicht.
 SCHMETTERLING = os.path.join(ORDNER, 'quelle', 'schmetterling-freigestellt.png')
-SCHMETTERLINGE = [('schmetterling-gross.png', 512), ('schmetterling-klein.png', 64)]
+# Ab 0.158 (Florians Entscheidung): groß 640 statt 512 px breit (640 x 437), damit der Schmetterling im Jahresrückblick bei 180 px Höhe am PC
+# und 140 px am Handy mit dreifacher Pixeldichte scharf bleibt. Ein Bild für alles (Jahresrückblick, Feier-Fenster, Bilder zum Teilen).
+SCHMETTERLINGE = [('schmetterling-gross.png', 640), ('schmetterling-klein.png', 64)]
 SCHMETTERLING_FARBEN = (128, 31)
 
 # Größen ohne Transparenz: Alles Durchsichtige wird mit dieser Farbe gefüllt.
