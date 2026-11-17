@@ -13947,15 +13947,16 @@ function renderStats(rows){
   const trTile=(pa,pp)=>pick(pa?{v:monT(pa[key]),s:trSub(pa),f:fCur(pa[key])}:none,AK.miss?noR:pp?{v:fR.format(pr(pp)),s:trSub(pp),f:fR.format(pr(pp))}:none);
   // Beste und Schlechteste Woche: nur gezählte ganze Wochen mit Trades. „Ø pro Woche“ zählt mit dem Häkchen weiter auch Wochen ohne Trade mit 0.
   // Betrag nach Schalter (PF verteilt = Netto-Gewinn mit zugeordneter bzw. ausgerechneter PF, PF laut MT5 = Ergebnis vor PF), Rendite nach PF-Schalter.
-  const WS=AK.week.ps,wa=p=>ex?p.aX:p.aI,wr=p=>ex?p.rX:p.rI;
   // Ab 0.156 (Florians Auftrag): Die Kachel „Schlechteste Woche“ zählt nur Wochen mit Trades; eine Woche ohne Trades ist leer, nicht schwach.
   // Ab 0.158 (Florians Auftrag) ebenso die Kachel „Beste Woche“ und die Zeile „Woche“ in „Hochs und Tiefs“ (glKz); bis 0.157 zählten sie
   // mit dem Häkchen auch leere Wochen mit 0.
-  const WST=WS.filter(p=>p.n);
-  const extW=(f,dir)=>WST.reduce((b,p)=>!b||(dir>0?f(p)>f(b):f(p)<f(b))?p:b,null);
-  const wkSubL=p=>p.n?jlink('w',p.key,wkSub(p.key)):wkSub(p.key);
-  const wkTile=dir=>{if(!WST.length)return ['–','noch keine ganze Woche',''];const pa=extW(wa,dir),pp=extW(wr,dir);
-    return pick({v:monT(wa(pa)),s:wkSubL(pa),f:fCur(wa(pa))},AK.miss?noR:{v:fR.format(wr(pp)),s:wkSubL(pp),f:fR.format(wr(pp))})};
+  // Ab 0.159 (eine Wurzel, CLAUDE.md „Code“): Die Kacheln holen beste und schwächste Woche aus glKz, derselben Rechnung wie „Hochs und Tiefs“
+  // und das Excel mit allen Daten (GW = Werte der gewählten PF-Stellung; je Einheit {o: Woche, v: Wert} oder null). Bis 0.158 suchten sie
+  // selbst (extW über AK.week.ps).
+  const G=glKz(R,'sel',win,AK.week.ps),GW=ex?G.N:G.V;
+  const wkSubL=x=>jlink('w',x.o.w,wkSub(x.o.w));
+  const wkTile=dir=>{const o=dir>0?GW.bestW:GW.worstW;if(!o.a)return ['–','noch keine ganze Woche',''];
+    return pick({v:monT(o.a.v),s:wkSubL(o.a),f:fCur(o.a.v)},AK.miss?noR:{v:fR.format(o.r.v),s:wkSubL(o.r),f:fR.format(o.r.v)})};
   // Kachel „Ø pro Woche“ / „Ø pro Handelstag“: bei Rendite groß die Ø Rendite, klein der Ø Betrag; bei Betrag umgekehrt. Basis bleibt.
   const avgTile=(z,one,many,none0)=>{
     if(!z.k)return ['–',none0,''];
@@ -13980,8 +13981,8 @@ function renderStats(rows){
   ];
   // Ab 0.139: Schmetterling an der Kachel, wenn sie gerade den neuen Meilenstein zeigt: „Beste Woche“ und „Bester Trade“ dieselbe Woche bzw.
   // denselben Trade (in der gewählten Einheit und PF-Stellung), Stufen an „Netto-Gewinn“ (nur bei „PF verteilt“) und „Rendite“
-  const bwS=WS.length?(pct?(AK.miss?null:extW(wr,1)):extW(wa,1)):null,btS=pct?(AK.miss?null:extP(1)):PX.best;
-  const tbf=[ex?msBf('k:sn',['sn']):'',msBf('k:sr',['sr']),'','',bwS?msBf('k:aw',['aw','jw'],bwS.key):'','',btS?msBf('k:at',['at','jt'],btS.t+'|'+btS.sym):''];
+  const bwS=pct?(AK.miss?null:GW.bestW.r):GW.bestW.a,btS=pct?(AK.miss?null:extP(1)):PX.best;
+  const tbf=[ex?msBf('k:sn',['sn']):'',msBf('k:sr',['sr']),'','',bwS?msBf('k:aw',['aw','jw'],bwS.o.w):'','',btS?msBf('k:at',['at','jt'],btS.t+'|'+btS.sym):''];
   $('tiles').innerHTML=tiles.map(([k,v,s,alt],i)=>`<div class="tile${tbf[i]?' hasbf':''}"><div class="k">${k}</div><div class="v"${alt?` data-alt="${esc(alt)}"`:''}>${v}</div>${s?`<div class="s">${s}</div>`:''}${tbf[i]||''}</div>`).join('');
   // Ab 0.100: Leiste „Diese Woche“. Sichtbar, wenn die Woche (Mo bis So) des neuesten Trades der gewählten Konten die heutige Woche ist (Uhr des Geräts)
   // und im gewählten Zeitraum liegt, also bis Sonntag 23:59, auch nach der Abrechnung. Stand: laufend (CW) vor Samstag „bisher · n von 5 Handelstagen“
@@ -14008,7 +14009,7 @@ function renderStats(rows){
   // Ø Rendite pro ganzer Woche (Spalte in „Pro Konto“): eigenes Fenster ab dem ersten Trade des Kontos
   const wkAvg=(z,ma)=>z.miss?invDash(ma||sel):!z.week.k?'–':sw(rv(z.week.rI),rv(z.week.rX));
   renderAvg(AK,ex,zero,rv);
-  renderHL(glKz(R,'sel',win,AK.week.ps),AK,{wkSub});
+  renderHL(G,AK,{wkSub});
   // Pro Konto: Kontozeilen mit der Investition des eigenen Kontos, Gesamtzeile mit der Investition der gewählten Konten
   // Bester, Schlechtester Trade und Ø pro Trade folgen dem Schalter Rendite/Betrag. Jede Zelle enthält beide Einheiten in beiden
   // PF-Stellungen (andere Einheit als unsichtbarer Breitenhalter), so springen die Spalten beim Umschalten nicht.
@@ -14089,7 +14090,10 @@ function renderHL(G,AK,h){
   // Ab 0.143 (GESTALTUNG Abschnitt 0, „Ein Symbol … verändert nie das Layout“): nur in der sichtbaren PF-Stellung und Einheit (act), nie im
   // versteckten Teil. Bis 0.142 stand er in beiden Stellungen, und noA schnitt ihn aus dem Breitenhalter nur bis zum ersten </span> heraus: Seit
   // 0.141 (Hülle .bfs) blieb dabei „</button></span>“ stehen, der versteckte Teil ging zu früh zu, Text erschien doppelt, fitHL maß zu breit.
-  const ext=(o,l,F,bf)=>o?F(o.v)+l(o.o,bf?bf(o.o):''):'–';
+  // Ab 0.159 (Florians Regel, GESTALTUNG Abschnitt 0): „Eine Stelle, die keinen Wert hat (‚–‘), zeigt auch kein Datum.“ Fehlt die Investition
+  // (miss), steht bei Rendite nur der Ersatztext, ohne Datum und ohne Schmetterling. Bis 0.158 hing der Link auch am Ersatztext: „Handelstag“
+  // und „Woche“ zeigten dann neben „–“ den ersten Tag bzw. die erste Woche (ohne Investition sind alle Renditen 0).
+  const ext=(o,l,u,bf)=>!o?'–':u==='r'&&miss?md:Fu(u)(o.v)+l(o.o,bf?bf(o.o):'');
   const act=(s,u)=>s===(S.ui.flt.pf==='ex'?G.N:G.V)&&(u===undefined||u===cu);
   // Zelle mit Einheit: f(Werte einer PF-Stellung, Einheit). Breitenhalter ohne Links und ohne Schmetterling (unsichtbar, nur für die Breite).
   // Hinweis (aus Bericht 0.143, Florians Wunsch als Kommentar, keine Regel): Wer HTML aus einem Baustein herausschneidet, schneidet den ganzen
@@ -14111,12 +14115,12 @@ function renderHL(G,AK,h){
   $('t-hl1').innerHTML=`<tr><th></th><th><span class="nw">${hlArr(1)}${gl('gv','Gewinne')}</span></th><th><span class="nw">${hlArr(-1)}${gl('gv','Verluste')}</span></th></tr>`+
     `<tr><td>Anzahl</td><td>${share(G.nW)}</td><td>${share(G.nL)}</td></tr>`+
     `<tr><td>Ø${pfS}</td>${cellU((s,u)=>Fu(u)(s.avgW[u]))}${cellU((s,u)=>Fu(u)(s.avgL[u]))}</tr>`+
-    `<tr><td>Größter${pfS}</td>${cellU((s,u)=>ext(s.bigW[u],lT,Fu(u)))}${cellU((s,u)=>ext(s.bigL[u],lT,Fu(u)))}</tr>`+
+    `<tr><td>Größter${pfS}</td>${cellU((s,u)=>ext(s.bigW[u],lT,u))}${cellU((s,u)=>ext(s.bigL[u],lT,u))}</tr>`+
     `<tr><td>Am Stück</td><td>${runT(G.runW,r=>msBf('h:rg',['rg','jrg'],r.s.t+'|'+r.s.sym))}</td><td>${runT(G.runL)}</td></tr>`+
     `<tr><td>${gl('meiste','Meiste pro Woche')}</td><td>${most(G.mostW,'kein Gewinn-Trade',m=>msBf('h:mw',['mw','jmw'],m.first.w))}</td><td>${most(G.mostL,'kein Verlust-Trade')}</td></tr>`;
   $('t-hl2').innerHTML=`<tr><th></th><th>Beste</th><th>Schwächste</th></tr>`+
-    `<tr><td>${gl('tag','Handels&shy;tag')}${pfS}</td>${cellU((s,u)=>ext(s.bestD[u],lD,Fu(u),act(s,u)?x=>msBf('h:ad',['ad','jd'],x.d):null))}${cellU((s,u)=>ext(s.worstD[u],lD,Fu(u)))}</tr>`+
-    `<tr><td>${gl('ganz','Woche')}${pfS}</td>${cellU((s,u)=>s.bestW[u]?ext(s.bestW[u],lW,Fu(u)):noW)}${cellU((s,u)=>s.worstW[u]?ext(s.worstW[u],lW,Fu(u)):noW)}</tr>`+
+    `<tr><td>${gl('tag','Handels&shy;tag')}${pfS}</td>${cellU((s,u)=>ext(s.bestD[u],lD,u,act(s,u)?x=>msBf('h:ad',['ad','jd'],x.d):null))}${cellU((s,u)=>ext(s.worstD[u],lD,u))}</tr>`+
+    `<tr><td>${gl('ganz','Woche')}${pfS}</td>${cellU((s,u)=>s.bestW[u]?ext(s.bestW[u],lW,u):noW)}${cellU((s,u)=>s.worstW[u]?ext(s.worstW[u],lW,u):noW)}</tr>`+
     `<tr><td>Tage am Stück${pfS}</td>${cell(s=>runD(s.dayP,'im Plus','kein Tag im Plus',act(s)?r=>msBf('h:rd',['rd','jrd'],r.s.d):null))}${cell(s=>runD(s.dayN,'im Minus','kein Tag im Minus'))}</tr>`;
   // „Verhältnis“: Summen, Größter Trade in Handelstagen (dieselben Trades wie „Größter“ oben, geteilt durch Ø pro Handelstag derselben
   // Einheit und PF-Stellung), Profit-Faktor als „13,1 zu 1“ (Rendite: aus den Renditen, Betrag: aus den Beträgen)
