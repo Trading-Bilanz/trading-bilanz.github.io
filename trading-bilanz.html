@@ -3878,6 +3878,8 @@ function msCalc(rows,sel,o){
   const tags=(o.tags||[]).filter(t=>t.status==='ok').map(t=>({t,d:tagD(t),tm:tagT(t)||tagD(t)})).sort((p,q)=>p.tm<q.tm?-1:p.tm>q.tm?1:String(p.t.id)<String(q.t.id)?-1:1);
   const cur=BS.cur;
   const res={list,cur,best:{},yb:{},miss:false,missAcc:sel.filter(a=>INV[a]!=='ok'),first:null,cw:null,B:null,t:rows.length?rows[rows.length-1].x.t:null,as:null,tg:tags.map(x=>String(x.t.id))};
+  // Ab 0.157: die Grundlage (Trades, Fenster, laufende Woche) für die Zeile oben in der Karte (msNote, msZaehlSig)
+  res.bs=BS;
   // Abrechnungsstand über alle Konten: Montag der laufenden Woche, sonst der Tag nach dem Datenstand. Alles davor ist abgerechnet bekannt.
   if(rows.length){const all=[...new Set(rows.map(r=>r.a))],cwA=curWeek(rows,all,RD);let de=rows[rows.length-1].d;for(const a of all){const rd=RD(a);if(rd>de)de=rd}res.as=cwA||addDays(de,1)}
   // Ab 0.142: Mit PX gesetzt entsteht ein Blatt aus einem Wert (px, nicht in der Liste, nie neu, ohne Vorgänger; Jahres-Ansicht der Karte)
@@ -4320,12 +4322,33 @@ function msEntryH(e,cur){const z=msVerlaufZ(e,cur),dt=e.lauf?MS_TXT.lauf:e.k==='
   return `<div class="mse${e.lauf?' lauf':''}" data-ms="${esc(e.id)}" data-msg="v"><span class="msed">${esc(dt)}</span><span class="msek">${esc(msKat(e))}</span><span class="mset"><button type="button" class="zlink msn">${esc(z.t)}</button>${z.sub?`<span class="small">${esc(z.sub)}</span>`:''}</span><span class="msew">${esc(z.w)}</span></div>`}
 // Jahre im Zeitraum-Menü: nur Jahre mit Trades der gezählten Konten, absteigend; ein Jahr, das es nicht mehr gibt, wird wieder „Gesamt“
 const msYearOk=M=>{if(MS_Y&&!(M.ys||[]).includes(MS_Y))MS_Y='';return MS_Y};
+/* Ab 0.157 (Florians Auftrag): Zeile ganz oben im Inhalt der Karte „Meilensteine“, über „Rekorde“, klein und grau: „Die Filterzeile oben wirkt
+   hier nicht. Zeitraum und Konten wählst du rechts.“ Sie gehört zum Inhalt und ist beim Zuklappen weg; die Titelleiste bleibt einzeilig.
+   Wann sie erscheint, entscheidet das Ergebnis, nicht eine Liste von Einstellungen (Florians Vorgabe): Sie erscheint, sobald die Auswertung andere
+   Trades, Tage, Wochen oder Monate zählt als die Karte. So deckt sie auch spätere Einstellungen ab, die verschieben, was gezählt wird (z. B. eine
+   globale Einstellung „nur ganze Wochen“), ohne dass hier etwas nachgetragen werden muss. Gewollter Nebeneffekt: Steht oben z. B. „2026“ und
+   alle Trades liegen in 2026, erscheint keine Zeile, weil beide dasselbe zählen.
+   So bestimmt (zaehlSig, je Seite mit denselben Bausteinen periods, cntWin, curWeek): die Konten, die wirklich zählen (eine leere Auswahl heißt
+   alle), jede Trade-Zeile, je Woche mit Trades Montag, „ganz“ und Zahl der Trade-Zeilen, je Monat mit Trades ebenso. Tage mit Trades folgen aus
+   den Trades. Nicht dabei: PF-Schalter, Währung, Einheit, Wochen und Monate ohne Trades. Die Auswertung liefert ihren Abdruck in renderStats
+   (AW_SIG, aus ihren Zeilen R, Konten, Fenster und laufender Woche, nach „Laufende Woche weglassen“), die Karte aus msBasis (MS.bs,
+   msZaehlSig). Steht
+   die Karte auf einem Jahr, zählt sie dafür das Jahr so, wie die Filterzeile es mit diesem Jahr zählen würde (Florians Antwort 2a zum Plan
+   0.157): Trades mit Datum im Jahr, Fenster auf das Jahr begrenzt. Ihre eigenen Regeln am Jahreswechsel (Woche nach dem Donnerstag, Serien mit
+   voller Länge, Stufen aus allen Jahren) lösen die Zeile nicht aus. */
+let AW_SIG=null;
+function zaehlSig(R,sel,win,cw){const T=R.filter(isTrade),K='K:'+[...sel].sort().join(',');if(!T.length||!win)return K+'|leer';
+  const ps=res=>periods(T,win,res,'sel',cw).filter(p=>p.rows.length).map(p=>p.key+(p.full?'+':'-')+p.rows.length).join(',');
+  return [K,'T:'+T.map(r=>r.a+':'+r.x.id).join(','),'W:'+ps('week'),'M:'+ps('month')].join('|')}
+function msZaehlSig(M){const BS=M.bs,y=MS_Y;if(!BS||!BS.T)return 'K:'+[...msAccs()].sort().join(',')+'|leer';
+  return y?zaehlSig(BS.T.filter(r=>r.d.slice(0,4)===y),msAccs(),cntWin(BS.first,y+'-01-01',y+'-12-31',BS.dataEnd),BS.cw):zaehlSig(BS.T,msAccs(),BS.win,BS.cw)}
+function msNote(){const el=$('ms-note');if(!el)return;const M=MS,h=M&&AW_SIG!=null&&msZaehlSig(M)!==AW_SIG?`<p class="small" style="margin:0">${esc(MS_TXT.karte.fz)}</p>`:'';if(el.innerHTML!==h)el.innerHTML=h}
 function msRender(){const M=MS;if(!M)return;
   const all=Object.keys(S.accounts).sort(),sel=msAccs(),y=msYearOk(M),T=MS_TXT.karte,yt=t=>y?T.jahr.replace('{t}',t).replace('{j}',y):t;
   $('fdd-msk').style.display=all.length>1?'':'none';if(all.length<2&&FP_OPEN==='msk')closeFpanel();
   // Ab 0.146: Die Texte der beiden Menü-Knöpfe hängen an der Stufe der Titelleiste (msBtns, hbFit)
   $('fdd-msz').style.display=(M.ys||[]).length?'':'none';MS_BTN={n:sel.length,N:all.length,y,ys:M.ys||[]};msBtns();
-  $('ms-note').innerHTML='';
+  msNote();
   const L=msSort(M.list),nl=new Set(MS_NL.map(e=>e.id));
   if(!M.first&&!L.length){$('ms-list').innerHTML=`<p class="small" style="margin:0">${esc(MS_TXT.leer)}</p>`;return}
   const inY=e=>!y||e.d.slice(0,4)===y||(e.lauf&&e.ab&&e.ab.slice(0,4)<=y),LY=L.filter(e=>!y||e.d.slice(0,4)===y);
@@ -13729,6 +13752,9 @@ function renderStats(rows){
   const CWR=nocwOn()&&!rg.bad?RA.filter(r=>r.wk===CW&&(!rg.from||r.d>=rg.from)&&(!toOrig||r.d<=toOrig)):[];
   // Investition der gewählten Konten zum Zeitpunkt jedes Trades (Scope 'sel')
   for(const r of [...R,...CWR]){if(!isTrade(r))continue;let s=0,miss=false;for(const a of sel){const c=CAP(a,r.x.t);if(c==null){miss=true;break}s+=c}r.cS=miss?null:s}
+  // Ab 0.157: was die Auswertung zählt (zaehlSig), für die Zeile oben in der Karte „Meilensteine“ (msNote); Fenster wie unten (cntWin)
+  {let de=RA.length?RA[RA.length-1].d:'';for(const a of sel){const rd=repDay(a);if(rd>de)de=rd}const f=(RA.find(isTrade)||{}).d;
+   AW_SIG=zaehlSig(R,sel,f&&!rg.bad?cntWin(f,rg.from,rg.to,de):null,CW);msNote()}
   // Angeschnittene Wochen und Monate: Die gewählten Konten haben dort auch Buchungen außerhalb des Zeitraums
   const cutW=new Set(),cutM=new Set();
   if(!rg.bad&&(rg.from||rg.to))for(const r of RA)if(!inRg(r)){cutW.add(r.wk);cutM.add(r.ym)}
@@ -15388,7 +15414,8 @@ const MS_TXT={
   leer:'Noch keine Meilensteine. Die ersten zwei Wochen setzen den Ausgangsstand, danach zählt jeder neue Höchstwert.',
   ohneTB:'Bei {k} fehlt der Trading Benefit. Ohne ihn keine Rendite. Trag ihn im Reiter „Reports“ ein oder nimm das Konto rechts im Menü heraus.',
   ohneInv:'Bei {k} ist die Investition unbekannt. Ohne sie keine Rendite. Sieh im Reiter „Reports“ nach oder nimm das Konto rechts im Menü heraus.',
-  karte:{rek:'Rekorde',ser:'Serien',err:'Erreicht',verlauf:'Verlauf',jahr:'{t} {j}'},
+  // fz ab 0.157 (Florians Wahl, wörtlich): Zeile oben in der Karte, wenn die Auswertung anders zählt als die Karte (msNote)
+  karte:{rek:'Rekorde',ser:'Serien',err:'Erreicht',verlauf:'Verlauf',jahr:'{t} {j}',fz:'Die Filterzeile oben wirkt hier nicht. Zeitraum und Konten wählst du rechts.'},
   zeit:{gesamt:'Gesamt'},
   // Kategorie im Verlauf (ab 0.142)
   kat:{rek:'Rekord',ser:'Serie',stu:'Stufe',aus:'Auszahlung',ja:'Jahrestag',jr:'Rückblick'},
