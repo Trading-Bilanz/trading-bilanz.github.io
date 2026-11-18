@@ -3643,8 +3643,7 @@ function addAnalysis(rows){
   for(const r of rows){
     if(r.cat!=='close'&&r.cat!=='open')continue;
     r.cO=capAt(r.a,r.x.t);
-    let s=0,miss=false;for(const a of accs){const c=capAt(a,r.x.t);if(c==null)miss=true;else s+=c}
-    r.cA=miss?null:s;
+    r.cA=invSumme(accs,r.x.t,'usd');
   }
 }
 /* Kontrollrechnung Performance Fee (Nachtrag 0.32). Einziger Zweck: erkennen, ob Tag einen Wochenverlust in die nächste Woche mitnimmt
@@ -3730,7 +3729,12 @@ function capOf(r,scope){return scope==='own'?r.cO:scope==='sel'?r.cS:r.cA}
 // Investition der Konten sel am Anfang des Tages day ('YYYY-MM-DD'), null ohne Trading Benefit
 // Ab 0.113 in der Währung der Auswertung (capCur), nur für die Anzeige
 function invAt(sel,day){return invSum(sel,day.replace(/-/g,'.')+' 00:00:00')}
-function invSum(sel,tm){let s=0;for(const a of sel){const c=capCur(a,tm);if(c==null)return null;s+=c}return s}
+// Ab 0.161 (Ablauf „Eine Wurzel“, Runde 3, Schritt 8): Investition der Konten accs zum Zeitpunkt tm als ein Baustein. w = 'usd' (CAP),
+// 'eur' (CAPE, Ein- und Auszahlungen zum EZB-Kurs ihres Tages; ohne Kurs NaN) oder sonst die Währung der Auswertung (capCur). null, wenn bei
+// einem Konto die Investition fehlt. Bis 0.160 stand die Summe an sieben Stellen: invSum, cS in renderStats, Zeile „Gesamt“ in „Pro Konto“,
+// „Was wäre wenn“, capS in msBasis, capAll und capAllE in xlsxAll, cA in addAnalysis.
+function invSumme(accs,tm,w){const f=w==='usd'?CAP:w==='eur'?CAPE:capCur;let s=0;for(const a of accs){const c=f(a,tm);if(c==null)return null;s+=c}return s}
+function invSum(sel,tm){return invSumme(sel,tm)}
 // Investition am Anfang einer Periode: beim ersten Trade der Periode (r.cS, die Zeilen sind zeitlich sortiert).
 // Periode ohne Trade: am sichtbaren Beginn day (Anfang der Periode bzw. des Zeitraums, wenn er die Periode anschneidet).
 function invStart(rows,sel,day){const f=rows.find(isTrade);return f?(CUR_EFF==='usd'?f.cS:invSum(sel,f.x.t)):invAt(sel,day)}
@@ -3802,12 +3806,24 @@ function sumTrades(rows,ex,usd){
    Euro-Betrag keine Zahl, dann zählte das Excel mit allen Daten (Euro-Zeilen) im Blatt „Hochs und Tiefs“ 0 Gewinn-Trades, 0 Verlust-Trades und
    keine Serien. Mit Kursen ist das Vorzeichen dasselbe: Alle Buchungen eines Tages haben denselben EZB-Kurs. */
 const gvVz=p=>p.u>0?1:p.u<0?-1:0;
+// Ab 0.161 (Schritt 2): die eine Reihenfolge der Positionen: nach der Schließzeit, bei derselben Zeit wie eingelesen (fest, sort ist stabil).
+// Für die Serien (serElem) und „Hochs und Tiefs“ (glKz); bis 0.160 sortierte glKz mit einem Vergleich ohne feste Reihenfolge bei gleicher Zeit
+// (das Ergebnis war dasselbe, weil die Positionen schon zeitlich sortiert ankommen).
+const posFolge=P=>P.sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:0);
+// Ab 0.161 (Ablauf „Eine Wurzel“, Runde 3, Schritt 6): die eine Zählung der Trades P (Positionen): n = Trades, win = Gewinn-Trades, loss =
+// Verlust-Trades. Trefferquote = win ÷ n. Bis 0.160 zählten tradeStats (Kachel, „Pro Konto“), glKz („Hochs und Tiefs“, Excel), msCalc (Karte),
+// jrCalc (Rückblick) und die Grafik „Trefferquote“ je für sich.
+function gvZahl(P){let win=0,loss=0;for(const p of P){const v=gvVz(p);if(v>0)win++;else if(v<0)loss++}return {n:P.length,win,loss}}
 /* ---------------- Erster Extremwert (ab 0.161): eine Wurzel ----------------
    extErst(l, f, dir): das erste Element von l mit dem größten (dir > 0) bzw. kleinsten (dir < 0) Wert f(x), als {o: Element, v: Wert}, sonst
    null. Florians Regel (GESTALTUNG Abschnitt 25): „Bei Gleichstand zeigt das Tool überall das erste.“ Ein Element ohne Wert (null) oder mit
    einem Wert, der keine Zahl ist (NaN: Euro-Betrag ohne Wechselkurs), zählt nicht; so steht nie ein Datum ohne Wert (GESTALTUNG Abschnitt 0).
    Bis 0.160 stand dieselbe Suche an fünf Stellen (ext in glKz, extP in renderStats, tradeStats, ext in jrCalc, trR in „Pro Konto“), und ein
    Euro-Betrag ohne Kurs zählte als erster Wert: Das Excel mit allen Daten zeigte ohne Kurse beim besten Handelstag ein Datum ohne Betrag. */
+// Ab 0.161 (Schritt 3): „Größter Trade in Handelstagen“: der größte Gewinn- bzw. Verlust-Trade o ({o, v} aus glKz) geteilt durch den Ø pro
+// Handelstag d derselben Einheit und PF-Stellung, mit Vorzeichen sg (1 Gewinne, −1 Verluste). false = kein solcher Trade, null = kein Ø (oder
+// nicht über 0). Bis 0.160 stand die Formel dreimal: renderHL, xlsxAll (Excel „Kennzahlen“), jrCalc (Rückblick „Verhältnis“).
+const htgWert=(o,d,sg)=>!o?false:d==null||!(d>0)?null:sg*o.v/d;
 function extErst(l,f,dir){let b=null,bv=null;for(const x of l){const v=f(x);if(v==null||v!==v)continue;if(b===null||(dir>0?v>bv:v<bv)){b=x;bv=v}}return b?{o:b,v:bv}:null}
 function tradeStats(list,key){ // list of {eur,t}
   let n=0,win=0,best=null,worst=null,sum=0;
@@ -3866,6 +3882,15 @@ function htLetzter(win,tage){const l=htListe(win.s,win.e,null,tage);return l.len
 // Letzter Tag mit Trade in den Zeilen rows ('' ohne Trade), für cntWin
 function lastTradeDay(rows){let l='';for(const r of rows)if(isTrade(r)&&r.d>l)l=r.d;return l}
 function cntWin(first,from,to,dataEnd,lastT,tg){if(!first)return null;const de=lastT&&lastT<dataEnd?addDays(dataEnd,-1):dataEnd;return {s:from&&from>first?from:first,e:to&&to<de?to:de,tg:tg||null}}
+/* Ab 0.161 (Ablauf „Eine Wurzel“, Runde 3, Schritt 1): Datenstand und gezähltes Fenster als ein Baustein. Bis 0.160 stand dieselbe Formel in
+   renderStats (zweimal), msBasis, msCalc (Abrechnungsstand), jrFehlt (je Konto) und xlsxAll.
+   - datenStand(rows, accs, rd): der letzte Tag der Daten der Konten accs: das Datum des neuesten Reports (rd, Vorgabe repDay), sonst der Tag
+     der neuesten Buchung in rows (Buchungen dieser Konten, zeitlich sortiert, alle Arten).
+   - zaehlFenster(rows, accs, von, bis, rd): dazu der erste Trade, der letzte Tag mit Trade, die Tage mit Trade und das gezählte Fenster
+     (cntWin) für den Zeitraum von bis bis (null: ohne Grenze). */
+function datenStand(rows,accs,rd){let de=rows.length?rows[rows.length-1].d:'';for(const a of accs){const x=(rd||repDay)(a);if(x>de)de=x}return de}
+function zaehlFenster(rows,accs,von,bis,rd){const TR=rows.filter(isTrade),first=TR.length?TR[0].d:null,dataEnd=datenStand(rows,accs,rd),lastT=lastTradeDay(TR),tg=tgSet(TR);
+  return {first,dataEnd,lastT,tg,win:cntWin(first,von,bis,dataEnd,lastT,tg)}}
 // Erster und letzter Handelstag (nach dem Kalender) eines Monats 'YYYY-MM'
 function mWdays(ym){let f=ym+'-01',l=monthEnd(ym);while(!htKal(f))f=addDays(f,1);while(!htKal(l))l=addDays(l,-1);return [f,l]}
 // Tage (Handelstage im Fenster: htListe, Tage mit Trade sind immer dabei), Wochen oder Monate, die das Fenster schneiden. Je Periode: Trades, Zahl der Positionen,
@@ -3889,7 +3914,8 @@ const TH_MW=()=>`<th>${gl('netto','Netto-Gewinn')}${SMF}</th><th>${gl('rendite',
 // miss = Trading Benefit fehlt (Rendite nicht berechenbar). ws = gezählte ganze Wochen (für den Rechner).
 function avgKz(R,win,scope,zero,ress,cw){
   const out={miss:retSum(R,scope,false).miss};
-  for(const res of ress||['day','week','month']){
+  // Ab 0.161: 'trade' nur unten (bis 0.160 lief es auch hier durch periods und wurde unten überschrieben)
+  for(const res of (ress||['day','week','month']).filter(r=>r!=='trade')){
     const all=periods(R,win,res,scope,cw),cand=res==='day'?all:all.filter(p=>p.full),used=zero?cand:cand.filter(p=>p.n);
     const col=f=>used.map(f);
     out[res]={res,k:used.length,noT:cand.filter(p=>!p.n).length,part:all.length-cand.length,zero,ps:used,
@@ -3916,10 +3942,12 @@ function avgKz(R,win,scope,zero,ress,cw){
 // laufende Woche, die „Meiste in einer Woche“ nicht zählt (Karte und Rückblick zählen sie erst nach der Abrechnung, GESTALTUNG Abschnitt 25;
 // die Auswertung zählt sie sofort und gibt nichts mit).
 function glKz(R,scope,win,wks,o){
-  const P=positions(R,scope).sort((a,b)=>a.t<b.t?-1:1);
+  const P=posFolge(positions(R,scope));
   const Dm=new Map();for(const r of R){if(!isTrade(r))continue;if(!Dm.has(r.d))Dm.set(r.d,[]);Dm.get(r.d).push(r)}
   const D=[...Dm.keys()].sort().map(d=>{const rr=Dm.get(d);return {d,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v,rI:retSum(rr,scope,false).v,rX:retSum(rr,scope,true).v}});
   const W=(wks||[]).filter(p=>p.n).map(p=>({w:p.key,n:p.n,aI:p.aI,aX:p.aX,rI:p.rI,rX:p.rX}));
+  // Ab 0.161 (Schritt 2): mit o.mos (ganze Monate, avgKz(...).month.ps) auch bester und schwächster Monat, nur Monate mit Trades (Karte, Rückblick)
+  const MO=(o&&o.mos||[]).filter(p=>p.n).map(p=>({m:p.key,n:p.n,aI:p.aI,aX:p.aX,rI:p.rI,rX:p.rX}));
   // Ab 0.161: die Suche aus der Wurzel extErst (bis 0.160 eine eigene Kopie hier)
   const ext=extErst;
   // Serien („Am Stück“, „Tage am Stück“): ab 0.160 aus der Wurzel (Block „Serien“, serStand). o.ser = die Elemente der gezählten Konten über
@@ -3937,6 +3965,10 @@ function glKz(R,scope,win,wks,o){
       bigW:{a:ext(PW,a,1),r:ext(PW,r,1)},bigL:{a:ext(PL,a,-1),r:ext(PL,r,-1)},
       bestD:{a:ext(D,pa,1),r:ext(D,pr,1)},worstD:{a:ext(D,pa,-1),r:ext(D,pr,-1)},
       bestW:{a:ext(W,pa,1),r:ext(W,pr,1)},worstW:{a:ext(W,pa,-1),r:ext(W,pr,-1)},
+      // Ab 0.161 (Schritt 2): bester und schlechtester Trade über alle Trades (Kacheln, Rückblick: „Trade“; „Größter“ oben nur über die Gewinn-
+      // bzw. Verlust-Trades), bester und schwächster Monat
+      bestT:{a:ext(P,a,1),r:ext(P,r,1)},worstT:{a:ext(P,a,-1),r:ext(P,r,-1)},
+      bestM:{a:ext(MO,pa,1),r:ext(MO,pr,1)},worstM:{a:ext(MO,pa,-1),r:ext(MO,pr,-1)},
       dayP:serStand(ex?SE.dN:SE.dV,1,zr),dayN:serStand(ex?SE.dN:SE.dV,-1,zr),
       // Profit-Faktor aus den Positions-Renditen (auch im Excel)
       pf:rL.length?sum(rW)/-sum(rL):null,dd:maxDD(R,scope,ex),
@@ -3951,7 +3983,8 @@ function glKz(R,scope,win,wks,o){
   const most=sgn=>{const m=new Map();for(const p of P){if(p.wk===ohneW)continue;const o=m.get(p.wk)||{w:p.wk,c:0,n:0};o.n++;if(sgn*gvVz(p)>0)o.c++;m.set(p.wk,o)}
     const l=[...m.values()].sort((x,y)=>x.w<y.w?-1:1);const mx=Math.max(0,...l.map(o=>o.c));const top=l.filter(o=>o.c===mx);
     return mx?{c:mx,weeks:top.length,first:top[0]}:null};
-  return {V:one(false),N:one(true),miss:retSum(R,scope,false).miss,n:P.length,nW:PW.length,nL:PL.length,
+  const GZ=gvZahl(P);
+  return {V:one(false),N:one(true),miss:retSum(R,scope,false).miss,n:GZ.n,nW:GZ.win,nL:GZ.loss,
     runW:serStand(SE.t,1,zr),runL:serStand(SE.t,-1,zr),mostW:most(1),mostL:most(-1)};
 }
 // Text „Meiste in einer Woche“: eine Woche „9 von 10“, mehrere gleichauf „1, in 8 Wochen“ (Link dann ab 0.157 zur ersten, bis 0.156 zur letzten)
@@ -3979,7 +4012,7 @@ const mostTxt=m=>m.weeks===1?`${m.c} von ${m.first.n}`:`${m.c}, in ${m.weeks} Wo
    - serZr(von, bis): Zeitraum nach dem Datum; serZrJahr(y, yOf): ein Jahr (yOf = Jahr eines Datums; für Wochen die Donnerstag-Regel msWkYear:
      Jede Woche zählt genau einmal, im Jahr ihres Donnerstags). */
 function serElem(T,scope,cw){
-  const P=positions(T,scope).sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:0);
+  const P=posFolge(positions(T,scope));
   const dm=new Map();for(const r of T){if(!isTrade(r))continue;if(!dm.has(r.d))dm.set(r.d,[]);dm.get(r.d).push(r)}
   // Ab 0.161: uI und uX = Betrag des Tages in USD vor bzw. nach PF; sie entscheiden, ob ein Tag im Plus ist (wie gvVz bei Trades)
   const D=[...dm.keys()].sort().map(d=>{const rr=dm.get(d);return {d,rr,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v,uI:sumTrades(rr,false,true).v,uX:sumTrades(rr,true,true).v}});
@@ -4036,13 +4069,13 @@ const msWkYear=w=>addDays(w,3).slice(0,4),MS_SERK=['rg','rd','rw'];
 function msBasis(rows,sel,o){
   o=o||{};const set=new Set(sel),RD=o.rd||repDay,T0=rows.filter(r=>set.has(r.a)),TR=T0.filter(isTrade);
   const cur=o.cur==='eur'&&!TR.some(r=>!r.rate)?'eur':'usd',b={T0,TR,cur,RD};if(!TR.length)return b;
-  const capC=new Map(),capS=t=>{if(capC.has(t))return capC.get(t);let s=0;for(const a of sel){const c=CAP(a,t);if(c==null){s=null;break}s+=c}capC.set(t,s);return s};
+  const capC=new Map(),capS=t=>{if(capC.has(t))return capC.get(t);const s=invSumme(sel,t,'usd');capC.set(t,s);return s};
   const T=b.T=TR.map(r=>Object.assign({},r,{cS:capS(r.x.t)},cur==='usd'?{eur:r.amt,exE:r.exU}:null));
   b.miss=T.some(r=>r.cS==null);b.cw=curWeek(T0,sel,RD);
   // Ab 0.160: Elemente der Serien (Block „Serien“), daraus auch die Positionen in Zeitfolge
   b.se=serElem(T,'sel',b.cw);
-  let dataEnd=T0[T0.length-1].d;for(const a of sel){const rd=RD(a);if(rd>dataEnd)dataEnd=rd}
-  b.dataEnd=dataEnd;b.first=T[0].d;b.lastT=lastTradeDay(TR);b.tg=tgSet(TR);b.win=cntWin(b.first,null,null,dataEnd,b.lastT,b.tg);
+  // Ab 0.161: Datenstand und Fenster aus dem Baustein zaehlFenster
+  const Z=zaehlFenster(T0,sel,null,null,RD);b.dataEnd=Z.dataEnd;b.first=Z.first;b.lastT=Z.lastT;b.tg=Z.tg;b.win=Z.win;
   b.P=b.se.P;
   return b}
 // Ab 0.160 (eine Wurzel, Florians Beschlüsse 1 und 2 im Ablauf „Eine Wurzel“, Runde 2): das Jahr y der Konten der Karte, gezählt wie die
@@ -4053,11 +4086,17 @@ function msBasis(rows,sel,o){
 // laufende Woche, Serien mit dem Stand am Ende des Jahres. Je Jahr einmal gerechnet (BS.jc).
 function msJahr(BS,y){const C=BS.jc||(BS.jc={});if(C[y])return C[y];
   const win=cntWin(BS.first,y+'-01-01',y+'-12-31',BS.dataEnd,BS.lastT,BS.tg),R=BS.T.filter(r=>r.y===y);
-  const AK=avgKz(R,win,'sel',true,['day','week','month','trade'],BS.cw),G=glKz(R,'sel',win,AK.week.ps,{ohne:BS.cw,ser:BS.se,von:y+'-01-01',bis:y+'-12-31'});
+  const AK=avgKz(R,win,'sel',true,['day','week','month','trade'],BS.cw),G=glKz(R,'sel',win,AK.week.ps,{ohne:BS.cw,ser:BS.se,von:y+'-01-01',bis:y+'-12-31',mos:AK.month.ps});
   // Serien des Jahres (Stand am 31.12., Block „Serien“): Gewinn-Trades und Tage im Plus (nach PF) wie „Hochs und Tiefs“ mit dem Jahr oben,
   // Plus-Wochen in Folge bis zur letzten Woche des Jahres nach der Donnerstag-Regel, längste Verlustserie (Verlust-Trades am Stück)
   const ser={rg:G.runW,rd:G.N.dayP,rw:serStand(BS.se.w,1,serZrJahr(y,msWkYear)),vs:G.runL};
   return C[y]={y,win,R,AK,G,ser}}
+// Ab 0.161 (Ablauf „Eine Wurzel“, Runde 3, Schritt 2): dasselbe für „Gesamt“: alle Trades der Konten der Karte, gezähltes Fenster bis zum
+// Datenstand, „Meiste Gewinn-Trades“ ohne die laufende Woche. Die Karte bei „Gesamt“ holt bester Trade, Handelstag, Woche, Monat und „Meiste
+// Gewinn-Trades in einer Woche“ von hier; bis 0.160 kamen sie aus den Schleifen der Meilensteine in msCalc (sie bauen weiter den Verlauf).
+function msGesamt(BS){if(BS.jg)return BS.jg;
+  const AK=avgKz(BS.T,BS.win,'sel',true,['week','month'],BS.cw),G=glKz(BS.T,'sel',BS.win,AK.week.ps,{ohne:BS.cw,ser:BS.se,mos:AK.month.ps});
+  return BS.jg={AK,G}}
 function msCalc(rows,sel,o){
   o=o||{};const today=o.today||todayLocal(),list=[],RD=o.rd||repDay;
   const BS=msBasis(rows,sel,o),T0=BS.T0,TR=BS.TR;
@@ -4067,7 +4106,7 @@ function msCalc(rows,sel,o){
   // Ab 0.157: die Grundlage (Trades, Fenster, laufende Woche) für die Zeile oben in der Karte (msNote, msZaehlSig)
   res.bs=BS;
   // Abrechnungsstand über alle Konten: Montag der laufenden Woche, sonst der Tag nach dem Datenstand. Alles davor ist abgerechnet bekannt.
-  if(rows.length){const all=[...new Set(rows.map(r=>r.a))],cwA=curWeek(rows,all,RD);let de=rows[rows.length-1].d;for(const a of all){const rd=RD(a);if(rd>de)de=rd}res.as=cwA||addDays(de,1)}
+  if(rows.length){const all=[...new Set(rows.map(r=>r.a))],cwA=curWeek(rows,all,RD);res.as=cwA||addDays(datenStand(rows,all,RD),1)}
   // Ab 0.142: Mit PX gesetzt entsteht ein Blatt aus einem Wert (px, nicht in der Liste, nie neu, ohne Vorgänger; Jahres-Ansicht der Karte)
   let PX=false;res.px=[];
   const add=(k,id,d,x)=>{const e=Object.assign({k,id:k+'|'+id,d,dk:'d'},x);if(e.y==null)delete e.y;if(PX){e.id='px|'+e.id;e.px=true;e.vor=true;delete e.prev;delete e.ln;res.px.push(e)}else list.push(e);return e};
@@ -4100,42 +4139,56 @@ function msCalc(rows,sel,o){
   // Ab 0.141: bk = Art für den heutigen Bestwert (res.best). Ab 0.142 dazu die Bestwerte je Jahr (res.yb[bk], Jahres-Ansicht der Karte), und
   // der beste Wert am Ende des Ausgangsstands wird ein Eintrag ohne Vorgänger (mk mit Vorgänger null: vor, kein Schmetterling); ebenso der erste
   // Wert einer Art, wenn es im Ausgangsstand noch keinen gab.
-  const rec=(l,v,dOf,yOf,mk,bk)=>{let b=null,cr=false;const by={};
+  // Ab 0.161: Die gezeigten Bestwerte (res.best, res.yb) kommen nicht mehr von hier, sondern aus den Wurzeln (msGesamt, msJahr; unten)
+  const rec=(l,v,dOf,yOf,mk)=>{let b=null,cr=false;const by={};
     const cb=()=>{cr=true;if(b&&b.v>0)mk(b.x,b.v,null,null)};
     for(const x of l){const val=v(x);if(val==null)continue;const d=dOf(x);if(!cr&&d>=B)cb();const y=yOf(x),yb=y==null?null:by[y];
       if(val>0){if(!b&&d>=B)mk(x,val,null,null);else if(b&&val>b.v&&d>=B)mk(x,val,b,null);else if(yb&&val>yb.v&&yIn(y,d))mk(x,val,yb,y)}
       if(!b||val>b.v)b={v:val,x};if(y!=null&&(!yb||val>yb.v))by[y]={v:val,x}}
     if(!cr)cb();
-    if(bk){if(b&&b.v>0)res.best[bk]=b;res.yb[bk]=by}return by};
+    return by};
   const pv=(b,f)=>b?{prev:f(b)}:{vor:true};
   // Zeitpunkt, zu dem die laufende Summe f der Zeilen rr zuletzt über thr gestiegen und darüber geblieben ist (null: am Ende nicht darüber)
   const cross=(rr,f,thr)=>{let s=0,t=null,ab=false;for(const r of rr){s+=f(r);const a=s>thr;if(a&&!ab)t=r.x.t;ab=a}return ab?t:null};
   const rOf=r=>r.cS>0?r.exU/r.cS:0;
   // ---- Bester Trade (nur Gewinn-Trades nach dem Vorzeichen vor PF, wie „Größter“ in „Hochs und Tiefs“)
-  const yT=miss?{}:rec(P.filter(p=>p.eur>0),p=>p.rMiss?null:p.rX,p=>p.d,p=>p.d.slice(0,4),MK.at=(p,v,b,y)=>
-    add(y?'jt':'at',(y?y+'|':'')+pk(p),p.d,Object.assign({r:v,a:p.exE,y,sym:p.sym,j:['t',pk(p)],o:pk(p),tr:p.t},pv(b,b=>({r:b.v,a:b.x.exE,d:b.x.d,dk:'d'})))),'at');
+  MK.at=(p,v,b,y)=>
+    add(y?'jt':'at',(y?y+'|':'')+pk(p),p.d,Object.assign({r:v,a:p.exE,y,sym:p.sym,j:['t',pk(p)],o:pk(p),tr:p.t},pv(b,b=>({r:b.v,a:b.x.exE,d:b.x.d,dk:'d'}))));
+  if(!miss)rec(P.filter(p=>gvVz(p)>0),p=>p.rMiss?null:p.rX,p=>p.d,p=>p.d.slice(0,4),MK.at);
   // ---- Tage mit Trades: Betrag und Rendite nach PF
   // ab 0.160 aus den Elementen der Serien (BS.se.D): dieselben Tage und Beträge wie dort
   const D=BS.se.D.map(x=>({d:x.d,rr:x.rr,a:x.aX,r:miss?null:retSum(x.rr,'sel',true).v}));
-  const yD=miss?{}:rec(D,x=>x.r,x=>x.d,x=>x.d.slice(0,4),MK.ad=(x,v,b,y)=>
-    add(y?'jd':'ad',(y?y+'|':'')+x.d,x.d,Object.assign({r:v,a:x.a,y,j:['d',x.d],o:x.d,tr:(b&&cross(x.rr,rOf,b.v))||x.rr[x.rr.length-1].x.t},pv(b,b=>({r:b.v,a:b.x.a,d:b.x.d,dk:'d'})))),'ad');
+  MK.ad=(x,v,b,y)=>
+    add(y?'jd':'ad',(y?y+'|':'')+x.d,x.d,Object.assign({r:v,a:x.a,y,j:['d',x.d],o:x.d,tr:(b&&cross(x.rr,rOf,b.v))||x.rr[x.rr.length-1].x.t},pv(b,b=>({r:b.v,a:b.x.a,d:b.x.d,dk:'d'}))));
+  if(!miss)rec(D,x=>x.r,x=>x.d,x=>x.d.slice(0,4),MK.ad);
   // ---- Beste Woche: nur ganze, abgerechnete Wochen (wie „Hochs und Tiefs“)
   // Ab 0.160 (Florians Beschluss 1): Die beste Woche eines Jahres zählt nach dem Kalender. Eine Woche, deren Handelstage in zwei Jahren liegen,
   // ist in keinem der beiden eine ganze Woche (htWkJahr = null), für den Allzeit-Rekord ist sie eine normale Woche. Bis 0.159 zählte sie ganz
   // zum Jahr ihres Donnerstags. Der Wert der Karte auf einem Jahr (res.yb.aw) kommt aus derselben Rechnung wie Auswertung und Rückblick (msJahr).
   const WK=periods(T,win,'week','sel',cw);
-  const yW=miss?{}:rec(WK.filter(p=>p.full),p=>p.rX,p=>p.key,p=>htWkJahr(p.key,BS.tg),MK.aw=(p,v,b,y)=>
-    add(y?'jw':'aw',(y?y+'|':'')+p.key,p.key,Object.assign({dk:'w',r:v,a:p.aX,y,j:p.n?['w',p.key]:null,o:p.key,sd:sat(p.key)},pv(b,b=>({r:b.v,a:b.x.aX,d:b.x.key,dk:'w'})))),'aw');
+  MK.aw=(p,v,b,y)=>
+    add(y?'jw':'aw',(y?y+'|':'')+p.key,p.key,Object.assign({dk:'w',r:v,a:p.aX,y,j:p.n?['w',p.key]:null,o:p.key,sd:sat(p.key)},pv(b,b=>({r:b.v,a:b.x.aX,d:b.x.key,dk:'w'}))));
+  if(!miss)rec(WK.filter(p=>p.full),p=>p.rX,p=>p.key,p=>htWkJahr(p.key,BS.tg),MK.aw);
   const JY=[...new Set(P.map(p=>p.d.slice(0,4)))].sort();
-  if(!miss){const wm=new Map(WK.map(p=>[p.key,p])),by={};for(const y of JY){const o=msJahr(BS,y).G.N.bestW.r;if(o&&wm.has(o.o.w))by[y]={v:o.v,x:wm.get(o.o.w)}}res.yb.aw=by}
   // ---- Bester Monat: nur ganze Monate. Ab 0.142: Der erste ganze Monat wird ein Eintrag ohne Vorgänger (vor, wie bisher kein Anlass zum
   // Feiern). Jahres-Rekord des Monats (jm): Der erste ganze Monat des Jahres setzt den Stand des Jahres; ist ein Monat zugleich Allzeit-Rekord,
   // gilt nur dieser.
   const mkM=MK.am=(p,v,pr,y)=>{const l=mWdays(p.key)[1],lw=monday(l);return add(y?'jm':'am',(y?y+'|':'')+p.key,monthEnd(p.key),Object.assign({dk:'m',m:p.key,r:p.rX,a:p.aX,y,sd:p.rows.some(r=>r.wk===lw)?sat(lw):l},pr?{prev:{r:pr.v,a:pr.x.aX,d:pr.x.key,dk:'m'}}:{vor:true}))};
-  if(!miss){let b=null;const by={};for(const p of periods(T,win,'month','sel',cw)){if(!p.full)continue;const y=p.key.slice(0,4),q=by[y];
+  const MOP=periods(T,win,'month','sel',cw);
+  if(!miss){let b=null;const by={};for(const p of MOP){if(!p.full)continue;const y=p.key.slice(0,4),q=by[y];
     if(p.rX>0){if(!b)mkM(p,p.rX,null);else if(p.rX>b.v)mkM(p,p.rX,b);else if(q&&p.rX>q.v)mkM(p,p.rX,q,y)}
-    if(!b||p.rX>b.v)b={v:p.rX,x:p};if(!q||p.rX>q.v)by[y]={v:p.rX,x:p}}
-    if(b&&b.v>0)res.best.am=b;res.yb.am=by}
+    if(!b||p.rX>b.v)b={v:p.rX,x:p};if(!q||p.rX>q.v)by[y]={v:p.rX,x:p}}}
+  // ---- Ab 0.161 (Ablauf „Eine Wurzel“, Runde 3, Schritt 2): die gezeigten Bestwerte (Karte bei „Gesamt“: res.best, auf einem Jahr: res.yb)
+  // aus den Wurzeln, derselben Rechnung wie „Hochs und Tiefs“ (glKz über msGesamt bzw. msJahr). Bis 0.160 kamen sie aus den Schleifen oben,
+  // die weiter den Verlauf bauen (wann ein Rekord fiel und welcher davor galt). Die Elemente der Karte (Positionen, Tage, Wochen, Monate) sind
+  // dieselben; der Wert der Wurzel zeigt auf sie (Schlüssel), damit das Blatt des Eintrags dazu passt. res.mGanz = Jahre mit einem ganzen
+  // Monat (auch ohne Trades), für den Text ohne Wert („noch kein Monat im Plus“ bzw. „noch kein ganzer Monat“, msOhne).
+  res.mGanz={};if(!miss)for(const p of MOP)if(p.full)res.mGanz[p.key.slice(0,4)]=true;
+  if(!miss){const Pm=new Map(P.map(p=>[pk(p),p])),Dm=new Map(D.map(x=>[x.d,x])),Wm=new Map(WK.map(p=>[p.key,p])),Mm=new Map(MOP.map(p=>[p.key,p]));
+    const zu={at:o=>Pm.get(pk(o)),ad:o=>Dm.get(o.d),aw:o=>Wm.get(o.w),am:o=>Mm.get(o.m)},wert=N=>({at:N.bigW.r,ad:N.bestD.r,aw:N.bestW.r,am:N.bestM.r});
+    const W0=wert(msGesamt(BS).G.N);for(const k of ['at','ad','aw','am']){const o=W0[k],x=o&&zu[k](o.o);if(x&&o.v>0)res.best[k]={v:o.v,x}}
+    for(const k of ['at','ad','aw','am'])res.yb[k]={};
+    for(const y of JY){const Wy=wert(msJahr(BS,y).G.N);for(const k of ['at','ad','aw','am']){const o=Wy[k],x=o&&zu[k](o.o);if(x)res.yb[k][y]={v:o.v,x}}}}
   // ---- Stufen von Netto-Gewinn (USD) und Rendite: je Stufe einmal beim ersten Erreichen. Ab 0.142 auch im Ausgangsstand als Eintrag (vor:
   // kein Schmetterling); ebenso die Zahl der Gewinn-Trades. Ab 0.143 (Florians Auftrag) sofort, auch in der laufenden Woche mit der geschätzten PF
   // (wie bester Trade und bester Handelstag); fällt die Summe bis zur Abrechnung wieder unter die Stufe, gibt es den Eintrag nicht mehr, er
@@ -4149,7 +4202,7 @@ function msCalc(rows,sel,o){
       while(iu<MS_NET.length&&cu>=MS_NET[iu]-1e-9&&eu>=MS_NET[iu]-1e-9){add('sn',MS_NET[iu],r.d,Object.assign({n:MS_NET[iu],j:['d',r.d]},z,r.d<B?{vor:true}:null));iu++}
       while(!miss&&ir<MS_RET.length&&cr*100>=MS_RET[ir]-1e-9&&er*100>=MS_RET[ir]-1e-9){add('sr',MS_RET[ir],r.d,Object.assign({n:MS_RET[ir],j:['d',r.d]},z,r.d<B?{vor:true}:null));ir++}}}}
   // ---- Zahl der Gewinn-Trades: sofort
-  {let c=0,i=0;for(const p of P){if(!(p.eur>0))continue;c++;if(i<MS_WINS.length&&c>=MS_WINS[i]){add('sg',MS_WINS[i],p.d,Object.assign({n:MS_WINS[i],tr:p.t,j:['t',pk(p)]},p.d<B?{vor:true}:null));i++}}}
+  {let c=0,i=0;for(const p of P){if(!(gvVz(p)>0))continue;c++;if(i<MS_WINS.length&&c>=MS_WINS[i]){add('sg',MS_WINS[i],p.d,Object.assign({n:MS_WINS[i],tr:p.t,j:['t',pk(p)]},p.d<B?{vor:true}:null));i++}}}
   // ---- Serien. l = Elemente in Zeitfolge {plus, d, key, tr oder sd}; pb = längste frühere Serie (der Vorgänger).
   // Ab 0.142: Der Eintrag steht am Ende der Serie (d = end; eOf: bei Wochen der Sonntag der letzten Woche), mit Beginn (ab) und „läuft noch“
   // (lauf, die letzte Zeit ist im Plus). Die längste Serie am Ende des Ausgangsstands wird ein Eintrag ohne Vorgänger (vor); läuft sie da noch,
@@ -4211,7 +4264,8 @@ function msCalc(rows,sel,o){
      if(w.c>0){if(!b&&w.w>=B){mk(w,null);at=true}else if(b&&w.c>b.c&&w.w>=B){mk(w,b);at=true}}
      for(const z of w.ys){const q=by[z.y];if(z.c>0&&!at&&q&&z.c>q.c&&yIn(z.y,w.w))mk(z,q,z.y);if(!q||z.c>q.c)by[z.y]=z}
      if(!b||w.c>b.c)b=w}
-   if(!cr)crossB();if(b&&b.c>0)res.best.mw={n:b.c,w:b.w};
+   // Ab 0.161: der gezeigte Wert bei „Gesamt“ aus der Wurzel (msGesamt, glKz; bis 0.160 aus dieser Schleife, sie baut weiter den Verlauf)
+   if(!cr)crossB();{const m=msGesamt(BS).G.mostW;if(m)res.best.mw={n:m.c,w:m.first.w}}
    const yb={};for(const y of JY){const m=msJahr(BS,y).G.mostW,w=m&&wM.get(m.first.w),z=w&&w.ys.find(z=>z.y===y);if(z)yb[y]=z}
    res.yb.mw=yb}
   // ---- Jahrestag: jedes Jahr seit dem ersten Trade der gezählten Konten, sobald der Tag da ist (Uhr des Geräts). Er wartet zwei Monate.
@@ -4265,7 +4319,7 @@ function msCalc(rows,sel,o){
 // Datenstand (Report-Datum, sonst die neueste Buchung). BS = msBasis.
 function jrFehlt(BS,sel,y){const ny=(+y+1)+'-01-01',dz=y+'-12-01',ye=y+'-12-31',out=[];
   for(const a of sel){if(!BS.TR.some(r=>r.a===a&&r.d>=dz&&r.d<=ye))continue;const rd=BS.RD(a);if(rd>=ny)continue;
-    let last='';for(const r of BS.T0)if(r.a===a&&r.d>last)last=r.d;out.push({a,bis:rd>last?rd:last})}
+    out.push({a,bis:datenStand(BS.T0.filter(r=>r.a===a),[a],BS.RD)})}
   return out}
 function jrCalc(rows,sel,y,o){
   o=o||{};const BS=msBasis(rows,sel,o),M=o.M||msCalc(rows,sel,o),cur=BS.cur,today=o.today||todayLocal(),ny=(+y+1)+'-01-01';
@@ -4274,10 +4328,8 @@ function jrCalc(rows,sel,y,o){
   const {T,P,win,cw}=BS,miss=res.miss=!!BS.miss,R=T.filter(r=>r.y===y),rN=v=>miss?null:v;
   res.fehlt=jrFehlt(BS,sel,y);res.voll=today>=ny&&!res.fehlt.length;
   if(!R.length)return res;
-  // erster Extremwert bei Gleichstand (wie „Hochs und Tiefs“ und die Kacheln); f = Wert oder null
-  const ext=(l,f,dir)=>{let b=null,bv=null;for(const x of l){const v=f(x);if(v==null)continue;if(b===null||(dir>0?v>bv:v<bv)){b=x;bv=v}}return b};
   // ---- Ergebnis
-  const PY=positions(R,'sel');res.n=PY.length;res.win=PY.filter(p=>p.eur>0).length;res.tage=new Set(R.map(r=>r.d)).size;
+  const PY=positions(R,'sel'),GZ=gvZahl(PY);res.n=GZ.n;res.win=GZ.win;res.tage=new Set(R.map(r=>r.d)).size;
   res.r=rN(retSum(R,'sel',true).v);res.net=sumTrades(R,true).v;res.netU=R.reduce((s,r)=>s+r.exU,0);
   // Verlustjahr: Rendite unter 0, wie angezeigt gerundet (ohne Investition: Netto-Gewinn in USD unter 0)
   res.verlust=res.r!=null?Math.round(res.r*10000)<0:Math.round(res.netU*100)<0;
@@ -4291,15 +4343,17 @@ function jrCalc(rows,sel,y,o){
   // und „Meiste Gewinn-Trades in einer Woche“ kommen aus msJahr, also aus derselben Rechnung wie die Auswertung mit dem Zeitraum des Jahres
   // (nach dem Kalender). Bis 0.159 rechnete jrCalc sie selbst, die Wochen nach der Donnerstag-Regel.
   const J=msJahr(BS,y),AK=J.AK,GJ=J.G,WK=AK.week.ps,MO=AK.month.ps;
-  const tOf=p=>p&&{r:pr(p),a:p.exE,d:p.d},dOf2=x=>x&&{r:x.r,a:x.a,d:x.d},mOf=p=>p&&{r:rN(p.rX),a:p.aX,m:p.key};
-  const pw=p=>rN(p.rX);
+  const tOf=p=>p&&{r:pr(p),a:p.exE,d:p.d};
   // Ab 0.156 (Florians Auftrag): Beste und schwächste Woche und Monat nur aus Wochen und Monaten mit Trades. Eine Woche oder ein Monat ohne
   // Trades ist leer, nicht schwach (0.154: „Schwächste Woche 0,00 %“) und im Verlustjahr auch nicht die beste.
   const WKT=WK.filter(p=>p.n),MOT=MO.filter(p=>p.n);
   // beste und schwächste Woche aus glKz (wie Kacheln, „Hochs und Tiefs“ und Excel); ohne Investition gibt es keinen Extremwert nach Rendite
   const gW=o=>miss||!o?null:{r:o.v,a:o.o.aX,w:o.o.w};
-  res.best={t:tOf(ext(PY,pr,1)),d:dOf2(ext(DY,x=>x.r,1)),w:gW(GJ.N.bestW.r),m:mOf(ext(MOT,pw,1))};
-  res.worst={t:tOf(ext(PY,pr,-1)),d:dOf2(ext(DY,x=>x.r,-1)),w:gW(GJ.N.worstW.r),m:mOf(ext(MOT,pw,-1))};
+  // Ab 0.161 (Ablauf „Eine Wurzel“, Runde 3, Schritt 2): bester und schwächster Trade, Handelstag und Monat ebenfalls aus glKz (msJahr), wie
+  // Kacheln und „Hochs und Tiefs“ mit dem Jahr oben (Trade über alle Trades, Monat nur ganze Monate mit Trades); bis 0.160 suchte jrCalc selbst
+  const eT=o=>miss||!o?null:tOf(o.o),eD=o=>miss||!o?null:{r:o.v,a:o.o.aX,d:o.o.d},eM=o=>miss||!o?null:{r:o.v,a:o.o.aX,m:o.o.m};
+  res.best={t:eT(GJ.N.bestT.r),d:eD(GJ.N.bestD.r),w:gW(GJ.N.bestW.r),m:eM(GJ.N.bestM.r)};
+  res.worst={t:eT(GJ.N.worstT.r),d:eD(GJ.N.worstD.r),w:gW(GJ.N.worstW.r),m:eM(GJ.N.worstM.r)};
   // ohne Investition: Extremwerte nach Rendite gibt es nicht; die Kachel zeigt dann „–“ (k = es gibt Trades, Wochen bzw. Monate mit Trades)
   res.has={t:PY.length>0,d:DY.length>0,w:WKT.length>0,m:MOT.length>0};
   // Die Durchschnitte zählen wie die Auswertung mit „Tage ohne Trade mitzählen“: ganze Wochen und Monate ohne Trade mit 0 (Florians Antwort 6
@@ -4326,14 +4380,12 @@ function jrCalc(rows,sel,y,o){
    res.ser={rg:sz(J.ser.rg,dE),rd:sz(J.ser.rd,dE),rw:sz(J.ser.rw,d=>addDays(d,6)),mw:m?{n:m.c,of:m.first.n,w:m.first.w}:null}}
   // ---- Stärkster Wochentag: Summe der Rendite je Wochentag ÷ Zahl dieses Wochentags im Jahr (im gezählten Fenster); nur Wochentage mit Trades
   // Ab 0.159: gezählt werden die Handelstage (htListe), ein Samstag oder Sonntag also nur mit Trade; bis 0.158 jeder Tag im Fenster
-  if(!miss){const cnt=[0,0,0,0,0,0,0],sum=[0,0,0,0,0,0,0],has=[];
-    for(const d of htListe(y+'-01-01',y+'-12-31',win,DM))cnt[wdIdx(d)]++;
-    for(const x of DY){const i=wdIdx(x.d);has[i]=true;sum[i]+=x.r}
-    let bi=-1,bv=null;for(let i=0;i<7;i++){if(!has[i]||!cnt[i])continue;const v=sum[i]/cnt[i];if(bi<0||v>bv){bi=i;bv=v}}
-    res.wd=bi<0?null:{i:bi,v:bv}}else res.wd=null;
+  // Ab 0.161 (Schritt 4): aus derselben Rechnung wie die Grafik „Nach Wochentag“ (Durchschnitt, Rendite nach PF; wdZahl, weekdayPoints) mit dem
+  // Fenster des Jahres (msJahr), dazu der erste höchste Wert (extErst). Bis 0.160 summierte jrCalc selbst (je Tag, dann je Wochentag).
+  if(!miss){const b=extErst(weekdayPoints(R,'pct',true,true,wdZahl(J.win,new Set(DM.keys()),true)),p=>p.v,1);res.wd=b?{i:WDL.indexOf(b.o.label),v:b.v}:null}else res.wd=null;
   // ---- Verhältnis wie die Tabelle in „Hochs und Tiefs“ (nach PF, Rendite): Summen, größter Trade in Handelstagen (geteilt durch Ø pro
   // Handelstag), Profit-Faktor aus den Renditen
-  if(!miss){const N=GJ.N,dA=res.avg.d,h=(o,sg)=>!o?false:dA==null||!(dA>0)?null:sg*o.v/dA;
+  if(!miss){const N=GJ.N,dA=res.avg.d,h=(o,sg)=>htgWert(o,dA,sg);
     res.vh={sumW:N.sumW.r,sumL:N.sumL.r,pf:N.pf,htgW:h(N.bigW.r,1),htgL:h(N.bigL.r,-1)}}else res.vh=null;
   // ---- Geld des Jahres aus den Tag-Daten (in Euro nur, wenn jeder Kurs da ist)
   {const L=(o.tags||[]).filter(t=>t.status==='ok'&&String(tagD(t)).slice(0,4)===y);
@@ -4517,7 +4569,8 @@ const msById=id=>MS&&(MS.list.find(e=>e.id===id)||(MS.px||[]).find(e=>e.id===id)
 function msLast(M,k){return msSort(M.list).find(e=>e.k===k)||null}
 function msAlt(M,e){const a=msArt(e);return msSort(M.list).find(x=>msArt(x)===a)!==e}
 // Text für einen Wert ohne Wert (je Art, was fehlt). y = Jahr oder ''.
-function msOhne(M,k,y){const O=MS_TXT.ohne,yb=M.yb[k]||{},any=y?yb[y]!=null:Object.keys(yb).length>0;
+// Ab 0.161: beim Monat entscheidet, ob es einen ganzen Monat gibt (M.mGanz, auch ohne Trades), wie bis 0.160 über die Schleife der Karte
+function msOhne(M,k,y){const O=MS_TXT.ohne,yb=k==='am'?(M.mGanz||{}):M.yb[k]||{},any=y?yb[y]!=null:Object.keys(yb).length>0;
   if(k==='aw'||k==='am'||k==='mw')return any?O[k+'2']:O[k];return O[k]}
 // Ein Wert in „Rekorde“ oder „Serien“: Titel, Wert, Datum; mit Eintrag ein Knopf (öffnet das Blatt)
 function msValH(M,k,g,y,nl){const e=y?(M.val.Y[y]||{})[k]:M.val.G[k],T=esc(MS_TXT.kachel[k]);
@@ -12359,13 +12412,14 @@ function xlsxAll(rows,o){
   const tr=rows.filter(isTrade);if(!tr.length)return null;
   const {C}=o,accs=Object.keys(S.accounts).sort(),zero=S.ui.flt.zeroDays!==false,XPF='Ergebnis nach PF (am Abbuchungstag)';
   const RU=curRows(rows,'usd'),U=new Map(rows.map((r,i)=>[r,RU[i]])),u=rr=>rr.map(r=>U.get(r));
-  let dataEnd=rows[rows.length-1].d;for(const a of accs){const rd=repDay(a);if(rd>dataEnd)dataEnd=rd}
-  const win=cntWin(tr[0].d,null,null,dataEnd,lastTradeDay(tr),tgSet(tr));
+  // Ab 0.161: Datenstand und Fenster aus dem Baustein zaehlFenster (alle Konten)
+  const win=zaehlFenster(rows,accs,null,null).win;
   // Ab 0.100: laufende Woche aller Konten (PF noch nicht gebucht), sie ist keine ganze Woche (wie in der Auswertung)
   const cw=curWeek(rows,accs);
-  const capAll=tm=>{let s=0;for(const a of accs){const c=CAP(a,tm);if(c==null)return null;s+=c}return s};
+  // Ab 0.161: aus dem Baustein invSumme
+  const capAll=tm=>invSumme(accs,tm,'usd');
   // Ab 0.114: dieselbe Investition in Euro (CAPE, wie in der Auswertung in €), leer ohne Kurs
-  const capAllE=tm=>{let s=0;for(const a of accs){const c=CAPE(a,tm);if(c==null)return null;s+=c}return isFinite(s)?s:null};
+  const capAllE=tm=>{const s=invSumme(accs,tm,'eur');return s!=null&&isFinite(s)?s:null};
   const endOf=d=>d.replace(/-/g,'.')+' 23:59:59';
   const miss=retSum(rows,'all',false).miss;
   const ret=(rr,ex)=>miss?'':X.P(retSum(rr,'all',ex).v);
@@ -12475,7 +12529,7 @@ function xlsxAll(rows,o){
     [{l:'im Plus',k:'dayP'},{l:'im Minus',k:'dayN'}]);
   hut.rows.push([]);
   // (c) Kennzahlen in %
-  const lossDays=s=>{const day=AE.day.k?(s==='V'?AE.day.rI:AE.day.rX):null,o=GE[s].bigL.r;if(miss)return ['',''];if(!o)return ['keiner',''];if(day==null||!(day>0))return ['',''];return [X.N(Math.round(-o.v/day*10)/10),X.D(o.o.d)]};
+  const lossDays=s=>{const day=AE.day.k?(s==='V'?AE.day.rI:AE.day.rX):null,o=GE[s].bigL.r;if(miss)return ['',''];const v=htgWert(o,day,-1);if(v===false)return ['keiner',''];if(v==null)return ['',''];return [X.N(Math.round(v*10)/10),X.D(o.o.d)]};
   xGroupTable(hut,'Kennzahlen (in %)',PF.map(([h,,s])=>({h,cols:[{h:'Wert',c:it=>it.f(s)[0]},{h:'Datum',c:it=>it.f(s)[1]}]})),
     [{l:'Größter Verlust-Trade in Handelstagen Gewinn',f:lossDays},
      {l:'Profit-Faktor (aus den Renditen)',f:s=>[miss?'':GE[s].pf!=null?X.N(Math.round(GE[s].pf*10)/10):'kein Verlust','']},
@@ -14057,10 +14111,11 @@ function renderStats(rows){
   // Mit „Laufende Woche weglassen“: Zeilen der laufenden Woche nur für „Pro Woche“ (dort gekennzeichnet), in keiner Kennzahl
   const CWR=nocwOn()&&!rg.bad?RA.filter(r=>r.wk===CW&&(!rg.from||r.d>=rg.from)&&(!toOrig||r.d<=toOrig)):[];
   // Investition der gewählten Konten zum Zeitpunkt jedes Trades (Scope 'sel')
-  for(const r of [...R,...CWR]){if(!isTrade(r))continue;let s=0,miss=false;for(const a of sel){const c=CAP(a,r.x.t);if(c==null){miss=true;break}s+=c}r.cS=miss?null:s}
+  for(const r of [...R,...CWR]){if(!isTrade(r))continue;r.cS=invSumme(sel,r.x.t,'usd')}
   // Ab 0.157: was die Auswertung zählt (zaehlSig), für die Zeile oben in der Karte „Meilensteine“ (msNote); Fenster wie unten (cntWin)
-  {let de=RA.length?RA[RA.length-1].d:'';for(const a of sel){const rd=repDay(a);if(rd>de)de=rd}const f=(RA.find(isTrade)||{}).d;
-   AW_SIG=zaehlSig(R,sel,f&&!rg.bad?cntWin(f,rg.from,rg.to,de,lastTradeDay(RA),tgSet(RA)):null,CW);msNote()}
+  // Ab 0.161: Datenstand und Fenster der gewählten Konten aus dem Baustein zaehlFenster (bis 0.160 hier und unten je eine Kopie der Formel)
+  const ZF=zaehlFenster(RA,sel,rg.from,rg.to);
+  AW_SIG=zaehlSig(R,sel,!rg.bad?ZF.win:null,CW);msNote();
   // Angeschnittene Wochen und Monate: Die gewählten Konten haben dort auch Buchungen außerhalb des Zeitraums
   const cutW=new Set(),cutM=new Set();
   if(!rg.bad&&(rg.from||rg.to))for(const r of RA)if(!inRg(r)){cutW.add(r.wk);cutM.add(r.ym)}
@@ -14094,15 +14149,11 @@ function renderStats(rows){
   // Gezähltes Fenster (cntWin): Handelstage (Block „Handelstag“) ab dem ersten Trade der gewählten Konten bzw. ab dem Anfang des Zeitraums,
   // bis zum Ende des Zeitraums, höchstens bis zum Datenstand (Datum des neuesten Reports, sonst letzte Buchung; ab 0.159 ohne den Datenstand
   // selbst, wenn an ihm kein Trade liegt: lastT)
-  let dataEnd=RA[RA.length-1].d;
-  for(const a of sel){const rd=repDay(a);if(rd>dataEnd)dataEnd=rd}
-  const firstT=(RA.find(isTrade)||{}).d,zero=S.ui.flt.zeroDays!==false;
-  const lastT=lastTradeDay(RA),win=cntWin(firstT,rg.from,rg.to,dataEnd,lastT,tgSet(RA)),tdS=win.s,tdE=win.e;
+  const zero=S.ui.flt.zeroDays!==false,dataEnd=ZF.dataEnd,lastT=ZF.lastT,win=ZF.win;
   // Anzahl jedes Wochentags für „Nach Wochentag (Durchschnitt)“: die Handelstage im Fenster (htListe; ab 0.159, bis 0.158 alle Tage im Fenster,
   // auch Samstage und Sonntage ohne Trade), ohne „Tage ohne Trade mitzählen“ nur Tage mit Trade
-  const wdCnt=[0,0,0,0,0,0,0],tDays=new Set(R.filter(isTrade).map(r=>r.d));
-  for(const d of zero?htListe(tdS,tdE,null,tDays):tDays)wdCnt[wdIdx(d)]++;
-  const T=pfz(R);const P=positions(R);const PS=tradeStats(P,'eur'),PN=tradeStats(P,'exE'),PX=ex?PN:PS;
+  const wdCnt=wdZahl(win,new Set(R.filter(isTrade).map(r=>r.d)),zero);
+  const T=pfz(R);const P=positions(R);const PS=tradeStats(P,'eur'),PN=tradeStats(P,'exE');
   const rS=retSum(R,'sel',ex),dT=maxDD(R,'sel',ex);
   // Durchschnitte nach Zählweise (Kacheln, Karte „Durchschnitt“, Grafik, Rechner)
   const AK=avgKz(R,win,'sel',zero,['day','week','month','trade'],CW);
@@ -14110,7 +14161,6 @@ function renderStats(rows){
   // Gezeigt wird die gewählte, der volle Wert der anderen steht in data-alt, damit layoutTiles() beide misst und nichts springt.
   const pct=S.ui.unit!=='amt';
   const pr=p=>p.rMiss?null:(ex?p.rX:p.rI);
-  const extP=dir=>{let b=null;for(const p of P){const v=pr(p);if(v==null)continue;if(!b||(dir>0?v>pr(b):v<pr(b)))b=p}return b};
   const pick=(A,Rr)=>{const [c,o]=pct?[Rr,A]:[A,Rr];return [c.v,c.s,o.f]};
   // Bester/Schlechtester Trade: Zeile 3 Datum (Link) und Symbol, Zeile 4 Zahl der Konten (wenn mehr als 1) und PF-Stellung
   const trSub=p=>{const n=Object.keys(p.by).length;return jlink('t',p.t+'|'+p.sym,dS(p.d))+', '+esc(p.sym)+'<br>'+(n>1?`${n} Konten · `:'')+mode};
@@ -14126,6 +14176,9 @@ function renderStats(rows){
   // selbst (extW über AK.week.ps).
   const G=glKz(R,'sel',win,AK.week.ps,rg.bad?null:{ser:serElem(RA,'sel',null),von:rg.from||null,bis:rg.to||null}),GW=ex?G.N:G.V;
   const wkSubL=x=>jlink('w',x.o.w,wkSub(x.o.w));
+  // Ab 0.161 (Schritt 2): bester und schlechtester Trade aus derselben Rechnung wie „Hochs und Tiefs“ (glKz, bestT und worstT über alle Trades);
+  // bis 0.160 suchten die Kacheln selbst (tradeStats, extP). eo = das Element eines Extremwerts {o, v} oder null
+  const eo=x=>x?x.o:null;
   const wkTile=dir=>{const o=dir>0?GW.bestW:GW.worstW;if(!o.a)return ['–','noch keine ganze Woche',''];
     return pick({v:monT(o.a.v),s:wkSubL(o.a),f:fCur(o.a.v)},AK.miss?noR:{v:fR.format(o.r.v),s:wkSubL(o.r),f:fR.format(o.r.v)})};
   // Kachel „Ø pro Woche“ / „Ø pro Handelstag“: bei Rendite groß die Ø Rendite, klein der Ø Betrag; bei Betrag umgekehrt. Basis bleibt.
@@ -14145,14 +14198,14 @@ function renderStats(rows){
     ['Ø pro Woche',...avgTile(AK.week,'ganzen Woche','ganzen Wochen','noch keine ganze Woche')],
     ['Beste Woche',...wkTile(1)],
     ['Schlechteste Woche',...wkTile(-1)],
-    ['Bester Trade',...trTile(PX.best,extP(1))],
-    ['Schlechtester Trade',...trTile(PX.worst,extP(-1))],
-    [gl('hit','Trefferquote'),PS.n?fP.format(PS.win/PS.n):'–',`${fI.format(PS.win)} von ${fI.format(PS.n)} ${PS.n===1?'Trade':'Trades'}`],
+    ['Bester Trade',...trTile(eo(GW.bestT.a),eo(GW.bestT.r))],
+    ['Schlechtester Trade',...trTile(eo(GW.worstT.a),eo(GW.worstT.r))],
+    [gl('hit','Trefferquote'),G.n?fP.format(G.nW/G.n):'–',`${fI.format(G.nW)} von ${fI.format(G.n)} ${G.n===1?'Trade':'Trades'}`],
     [gl('dd','Max. Drawdown'),ddHtml(dT,'–',true),dT.miss?mTx:'auf deine '+gl('inv','Investition')+(dT.n&&dT.v<0?' · '+jlink('d',dT.d,'am '+dS(dT.d)):'')]
   ];
   // Ab 0.139: Schmetterling an der Kachel, wenn sie gerade den neuen Meilenstein zeigt: „Beste Woche“ und „Bester Trade“ dieselbe Woche bzw.
   // denselben Trade (in der gewählten Einheit und PF-Stellung), Stufen an „Netto-Gewinn“ (nur bei „PF verteilt“) und „Rendite“
-  const bwS=pct?(AK.miss?null:GW.bestW.r):GW.bestW.a,btS=pct?(AK.miss?null:extP(1)):PX.best;
+  const bwS=pct?(AK.miss?null:GW.bestW.r):GW.bestW.a,btS=pct?(AK.miss?null:eo(GW.bestT.r)):eo(GW.bestT.a);
   const tbf=[ex?msBf('k:sn',['sn']):'',msBf('k:sr',['sr']),'','',bwS?msBf('k:aw',['aw','jw'],bwS.o.w):'','',btS?msBf('k:at',['at','jt'],btS.t+'|'+btS.sym):''];
   $('tiles').innerHTML=tiles.map(([k,v,s,alt],i)=>`<div class="tile${tbf[i]?' hasbf':''}"><div class="k">${k}</div><div class="v"${alt?` data-alt="${esc(alt)}"`:''}>${v}</div>${s?`<div class="s">${s}</div>`:''}${tbf[i]||''}</div>`).join('');
   // Ab 0.100: Leiste „Diese Woche“. Sichtbar, wenn die Woche (Mo bis So) des neuesten Trades der gewählten Konten die heutige Woche ist (Uhr des Geräts)
@@ -14189,25 +14242,28 @@ function renderStats(rows){
   // Je Spalte ein Paar [vor PF, nach PF]; utd setzt gewählte Einheit sichtbar, die andere als Breitenhalter
   const trR=(Pp,rows,sc,miss,ma)=>{const n=Pp.length,f=v=>miss?invDash(ma):v==null?'–':rv(v);
     const x=(ex,dir)=>{let b=null;for(const p of Pp){if(p.rMiss)continue;const v=ex?p.rX:p.rI;if(b==null||(dir>0?v>b:v<b))b=v}return b};
-    return [[f(x(false,1)),f(x(true,1))],[f(x(false,-1)),f(x(true,-1))],[f(n?retSum(rows,sc,false).v/n:null),f(n?retSum(rows,sc,true).v/n:null)]]};
+    // Ab 0.161 (Schritt 5): Ø Rendite pro Trade aus avgKz (bis 0.160 dieselbe Formel hier)
+    const z=avgKz(rows,null,sc,false,['trade']).trade;
+    return [[f(x(false,1)),f(x(true,1))],[f(x(false,-1)),f(x(true,-1))],[f(z.rI),f(z.rX)]]};
   const utd=(A,Rr)=>A.map((a,i)=>{const [c,o]=pct?[Rr[i],a]:[a,Rr[i]];return `<td>${sw(c[0],c[1],o)}</td>`}).join('');
   const endT=rg.to?rg.to.replace(/-/g,'.')+' 23:59:59':'9999';
-  let h='',capSum=0,capOk=true;
+  // Ab 0.161 (Schritt 8): Investition je Konto und der gewählten Konten aus invSumme (Währung der Auswertung)
+  let h='';const capG=invSumme(sel,endT);
   for(const a of sel){
     const ra=R.filter(r=>r.a===a);const z=pfz(ra);const cl=ra.filter(r=>r.cat==='close');
     const tI=tradeStats(cl,'eur'),tN=tradeStats(cl,'exE');
-    const cap=capCur(a,endT); if(cap==null)capOk=false;else capSum+=cap; // ab 0.113 in der Währung der Auswertung
+    const cap=invSumme([a],endT);
     h+=`<tr><td class="acc">${accCell(a)}</td><td>${fI.format(tI.n)}</td>${netTd(z)}<td>${rtSw(ra,'own','–',[a])}</td><td>${cap==null?gl(invKey([a]),INV[a]==='nofac'?'Trading Benefit fehlt':'unbekannt'):invM(cap)}</td><td>${mon(z.res)}</td>${feeTd(z)}${utd([[trd(tI.best,'eur'),trd(tN.best,'exE')],[trd(tI.worst,'eur'),trd(tN.worst,'exE')],[tI.n?mon(tI.avg):'–',tI.n?mon(tN.avg):'–']],trR(positions(ra,'own'),ra,'own',retSum(ra,'own',false).miss,[a]))}<td>${(()=>{const f=RA.find(r=>r.a===a&&isTrade(r));return f&&ra.some(isTrade)?wkAvg(avgKz(ra,cntWin(f.d,rg.from,rg.to,dataEnd,lastT),'own',zero,['week'],CW),[a]):'–'})()}</td><td>${tI.n?fP.format(tI.win/tI.n):'–'}</td><td>${ddSw(ra,'own','–',[a])}</td></tr>`;
   }
   // Ab 0.109: „Treffer&shy;quote“ darf im Spaltenkopf umbrechen (mit 8 px Innenabstand, siehe CSS :where(#s-stats)), so passt „Pro Konto“ mit s2r bei 1280 px
   // Ab 0.111 bleibt der Umbruch; den Innenabstand (10, 8 oder 6 px) wählt tpFit nach Regel A
-  h+=`<tr class="gesamt"><td class="acc"><span class="accn">Gesamt (${allSel?'alle Konten':'Auswahl'})</span></td><td>${fI.format(PS.n)}</td>${netTd(T)}<td>${rtSw(R,'sel','–')}</td><td>${capOk?invM(capSum):invDash(sel)}</td><td>${mon(T.res)}</td>${feeTd(T)}${utd([[trd(PS.best,'eur'),trd(PN.best,'exE')],[trd(PS.worst,'eur'),trd(PN.worst,'exE')],[PS.n?mon(PS.avg):'–',PS.n?mon(PN.avg):'–']],trR(P,R,'sel',AK.miss,sel))}<td>${wkAvg(AK)}</td><td>${PS.n?fP.format(PS.win/PS.n):'–'}</td><td>${ddSw(R,'sel','–')}</td></tr>`;
+  h+=`<tr class="gesamt"><td class="acc"><span class="accn">Gesamt (${allSel?'alle Konten':'Auswahl'})</span></td><td>${fI.format(PS.n)}</td>${netTd(T)}<td>${rtSw(R,'sel','–')}</td><td>${capG!=null?invM(capG):invDash(sel)}</td><td>${mon(T.res)}</td>${feeTd(T)}${utd([[trd(PS.best,'eur'),trd(PN.best,'exE')],[trd(PS.worst,'eur'),trd(PN.worst,'exE')],[PS.n?mon(PS.avg):'–',PS.n?mon(PN.avg):'–']],trR(P,R,'sel',AK.miss,sel))}<td>${wkAvg(AK)}</td><td>${PS.n?fP.format(PS.win/PS.n):'–'}</td><td>${ddSw(R,'sel','–')}</td></tr>`;
   $('t-acc').innerHTML=`<tr><th>Konto${SM0}</th><th>Trades${SM0}</th><th>${gl('netto','Netto-Gewinn')}${SMF}</th><th>${gl('rendite','Rendite')}${SMH}</th><th>${gl('inv','Investition')}${smx(gl('ende','am Ende'))}</th><th>${gl('vorpf','Ergebnis vor PF')}${SM0}</th><th>${gl('pf','Performance Fee')}${SMF}</th><th>Bester Trade${SMH}</th><th>Schlechtester Trade${SMH}</th><th>Ø pro Trade${SMH}</th><th class="w2">${gl('avg','Ø Rendite pro Woche')}${SMH}</th><th>${gl('hit','Treffer&shy;quote')}${SM0}</th><th>${gl('dd','Max. Drawdown')}${SMH}</th></tr>`+h;
   renderGraf(R,sel,{wdCnt,win,zero,AK,from:rg.from,rl:rg.label+(nocwOn()?' ohne laufende Woche':'')});
   // Rechner „Was wäre wenn“: Wochenrenditen nach PF der gezählten ganzen Wochen, heutige Investition der gewählten Konten
   // Ab 0.113 dazu dieselbe Investition in Euro (invE, Ein- und Auszahlungen zum EZB-Kurs ihres Tages) für die Euro-Ansicht des Rechners
-  {let inv=0,invE=0;for(const a of sel){const c=CAP(a,'9999');if(c==null){inv=null;break}inv+=c;invE+=CAPE(a,'9999')}
-   CALC_D={k:AK.week.k,rets:AK.week.ps.map(p=>p.rX),miss:AK.miss||inv==null,accs:sel,why:invWhy(sel,'der Anfang eines Reports fehlt'),inv,invE:inv==null?null:invE};renderCalc()}
+  {const inv=invSumme(sel,'9999','usd'),invE=inv==null?null:invSumme(sel,'9999','eur');
+   CALC_D={k:AK.week.k,rets:AK.week.ps.map(p=>p.rX),miss:AK.miss||inv==null,accs:sel,why:invWhy(sel,'der Anfang eines Reports fehlt'),inv,invE};renderCalc()}
   // Monate. Kumuliert ab Anfang des Zeitraums: PF laut MT5 Summe der Gewinne vor PF, PF verteilt Summe der Netto-Gewinne
   const yms=[...new Set(R.map(r=>r.ym))].sort();
   let mh='',cV=0,cN=0;
@@ -14299,7 +14355,7 @@ function renderHL(G,AK,h){
   // „Verhältnis“: Summen, Größter Trade in Handelstagen (dieselben Trades wie „Größter“ oben, geteilt durch Ø pro Handelstag derselben
   // Einheit und PF-Stellung), Profit-Faktor als „13,1 zu 1“ (Rendite: aus den Renditen, Betrag: aus den Beträgen)
   const day=(s,u)=>{if(!AK.day.k)return null;const V=s===G.V;return u==='r'?(V?AK.day.rI:AK.day.rX):(V?AK.day.aI:AK.day.aX)};
-  const htg=(o,d,u,sg)=>u==='r'&&miss?md:!o?'keiner':d==null||!(d>0)?'–':fmtDec(sg*o.v/d,1)+lT(o.o);
+  const htg=(o,d,u,sg)=>{if(u==='r'&&miss)return md;const v=htgWert(o,d,sg);return v===false?'keiner':v==null?'–':fmtDec(v,1)+lT(o.o)};
   const pfv=(s,u)=>u==='r'?s.pf:s.pfA,pfL=(s,u)=>u==='r'&&miss?md:pfv(s,u)==null?'kein Verlust':fmtDec(pfv(s,u),1),pfR=(s,u)=>u==='r'&&miss?md:pfv(s,u)==null?'':'1';
   $('t-hl3').innerHTML=`<tr><th></th><th><span class="nw">${hlArr(1)}${gl('gv','Gewinne')}</span></th><th><span class="nw">${hlArr(-1)}${gl('gv','Verluste')}</span></th></tr>`+
     `<tr><td>${gl('summe','Summe')}${pfS}</td>${cellU((s,u)=>Fu(u)(s.sumW[u]))}${cellU((s,u)=>Fu(u)(s.sumL[u]))}</tr>`+
@@ -14545,10 +14601,17 @@ function cumulatePoints(pts){let c=0;return pts.map(p=>{c+=p.v;return {key:p.key
 // Ø pro Trade je Zeitraum. Ein Trade ist eine Position: gleiche Schließzeit und gleiches Symbol auf mehreren Konten zählt einmal.
 function avgPoints(rows,res,unit,ex){
   const m=byBucket(rows,res);const out=[];
-  for(const k of [...m.keys()].sort()){const rr=m.get(k);const n=positions(rr).length;if(!n)continue;const o=grpVal(rr,unit,ex);if(o)out.push(mkPt(k,bucketLabel(k,res),{v:o.v/n}))}
+  // Ab 0.161 (Schritt 5): die Rendite aus avgKz wie die Karte „Durchschnitt“; der Betrag bleibt die Summe aller Trade-Zeilen ÷ Zahl der Trades
+  // (mit der Kommission beim Eröffnen, avgKz nimmt nur die Schließung; Florians Antwort 6 zur Freigabe 0.161, offen in OFFEN.md)
+  for(const k of [...m.keys()].sort()){const rr=m.get(k);const n=positions(rr).length;if(!n)continue;const o=grpVal(rr,unit,ex);
+    if(o){const z=unit==='pct'?avgKz(rr,null,'sel',false,['trade']).trade:null;out.push(mkPt(k,bucketLabel(k,res),{v:z?(ex?z.rX:z.rI):o.v/n}))}}
   return out;
 }
 const WDL=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+// Ab 0.161 (Ablauf „Eine Wurzel“, Runde 3, Schritt 4): Anzahl jedes Wochentags für „Nach Wochentag (Durchschnitt)“: die Handelstage im Fenster
+// win (htListe), ohne „Tage ohne Trade mitzählen“ (zero) nur die Tage mit Trade (tage, Set). Grafik und Jahresrückblick („Stärkster
+// Wochentag“) holen sie von hier; bis 0.160 zählten renderStats (wdCnt) und jrCalc je für sich.
+function wdZahl(win,tage,zero){const c=[0,0,0,0,0,0,0];for(const d of zero?htListe(win.s,win.e,null,tage):tage)c[wdIdx(d)]++;return c}
 // Nach Wochentag: Summe oder Durchschnitt (Summe ÷ Anzahl dieses Wochentags im Zeitraum, gezählt wie die Handelstage)
 function weekdayPoints(rows,unit,ex,avg,cnt){
   const g=[[],[],[],[],[],[],[]];
@@ -14592,7 +14655,7 @@ function invPoints(rows,res,sel,win,from){
 // Zeiträume ohne Trade bekommen keinen Punkt. sub = Zeile im Tooltip („6 von 7 Trades“).
 function hitPoints(rows,res){
   const m=new Map();
-  for(const p of positions(rows)){const k=res==='day'?p.d:res==='month'?p.ym:p.wk;const o=m.get(k)||{n:0,w:0};o.n++;if(p.eur>0)o.w++;m.set(k,o)}
+  for(const p of positions(rows)){const k=res==='day'?p.d:res==='month'?p.ym:p.wk;const o=m.get(k)||{n:0,w:0};o.n++;if(gvVz(p)>0)o.w++;m.set(k,o)}
   return [...m.keys()].sort().map(k=>{const o=m.get(k);return Object.assign(mkPt(k,bucketLabel(k,res),{v:o.w/o.n}),{sub:`${fI.format(o.w)} von ${fI.format(o.n)} ${o.n===1?'Trade':'Trades'}`})});
 }
 // Textbreiten in einem unsichtbaren SVG messen (gleiche Schrift wie die Grafik)
@@ -14842,7 +14905,7 @@ function renderGraf(rows,sel,gx){
     pts=hitPoints(rows,g.res);
     opts={kind:g.kind,res:g.res,yr:{mn:0,mx:1,step:0.25},yfmt:v=>fmtDec(v*100,0)+' %',tipfmt:v=>fP.format(v)};
     // Ø-Linie: Trefferquote aller Trades im Zeitraum (wie die Kachel), nicht der Schnitt der Zeitraum-Quoten
-    if(g.avg){const P=positions(rows);if(P.length){const v=P.filter(p=>p.eur>0).length/P.length;opts.avg={v,t:'Ø '+fP.format(v)}}}
+    if(g.avg){const Z=gvZahl(positions(rows));if(Z.n){const v=Z.win/Z.n;opts.avg={v,t:'Ø '+fP.format(v)}}}
   }else if(g.what==='weekday'){
     pts=weekdayPoints(rows,g.unit,ex,avgWd,wdCnt);
     opts={kind:'bar',yfmt:yf,tipfmt:tf,ext:true}; // ab 0.102 mit höchstem und tiefstem Wert (Summe und Durchschnitt)
