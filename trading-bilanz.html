@@ -3499,11 +3499,14 @@ function taxYR(rows,y){const o=[];for(const r of rows){const p=r.cat==='fee'&&r.
 // Summe der Jänner-Anteile: in = aus y+1 nach y gezählt, out = aus y ins Vorjahr gezählt (negativ wie die Fee)
 const janPF=(rows,y,dir)=>rows.filter(r=>r.cat==='fee'&&r.pfPrev&&(dir==='in'?+r.y===+y+1:r.y===y)).reduce((s,r)=>s+r.pfPrev.e,0);
 function years(rows){return [...new Set(rows.map(r=>r.y))].sort()}
+// Ab 0.165 (Ablauf „Eine Wurzel“, Runde 4, Schritt 11b): „Ergebnis vor PF“ (res, in USD resUsd) aus der einen Summe sumTrades, wie der Netto-Gewinn.
+// Bis 0.164 summierte agg dieselben Zeilen hier noch einmal (Schließungen und Eröffnungen, in derselben Reihenfolge, also bitgleich). Die Schleife
+// rechnet nur noch, was es nur hier gibt: Gewinne, Verluste und Kosten für die Steuer, Performance Fee, Gewinnauszahlungen, Ein- und Auszahlungen.
 function agg(rows){
-  const z={res:0,fee:0,tax:0,pw:0,ein:0,kab:0,n:0,win:0,best:null,worst:null,gain:0,loss:0,costs:0,resUsd:0,feeUsd:0,pwUsd:0};
+  const z={res:sumTrades(rows,false).v,fee:0,tax:0,pw:0,ein:0,kab:0,n:0,win:0,best:null,worst:null,gain:0,loss:0,costs:0,resUsd:sumTrades(rows,false,true).v,feeUsd:0,pwUsd:0};
   for(const r of rows){
-    if(r.cat==='close'){z.res+=r.eur;z.resUsd+=r.amt;z.costs+=r.x.cost/(r.rate||NaN);const g=r.x.prof/(r.rate||NaN);if(g>=0)z.gain+=g;else z.loss+=g}
-    else if(r.cat==='open'){z.res+=r.eur;z.resUsd+=r.amt;z.costs+=r.eur}
+    if(r.cat==='close'){z.costs+=r.x.cost/(r.rate||NaN);const g=r.x.prof/(r.rate||NaN);if(g>=0)z.gain+=g;else z.loss+=g}
+    else if(r.cat==='open'){z.costs+=r.eur}
     else if(r.cat==='fee'){z.fee+=r.eur;z.feeUsd+=r.amt}
     else if(r.cat==='gewinnauszahlung'){z.pw+=-r.eur;z.pwUsd+=-r.amt}
     else if(r.cat==='einzahlung'){z.ein+=r.amt}
@@ -3751,7 +3754,7 @@ function pfz(rows){
 }
 // Zeilen für die Auswertung in der gewählten Währung. Bei 'usd' flache Kopien, in denen eur, exE und pfE den Betrag in USD tragen,
 // direkt aus der Kontowährung (amt, exU; ab 0.114 immer USD). So rechnen agg(), pfz(), positions(),
-// tradeStats() und sumTrades() unverändert in der gewählten Währung. amt, exU und die Investition bleiben, Rendite, Max. Drawdown und
+// sumTrades() (bis 0.164 auch tradeStats()) unverändert in der gewählten Währung. amt, exU und die Investition bleiben, Rendite, Max. Drawdown und
 // Trefferquote ändern sich also nicht. Steuer, Excel und CSV bekommen immer die Originalzeilen (window.__rows).
 // Achtung: gain, loss und costs aus agg() bleiben in Euro, weil sie über r.rate gehen. Werden sie je in der Auswertung angezeigt, müssen sie dort ebenfalls umgerechnet werden.
 function curRows(rows,cur){
@@ -3872,11 +3875,7 @@ function gvZahl(P){let win=0,loss=0;for(const p of P){const v=gvVz(p);if(v>0)win
 // nicht über 0). Bis 0.160 stand die Formel dreimal: renderHL, xlsxAll (Excel „Kennzahlen“), jrCalc (Rückblick „Verhältnis“).
 const htgWert=(o,d,sg)=>!o?false:d==null||!(d>0)?null:sg*o.v/d;
 function extErst(l,f,dir){let b=null,bv=null;for(const x of l){const v=f(x);if(v==null||v!==v)continue;if(b===null||(dir>0?v>bv:v<bv)){b=x;bv=v}}return b?{o:b,v:bv}:null}
-function tradeStats(list,key){ // list of {eur,t}
-  let n=0,win=0,best=null,worst=null,sum=0;
-  for(const p of list){n++;sum+=p[key];if(p[key]>0)win++;if(!best||p[key]>best[key])best=p;if(!worst||p[key]<worst[key])worst=p}
-  return {n,win,best,worst,avg:n?sum/n:0};
-}
+// Ab 0.165: tradeStats (Zählung und Extremwerte über die Zeilen) ist entfernt; sein letzter Aufruf war das Blatt „Konten“ der beiden Excel (Schritt 11c).
 
 /* ---------------- Durchschnitte, Gewinn und Verlust (Zählweise) ----------------
    Reine Rechnungen ohne Oberfläche: Auswertung (gewählte Konten und Zeitraum, Scope 'sel' bzw. 'own') und Excel (alle Konten, Scope 'all').
@@ -12253,47 +12252,102 @@ function beExtra(be,st,end,CE,DE,X,wd){const hin=()=>{if(!be[0].hin){be[0].hin=1
   for(const x of dxAtEnd(CE)){hin();n++;const t=`aus ${wd(x.w)}, ${dxEndNote(x)}`;
     if(DE)for(const l of x.lots)be.push([st,x.nm,x.c,X.D(l.kd),X.N(l.q),X.E(l.ak),X.D(l.frei),t]);else be.push([st,x.nm,x.c,X.N(x.q),X.E(x.ak),x.q?X.R(x.ak/x.q):'',t])}
   return n}
+// Ab 0.165 (Fund F, Florians Antwort 2 zur Freigabe 0.165): Krypto-Summen eines Jahres bzw. aller Jahre (jedes Feld von C.byY addiert), die eine
+// Rechnung für die Übersicht und die Summenzeile im Blatt „Monate“ des Excel mit allen Daten. Bis 0.164 rechnete die Summenzeile mit Trades je Jahr
+// Gewinn plus Verlust und addierte die Jahre (xlsxAll), ohne Trades und in der Übersicht die Summe der Gewinne plus die Summe der Verluste.
+function kxSumme(C,year){return (year?[C.byY[year]].filter(Boolean):Object.values(C.byY)).reduce((a,b)=>{for(const [k,v] of Object.entries(b))a[k]=(a[k]||0)+v;return a},{gain:0,loss:0,gainK:0,lossK:0,nK:0,kest:0,fee:0,vp:0,ak:0,wk:0,free:0,n:0,nT:0})}
+/* ---------------- Blätter beider Excel (ab 0.165): gemeinsame Bausteine ----------------
+   Ablauf „Eine Wurzel“, Runde 4, Schritt 11a (KENNZAHLEN.md, Teil D): Die sechs Blätter, die das Excel mit allen Daten (exportXlsx mit xlsxAll)
+   und die Steuer-Excel (taxXlsx) beide haben, entstehen hier, je Blatt ein Baustein. Bis 0.164 baute jede Excel sie für sich; eine Änderung für
+   beide musste an beiden Stellen gemacht werden. Was die zwei Fassungen unterscheidet (alle Daten oder ein Steuerjahr, Land, weitere Spalten),
+   ist eine Einstellung o, keine Kopie. Die Werte kommen aus ihren Wurzeln: agg bzw. pfz (Ergebnis aus sumTrades, Performance Fee,
+   Gewinnauszahlungen), positions (Trades), glKz (bester und schlechtester Trade je Konto), posFolge (Reihenfolge). Alle bauen mit xSheet.
+   - xlUebersicht(o): o.titel (Zeilen davor), o.ds ([Name, Datum] des Datenstands), o.namen ([[Name, Wert], …]), o.konten, o.nach (Zeilen nach
+     „Wechselkurse“), o.cfd ({kopf, T aus agg, saldo: Zeilen}; null: ohne Block), o.rest (Zeilen danach: Krypto und Texte, in den beiden
+     Excel absichtlich verschieden, GESTALTUNG Abschnitt 13).
+   - xlMonate(R, o) und xlWochen(R, o): o.keys (Monate bzw. Wochen; ohne: die aus R), o.z (agg, Vorgabe, oder pfz), o.nach ({h, v(z)}: die
+     Spalte nach der Performance Fee), o.pw (Spalte „Gewinnauszahlungen“), o.mehr (weitere Spalten), o.item(k, rr) (weitere Felder je Zeile),
+     o.fertig(items) (z. B. kumulierte Summen); nur Monate: o.krypto(m), o.kryptoSumme, o.summeMehr(T) (weitere Zellen der Summenzeile).
+   - xlKonten(R, accs, o): o.voll (Spalten „Name“, „Broker“, „Gewinnauszahlungen“), o.nach wie oben.
+   - xlTrades(P, accs, o): o.zeitDT (Schließzeit als Datum-Uhrzeit statt Text), o.nachZeit, o.nachDatum, o.nachErgebnis (weitere Spalten an
+     diesen Stellen), o.item(p) (weitere Felder je Position), o.fuss (Satz unter der Tabelle).
+   - xlBuchungen(R, o): o.zeitDT wie oben, o.steuer (Spalte „Steuerlich relevant“). */
+function xlUebersicht(o){const T=o.cfd&&o.cfd.T,today=new Date().toISOString().slice(0,10);
+  const rows=[...o.titel,['Erstellt am',X.D(today)],[o.ds[0],X.D(o.ds[1])],...o.namen,['Konten',o.konten.join(', ')],
+    ['Wechselkurse','EZB-Referenzkurs USD je EUR vom Buchungstag (siehe Blatt Kurse)'],...(o.nach||[]),[],
+    ...(o.cfd?[[X.B(o.cfd.kopf),X.B('EUR')],['Gewinne aus geschlossenen Trades',X.E(T.gain)],['Verluste aus geschlossenen Trades',X.E(T.loss)],
+      ['Kommission, Swap, Gebühren',X.E(T.costs)],['Performance Fee',X.E(T.fee)],...o.cfd.saldo,[]]:[]),
+    ...o.rest];
+  return {name:'Übersicht',rows,widths:[52,70]}}
+// Zeilen von Monate und Wochen: je Schlüssel k die Buchungen rr, z = agg(rr) bzw. pfz(rr), n = Trades (Positionen)
+function xlZeilen(R,key,o){const m=new Map();for(const r of R){const k=key(r);if(!m.has(k))m.set(k,[]);m.get(k).push(r)}
+  const items=(o.keys||[...m.keys()].sort()).map(k=>{const rr=m.get(k)||[];return Object.assign({k,rr,z:(o.z||agg)(rr),n:positions(rr).length},o.item?o.item(k,rr):null)});
+  if(o.fertig)o.fertig(items);return items}
+function xlMonate(R,o){const N=o.nach,T=(o.z||agg)(R);
+  return xSheet('Monate',[{h:'Monat',w:16,c:x=>fM(x.k)},{h:'Trades',w:8,c:x=>x.n},{h:'Ergebnis',w:13,c:x=>X.E(x.z.res)},{h:'Performance Fee',w:15,c:x=>X.E(x.z.fee)},
+    {h:N.h,w:18,c:x=>X.E(N.v(x.z))},...(o.pw?[{h:'Gewinnauszahlungen',w:18,c:x=>X.E(x.z.pw)}]:[]),{h:'Krypto Gewinn/Verlust',w:18,c:x=>X.E(o.krypto(x.k))},...(o.mehr||[])],
+    xlZeilen(R,r=>r.ym,o),()=>[[X.B('Summe'),positions(R).length,X.EB(T.res),X.EB(T.fee),X.EB(N.v(T)),...(o.pw?[X.EB(T.pw)]:[]),X.EB(o.kryptoSumme),...(o.summeMehr?o.summeMehr(T):[])]])}
+function xlWochen(R,o){const N=o.nach;
+  return xSheet('Wochen',[{h:'KW',w:6,c:x=>isoWeek(x.k)},{h:'von',w:11,c:x=>X.D(x.k)},{h:'bis',w:11,c:x=>X.D(addDays(x.k,6))},{h:'Trades',w:8,c:x=>x.n},
+    {h:'Ergebnis',w:13,c:x=>X.E(x.z.res)},{h:'Performance Fee',w:15,c:x=>X.E(x.z.fee)},{h:N.h,w:15,c:x=>X.E(N.v(x.z))},...(o.pw?[{h:'Gewinnauszahlungen',w:18,c:x=>X.E(x.z.pw)}]:[]),
+    ...(o.mehr||[])],xlZeilen(R,r=>r.wk,o))}
+// Konten: Trades, bester und schlechtester Trade aus glKz wie „Pro Konto“ (ab 0.165, Schritt 11c; ohne Wert bleibt die Zelle leer)
+function xlKonten(R,accs,o){const N=o.nach,V=!!o.voll;
+  const items=accs.map(a=>{const ra=R.filter(r=>r.a===a),Gk=glKz(ra,'own',null,[]);return {a,A:S.accounts[a],z:agg(ra),n:Gk.n,bt:Gk.V.bestT.a,wt:Gk.V.worstT.a}});
+  return xSheet('Konten',[{h:'Konto',w:11,c:x=>x.a},...(V?[{h:'Name',w:14,c:x=>x.A.name||''}]:[]),{h:'Inhaberin laut Report',w:24,c:x=>x.A.holder||''},...(V?[{h:'Broker',w:20,c:x=>x.A.company||''}]:[]),
+    {h:'Währung',w:8,c:x=>x.A.cur},{h:'Trading Benefit',w:10,c:x=>x.A.factor?facT(x.A.factor):''},{h:'Trades',w:7,c:x=>x.n},{h:'Ergebnis',w:12,c:x=>X.E(x.z.res)},
+    {h:'Performance Fee',w:14,c:x=>X.E(x.z.fee)},{h:N.h,w:13,c:x=>X.E(N.v(x.z))},...(V?[{h:'Gewinnauszahlungen',w:16,c:x=>X.E(x.z.pw)}]:[]),
+    {h:'Bester Trade',w:12,c:x=>x.bt?X.E(x.bt.v):''},{h:'Schlechtester Trade',w:16,c:x=>x.wt?X.E(x.wt.v):''}],items)}
+function xlTrades(P,accs,o){const items=posFolge(P).map(p=>o.item?o.item(p):p);
+  const sh=xSheet('Trades',[{h:'Schließzeit (Server)',w:19,k:'t',c:p=>o.zeitDT?xDT(p.t):p.t},...(o.nachZeit||[]),{h:'Datum',w:11,c:p=>X.D(p.d)},...(o.nachDatum||[]),
+    {h:'Symbol',w:10,c:p=>p.sym},{h:'Konten',w:7,c:p=>p.accs},{h:'Ergebnis gesamt EUR',w:16,k:'e',c:p=>X.E(p.eur)},...(o.nachErgebnis||[]),
+    ...accs.map(a=>({h:'Konto '+a,w:15,c:p=>p.by[a]!=null?X.E(p.by[a]):''}))],items,o.fuss?()=>[[],[o.fuss]]:null);
+  if(o.fuss)sh.skip=[sh.rows.length-1];return sh}
+function xlBuchungen(R,o){const tr=r=>r.cat==='close'||r.cat==='open';
+  return xSheet('Buchungen MT5',[{h:'Konto',w:10,c:r=>r.a},{h:'Zeitpunkt (Server)',w:19,c:r=>o.zeitDT?xDT(r.x.t):r.x.t},{h:'Datum',w:11,c:r=>X.D(r.d)},
+    {h:'Art',w:20,c:r=>CATN[r.cat]||'unbekannt'},{h:'Symbol',w:10,c:r=>r.x.sym},{h:'Trade-Nr.',w:11,c:r=>r.x.id},{h:'Gewinn/Betrag',w:12,k:'g',c:r=>X.N(r.cat==='open'?0:r.x.prof)},
+    {h:'Kosten (Komm., Swap, Gebühr)',w:14,k:'k',c:r=>X.N(tr(r)?r.x.cost:0)},{h:'Summe (Kontowährung)',w:14,k:'s',c:(r,n,L)=>X.F(`${L.g}${n}+${L.k}${n}`,r.amt,5)},
+    {h:'Kurs vom',w:11,c:r=>r.rd?X.D(r.rd):''},{h:'Kurs USD je EUR',w:10,k:'r',c:r=>r.rate?X.R(r.rate):''},{h:'Summe EUR',w:12,c:(r,n,L)=>r.rate?X.F(`${L.s}${n}/${L.r}${n}`,r.eur,2):''},
+    ...(o.steuer?[{h:'Steuerlich relevant',w:10,c:r=>tr(r)||r.cat==='fee'?'ja':'nein'}]:[]),{h:'Kommentar',w:18,c:r=>r.x.cmt||''}],R)}
+// Ab 0.165 (Florians Entscheidung in der Freigabe 0.165 zu OFFEN „Aus 0.137“): Gebühr eines eigenen Eintrags in der Spalte ihrer Einheit, in beiden
+// Excel gleich (Blatt „Eigene Krypto-Einträge“): [Gebühr EUR, Gebühr USD]. Die Gebühr steht in der Währung des Eintrags, bei einer Kartenzahlung immer
+// in USD (feeU, auch bei Weg 2 mit einem Wert in Euro, GESTALTUNG Abschnitt 23). Bis 0.164 eine Spalte „Gebühr“ ohne Einheit: Euro mit €-Format, USD
+// als Zahl ohne Zeichen, bei Weg 2 mit „EUR“ in der Spalte „Währung“. Die Rechnung ändert sich nicht.
+const CX_GEB_H=['Gebühr EUR','Gebühr USD'];
+const cxGeb=c=>!(c.fee>0)?['','']:c.cur==='USD'||c.feeU?['',X.N(c.fee)]:[X.E(c.fee),''];
 function exportXlsx(year){
   // Ab 0.38: Krypto in beiden Ländern (AT gleitender Ø-Preis, DE FIFO mit Haltefrist)
   // Ab 0.77 (Teil 3): ohne Land und ohne Steuersprache. Bis 0.76 rechnete alles außer DE, auch „Ohne Steuer“, als Österreich. Jetzt immer der
   // gleitende Ø-Preis (Rechnung 'AT'), immer mit Krypto (das Häkchen im Reiter Steuer zählt hier nicht), ohne Krypto-Daten keine Krypto-Blätter.
   // Die Steuer-Excel (taxXlsx) bleibt, wie sie ist. exportXlsx wird nur noch mit null aufgerufen.
   const rows=window.__rows;const DE=false,L='AT';const C0=cryptoCalc(L);const C=C0;const R=year?rows.filter(r=>r.y===year):rows;const T=agg(R);
-  const accs=Object.keys(S.accounts).sort();const today=new Date().toISOString().slice(0,10);
+  const accs=Object.keys(S.accounts).sort();
   const lastD=rows.length?rows[rows.length-1].d:'';
   // Krypto-Summen des Jahres bzw. aller Jahre (alle Felder von byY addiert)
-  const cy=(year?[C.byY[year]].filter(Boolean):Object.values(C.byY)).reduce((a,b)=>{for(const [k,v] of Object.entries(b))a[k]=(a[k]||0)+v;return a},{gain:0,loss:0,gainK:0,lossK:0,nK:0,kest:0,fee:0,vp:0,ak:0,wk:0,free:0,n:0,nT:0});
+  const cy=kxSumme(C,year);
   const sy=year||'';
   const holders=[...new Set(accs.map(a=>S.accounts[a].holder).filter(Boolean))].join(', ');
   const comps=[...new Set(accs.map(a=>S.accounts[a].company).filter(Boolean))].join(', ');
   const fre=realMoney().fremd;
-  // Ab 0.77 (Teil 3): Übersicht ohne Land, ohne Kennzahlen, Steuerkategorien und Steuer-Hinweise; die Summen bleiben mit neutralen Namen
-  const ov=[[X.T('Trading-Bilanz'+(year?': '+year:': alle Jahre'))],[],
-   ['Erstellt am',X.D(today)],['Datenstand (letzte MT5-Buchung)',X.D(lastD)],['Name laut MT5-Report',holders],['Broker laut MT5-Report',comps],['Konten',accs.join(', ')],
-   ['Wechselkurse','EZB-Referenzkurs USD je EUR vom Buchungstag (siehe Blatt Kurse)'],[],
-   [X.B('Trading (CFD)'),X.B('EUR')],
-   ['Gewinne aus geschlossenen Trades',X.E(T.gain)],['Verluste aus geschlossenen Trades',X.E(T.loss)],['Kommission, Swap, Gebühren',X.E(T.costs)],['Performance Fee',X.E(T.fee)],
-   [X.B('Saldo nach PF (am Abbuchungstag)'),X.EB(T.tax)],['zur Information: Gewinnauszahlungen',X.E(T.pw)],[],
-   ...(C.n?[[X.B('Krypto (USDC und USDT)'),X.B('EUR')],['Gewinne',X.E(cy.gain)],['Verluste',X.E(cy.loss)],[X.B('Saldo'),X.EB(cy.gain+cy.loss)],
-     ...(fre?[['Nicht enthalten: Einzahlungen, die nicht eigenes Geld sind (USD)',X.N(fre)]]:[]),...(keptText(C,year,undefined,1)?[['Fehlender Einkauf',keptText(C,year,undefined,1)]]:[]),[]]:[]),
-   [X.B('Annahmen')],...assumptions({pay:payBN(C,year),cx:C.n>0,tb:accs.some(a=>S.accounts[a].factor>1)}).map(a=>['',a])];
-  const yms=[...new Set(R.map(r=>r.ym))].sort();
   // Ab 0.77 (Teil 3): „Steuerpflichtig“ heißt in Monate, Wochen und Konten „Ergebnis nach PF (am Abbuchungstag)“ (z.tax = Ergebnis + Performance Fee
   // der Buchungen im Zeitraum), zur Unterscheidung von „Netto-Gewinn PF verteilt“
-  const XPF='Ergebnis nach PF (am Abbuchungstag)';
-  const mo=[[X.B('Monat'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B(XPF),X.B('Gewinnauszahlungen'),X.B('Krypto Gewinn/Verlust')]];
-  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=agg(rr);mo.push([fM(m),positions(rr).length,X.E(z.res),X.E(z.fee),X.E(z.tax),X.E(z.pw),X.E(C.byM[m]||0)])}
-  mo.push([X.B('Summe'),positions(R).length,X.EB(T.res),X.EB(T.fee),X.EB(T.tax),X.EB(T.pw),X.EB(cy.gain+cy.loss)]);
-  const wk=[[X.B('KW'),X.B('von'),X.B('bis'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B(XPF),X.B('Gewinnauszahlungen')]];
-  for(const w of [...new Set(R.map(r=>r.wk))].sort()){const rr=R.filter(r=>r.wk===w);const z=agg(rr);wk.push([isoWeek(w),X.D(w),X.D(addDays(w,6)),positions(rr).length,X.E(z.res),X.E(z.fee),X.E(z.tax),X.E(z.pw)])}
-  const ko=[[X.B('Konto'),X.B('Name'),X.B('Inhaberin laut Report'),X.B('Broker'),X.B('Währung'),X.B('Trading Benefit'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B(XPF),X.B('Gewinnauszahlungen'),X.B('Bester Trade'),X.B('Schlechtester Trade')]];
-  for(const a of accs){const ra=R.filter(r=>r.a===a);const z=agg(ra);const ts=tradeStats(ra.filter(r=>r.cat==='close'),'eur');const A=S.accounts[a];ko.push([a,A.name||'',A.holder||'',A.company||'',A.cur,A.factor?facT(A.factor):'',ts.n,X.E(z.res),X.E(z.fee),X.E(z.tax),X.E(z.pw),ts.best?X.E(ts.best.eur):'',ts.worst?X.E(ts.worst.eur):''])}
-  const P=positions(R).sort((a,b)=>a.t<b.t?-1:1);
-  const tr=[[X.B('Schließzeit (Server)'),X.B('Datum'),X.B('Symbol'),X.B('Konten'),X.B('Ergebnis gesamt EUR'),...accs.map(a=>X.B('Konto '+a))]];
-  for(const p of P)tr.push([p.t,X.D(p.d),p.sym,p.accs,X.E(p.eur),...accs.map(a=>p.by[a]!=null?X.E(p.by[a]):'')]);
-  const bu=[[X.B('Konto'),X.B('Zeitpunkt (Server)'),X.B('Datum'),X.B('Art'),X.B('Symbol'),X.B('Trade-Nr.'),X.B('Gewinn/Betrag'),X.B('Kosten (Komm., Swap, Gebühr)'),X.B('Summe (Kontowährung)'),X.B('Kurs vom'),X.B('Kurs USD je EUR'),X.B('Summe EUR'),X.B('Kommentar')]];
-  R.forEach((r,i)=>{const n=i+2;const g=r.cat==='open'?0:r.x.prof,k=(r.cat==='close'||r.cat==='open')?r.x.cost:0;
-    bu.push([r.a,r.x.t,X.D(r.d),CATN[r.cat]||'unbekannt',r.x.sym,r.x.id,X.N(g),X.N(k),X.F(`G${n}+H${n}`,r.amt,5),r.rd?X.D(r.rd):'',r.rate?X.R(r.rate):'',r.rate?X.F(`I${n}/K${n}`,r.eur,2):'',r.x.cmt||''])});
+  const XPF='Ergebnis nach PF (am Abbuchungstag)',NPF={h:XPF,v:z=>z.tax};
+  // Excel mit allen Daten: Monate, Wochen und Trades erweitert, dazu Durchschnitt, Tage und Investition (xlsxAll)
+  const XA=year?null:xlsxAll(rows,{C});
+  // Fehlende Kurse (nur bei „Excel mit allen Daten“ möglich, die Jahres-Excel ist dann gesperrt): Satz in der Übersicht, Euro-Zellen leer
+  const mrX=year?null:missingRates();
+  // Ab 0.165 (Schritt 11a): die sechs Blätter beider Excel aus den Bausteinen (Block „Blätter beider Excel“); ohne Trades (XA null) Monate, Wochen und
+  // Trades mit den Grundspalten wie bis 0.164. Ab 0.77 (Teil 3): Übersicht ohne Land, ohne Kennzahlen, Steuerkategorien und Steuer-Hinweise; die
+  // Summen bleiben mit neutralen Namen.
+  const ovS=xlUebersicht({titel:[[X.T('Trading-Bilanz'+(year?': '+year:': alle Jahre'))],[]],ds:['Datenstand (letzte MT5-Buchung)',lastD],
+    namen:[['Name laut MT5-Report',holders],['Broker laut MT5-Report',comps]],konten:accs,
+    nach:mrX&&mrX.n?[['Fehlende Kurse',`Für ${nTage(mrX.days.length)} fehlen Kurse, die Euro-Werte dieser Buchungen sind leer.`]]:[],
+    cfd:{kopf:'Trading (CFD)',T,saldo:[[X.B('Saldo nach PF (am Abbuchungstag)'),X.EB(T.tax)],['zur Information: Gewinnauszahlungen',X.E(T.pw)]]},
+    rest:[...(C.n?[[X.B('Krypto (USDC und USDT)'),X.B('EUR')],['Gewinne',X.E(cy.gain)],['Verluste',X.E(cy.loss)],[X.B('Saldo'),X.EB(cy.gain+cy.loss)],
+      ...(fre?[['Nicht enthalten: Einzahlungen, die nicht eigenes Geld sind (USD)',X.N(fre)]]:[]),...(keptText(C,year,undefined,1)?[['Fehlender Einkauf',keptText(C,year,undefined,1)]]:[]),[]]:[]),
+      [X.B('Annahmen')],...assumptions({pay:payBN(C,year),cx:C.n>0,tb:accs.some(a=>S.accounts[a].factor>1)}).map(a=>['',a])]});
+  const shMo=XA?XA.monate:xlMonate(R,{nach:NPF,pw:true,krypto:m=>C.byM[m]||0,kryptoSumme:cy.gain+cy.loss}),shWo=XA?XA.wochen:xlWochen(R,{nach:NPF,pw:true});
+  const shKo=xlKonten(R,accs,{voll:true,nach:NPF}),shTr=XA?XA.trades:xlTrades(positions(R),accs,{}),shBu=xlBuchungen(R,{zeitDT:!!XA});
   const fl=C.flow.filter(f=>!year||f.d.slice(0,4)===year);
   const giveX=f=>!f.give?'':DE?' (Zum Weitergeben: '+f.give.map(x=>`${fmtNum(x.q)} ${f.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join('; ')+')':` (Zum Weitergeben: ${fmtNum(f.give.q)} ${f.coin}, Ø-Preis ${fDec(f.give.avg,4)} €)`;
   const kr=[[X.B('Datum'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Coins rein/raus'),X.B(DE?'Euro-Wert (Veräußerungspreis)':'Euro-Wert (Erlös)'),X.B(DE?'Werbungskosten':'Gebühr'),X.B('Einkaufswert der Coins'),X.B('Gewinn/Verlust'),...(DE?[X.B('davon steuerpflichtig')]:[]),X.B('Coins danach'),X.B('Einkaufswert danach'),...(DE?[]:[X.B('Ø-Preis danach (EUR je Coin)')])]];
@@ -12332,7 +12386,7 @@ function exportXlsx(year){
 
   const OQ=S.cx.some(c=>c.kind==='tauschein'&&c.otherQ>0);
   const cx=[[X.B('Datum'),X.B('Was'),X.B('Wallet'),X.B('nach Wallet'),X.B('Coin'),X.B('Menge'),...(QI?[X.B('Menge angekommen')]:[]),X.B('in Coin'),X.B('Menge erhalten'),X.B('anderer Coin (in/aus)'),...(OQ?[X.B('Menge hergegeben')]:[]),X.B('Währung'),X.B('Betrag USD'),X.B('Euro'),X.B('Euro geschätzt'),X.B('Einkaufswert übertragen'),
-    X.B('Kaufdatum der schenkenden Person'),X.B('Kaufdatum geschätzt'),X.B('Gebühr'),X.B('KESt abgezogen'),X.B('KESt EUR'),X.B('keine Kryptowährung (NFT)'),X.B('Zum Weitergeben (Verschenkt)'),X.B('Notiz'),...(HW?[X.B('Herkunft')]:[])]];
+    X.B('Kaufdatum der schenkenden Person'),X.B('Kaufdatum geschätzt'),...CX_GEB_H.map(h=>X.B(h)),X.B('KESt abgezogen'),X.B('KESt EUR'),X.B('keine Kryptowährung (NFT)'),X.B('Zum Weitergeben (Verschenkt)'),X.B('Notiz'),...(HW?[X.B('Herkunft')]:[])]];
   const gv={};for(const f of C0.flow)if(f.give&&f.cx!=null)gv[f.cx]=f;
   // Ab 0.120: „Bezahlung erhalten“ mit dem Wert beim Erhalt (Tageswert aus der Rechnung) in der Spalte „Euro“
   const bzE={};for(const f of C0.flow)if(f.k==='bzein'&&f.cx!=null&&isFinite(f.eur))bzE[f.cx]=f.eur;
@@ -12341,7 +12395,7 @@ function exportXlsx(year){
   S.cx.map((c,i)=>Object.assign({i},c)).filter(c=>!year||c.date.slice(0,4)===year).sort((a,b)=>a.date<b.date?-1:1).forEach(c=>{const ev=CX_FIELDS[c.kind]&&CX_FIELDS[c.kind].eur,ve=ev?cxEur(c):null;
     const g=gv[c.i],gt=!g?'':DE?g.give.map(x=>`${fmtNum(x.q)} ${c.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join('; '):`${fmtNum(g.give.q)} ${c.coin}, Ø-Preis ${fmtDec(g.give.avg,4)} €, Einkaufswert ${fE.format(g.give.q*g.give.avg)}`;
     cx.push([X.D(c.date),kindL(c),c.wallet,c.to||'',c.coin,X.N(c.qty),...(QI?[c.kind==='uebertrag'&&c.qtyIn>0?X.N(c.qtyIn):'']:[]),c.coin2||'',c.qty2?X.N(c.qty2):'',c.other||'',...(OQ?[c.kind==='tauschein'&&c.otherQ>0?c.otherQ:'']:[]),ev?(c.cur==='USD'?'USD':'EUR'):bzE[c.i]!=null?'EUR':'',c.cur==='USD'&&c.usd!=null?X.N(c.usd):'',ev&&isFinite(ve)&&!cxMissing(c).length?X.E(ve):bzE[c.i]!=null?X.E(bzE[c.i]):(c.kind==='tauschaus'&&c.eur>0?X.E(c.eur):''),c.est||xes[c.i]?'ja':'',xf[c.i]!=null?X.E(xf[c.i]):'',
-      c.gd?X.D(c.gd):'',c.kind==='eingang'&&c.estD?'ja':'',c.fee>0?(c.cur==='USD'||c.feeU?X.N(c.fee):X.E(c.fee)):'',c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,c.note||'',...(HW?[cxOrigN(c)]:[])])});
+      c.gd?X.D(c.gd):'',c.kind==='eingang'&&c.estD?'ja':'',...cxGeb(c),c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,c.note||'',...(HW?[cxOrigN(c)]:[])])});
   // Ab 0.39: Bewegungen aus der Wallet-Datei (Jahres-Excel: nur die des Jahres)
   const wb=[[X.B('Datum'),X.B('Zeit'),X.B('Netzwerk'),X.B('Wallet von'),X.B('Wallet nach'),X.B('rein/raus'),X.B('Coin'),X.B('ausgegeben von'),X.B('Menge'),X.B('Gegenseite'),X.B('Hash'),X.B('Status'),X.B('zugeordnet zu')]];
   Object.values(S.wtx).filter(m=>!year||m.date.slice(0,4)===year).sort((a,b)=>a.ts-b.ts).forEach(m=>{const sd=wSide(m),cp=sd==='in'?m.from:sd==='out'?m.to:'',cw=cp&&(m.st==='tag'||wIsTag(cp))?'Tag':cp&&wIsPay(cp)?'Kartenzahlungen':cp&&wIsBr(cp)?'Brücke / Dienst':sd==='in'?m.wFrom:sd==='out'?m.wTo:'',c=m.st==='cx'?cxById(m.ref):null;
@@ -12353,25 +12407,19 @@ function exportXlsx(year){
   const kq={frank:'Frankfurter (EZB-Daten)',ezb:'EZB',file:'Datei (EZB)',rb:RB_SRC(),own:'von Hand'};
   rateDates().filter(d=>!year||(d>=addDays(year+'-01-01',-10)&&d<=year+'-12-31')).forEach((d,i)=>ku.push([X.D(d),X.R(rateVal(d)),X.F(`1/B${i+2}`,1/rateVal(d),9),used.has(d)?'ja':'',kq[rateSrc(d)]]));
   ku.push([],[ECB_CITE]);
-  const sheets=[{name:'Übersicht',rows:ov,widths:[52,70]},{name:'Monate',rows:mo,freeze:1,widths:[16,8,13,15,18,18,18]},{name:'Wochen',rows:wk,freeze:1,widths:[6,11,11,8,13,15,15,18]},{name:'Konten',rows:ko,freeze:1,widths:[11,14,24,20,8,10,7,12,14,13,16,12,16]},{name:'Trades',rows:tr,freeze:1,widths:[19,11,10,7,16,...accs.map(()=>15)]},{name:'Buchungen MT5',rows:bu,freeze:1,widths:[10,19,11,20,10,11,12,14,14,11,10,12,18]}];
+  const sheets=[ovS,shMo,shWo,shKo,shTr,shBu];
   // Ab 0.77 (Teil 3): Blatt „Krypto“ mit einem neutralen Satz über dem Kopf; Krypto-Blätter nur mit Krypto-Daten
   if(C.n){sheets.push({name:'Krypto',rows:[[KR_NOTE],[],...kr],hdr:[2],skip:[0],freeze:3,widths:DE?[11,40,14,6,13,16,14,14,12,14,12,14]:[11,40,14,6,13,14,10,14,12,12,14,12]});
     if(DE)sheets.push({name:'Verkäufe nach FIFO',rows:ff,freeze:1,widths:[11,32,14,6,11,13,12,14,13,10,12,13]});
     sheets.push({name:'Bestand zum Jahresende',rows:be,freeze:1,widths:DE?[11,14,6,11,13,12,12]:[11,14,6,13,12,14]});
     if(ge.length>1)sheets.push({name:'Gebühren in Coins',rows:ge,freeze:1,widths:[11,30,14,6,11,14,14,13,14]})}
-  if(C.n||Object.keys(S.tag).length||S.cx.length)sheets.push({name:'Tag Wallet',rows:tg,freeze:1,widths:[10,11,...(TZ?[11,11]:[8]),11,11,6,11,14,9,15,11,10,12,...(HW?[68]:[])]},{name:'Eigene Krypto-Einträge',rows:cx,freeze:1,widths:[11,28,14,14,6,12,...(QI?[12]:[]),7,13,14,8,12,12,9,16,14,10,10,9,10,10,40,30,...(HW?[11]:[])]});
+  if(C.n||Object.keys(S.tag).length||S.cx.length)sheets.push({name:'Tag Wallet',rows:tg,freeze:1,widths:[10,11,...(TZ?[11,11]:[8]),11,11,6,11,14,9,15,11,10,12,...(HW?[68]:[])]},{name:'Eigene Krypto-Einträge',rows:cx,freeze:1,widths:[11,28,14,14,6,12,...(QI?[12]:[]),7,13,14,8,12,12,9,16,14,10,10,10,9,10,10,40,30,...(HW?[11]:[])]});
   if(wb.length>1)sheets.push({name:'Wallet-Bewegungen',rows:wb,freeze:1,widths:[11,9,11,14,14,10,14,10,14,30,68,11,30]});
   sheets.push({name:'Kurse',rows:ku,freeze:1,widths:[11,28,14,10,30],skip:[ku.length-1]});
-  // Excel mit allen Daten: Monate, Wochen und Trades erweitert, dazu Durchschnitt, Tage und Investition
-  const XA=year?null:xlsxAll(rows,{C});
-  // Fehlende Kurse (nur bei „Excel mit allen Daten“ möglich, die Jahres-Excel ist dann gesperrt): Satz in der Übersicht, Euro-Zellen leer
-  const mrX=year?null:missingRates();
-  if(mrX&&mrX.n){const i=ov.findIndex(r=>r[0]==='Wechselkurse');ov.splice(i+1,0,['Fehlende Kurse',`Für ${nTage(mrX.days.length)} fehlen Kurse, die Euro-Werte dieser Buchungen sind leer.`])}
+  // Excel mit allen Daten: dazu Durchschnitt, Hochs und Tiefs, Tage und Investition; dann alle Blätter lesbar machen (Kopf, Breiten, Umbruch, fixiert).
+  // Die Zeitpunkte in „Buchungen MT5“ sind hier schon echte Datum-Uhrzeiten (xlBuchungen mit zeitDT; bis 0.164 danach umgewandelt).
   if(XA){const at=n=>sheets.findIndex(s=>s.name===n);
-    sheets[at('Monate')]=XA.monate;sheets[at('Wochen')]=XA.wochen;sheets[at('Trades')]=XA.trades;
     sheets.splice(at('Übersicht')+1,0,XA.avgS,XA.hut);sheets.splice(at('Wochen')+1,0,XA.tage);sheets.splice(at('Trades')+1,0,XA.inv);
-    // Buchungen MT5: Zeitpunkt als echte Datum-Uhrzeit; dann alle Blätter lesbar machen (Kopf, Breiten, Umbruch, fixiert)
-    for(const row of bu.slice(1))row[1]=xDT(row[1]);
     sheets[0].skip=[0];
     for(const sh of sheets)xNice(sh,sh.name==='Übersicht'?{noHdr:true}:{})}
   if(mrX&&mrX.n)for(const sh of sheets)sh.nanBlank=true;
@@ -12521,7 +12569,8 @@ function xlsxAll(rows,o){
     {h:'Investition USD',w:13,c:x=>{const c=capAll(endOf(x.d));return c==null?'':X.N(c)}},{h:'Investition EUR',w:13,c:x=>{const c=capAllE(endOf(x.d));return c==null?'':X.E(c)}},
     {h:'Rendite vor PF',w:12,c:x=>ret(x.rr,false)},{h:'Rendite nach PF',w:12,c:x=>ret(x.rr,true)}],days);
   // Wochen und Monate: bestehende Spalten zuerst (wie in der Jahres-Excel), dann die neuen
-  const per=(keys,f,lab)=>{const m=grp(rows,f);return keys.map(k=>{const rr=m.get(k)||[];return Object.assign({k,rr,z:pfz(rr),zu:pfz(u(rr)),n:rr.some(isTrade)?positions(rr).length:0},lab(k))})};
+  // Wochen und Monate: Bausteine beider Excel (xlWochen, xlMonate, ab 0.165) mit den Wochen und Monaten im Fenster auch ohne Buchung (keys), die
+  // bestehenden Spalten zuerst (wie in der Jahres-Excel), dann die neuen (mehr); je Zeile dazu USD (zu), Ende, Handelstage und ganz
   const newCols=fullH=>[
     {h:'Handelstage',w:11,c:x=>x.td},{h:fullH,w:12,c:x=>x.full?'ja':'nein'},
     {h:'Investition USD (am Ende)',w:15,c:x=>{const c=capAll(endOf(x.end));return c==null?'':X.N(c)}},{h:'Investition EUR (am Ende)',w:15,c:x=>{const c=capAllE(endOf(x.end));return c==null?'':X.E(c)}},
@@ -12536,31 +12585,28 @@ function xlsxAll(rows,o){
   // Blätter selbst: ganz = 5 Tage Mo bis Fr bzw. erster und letzter Mo bis Fr im Fenster, ohne Blick auf die laufende Woche).
   const fullOf=res=>new Map(periods(rows,win,res,'all',cw).map(p=>[p.key,p.full]));
   const fullW=fullOf('week'),fullM=fullOf('month');
-  const W=cum(per([...new Set([...rows.map(r=>r.wk),...winKeys(win,'week')])].sort(),r=>r.wk,w=>({end:addDays(w,6),td:htListe(w,addDays(w,6),win,byD).length,full:!!fullW.get(w)})));
-  const wochen=xSheet('Wochen',[{h:'KW',w:6,c:x=>isoWeek(x.k)},{h:'von',w:11,c:x=>X.D(x.k)},{h:'bis',w:11,c:x=>X.D(addDays(x.k,6))},{h:'Trades',w:8,c:x=>x.n},
-    {h:'Ergebnis',w:13,c:x=>X.E(x.z.res)},{h:'Performance Fee',w:15,c:x=>X.E(x.z.fee)},{h:XPF,w:15,c:x=>X.E(x.z.tax)},{h:'Gewinnauszahlungen',w:18,c:x=>X.E(x.z.pw)},
-    ...newCols('ganze Woche')],W);
-  const M=cum(per([...new Set([...rows.map(r=>r.ym),...winKeys(win,'month')])].sort(),r=>r.ym,m=>({end:monthEnd(m),td:htListe(m+'-01',monthEnd(m),win,byD).length,full:!!fullM.get(m)})));
+  const wochen=xlWochen(rows,{keys:[...new Set([...rows.map(r=>r.wk),...winKeys(win,'week')])].sort(),z:pfz,nach:{h:XPF,v:z=>z.tax},pw:true,mehr:newCols('ganze Woche'),
+    item:(w,rr)=>({zu:pfz(u(rr)),end:addDays(w,6),td:htListe(w,addDays(w,6),win,byD).length,full:!!fullW.get(w)}),fertig:cum});
+  const monate=xlMonate(rows,{keys:[...new Set([...rows.map(r=>r.ym),...winKeys(win,'month')])].sort(),z:pfz,nach:{h:XPF,v:z=>z.tax},pw:true,mehr:newCols('ganzer Monat'),
+    item:(m,rr)=>({zu:pfz(u(rr)),end:monthEnd(m),td:htListe(m+'-01',monthEnd(m),win,byD).length,full:!!fullM.get(m)}),fertig:cum,
+    krypto:m=>C.byM[m]||0,kryptoSumme:(k=>k.gain+k.loss)(kxSumme(C,null)),
+    summeMehr:T=>{const TU=pfz(RU);return ['','','','',X.EB(T.nN),ret(rows,false),ret(rows,true),'',dd(rows,false),dd(rows,true),X.N(TU.res),X.N(TU.fee),X.N(TU.pw),X.N(TU.nN),'']}});
   const P=positions(rows,'all');
-  const monate=xSheet('Monate',[{h:'Monat',w:16,c:x=>fM(x.k)},{h:'Trades',w:8,c:x=>x.n},{h:'Ergebnis',w:13,c:x=>X.E(x.z.res)},{h:'Performance Fee',w:15,c:x=>X.E(x.z.fee)},
-    {h:XPF,w:18,c:x=>X.E(x.z.tax)},{h:'Gewinnauszahlungen',w:18,c:x=>X.E(x.z.pw)},{h:'Krypto Gewinn/Verlust',w:18,c:x=>X.E(C.byM[x.k]||0)},
-    ...newCols('ganzer Monat')],M,()=>{const T=pfz(rows),TU=pfz(RU),cy=Object.values(C.byY).reduce((a,b)=>a+b.gain+b.loss,0);
-      return [[X.B('Summe'),P.length,X.EB(T.res),X.EB(T.fee),X.EB(T.tax),X.EB(T.pw),X.EB(cy),'','','','',X.EB(T.nN),ret(rows,false),ret(rows,true),'',dd(rows,false),dd(rows,true),X.N(TU.res),X.N(TU.fee),X.N(TU.pw),X.N(TU.nN),'']]});
   // Trades: Positionen (gleiche Schließzeit und gleiches Symbol auf mehreren Konten), dazu Eröffnung und Haltedauer
   const HO=holdOpens(rows);let unclear=0;
   const PU=new Map(positions(RU,'all').map(p=>[p.t+'|'+p.sym,p]));
   const opn=new Set(tr.filter(r=>r.opn).map(r=>r.x.t+'|'+r.x.sym));
-  const PS=P.sort((a,b)=>a.t<b.t?-1:1).map(p=>{let op='',bad=false;for(const a of Object.keys(p.acc)){const v=HO.get(a+'|'+p.t+'|'+p.sym);if(v==null){bad=true;break}if(!op||v<op)op=v}
-    if(bad){op='';unclear++}return Object.assign({},p,{op,pu:PU.get(p.t+'|'+p.sym)})});
-  const trades=xSheet('Trades',[{h:'Schließzeit (Server)',w:19,k:'t',c:p=>xDT(p.t)},{h:'Eröffnung (Server)',w:19,k:'o',c:p=>p.op?xDT(p.op):''},
-    {h:'Haltedauer',w:10,c:(p,n,L)=>p.op?X.F(`${L.t}${n}-${L.o}${n}`,(tmUTC(p.t)-tmUTC(p.op))/864e5,10):''},
-    {h:'Datum',w:11,c:p=>X.D(p.d)},{h:'Wochentag',w:11,c:p=>WDL[wdIdx(p.d)]},{h:'KW',w:5,c:p=>isoWeek(p.d)},{h:'Symbol',w:10,c:p=>p.sym},{h:'Konten',w:7,c:p=>p.accs},
-    {h:'Ergebnis gesamt EUR',w:16,k:'e',c:p=>X.E(p.eur)},{h:'PF-Anteil EUR',w:13,k:'f',c:p=>X.E(p.exE-p.eur)},{h:'Netto nach PF EUR',w:15,c:(p,n,L)=>X.F(`${L.e}${n}+${L.f}${n}`,p.exE,2)},
-    {h:'Ergebnis gesamt USD',w:16,k:'eu',c:p=>X.N(p.pu.eur)},{h:'PF-Anteil USD',w:13,k:'fu',c:p=>X.N(p.pu.exE-p.pu.eur)},{h:'Netto nach PF USD',w:15,c:(p,n,L)=>X.F(`${L.eu}${n}+${L.fu}${n}`,p.pu.exE,5)},
-    {h:'Investition USD (zum Zeitpunkt)',w:16,c:p=>{const c=capAll(p.t);return c==null?'':X.N(c)}},{h:'Investition EUR (zum Zeitpunkt)',w:16,c:p=>{const c=capAllE(p.t);return c==null?'':X.E(c)}},
-    {h:'Rendite vor PF',w:12,c:p=>p.rMiss?'':X.P(p.rI)},{h:'Rendite nach PF',w:12,c:p=>p.rMiss?'':X.P(p.rX)},
-    {h:'PF ausgerechnet',w:10,c:p=>opn.has(p.t+'|'+p.sym)?'ja':'nein'},
-    ...accs.map(a=>({h:'Konto '+a,w:15,c:p=>p.by[a]!=null?X.E(p.by[a]):''}))],PS);
+  // Ab 0.165 (Schritte 11a und 11d): Baustein beider Excel (xlTrades, Reihenfolge aus posFolge) mit den Spalten nur dieses Excel
+  const trades=xlTrades(P,accs,{zeitDT:true,
+    nachZeit:[{h:'Eröffnung (Server)',w:19,k:'o',c:p=>p.op?xDT(p.op):''},{h:'Haltedauer',w:10,c:(p,n,L)=>p.op?X.F(`${L.t}${n}-${L.o}${n}`,(tmUTC(p.t)-tmUTC(p.op))/864e5,10):''}],
+    nachDatum:[{h:'Wochentag',w:11,c:p=>WDL[wdIdx(p.d)]},{h:'KW',w:5,c:p=>isoWeek(p.d)}],
+    nachErgebnis:[{h:'PF-Anteil EUR',w:13,k:'f',c:p=>X.E(p.exE-p.eur)},{h:'Netto nach PF EUR',w:15,c:(p,n,L)=>X.F(`${L.e}${n}+${L.f}${n}`,p.exE,2)},
+      {h:'Ergebnis gesamt USD',w:16,k:'eu',c:p=>X.N(p.pu.eur)},{h:'PF-Anteil USD',w:13,k:'fu',c:p=>X.N(p.pu.exE-p.pu.eur)},{h:'Netto nach PF USD',w:15,c:(p,n,L)=>X.F(`${L.eu}${n}+${L.fu}${n}`,p.pu.exE,5)},
+      {h:'Investition USD (zum Zeitpunkt)',w:16,c:p=>{const c=capAll(p.t);return c==null?'':X.N(c)}},{h:'Investition EUR (zum Zeitpunkt)',w:16,c:p=>{const c=capAllE(p.t);return c==null?'':X.E(c)}},
+      {h:'Rendite vor PF',w:12,c:p=>p.rMiss?'':X.P(p.rI)},{h:'Rendite nach PF',w:12,c:p=>p.rMiss?'':X.P(p.rX)},
+      {h:'PF ausgerechnet',w:10,c:p=>opn.has(p.t+'|'+p.sym)?'ja':'nein'}],
+    item:p=>{let op='',bad=false;for(const a of Object.keys(p.acc)){const v=HO.get(a+'|'+p.t+'|'+p.sym);if(v==null){bad=true;break}if(!op||v<op)op=v}
+      if(bad){op='';unclear++}return Object.assign({},p,{op,pu:PU.get(p.t+'|'+p.sym)})}});
   // Investition: Einzahlungen und Kapitalabzüge je Konto, Investition = Summe (Betrag ÷ Trading Benefit)
   const IV=rows.filter(r=>r.cat==='einzahlung'||r.cat==='kapitalabzug').sort((p,q)=>p.a<q.a?-1:p.a>q.a?1:p.x.t<q.x.t?-1:1);
   const inv=xSheet('Investition',[{h:'Datum',w:11,c:r=>X.D(r.d)},{h:'Zeitpunkt (Server)',w:19,c:r=>xDT(r.x.t)},{h:'Konto',w:10,c:r=>r.a},{h:'Art',w:13,c:r=>CATN[r.cat]},
@@ -12595,8 +12641,14 @@ function xlsxAll(rows,o){
     {h:lab+'Betrag EUR',sub:true,c:it=>E0(f(GE[s],it).a?f(GE[s],it).a.v:null)},{h:'Datum',c:it=>D0(f(GE[s],it).a&&f(GE[s],it).a.o)},
     {h:lab+'Betrag USD',c:it=>N0(f(GU[s],it).a?f(GU[s],it).a.v:null)},{h:'Datum',c:it=>D0(f(GU[s],it).a&&f(GU[s],it).a.o)}]}));
   // (a) Trades: Werte ohne PF-Bezug links, dann je PF Ø und Größter
+  // Ab 0.165 (Florians Entscheidung vom 18.11.2026, Ablauf „Eine Wurzel“, Runde 4, Schritt 11e): neben „ab“ die Spalte „bis“ mit dem Ende jeder Serie
+  // (Trades am Stück, Handelstage am Stück je PF-Stellung), aus derselben Wurzel wie Beginn und Ende in Karte und Rückblick (serStand über serElem):
+  // das Datum des letzten Elements; reicht die Serie bis zum letzten Element der Daten, „läuft noch“ (derselbe Text wie im Rückblick, MS_TXT.lauf).
+  // Ohne Serie (Anzahl 0) bleibt die Zelle leer (GESTALTUNG Abschnitt 0, kein Datum ohne Wert). Bis 0.164 stand hier nur „ab“; das Excel hat keinen
+  // Zeitraum, deshalb kein Zusatz „lief weiter bis …“ (Florians Frage „Aus 0.160“).
+  const bis=r=>r.lauf?MS_TXT.lauf:X.D(r.e.d);
   xGroupTable(hut,'Trades',[{h:'ohne PF-Bezug',cols:[{h:'Anzahl',c:it=>it.n},{h:'von',c:()=>GE.n},{h:'Anteil',c:it=>GE.n?X.P(it.n/GE.n):''},
-      {h:'Trades am Stück',sub:true,c:it=>it.run?it.run.n:0},{h:'ab',c:it=>it.run?X.D(it.run.s.d):''},
+      {h:'Trades am Stück',sub:true,c:it=>it.run?it.run.n:0},{h:'ab',c:it=>it.run?X.D(it.run.s.d):''},{h:'bis',c:it=>it.run?bis(it.run):''},
       {h:'Meiste in einer Woche',sub:true,c:it=>it.most?it.most.c:0},{h:'Wochen gleichauf',c:it=>it.most?it.most.weeks:''},{h:'Woche ab (erste)',c:it=>it.most?X.D(it.most.first.w):''}]},
     ...PF.map(([h,,s])=>({h,cols:[{h:'Ø Rendite',c:it=>P0(GE[s][it.k].r)},{h:'Größter Rendite',c:it=>miss?'':P0(GE[s][it.b].r&&GE[s][it.b].r.v)},{h:'Datum',c:it=>miss?'':D0(GE[s][it.b].r&&GE[s][it.b].r.o)},
       {h:'Ø Betrag EUR',sub:true,c:it=>E0(GE[s][it.k].a)},{h:'Größter EUR',c:it=>E0(GE[s][it.b].a&&GE[s][it.b].a.v)},{h:'Datum',c:it=>D0(GE[s][it.b].a&&GE[s][it.b].a.o)},
@@ -12608,7 +12660,7 @@ function xlsxAll(rows,o){
     [{l:'Bester Handelstag',k:'bestD'},{l:'Schwächster Handelstag',k:'worstD'},{l:'Beste Woche (Datum = Montag)',k:'bestW'},{l:'Schwächste Woche (Datum = Montag)',k:'worstW'}]);
   hut.rows.push([]);
   // (b2) Handelstage am Stück
-  xGroupTable(hut,'Handelstage am Stück',PF.map(([h,,s])=>({h,cols:[{h:'Anzahl',c:it=>GE[s][it.k]?GE[s][it.k].n:0},{h:'ab',c:it=>GE[s][it.k]?X.D(GE[s][it.k].s.d):''}]})),
+  xGroupTable(hut,'Handelstage am Stück',PF.map(([h,,s])=>({h,cols:[{h:'Anzahl',c:it=>GE[s][it.k]?GE[s][it.k].n:0},{h:'ab',c:it=>GE[s][it.k]?X.D(GE[s][it.k].s.d):''},{h:'bis',c:it=>GE[s][it.k]?bis(GE[s][it.k]):''}]})),
     [{l:'im Plus',k:'dayP'},{l:'im Minus',k:'dayN'}]);
   hut.rows.push([]);
   // (c) Kennzahlen in %
@@ -12799,38 +12851,31 @@ const txKind=k=>k==='hatte'?'Bestand von früher':KIND[k];
 function taxXlsx(y){
   const Z=taxCtx(y),{B,R,T,DE,ds}=Z,L=DE?'DE':'AT',cxOn=S.ui.cxIncl!==false,C0=Z.C,C=cxOn?C0:{flow:[],byY:{},byM:{},n:0,short:[],sales:[],fees:[],pots:[]};
   const cy=Object.assign({gain:0,loss:0,gainK:0,lossK:0,nK:0,kest:0,fee:0,vp:0,ak:0,wk:0,free:0,n:0,nT:0},C.byY[y]);
-  const accs=taxAccs(),today=new Date().toISOString().slice(0,10),yEnd=y+'-12-31',land=DE?'Deutschland':'Österreich',yr=d=>String(d||'').slice(0,4);
+  const accs=taxAccs(),yEnd=y+'-12-31',land=DE?'Deutschland':'Österreich',yr=d=>String(d||'').slice(0,4);
   const bl=(t,L,num)=>L.length?[[X.B(t)],...L.map((x,i)=>['',(num?(i+1)+'. ':'')+x.t]),[]]:[];
 
-  const ov=[[X.T('Trading-Bilanz: Steuerjahr '+y+' ('+land+')')],['Kennzahlen und Steuerregeln: '+land+', Stand 2026. Steuerangaben mit KI recherchiert, ohne Gewähr, keine Steuerberatung.'],[],
-   ['Erstellt am',X.D(today)],['Datenstand',ds?X.D(ds):''],['Name',Z.name],['Konten',accs.join(', ')],
-   ['Wechselkurse','EZB-Referenzkurs USD je EUR vom Buchungstag (siehe Blatt Kurse)'],['Version',`Trading-Bilanz ${VERSION} vom ${VDATE}`],[],
-   ...(Z.c.cfd?[[X.B(DE?'CFD (Termingeschäfte, ausländischer Broker ohne Steuerabzug)':'CFD (nicht verbriefte Derivate, Tarif)'),X.B('EUR')],
-     ['Gewinne aus geschlossenen Trades',X.E(T.gain)],['Verluste aus geschlossenen Trades',X.E(T.loss)],['Kommission, Swap, Gebühren',X.E(T.costs)],['Performance Fee',X.E(T.fee)],
-     ...(DE?[[X.B('Saldo (Performance Fee nicht abgezogen) = Anlage KAP Zeile 19'),X.EB(T.res)],['darin enthaltene Verluste (inkl. Kommission und Swap der Verlust-Trades) = Anlage KAP Zeile 22',X.E(-lossDE(R))]]:[[X.B('Saldo = E1kv Kennzahl 857'),X.EB(T.tax)]]),[]]:[]),
+  // Ab 0.165 (Schritt 11a): die sechs Blätter beider Excel aus den Bausteinen (Block „Blätter beider Excel“), mit den Einstellungen der Steuer:
+  // Übersicht mit Kennzahlen nach Land, Monate, Wochen und Konten ohne Gewinnauszahlungen und ohne Kontonamen (4.5, 4.6), Spalte nach der
+  // Performance Fee nach Land, Trades mit dem Satz zum Trade „gesamt“, Buchungen MT5 mit „Steuerlich relevant“ (Gewinnauszahlungen bleiben dort).
+  const ovS=xlUebersicht({titel:[[X.T('Trading-Bilanz: Steuerjahr '+y+' ('+land+')')],['Kennzahlen und Steuerregeln: '+land+', Stand 2026. Steuerangaben mit KI recherchiert, ohne Gewähr, keine Steuerberatung.'],[]],
+    ds:['Datenstand',ds],namen:[['Name',Z.name]],konten:accs,nach:[['Version',`Trading-Bilanz ${VERSION} vom ${VDATE}`]],
+    cfd:Z.c.cfd?{kopf:DE?'CFD (Termingeschäfte, ausländischer Broker ohne Steuerabzug)':'CFD (nicht verbriefte Derivate, Tarif)',T,
+      saldo:DE?[[X.B('Saldo (Performance Fee nicht abgezogen) = Anlage KAP Zeile 19'),X.EB(T.res)],['darin enthaltene Verluste (inkl. Kommission und Swap der Verlust-Trades) = Anlage KAP Zeile 22',X.E(-lossDE(R))]]:[[X.B('Saldo = E1kv Kennzahl 857'),X.EB(T.tax)]]}:null,
+    rest:[
    ...(cxOn&&C.n&&DE?[[X.B('Kryptowerte (§ 23 EStG, höchstens ein Jahr gehalten)'),X.B('EUR')],['Veräußerungspreis = '+soLine(y,'vp'),X.E(cy.vp)],['Anschaffungskosten = '+soLine(y,'ak'),X.E(cy.ak)],['Werbungskosten = '+soLine(y,'wk'),X.E(cy.wk)],[X.B('Gewinn/Verlust = '+soLine(y,'g')),X.EB(cy.gain+cy.loss)],
      ...(Math.abs(cy.free)>0.004?[['nachrichtlich: steuerfrei (über ein Jahr gehalten)',X.E(cy.free)]]:[]),['Freigrenze '+y+' (alle privaten Veräußerungsgeschäfte zusammen)',X.E(freiGrenze(y))],[]]:[]),
    ...(cxOn&&C.n&&!DE?[[X.B('Kryptowährungen (§ 27b EStG)'),X.B('EUR')],...(cy.nK?[['Mit KESt-Abzug: Überschüsse = E1kv Kennzahl 173',X.E(cy.gainK)],['Mit KESt-Abzug: Verluste = E1kv Kennzahl 175',X.E(cy.lossK)]]:[]),
      ['Überschüsse = E1kv Kennzahl 174',X.E(cy.gain-cy.gainK)],['Verluste = E1kv Kennzahl 176',X.E(cy.loss-cy.lossK)],[X.B('Saldo'),X.EB(cy.gain+cy.loss)],...(cy.nK?[['nachrichtlich: abgezogene KESt = E1kv Kennzahl 899',X.E(cy.kest)]]:[]),['Regelbesteuerungsoption gewünscht',S.ui.opt?'ja':'nein'],[]]:[]),
-   ...bl('Annahmen',B.ann),...bl('Geschätzte Werte (Belege fehlen)',B.est),...bl('Offene Fragen',B.q,1),...bl('Was nicht enthalten ist',B.not)];
+   ...bl('Annahmen',B.ann),...bl('Geschätzte Werte (Belege fehlen)',B.est),...bl('Offene Fragen',B.q,1),...bl('Was nicht enthalten ist',B.not)]});
+  const ov=ovS.rows;
   while(ov.length&&!ov[ov.length-1].length)ov.pop();
-  // Monate, Wochen, Konten ohne Gewinnauszahlungen und ohne Kontonamen (4.5, 4.6)
-  const yms=[...new Set(R.map(r=>r.ym))].sort();
-  const mo=[[X.B('Monat'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B(DE?'CFD-Ergebnis (vor PF)':'Steuerpflichtig (CFD)'),X.B('Krypto Gewinn/Verlust')]];
-  for(const m of yms){const rr=R.filter(r=>r.ym===m);const z=agg(rr);mo.push([fM(m),positions(rr).length,X.E(z.res),X.E(z.fee),X.E(DE?z.res:z.tax),X.E(C.byM[m]||0)])}
-  mo.push([X.B('Summe'),positions(R).length,X.EB(T.res),X.EB(T.fee),X.EB(DE?T.res:T.tax),X.EB(cy.gain+cy.loss)]);
-  const wk=[[X.B('KW'),X.B('von'),X.B('bis'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B('Steuerpflichtig')]];
-  for(const w of [...new Set(R.map(r=>r.wk))].sort()){const rr=R.filter(r=>r.wk===w);const z=agg(rr);wk.push([isoWeek(w),X.D(w),X.D(addDays(w,6)),positions(rr).length,X.E(z.res),X.E(z.fee),X.E(z.tax)])}
-  const ko=[[X.B('Konto'),X.B('Inhaberin laut Report'),X.B('Währung'),X.B('Trading Benefit'),X.B('Trades'),X.B('Ergebnis'),X.B('Performance Fee'),X.B('Steuerpflichtig'),X.B('Bester Trade'),X.B('Schlechtester Trade')]];
-  for(const a of accs){const ra=R.filter(r=>r.a===a);const z=agg(ra);const ts=tradeStats(ra.filter(r=>r.cat==='close'),'eur');const A=S.accounts[a];ko.push([a,A.holder||'',A.cur,A.factor?facT(A.factor):'',ts.n,X.E(z.res),X.E(z.fee),X.E(z.tax),ts.best?X.E(ts.best.eur):'',ts.worst?X.E(ts.worst.eur):''])}
-  const P=positions(R).sort((a,b)=>a.t<b.t?-1:1);
-  const tr=[[X.B('Schließzeit (Server)'),X.B('Datum'),X.B('Symbol'),X.B('Konten'),X.B('Ergebnis gesamt EUR'),...accs.map(a=>X.B('Konto '+a))]];
-  for(const p of P)tr.push([p.t,X.D(p.d),p.sym,p.accs,X.E(p.eur),...accs.map(a=>p.by[a]!=null?X.E(p.by[a]):'')]);
-  tr.push([],['Ein Trade „gesamt“ ist dieselbe Position auf mehreren Konten (gleicher Schließzeitpunkt und gleiches Symbol), zusammengezählt.']);
-  // Buchungen MT5 wie bisher (Gewinnauszahlungen bleiben hier, „Steuerlich relevant: nein“)
-  const bu=[[X.B('Konto'),X.B('Zeitpunkt (Server)'),X.B('Datum'),X.B('Art'),X.B('Symbol'),X.B('Trade-Nr.'),X.B('Gewinn/Betrag'),X.B('Kosten (Komm., Swap, Gebühr)'),X.B('Summe (Kontowährung)'),X.B('Kurs vom'),X.B('Kurs USD je EUR'),X.B('Summe EUR'),X.B('Steuerlich relevant'),X.B('Kommentar')]];
-  R.forEach((r,i)=>{const n=i+2;const g=r.cat==='open'?0:r.x.prof,k=(r.cat==='close'||r.cat==='open')?r.x.cost:0;
-    bu.push([r.a,r.x.t,X.D(r.d),CATN[r.cat]||'unbekannt',r.x.sym,r.x.id,X.N(g),X.N(k),X.F(`G${n}+H${n}`,r.amt,5),r.rd?X.D(r.rd):'',r.rate?X.R(r.rate):'',r.rate?X.F(`I${n}/K${n}`,r.eur,2):'',(r.cat==='close'||r.cat==='open'||r.cat==='fee')?'ja':'nein',r.x.cmt||''])});
+  // Ab 0.165 (Fund E, Florians Antwort 1 zur Freigabe 0.165): In Deutschland ist die Performance Fee nicht abgezogen (Anlage KAP Zeile 19 = Ergebnis).
+  // „Wochen“ und „Konten“ zeigen deshalb wie „Monate“ „CFD-Ergebnis (vor PF)“ mit dem Ergebnis; bis 0.164 dort „Steuerpflichtig“ mit Ergebnis plus PF.
+  // Österreich bleibt: „Steuerpflichtig (CFD)“ bzw. „Steuerpflichtig“ mit Ergebnis plus PF (E1kv Kennzahl 857).
+  const NDE={h:'CFD-Ergebnis (vor PF)',v:z=>z.res};
+  const shMo=xlMonate(R,{nach:DE?NDE:{h:'Steuerpflichtig (CFD)',v:z=>z.tax},krypto:m=>C.byM[m]||0,kryptoSumme:cy.gain+cy.loss});
+  const NST=DE?NDE:{h:'Steuerpflichtig',v:z=>z.tax},shWo=xlWochen(R,{nach:NST}),shKo=xlKonten(R,accs,{nach:NST});
+  const shTr=xlTrades(positions(R),accs,{fuss:'Ein Trade „gesamt“ ist dieselbe Position auf mehreren Konten (gleicher Schließzeitpunkt und gleiches Symbol), zusammengezählt.'}),shBu=xlBuchungen(R,{steuer:true});
   const fl=C.flow.filter(f=>yr(f.d)===y);
   const giveX=f=>!f.give?'':DE?' (Zum Weitergeben: '+f.give.map(x=>`${fmtNum(x.q)} ${f.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join(', ')+')':` (Zum Weitergeben: ${fmtNum(f.give.q)} ${f.coin}, Ø-Preis ${fDec(f.give.avg,4)} €)`;
   const kr=[[X.B('Datum'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Coins rein/raus'),X.B('Euro-Wert'),X.B(DE?'Werbungskosten':'Gebühr'),X.B('Einkaufswert der Coins'),X.B('Gewinn/Verlust'),...(DE?[X.B('davon steuerpflichtig')]:[]),X.B('Coins danach'),X.B('Einkaufswert danach'),...(DE?[]:[X.B('Ø-Preis danach (EUR je Coin)')])]];
@@ -12866,12 +12911,12 @@ function taxXlsx(y){
   // Ab 0.74 (4): xes = weitergegebener Einkaufswert enthält geschätzte Werte
   const xf={},xes={};for(const f of C0.flow)if(f.xfer!=null&&f.cx!=null){xf[f.cx]=f.xfer;if(f.estV)xes[f.cx]=1}
   const CH=['Datum','Was','Wallet','nach Wallet','Coin','Menge','Menge angekommen','in Coin','Menge erhalten','anderer Coin (in/aus)','Währung','Betrag USD','Euro','Euro geschätzt','Einkaufswert übertragen',
-    'Kaufdatum der schenkenden Person','Kaufdatum geschätzt','Gebühr','KESt abgezogen','KESt EUR','keine Kryptowährung (NFT)','Zum Weitergeben (Verschenkt)',...(HW?['Herkunft']:[])];
-  const CW=[11,28,14,14,6,12,12,7,13,14,8,12,12,9,16,14,10,10,9,10,10,40,11];
+    'Kaufdatum der schenkenden Person','Kaufdatum geschätzt',...CX_GEB_H,'KESt abgezogen','KESt EUR','keine Kryptowährung (NFT)','Zum Weitergeben (Verschenkt)',...(HW?['Herkunft']:[])];
+  const CW=[11,28,14,14,6,12,12,7,13,14,8,12,12,9,16,14,10,10,10,9,10,10,40,11];
   const crows=S.cx.map((c,i)=>Object.assign({i},c)).filter(c=>yr(c.date)===y).sort((a,b)=>a.date<b.date?-1:1).map(c=>{const ev=CX_FIELDS[c.kind]&&CX_FIELDS[c.kind].eur,ve=ev?cxEur(c):null;
     const g=gv[c.i],gt=!g?'':DE?g.give.map(x=>`${fmtNum(x.q)} ${c.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join(', '):`${fmtNum(g.give.q)} ${c.coin}, Ø-Preis ${fmtDec(g.give.avg,4)} €, Einkaufswert ${fE.format(g.give.q*g.give.avg)}`;
     return [X.D(c.date),txKind(c.kind),c.wallet,c.to||'',c.coin,X.N(c.qty),c.kind==='uebertrag'&&c.qtyIn>0?X.N(c.qtyIn):'',c.coin2||'',c.qty2?X.N(c.qty2):'',c.other||'',ev?(c.cur==='USD'?'USD':'EUR'):bzE[c.i]!=null?'EUR':'',c.cur==='USD'&&c.usd!=null?X.N(c.usd):'',ev&&isFinite(ve)&&!cxMissing(c).length?X.E(ve):bzE[c.i]!=null?X.E(bzE[c.i]):(c.kind==='tauschaus'&&c.eur>0?X.E(c.eur):''),cxEst(c)||xes[c.i]?'ja':'',xf[c.i]!=null?X.E(xf[c.i]):'',
-      c.gd?X.D(c.gd):'',c.kind==='eingang'&&(c.estD||(DE&&!c.gd))?'ja':'',c.fee>0?(c.cur==='USD'||c.feeU?X.N(c.fee):X.E(c.fee)):'',c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,...(HW?[cxOrigN(c)]:[])]});
+      c.gd?X.D(c.gd):'',c.kind==='eingang'&&(c.estD||(DE&&!c.gd))?'ja':'',...cxGeb(c),c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,...(HW?[cxOrigN(c)]:[])]});
   const keep=CH.map((h,j)=>j<2||j===2||j===4||j===5||crows.some(r=>r[j]!==''&&r[j]!=null));
   const cx=[CH.filter((h,j)=>keep[j]).map(h=>X.B(h)),...crows.map(r=>r.filter((v,j)=>keep[j]))],cxW=CW.filter((w,j)=>keep[j]);
   // Wallet-Bewegungen: Broker statt „Tag“, Zuordnung mit Datum, ohne fremdes Geld, ignoriert mit Grund, Kartenguthaben statt WUSD (4.2 bis 4.4, 4.11)
@@ -12886,7 +12931,7 @@ function taxXlsx(y){
   const ku=[[X.B('Datum'),X.B('USD je 1 EUR (EZB-Referenzkurs)'),X.B('EUR je 1 USD'),X.B('Quelle')]];
   rateDates().filter(d=>used.has(d)).forEach((d,i)=>ku.push([X.D(d),X.R(rateVal(d)),X.F(`1/B${i+2}`,1/rateVal(d),9),rateSrc(d)==='own'?'von Hand':'EZB']));
   ku.push([],[ECB_CITE]);
-  const sheets=[{name:'Übersicht',rows:ov,widths:[52,70]},{name:'Monate',rows:mo,freeze:1,widths:[16,8,13,15,18,18]},{name:'Wochen',rows:wk,freeze:1,widths:[6,11,11,8,13,15,15]},{name:'Konten',rows:ko,freeze:1,widths:[11,24,8,10,7,12,14,13,12,16]},{name:'Trades',rows:tr,freeze:1,widths:[19,11,10,7,16,...accs.map(()=>15)],skip:[tr.length-1]},{name:'Buchungen MT5',rows:bu,freeze:1,widths:[10,19,11,20,10,11,12,14,14,11,10,12,10,18]}];
+  const sheets=[ovS,shMo,shWo,shKo,shTr,shBu];
   if(cxOn&&C.n){sheets.push({name:'Krypto',rows:kr,freeze:1,widths:DE?[11,40,14,6,13,16,14,14,12,14,12,14]:[11,40,14,6,13,14,10,14,12,12,14,12]});
     if(DE)sheets.push({name:'Verkäufe nach FIFO',rows:ff,freeze:1,widths:[11,32,14,6,11,13,12,14,13,10,12,13]});
     sheets.push({name:part?'Bestand':'Bestand zum Jahresende',rows:be,freeze:1,widths:DE?[22,14,6,11,13,12,12]:[22,14,6,13,12,14]});
@@ -15841,7 +15886,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.164',VDATE='18.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.165',VDATE='18.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
