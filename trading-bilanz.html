@@ -3816,8 +3816,15 @@ const meanOf=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
    - htKal(d): Handelstag nach dem Kalender (Montag bis Freitag außer HT_FREI).
    - htListe(a, b, win, tage): alle Handelstage von a bis b, die im Fenster win liegen (win = null: ohne Grenze): die nach dem Kalender, dazu
      jeder Tag mit Trade (tage: Set oder Map der Tage mit Trade), auch ein Feiertag, Samstag oder Sonntag.
-   - htGanz(a, b, win): Der Zeitraum a bis b (eine Woche, ein Monat) ist ganz, wenn jeder seiner Handelstage nach dem Kalender im Fenster liegt.
+   - htGanz(a, b, win): Der Zeitraum a bis b (eine Woche, ein Monat) ist ganz, wenn jeder seiner Handelstage im Fenster liegt.
      Eine Woche mit dem 25.12. oder dem 01.01. hat so vier Handelstage und ist trotzdem ganz.
+     Ab 0.160 (Florians Beschluss 1 im Ablauf „Eine Wurzel“, Runde 2): Handelstage sind hier wie überall die nach dem Kalender und jeder Tag
+     mit Trade (win.tg = Tage mit Trade der gezählten Konten, aus cntWin). Liegt am 01.01. ein Trade, hat die Woche um Neujahr Handelstage
+     in zwei Jahren und ist mit einem Jahr als Zeitraum in keinem der beiden ganz; bei „Gesamt“ ist sie eine normale Woche. Die Woche
+     reicht dafür von Montag bis Sonntag (ein Trade am Wochenende zählt mit). Bis 0.159 schaute htGanz nur auf den Kalender (Montag bis
+     Freitag): Die Woche ab 28.12.2026 galt mit einem Trade am Freitag, 01.01.2027 im Jahr 2026 als ganz.
+   - htWkJahr(k, tg): das Jahr, in dem die Woche ab Montag k nach dem Kalender ganz liegt (alle ihre Handelstage in einem Jahr), sonst
+     null. Für Bestwerte eines Jahres in der Karte „Meilensteine“ (beste Woche, „Rekord des Jahres“).
    - cntWin(…, dataEnd, lastT): Der letzte Tag der Daten ist der Datenstand dataEnd (Datum des neuesten Reports der gezählten Konten, sonst
      die letzte Buchung). Liegt an ihm kein Trade (lastT = letzter Tag mit Trade der gezählten Konten), endet das gezählte Fenster am Tag davor.
      Grund: Eine Sicherung am frühen Morgen zählte den Tag schon als „Tag ohne Trade“.
@@ -3828,13 +3835,16 @@ const htKal=d=>wdIdx(d)<5&&!HT_FREI.includes(d.slice(5));
 function htListe(a,b,win,tage){const out=[],s=win&&win.s>a?win.s:a,e=win&&win.e<b?win.e:b;
   for(let d=s;d<=e;d=addDays(d,1))if(htKal(d)||(tage&&tage.has(d)))out.push(d);
   return out}
-function htGanz(a,b,win){for(let d=a;d<=b;d=addDays(d,1))if(htKal(d)&&(d<win.s||d>win.e))return false;return true}
+function htGanz(a,b,win){for(let d=a;d<=b;d=addDays(d,1))if((htKal(d)||(win.tg&&win.tg.has(d)))&&(d<win.s||d>win.e))return false;return true}
+function htWkJahr(k,tg){const e=addDays(k,6);for(const y of new Set([k.slice(0,4),e.slice(0,4)]))if(htGanz(k,e,{s:y+'-01-01',e:y+'-12-31',tg}))return y;return null}
+// Tage mit Trade in den Zeilen rows (für cntWin und htGanz)
+const tgSet=rows=>new Set(rows.filter(isTrade).map(r=>r.d));
 // Ab 0.160 (Florians Antwort 3 zu Bericht 0.159): der letzte gezählte Handelstag im Fenster win (tage = Tage mit Trade). Für die Kopfzeile im
 // Excel mit allen Daten „Handelstage vom … bis …“: nie ein Samstag oder Sonntag ohne Trade. Bis 0.159 stand dort das Ende des Fensters.
 function htLetzter(win,tage){const l=htListe(win.s,win.e,null,tage);return l.length?l[l.length-1]:win.e}
 // Letzter Tag mit Trade in den Zeilen rows ('' ohne Trade), für cntWin
 function lastTradeDay(rows){let l='';for(const r of rows)if(isTrade(r)&&r.d>l)l=r.d;return l}
-function cntWin(first,from,to,dataEnd,lastT){if(!first)return null;const de=lastT&&lastT<dataEnd?addDays(dataEnd,-1):dataEnd;return {s:from&&from>first?from:first,e:to&&to<de?to:de}}
+function cntWin(first,from,to,dataEnd,lastT,tg){if(!first)return null;const de=lastT&&lastT<dataEnd?addDays(dataEnd,-1):dataEnd;return {s:from&&from>first?from:first,e:to&&to<de?to:de,tg:tg||null}}
 // Erster und letzter Handelstag (nach dem Kalender) eines Monats 'YYYY-MM'
 function mWdays(ym){let f=ym+'-01',l=monthEnd(ym);while(!htKal(f))f=addDays(f,1);while(!htKal(l))l=addDays(l,-1);return [f,l]}
 // Tage (Handelstage im Fenster: htListe, Tage mit Trade sind immer dabei), Wochen oder Monate, die das Fenster schneiden. Je Periode: Trades, Zahl der Positionen,
@@ -3846,7 +3856,7 @@ function periods(R,win,res,scope,cw){
   else if(res==='week'){for(let w=monday(win.s);w<=win.e;w=addDays(w,7))ks.add(w)}
   else{for(let m=win.s.slice(0,7);m<=win.e.slice(0,7);m=addMonths(m+'-01',1).slice(0,7))ks.add(m)}
   return [...ks].sort().map(k=>{const rr=g.get(k)||[];let full=true;
-    if(res==='week')full=htGanz(k,addDays(k,4),win)&&k!==cw;else if(res==='month')full=htGanz(k+'-01',monthEnd(k),win)&&!(cw&&rr.some(r=>r.wk===cw));
+    if(res==='week')full=htGanz(k,addDays(k,6),win)&&k!==cw;else if(res==='month')full=htGanz(k+'-01',monthEnd(k),win)&&!(cw&&rr.some(r=>r.wk===cw));
     const ri=retSum(rr,scope,false),rx=retSum(rr,scope,true);
     return {key:k,rows:rr,n:rr.length?positions(rr,scope).length:0,full,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v,rI:ri.v,rX:rx.v}});
 }
@@ -3881,7 +3891,10 @@ function avgKz(R,win,scope,zero,ress,cw){
 // zählten hier mit „Tage ohne Trade mitzählen“ auch leere Wochen mit 0 (Zeile „Woche“ in „Hochs und Tiefs“, im Excel mit allen Daten die Zeilen
 // „Beste Woche“ und „Schwächste Woche“). Die Durchschnitte und die Listen bleiben, wie sie sind.
 // „Meiste Gewinn-/Verlust-Trades in einer Woche“ zählt alle Wochen mit Trades, auch angefangene.
-function glKz(R,scope,win,wks){
+// Ab 0.160 (eine Wurzel): Auch Karte „Meilensteine“ und Jahresrückblick holen die Werte eines Jahres von hier (msJahr). Einstellung o.ohne =
+// laufende Woche, die „Meiste in einer Woche“ nicht zählt (Karte und Rückblick zählen sie erst nach der Abrechnung, GESTALTUNG Abschnitt 25;
+// die Auswertung zählt sie sofort und gibt nichts mit).
+function glKz(R,scope,win,wks,o){
   const P=positions(R,scope).sort((a,b)=>a.t<b.t?-1:1);
   const Dm=new Map();for(const r of R){if(!isTrade(r))continue;if(!Dm.has(r.d))Dm.set(r.d,[]);Dm.get(r.d).push(r)}
   const D=[...Dm.keys()].sort().map(d=>{const rr=Dm.get(d);return {d,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v,rI:retSum(rr,scope,false).v,rX:retSum(rr,scope,true).v}});
@@ -3909,7 +3922,8 @@ function glKz(R,scope,win,wks){
   };
   // Meiste Gewinn- bzw. Verlust-Trades in einer Woche (Positionen, Vorzeichen vor PF; es ändert sich mit dem PF-Schalter nicht)
   // Ab 0.157: bei mehreren Wochen gleichauf die erste (first; bis 0.156 die letzte, last)
-  const most=sgn=>{const m=new Map();for(const p of P){const o=m.get(p.wk)||{w:p.wk,c:0,n:0};o.n++;if(sgn*p.eur>0)o.c++;m.set(p.wk,o)}
+  const ohneW=o&&o.ohne||null;
+  const most=sgn=>{const m=new Map();for(const p of P){if(p.wk===ohneW)continue;const o=m.get(p.wk)||{w:p.wk,c:0,n:0};o.n++;if(sgn*p.eur>0)o.c++;m.set(p.wk,o)}
     const l=[...m.values()].sort((x,y)=>x.w<y.w?-1:1);const mx=Math.max(0,...l.map(o=>o.c));const top=l.filter(o=>o.c===mx);
     return mx?{c:mx,weeks:top.length,first:top[0]}:null};
   return {V:one(false),N:one(true),miss:retSum(R,scope,false).miss,n:P.length,nW:PW.length,nL:PL.length,
@@ -3958,9 +3972,19 @@ function msBasis(rows,sel,o){
   const T=b.T=TR.map(r=>Object.assign({},r,{cS:capS(r.x.t)},cur==='usd'?{eur:r.amt,exE:r.exU}:null));
   b.miss=T.some(r=>r.cS==null);b.cw=curWeek(T0,sel,RD);
   let dataEnd=T0[T0.length-1].d;for(const a of sel){const rd=RD(a);if(rd>dataEnd)dataEnd=rd}
-  b.dataEnd=dataEnd;b.first=T[0].d;b.lastT=lastTradeDay(TR);b.win=cntWin(b.first,null,null,dataEnd,b.lastT);
+  b.dataEnd=dataEnd;b.first=T[0].d;b.lastT=lastTradeDay(TR);b.tg=tgSet(TR);b.win=cntWin(b.first,null,null,dataEnd,b.lastT,b.tg);
   b.P=positions(T,'sel').sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:0);
   return b}
+// Ab 0.160 (eine Wurzel, Florians Beschlüsse 1 und 2 im Ablauf „Eine Wurzel“, Runde 2): das Jahr y der Konten der Karte, gezählt wie die
+// Auswertung mit dem Zeitraum dieses Jahres. Dieselben Rechnungen wie dort: Fenster des Jahres (cntWin), Durchschnitte (avgKz), beste und
+// schwächste Woche und „Meiste Gewinn-Trades in einer Woche“ (glKz). Karte „Meilensteine“ (Ansicht auf ein Jahr) und Jahresrückblick holen
+// diese Werte von hier; bis 0.159 rechneten beide sie selbst und nach der Donnerstag-Regel (msWkYear). Eigene Einstellungen von Karte und
+// Rückblick: „Tage ohne Trade mitzählen“ gilt immer (Florians Entscheidung b zu Fund 5, Freigabe 0.160), „Meiste Gewinn-Trades“ ohne die
+// laufende Woche. Je Jahr einmal gerechnet (BS.jc).
+function msJahr(BS,y){const C=BS.jc||(BS.jc={});if(C[y])return C[y];
+  const win=cntWin(BS.first,y+'-01-01',y+'-12-31',BS.dataEnd,BS.lastT,BS.tg),R=BS.T.filter(r=>r.y===y);
+  const AK=avgKz(R,win,'sel',true,['day','week','month','trade'],BS.cw),G=glKz(R,'sel',win,AK.week.ps,{ohne:BS.cw});
+  return C[y]={y,win,R,AK,G}}
 function msCalc(rows,sel,o){
   o=o||{};const today=o.today||todayLocal(),list=[],RD=o.rd||repDay;
   const BS=msBasis(rows,sel,o),T0=BS.T0,TR=BS.TR;
@@ -3992,19 +4016,22 @@ function msCalc(rows,sel,o){
   const first=res.first=BS.first,B=res.B=addDays(monday(first),14),win=BS.win;
   const P=BS.P;
   const pk=p=>p.t+'|'+p.sym,sat=w=>addDays(w,5);
-  // Ausgangsstand je Jahr: zwei Kalenderwochen ab der ersten Woche des Jahres mit Trades
-  const YB={};for(const p of P){const y=msWkYear(p.wk);if(!(y in YB))YB[y]=addDays(p.wk,14)}
-  const yIn=(y,d)=>!!YB[y]&&d>=YB[y];
-  // Rekord nach Rendite über eine zeitlich geordnete Liste. v = Wert, dOf = Datum für den Ausgangsstand, yOf = Jahr; mk(x, Wert, Vorgänger, Jahr)
+  // Ausgangsstand je Jahr. Ab 0.160 (Florians Antwort 4 zur Freigabe 0.160): die ersten zwei Kalenderwochen ab dem ersten Trade des Jahres
+  // (Kalenderjahr), wie beim allerersten Start; dazu kein Jahres-Rekord vor dem Ende des Allzeit-Ausgangsstands (B). Bis 0.159: ab der ersten
+  // Woche mit Trades des Jahres nach der Donnerstag-Regel.
+  const YB={};for(const p of P){const y=p.d.slice(0,4);if(!(y in YB))YB[y]=addDays(monday(p.d),14)}
+  const yIn=(y,d)=>!!YB[y]&&d>=YB[y]&&d>=B;
+  // Rekord nach Rendite über eine zeitlich geordnete Liste. v = Wert, dOf = Datum für den Ausgangsstand, yOf = Jahr (ab 0.160 null: zählt für
+  // kein Jahr, eine Woche mit Handelstagen in zwei Jahren); mk(x, Wert, Vorgänger, Jahr)
   // baut den Eintrag. Rückgabe: bester Wert je Jahr (für den Jahresrückblick), auch aus dem Ausgangsstand.
   // Ab 0.141: bk = Art für den heutigen Bestwert (res.best). Ab 0.142 dazu die Bestwerte je Jahr (res.yb[bk], Jahres-Ansicht der Karte), und
   // der beste Wert am Ende des Ausgangsstands wird ein Eintrag ohne Vorgänger (mk mit Vorgänger null: vor, kein Schmetterling); ebenso der erste
   // Wert einer Art, wenn es im Ausgangsstand noch keinen gab.
   const rec=(l,v,dOf,yOf,mk,bk)=>{let b=null,cr=false;const by={};
     const cb=()=>{cr=true;if(b&&b.v>0)mk(b.x,b.v,null,null)};
-    for(const x of l){const val=v(x);if(val==null)continue;const d=dOf(x);if(!cr&&d>=B)cb();const y=yOf(x),yb=by[y];
+    for(const x of l){const val=v(x);if(val==null)continue;const d=dOf(x);if(!cr&&d>=B)cb();const y=yOf(x),yb=y==null?null:by[y];
       if(val>0){if(!b&&d>=B)mk(x,val,null,null);else if(b&&val>b.v&&d>=B)mk(x,val,b,null);else if(yb&&val>yb.v&&yIn(y,d))mk(x,val,yb,y)}
-      if(!b||val>b.v)b={v:val,x};if(!yb||val>yb.v)by[y]={v:val,x}}
+      if(!b||val>b.v)b={v:val,x};if(y!=null&&(!yb||val>yb.v))by[y]={v:val,x}}
     if(!cr)cb();
     if(bk){if(b&&b.v>0)res.best[bk]=b;res.yb[bk]=by}return by};
   const pv=(b,f)=>b?{prev:f(b)}:{vor:true};
@@ -4020,9 +4047,14 @@ function msCalc(rows,sel,o){
   const yD=miss?{}:rec(D,x=>x.r,x=>x.d,x=>x.d.slice(0,4),MK.ad=(x,v,b,y)=>
     add(y?'jd':'ad',(y?y+'|':'')+x.d,x.d,Object.assign({r:v,a:x.a,y,j:['d',x.d],o:x.d,tr:(b&&cross(x.rr,rOf,b.v))||x.rr[x.rr.length-1].x.t},pv(b,b=>({r:b.v,a:b.x.a,d:b.x.d,dk:'d'})))),'ad');
   // ---- Beste Woche: nur ganze, abgerechnete Wochen (wie „Hochs und Tiefs“)
+  // Ab 0.160 (Florians Beschluss 1): Die beste Woche eines Jahres zählt nach dem Kalender. Eine Woche, deren Handelstage in zwei Jahren liegen,
+  // ist in keinem der beiden eine ganze Woche (htWkJahr = null), für den Allzeit-Rekord ist sie eine normale Woche. Bis 0.159 zählte sie ganz
+  // zum Jahr ihres Donnerstags. Der Wert der Karte auf einem Jahr (res.yb.aw) kommt aus derselben Rechnung wie Auswertung und Rückblick (msJahr).
   const WK=periods(T,win,'week','sel',cw);
-  const yW=miss?{}:rec(WK.filter(p=>p.full),p=>p.rX,p=>p.key,p=>msWkYear(p.key),MK.aw=(p,v,b,y)=>
+  const yW=miss?{}:rec(WK.filter(p=>p.full),p=>p.rX,p=>p.key,p=>htWkJahr(p.key,BS.tg),MK.aw=(p,v,b,y)=>
     add(y?'jw':'aw',(y?y+'|':'')+p.key,p.key,Object.assign({dk:'w',r:v,a:p.aX,y,j:p.n?['w',p.key]:null,o:p.key,sd:sat(p.key)},pv(b,b=>({r:b.v,a:b.x.aX,d:b.x.key,dk:'w'})))),'aw');
+  const JY=[...new Set(P.map(p=>p.d.slice(0,4)))].sort();
+  if(!miss){const wm=new Map(WK.map(p=>[p.key,p])),by={};for(const y of JY){const o=msJahr(BS,y).G.N.bestW.r;if(o&&wm.has(o.o.w))by[y]={v:o.v,x:wm.get(o.o.w)}}res.yb.aw=by}
   // ---- Bester Monat: nur ganze Monate. Ab 0.142: Der erste ganze Monat wird ein Eintrag ohne Vorgänger (vor, wie bisher kein Anlass zum
   // Feiern). Jahres-Rekord des Monats (jm): Der erste ganze Monat des Jahres setzt den Stand des Jahres; ist ein Monat zugleich Allzeit-Rekord,
   // gilt nur dieser.
@@ -4067,25 +4099,34 @@ function msCalc(rows,sel,o){
     for(const x of l){if(!cr&&x.d>=B)crossB();if(!x.plus){done();continue}
       if(!c){c={n:0,s:x,pb:best,f:null,l:null,yr:{}};if(cr&&!vd){c.vor=true;vd=true}}c.n++;c.e=x;
       if(c.n>c.pb&&((c.pb>0&&c.n===c.pb+1)||st.includes(c.n))&&x.d>=B){c.l=x;c.ln=c.n;if(!c.f)c.f=x}
-      else if(!c.vor&&!c.f&&c.n<=c.pb){const Y=yOf(x.d),p=yb[Y]||0;if(p>0&&c.n>p&&YB[Y]&&x.d>=YB[Y]&&!c.yr[Y])c.yr[Y]={x,n:c.n,pb:p}}}
+      else if(!c.vor&&!c.f&&c.n<=c.pb){const Y=yOf(x.d),p=yb[Y]||0;if(p>0&&c.n>p&&yIn(Y,x.d)&&!c.yr[Y])c.yr[Y]={x,n:c.n,pb:p}}}
     if(!cr)crossB();done(true);
     if(bc)res.best[k]={n:bc.n,c:bc};res.yb[k]=yo;MK[k]=(z,v,pr,y)=>ent(z,'j'+k,y+'|'+z.s.key,{y})};
   const dY=d=>d.slice(0,4),dE=d=>d;
   runs('rg',P.map(p=>({plus:p.eur>0,d:p.d,key:pk(p),tr:p.t})),'d','t',dY,dE);
   runs('rd',D.map(x=>({plus:x.a>0,d:x.d,key:x.d,tr:cross(x.rr,r=>r.exE,0)||x.rr[x.rr.length-1].x.t})),'d','d',dY,dE);
   // Wochen mit Trades, ohne die laufende. Wochen ohne Trades unterbrechen nicht (sie kommen in der Liste nicht vor).
-  const wM=new Map();for(const p of P){if(p.wk===cw)continue;const w=wM.get(p.wk)||{w:p.wk,a:0,c:0,n:0};w.a+=p.exE;w.n++;if(p.eur>0)w.c++;wM.set(p.wk,w)}
+  // Ab 0.160: je Woche dazu ihre Teile je Kalenderjahr (ys, in Zeitfolge; die Woche um Neujahr hat zwei), für „Meiste Gewinn-Trades in einer
+  // Woche“ eines Jahres (Florians Beschluss: nur die Trades der Woche, die im Jahr liegen, wie „Hochs und Tiefs“ mit Jahresfilter)
+  const wM=new Map();for(const p of P){if(p.wk===cw)continue;const w=wM.get(p.wk)||{w:p.wk,a:0,c:0,n:0,ys:[]};w.a+=p.exE;w.n++;if(p.eur>0)w.c++;wM.set(p.wk,w);
+    const y=p.d.slice(0,4);let z=w.ys.find(z=>z.y===y);if(!z)w.ys.push(z={w:p.wk,y,c:0,n:0});z.n++;if(p.eur>0)z.c++}
   const WW=[...wM.values()].sort((a,b)=>a.w<b.w?-1:1);
   runs('rw',WW.map(w=>({plus:w.a>0,d:w.w,key:w.w,sd:sat(w.w)})),'w','w',msWkYear,w=>addDays(w,6));
   // ---- Meiste Gewinn-Trades in einer Woche: nur der Rekord. Ab 0.142 wie die Rekorde nach Rendite: der Stand am Ende des Ausgangsstands als
   // Eintrag ohne Vorgänger (vor), Jahres-Rekord (jmw) nach dem Ausgangsstand des Jahres, zugleich Allzeit-Rekord: nur dieser.
+  // Ab 0.160 (Florians Beschluss): Der Wert eines Jahres zählt nur die Trades der Woche, die im Jahr liegen (Teile w.ys), wie „Hochs und Tiefs“
+  // mit Jahresfilter; der Allzeit-Rekord zählt die ganze Woche. Bis 0.159 zählte die ganze Woche zum Jahr ihres Donnerstags. Der Wert der
+  // Karte auf einem Jahr (res.yb.mw) kommt aus derselben Rechnung wie Auswertung und Rückblick (msJahr, glKz).
   {let b=null,cr=false;const by={};
    const mk=MK.mw=(w,pr,y)=>add(y?'jmw':'mw',(y?y+'|':'')+w.w,w.w,Object.assign({dk:'w',n:w.c,of:w.n,y,j:['w',w.w],o:w.w,sd:sat(w.w)},pr?{prev:{n:pr.c,d:pr.w,dk:'w'}}:{vor:true}));
    const crossB=()=>{cr=true;if(b&&b.c>0)mk(b,null)};
-   for(const w of WW){if(!cr&&w.w>=B)crossB();const y=msWkYear(w.w),q=by[y];
-     if(w.c>0){if(!b&&w.w>=B)mk(w,null);else if(b&&w.c>b.c&&w.w>=B)mk(w,b);else if(q&&w.c>q.c&&YB[y]&&w.w>=YB[y])mk(w,q,y)}
-     if(!b||w.c>b.c)b=w;if(!q||w.c>q.c)by[y]=w}
-   if(!cr)crossB();if(b&&b.c>0)res.best.mw={n:b.c,w:b.w};res.yb.mw=by}
+   for(const w of WW){if(!cr&&w.w>=B)crossB();let at=false;
+     if(w.c>0){if(!b&&w.w>=B){mk(w,null);at=true}else if(b&&w.c>b.c&&w.w>=B){mk(w,b);at=true}}
+     for(const z of w.ys){const q=by[z.y];if(z.c>0&&!at&&q&&z.c>q.c&&yIn(z.y,w.w))mk(z,q,z.y);if(!q||z.c>q.c)by[z.y]=z}
+     if(!b||w.c>b.c)b=w}
+   if(!cr)crossB();if(b&&b.c>0)res.best.mw={n:b.c,w:b.w};
+   const yb={};for(const y of JY){const m=msJahr(BS,y).G.mostW,w=m&&wM.get(m.first.w),z=w&&w.ys.find(z=>z.y===y);if(z)yb[y]=z}
+   res.yb.mw=yb}
   // ---- Jahrestag: jedes Jahr seit dem ersten Trade der gezählten Konten, sobald der Tag da ist (Uhr des Geräts). Er wartet zwei Monate.
   {for(let n=1;n<200;n++){const ad=addMonths(first,12*n);if(ad>today)break;add('ja',n,ad,{n,clock:true,from:ad,until:addMonths(ad,2)})}}
   // ---- Jahresrückblick: jedes vergangene Kalenderjahr mit Trades. Ab 0.154 (Florians Auftrag) ohne die Grenze Ende Februar: voll = die Daten
@@ -4101,7 +4142,9 @@ function msCalc(rows,sel,o){
    const KEY={at:x=>pk(x),ad:x=>x.d,aw:x=>x.key,am:x=>x.key,mw:x=>x.w,rg:c=>c.s.key,rd:c=>c.s.key,rw:c=>c.s.key};
    const val=(k,o)=>!o?null:MS_SERK.includes(k)?(o.n>0?o:null):k==='mw'?(o.c>0?o:null):(o.v>0?o:null);
    const pick=(k,o,y)=>{const x=k==='mw'||MS_SERK.includes(k)?o:o.x,key=KEY[k](x),jk=k==='mw'?'jmw':k.length===2&&k[0]==='a'?'j'+k[1]:'j'+k;
-     const e=(y&&byId.get(jk+'|'+y+'|'+key))||byId.get(k+'|'+key);if(e)return e;
+     // Ab 0.160: Der Allzeit-Eintrag einer Woche passt zum Wert eines Jahres nur, wenn er dieselbe Zahl zeigt (die Woche um Neujahr zählt im
+     // Jahr nur mit ihren Trades des Jahres); sonst entsteht ein Blatt aus dem Wert
+     const e0=(y&&byId.get(jk+'|'+y+'|'+key))||byId.get(k+'|'+key),e=e0&&k==='mw'&&y&&(e0.n!==x.c||e0.of!==x.n)?null:e0;if(e)return e;
      PX=true;try{return MS_SERK.includes(k)?MK[k](x,0,null,y):k==='mw'?MK.mw(x,null,y):MK[k](x,o.v,null,y)}finally{PX=false}};
    for(const k of ['at','ad','aw','am','rg','rd','rw','mw']){const b=res.best[k],o=b?(MS_SERK.includes(k)?b.c:k==='mw'?WW.find(w=>w.w===b.w):b):null;G[k]=val(k,o)?pick(k,o,null):null;
      for(const y of ys){const z=val(k,(res.yb[k]||{})[y]);(Y[y]||(Y[y]={}))[k]=z?pick(k,z,y):null}}
@@ -4143,7 +4186,6 @@ function jrCalc(rows,sel,y,o){
   const {T,P,win,cw}=BS,miss=res.miss=!!BS.miss,R=T.filter(r=>r.y===y),rN=v=>miss?null:v;
   res.fehlt=jrFehlt(BS,sel,y);res.voll=today>=ny&&!res.fehlt.length;
   if(!R.length)return res;
-  const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
   // erster Extremwert bei Gleichstand (wie „Hochs und Tiefs“ und die Kacheln); f = Wert oder null
   const ext=(l,f,dir)=>{let b=null,bv=null;for(const x of l){const v=f(x);if(v==null)continue;if(b===null||(dir>0?v>bv:v<bv)){b=x;bv=v}}return b};
   // ---- Ergebnis
@@ -4157,21 +4199,26 @@ function jrCalc(rows,sel,y,o){
   const pr=p=>miss||p.rMiss?null:p.rX;
   const DM=new Map();for(const r of R){if(!DM.has(r.d))DM.set(r.d,[]);DM.get(r.d).push(r)}
   const DY=[...DM.keys()].sort().map(d=>{const rr=DM.get(d);return {d,r:rN(retSum(rr,'sel',true).v),a:sumTrades(rr,true).v}});
-  const WK=periods(T,win,'week','sel',cw).filter(p=>p.full&&msWkYear(p.key)===y);
-  const MO=periods(T,win,'month','sel',cw).filter(p=>p.full&&p.key.slice(0,4)===y);
-  const DA=periods(T,win,'day','sel',cw).filter(p=>p.key.slice(0,4)===y);
-  const tOf=p=>p&&{r:pr(p),a:p.exE,d:p.d},dOf2=x=>x&&{r:x.r,a:x.a,d:x.d},wOf=p=>p&&{r:rN(p.rX),a:p.aX,w:p.key},mOf=p=>p&&{r:rN(p.rX),a:p.aX,m:p.key};
+  // Ab 0.160 (eine Wurzel, Florians Beschluss 1): ganze Wochen, ganze Monate, Handelstage und ihre Durchschnitte, beste und schwächste Woche
+  // und „Meiste Gewinn-Trades in einer Woche“ kommen aus msJahr, also aus derselben Rechnung wie die Auswertung mit dem Zeitraum des Jahres
+  // (nach dem Kalender). Bis 0.159 rechnete jrCalc sie selbst, die Wochen nach der Donnerstag-Regel.
+  const J=msJahr(BS,y),AK=J.AK,GJ=J.G,WK=AK.week.ps,MO=AK.month.ps;
+  const tOf=p=>p&&{r:pr(p),a:p.exE,d:p.d},dOf2=x=>x&&{r:x.r,a:x.a,d:x.d},mOf=p=>p&&{r:rN(p.rX),a:p.aX,m:p.key};
   const pw=p=>rN(p.rX);
   // Ab 0.156 (Florians Auftrag): Beste und schwächste Woche und Monat nur aus Wochen und Monaten mit Trades. Eine Woche oder ein Monat ohne
   // Trades ist leer, nicht schwach (0.154: „Schwächste Woche 0,00 %“) und im Verlustjahr auch nicht die beste.
   const WKT=WK.filter(p=>p.n),MOT=MO.filter(p=>p.n);
-  res.best={t:tOf(ext(PY,pr,1)),d:dOf2(ext(DY,x=>x.r,1)),w:wOf(ext(WKT,pw,1)),m:mOf(ext(MOT,pw,1))};
-  res.worst={t:tOf(ext(PY,pr,-1)),d:dOf2(ext(DY,x=>x.r,-1)),w:wOf(ext(WKT,pw,-1)),m:mOf(ext(MOT,pw,-1))};
+  // beste und schwächste Woche aus glKz (wie Kacheln, „Hochs und Tiefs“ und Excel); ohne Investition gibt es keinen Extremwert nach Rendite
+  const gW=o=>miss||!o?null:{r:o.v,a:o.o.aX,w:o.o.w};
+  res.best={t:tOf(ext(PY,pr,1)),d:dOf2(ext(DY,x=>x.r,1)),w:gW(GJ.N.bestW.r),m:mOf(ext(MOT,pw,1))};
+  res.worst={t:tOf(ext(PY,pr,-1)),d:dOf2(ext(DY,x=>x.r,-1)),w:gW(GJ.N.worstW.r),m:mOf(ext(MOT,pw,-1))};
   // ohne Investition: Extremwerte nach Rendite gibt es nicht; die Kachel zeigt dann „–“ (k = es gibt Trades, Wochen bzw. Monate mit Trades)
   res.has={t:PY.length>0,d:DY.length>0,w:WKT.length>0,m:MOT.length>0};
   // Die Durchschnitte zählen wie die Auswertung mit „Tage ohne Trade mitzählen“: ganze Wochen und Monate ohne Trade mit 0 (Florians Antwort 6
   // zum Plan 0.156)
-  res.avg={t:res.r!=null&&res.n?res.r/res.n:null,d:rN(mean(DA.map(p=>p.rX))),w:WK.length?rN(mean(WK.map(p=>p.rX))):null,m:MO.length?rN(mean(MO.map(p=>p.rX))):null};
+  // Ab 0.160: aus avgKz mit der Einstellung „mitzählen“ (Florians Entscheidung b zu Fund 5: Der Rückblick zählt immer mit, die Filterzeile
+  // wirkt nicht; das Fenster erklärt den Unterschied, wenn das Häkchen dort aus ist)
+  res.avg={t:rN(AK.trade.rX),d:rN(AK.day.rX),w:AK.week.k?rN(AK.week.rX):null,m:AK.month.k?rN(AK.month.rX):null};
   // „Wochen im Plus“ zählt ab 0.156 wie die Serie „Plus-Wochen in Folge“ (Florians Antwort 5 zum Plan 0.156): jede abgerechnete Woche mit Trades,
   // auch eine angeschnittene, im Jahr nach der Donnerstag-Regel; im Plus = Netto-Gewinn nach PF über 0. Zähler und Nenner aus denselben Wochen.
   // So ist eine Serie des Jahres nie länger als die Zahl der Plus-Wochen des Jahres. 0.154 und 0.155: nur ganze Wochen.
@@ -4195,8 +4242,8 @@ function jrCalc(rows,sel,y,o){
   // Längste Verlustserie über alle Positionen der gezählten Konten (Vorzeichen vor PF; bei gleicher Länge ab 0.157 die erste wie überall, bis 0.156 die letzte)
   res.vs=serY(P.map(p=>({plus:p.eur<0,d:p.d})),dJ,dE);
   // Serien aus denselben Elementen wie die Meilensteine (bei gleicher Länge die erste, wie die Karte); „Meiste Gewinn-Trades“ ist der Wert des Jahres
-  {const w=((M.yb||{}).mw||{})[y];
-   res.ser={rg:serY(SL.rg||[],dJ,dE),rd:serY(SL.rd||[],dJ,dE),rw:serY(SL.rw||[],msWkYear,d=>addDays(d,6)),mw:w&&w.c>0?{n:w.c,of:w.n,w:w.w}:null}}
+  {const m=GJ.mostW;
+   res.ser={rg:serY(SL.rg||[],dJ,dE),rd:serY(SL.rd||[],dJ,dE),rw:serY(SL.rw||[],msWkYear,d=>addDays(d,6)),mw:m?{n:m.c,of:m.first.n,w:m.first.w}:null}}
   // ---- Stärkster Wochentag: Summe der Rendite je Wochentag ÷ Zahl dieses Wochentags im Jahr (im gezählten Fenster); nur Wochentage mit Trades
   // Ab 0.159: gezählt werden die Handelstage (htListe), ein Samstag oder Sonntag also nur mit Trade; bis 0.158 jeder Tag im Fenster
   if(!miss){const cnt=[0,0,0,0,0,0,0],sum=[0,0,0,0,0,0,0],has=[];
@@ -4206,7 +4253,7 @@ function jrCalc(rows,sel,y,o){
     res.wd=bi<0?null:{i:bi,v:bv}}else res.wd=null;
   // ---- Verhältnis wie die Tabelle in „Hochs und Tiefs“ (nach PF, Rendite): Summen, größter Trade in Handelstagen (geteilt durch Ø pro
   // Handelstag), Profit-Faktor aus den Renditen
-  if(!miss){const N=glKz(R,'sel',null,[]).N,dA=res.avg.d,h=(o,sg)=>!o?false:dA==null||!(dA>0)?null:sg*o.v/dA;
+  if(!miss){const N=GJ.N,dA=res.avg.d,h=(o,sg)=>!o?false:dA==null||!(dA>0)?null:sg*o.v/dA;
     res.vh={sumW:N.sumW.r,sumL:N.sumL.r,pf:N.pf,htgW:h(N.bigW.r,1),htgL:h(N.bigL.r,-1)}}else res.vh=null;
   // ---- Geld des Jahres aus den Tag-Daten (in Euro nur, wenn jeder Kurs da ist)
   {const L=(o.tags||[]).filter(t=>t.status==='ok'&&String(tagD(t)).slice(0,4)===y);
@@ -4431,7 +4478,7 @@ function zaehlSig(R,sel,win,cw){const T=R.filter(isTrade),K='K:'+[...sel].sort()
   const ps=res=>periods(T,win,res,'sel',cw).filter(p=>p.rows.length).map(p=>p.key+(p.full?'+':'-')+p.rows.length).join(',');
   return [K,'T:'+T.map(r=>r.a+':'+r.x.id).join(','),'W:'+ps('week'),'M:'+ps('month')].join('|')}
 function msZaehlSig(M){const BS=M.bs,y=MS_Y;if(!BS||!BS.T)return 'K:'+[...msAccs()].sort().join(',')+'|leer';
-  return y?zaehlSig(BS.T.filter(r=>r.d.slice(0,4)===y),msAccs(),cntWin(BS.first,y+'-01-01',y+'-12-31',BS.dataEnd,BS.lastT),BS.cw):zaehlSig(BS.T,msAccs(),BS.win,BS.cw)}
+  const J=y?msJahr(BS,y):null;return y?zaehlSig(J.R,msAccs(),J.win,BS.cw):zaehlSig(BS.T,msAccs(),BS.win,BS.cw)}
 // Ab 0.159 (Florians Beschluss): Die Zeile erscheint oder verschwindet erst beim Schließen eines Menüs, nie während es offen ist. Sonst sprang
 // der Inhalt der Karte beim Anklicken eines Kontos um etwa zwei Zeilen (Florian am Handy). Das gilt für alle Menüs, die sie ändern können
 // (MS_NOTE_FP): Zeitraum und Konten der Karte (msz, msk), Zeitraum der Filterzeile mit seinen Häkchen (range) und Konten der Filterzeile (acc).
@@ -12203,7 +12250,7 @@ function xlsxAll(rows,o){
   const {C}=o,accs=Object.keys(S.accounts).sort(),zero=S.ui.flt.zeroDays!==false,XPF='Ergebnis nach PF (am Abbuchungstag)';
   const RU=curRows(rows,'usd'),U=new Map(rows.map((r,i)=>[r,RU[i]])),u=rr=>rr.map(r=>U.get(r));
   let dataEnd=rows[rows.length-1].d;for(const a of accs){const rd=repDay(a);if(rd>dataEnd)dataEnd=rd}
-  const win=cntWin(tr[0].d,null,null,dataEnd,lastTradeDay(tr));
+  const win=cntWin(tr[0].d,null,null,dataEnd,lastTradeDay(tr),tgSet(tr));
   // Ab 0.100: laufende Woche aller Konten (PF noch nicht gebucht), sie ist keine ganze Woche (wie in der Auswertung)
   const cw=curWeek(rows,accs);
   const capAll=tm=>{let s=0;for(const a of accs){const c=CAP(a,tm);if(c==null)return null;s+=c}return s};
@@ -12281,7 +12328,7 @@ function xlsxAll(rows,o){
   const GE=glKz(rows,'all',win,AE.week.ps),GU=glKz(RU,'all',win,AU.week.ps);
   // Blätter „Durchschnitt“ und „Hochs und Tiefs“: alle Konten, ganzer Zeitraum, vor und nach PF, EUR und USD, je Wert eigener Extremwert und eigenes Datum
   const P0=v=>v==null||miss?'':X.P(v),E0=v=>v==null?'':X.E(v),N0=v=>v==null?'':X.N(v),D0=o=>o?X.D(o.d||o.w):'';
-  const head=t=>[[X.T(t)],[`Alle Konten, ganzer Zeitraum: Handelstage vom ${fD(win.s)} bis ${fD(htLetzter(win,new Set(rows.filter(isTrade).map(r=>r.d))))}`],
+  const head=t=>[[X.T(t)],[`Alle Konten, ganzer Zeitraum: Handelstage vom ${fD(win.s)} bis ${fD(htLetzter(win,win.tg))}`],
     ['Rendite auf die Investition aller Konten. Durchschnitte pro Woche und Monat sowie beste und schwächste Woche nur aus ganzen Wochen und Monaten.'],
     [`Zählweise beim Export: Tage ohne Trade mitgezählt: ${zero?'ja':'nein'}`],[]];
   const newSheet=(name,t)=>({name,rows:head(t),merges:[],hdr:[],grp:[],skip:[0,1,2,3]});
@@ -13903,7 +13950,7 @@ function renderStats(rows){
   for(const r of [...R,...CWR]){if(!isTrade(r))continue;let s=0,miss=false;for(const a of sel){const c=CAP(a,r.x.t);if(c==null){miss=true;break}s+=c}r.cS=miss?null:s}
   // Ab 0.157: was die Auswertung zählt (zaehlSig), für die Zeile oben in der Karte „Meilensteine“ (msNote); Fenster wie unten (cntWin)
   {let de=RA.length?RA[RA.length-1].d:'';for(const a of sel){const rd=repDay(a);if(rd>de)de=rd}const f=(RA.find(isTrade)||{}).d;
-   AW_SIG=zaehlSig(R,sel,f&&!rg.bad?cntWin(f,rg.from,rg.to,de,lastTradeDay(RA)):null,CW);msNote()}
+   AW_SIG=zaehlSig(R,sel,f&&!rg.bad?cntWin(f,rg.from,rg.to,de,lastTradeDay(RA),tgSet(RA)):null,CW);msNote()}
   // Angeschnittene Wochen und Monate: Die gewählten Konten haben dort auch Buchungen außerhalb des Zeitraums
   const cutW=new Set(),cutM=new Set();
   if(!rg.bad&&(rg.from||rg.to))for(const r of RA)if(!inRg(r)){cutW.add(r.wk);cutM.add(r.ym)}
@@ -13940,7 +13987,7 @@ function renderStats(rows){
   let dataEnd=RA[RA.length-1].d;
   for(const a of sel){const rd=repDay(a);if(rd>dataEnd)dataEnd=rd}
   const firstT=(RA.find(isTrade)||{}).d,zero=S.ui.flt.zeroDays!==false;
-  const lastT=lastTradeDay(RA),win=cntWin(firstT,rg.from,rg.to,dataEnd,lastT),tdS=win.s,tdE=win.e;
+  const lastT=lastTradeDay(RA),win=cntWin(firstT,rg.from,rg.to,dataEnd,lastT,tgSet(RA)),tdS=win.s,tdE=win.e;
   // Anzahl jedes Wochentags für „Nach Wochentag (Durchschnitt)“: die Handelstage im Fenster (htListe; ab 0.159, bis 0.158 alle Tage im Fenster,
   // auch Samstage und Sonntage ohne Trade), ohne „Tage ohne Trade mitzählen“ nur Tage mit Trade
   const wdCnt=[0,0,0,0,0,0,0],tDays=new Set(R.filter(isTrade).map(r=>r.d));
