@@ -3829,6 +3829,9 @@ function htListe(a,b,win,tage){const out=[],s=win&&win.s>a?win.s:a,e=win&&win.e<
   for(let d=s;d<=e;d=addDays(d,1))if(htKal(d)||(tage&&tage.has(d)))out.push(d);
   return out}
 function htGanz(a,b,win){for(let d=a;d<=b;d=addDays(d,1))if(htKal(d)&&(d<win.s||d>win.e))return false;return true}
+// Ab 0.160 (Florians Antwort 3 zu Bericht 0.159): der letzte gezählte Handelstag im Fenster win (tage = Tage mit Trade). Für die Kopfzeile im
+// Excel mit allen Daten „Handelstage vom … bis …“: nie ein Samstag oder Sonntag ohne Trade. Bis 0.159 stand dort das Ende des Fensters.
+function htLetzter(win,tage){const l=htListe(win.s,win.e,null,tage);return l.length?l[l.length-1]:win.e}
 // Letzter Tag mit Trade in den Zeilen rows ('' ohne Trade), für cntWin
 function lastTradeDay(rows){let l='';for(const r of rows)if(isTrade(r)&&r.d>l)l=r.d;return l}
 function cntWin(first,from,to,dataEnd,lastT){if(!first)return null;const de=lastT&&lastT<dataEnd?addDays(dataEnd,-1):dataEnd;return {s:from&&from>first?from:first,e:to&&to<de?to:de}}
@@ -12278,7 +12281,7 @@ function xlsxAll(rows,o){
   const GE=glKz(rows,'all',win,AE.week.ps),GU=glKz(RU,'all',win,AU.week.ps);
   // Blätter „Durchschnitt“ und „Hochs und Tiefs“: alle Konten, ganzer Zeitraum, vor und nach PF, EUR und USD, je Wert eigener Extremwert und eigenes Datum
   const P0=v=>v==null||miss?'':X.P(v),E0=v=>v==null?'':X.E(v),N0=v=>v==null?'':X.N(v),D0=o=>o?X.D(o.d||o.w):'';
-  const head=t=>[[X.T(t)],[`Alle Konten, ganzer Zeitraum: Handelstage vom ${fD(win.s)} bis ${fD(win.e)}`],
+  const head=t=>[[X.T(t)],[`Alle Konten, ganzer Zeitraum: Handelstage vom ${fD(win.s)} bis ${fD(htLetzter(win,new Set(rows.filter(isTrade).map(r=>r.d))))}`],
     ['Rendite auf die Investition aller Konten. Durchschnitte pro Woche und Monat sowie beste und schwächste Woche nur aus ganzen Wochen und Monaten.'],
     [`Zählweise beim Export: Tage ohne Trade mitgezählt: ${zero?'ja':'nein'}`],[]];
   const newSheet=(name,t)=>({name,rows:head(t),merges:[],hdr:[],grp:[],skip:[0,1,2,3]});
@@ -15521,7 +15524,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.159',VDATE='17.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.160',VDATE='18.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
