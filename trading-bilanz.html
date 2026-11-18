@@ -1440,8 +1440,8 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
    Bei wenig Platz läuft es umgekehrt: Zuerst werden Schmetterling und Balken gemeinsam kleiner, erst an ihrer Untergrenze die Abstände, danach
    scrollt das Fenster. Die Stufen nach der Fensterhöhe aus 0.156 (780, 745, 690 px) sind damit weg. Die Breite des Schmetterlings folgt seiner
    Höhe (aspect-ratio aus BFLY_WH, Regel im Skript); --jrk = Höhe geteilt durch 96 (jrAnpassen) für Flügelschlag und Goldstaub.
-   Ab 0.162 gilt das Wachsen von Schmetterling und Balken (Schritt 2, Verhältnis 10 : 9, Grenzen) nur noch am Handy (bis 640 px Breite). Am PC ist
-   Seite 1 ein festes Bild, das als Ganzes kleiner wird: Block „Seite 1 am PC als ein Bild (ab 0.162)“ weiter unten. */
+   Ab 0.163 gilt das Wachsen von Schmetterling und Balken (Schritt 2, Verhältnis 10 : 9, Grenzen) nur noch am Handy (bis 640 px Breite). Am PC ist
+   Seite 1 ein festes Bild, das als Ganzes kleiner wird: Block „Seite 1 am PC als ein Bild (ab 0.163)“ weiter unten. */
 .jrs1{display:flex;flex-direction:column;align-items:center;text-align:center}
 .jrs1>*{flex:none;max-width:100%}
 .jrsp{flex:1000 0 var(--mi);max-height:var(--no);margin-top:auto;width:1px;--no:18px;--mi:8px}
@@ -1531,7 +1531,7 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jrdanke{margin:8px 0 0}
 button.zlink.jrzur{color:var(--accent);padding:0}
 .jrs1{padding-top:6px}
-/* Ab 0.162 (Florians Auftrag): Seite 1 am PC als ein Bild (Fenster breiter als 640 px). Volle Größe bei --jrf 1: Schmetterling 164 px hoch,
+/* Ab 0.163 (Florians Auftrag): Seite 1 am PC als ein Bild (Fenster breiter als 640 px). Volle Größe bei --jrf 1: Schmetterling 164 px hoch,
    Balken 160 px, Balkenfläche 480 px, Titel 26 px, Rendite und Netto-Gewinn 36 px, Beschriftungen 13 px, Monatsbuchstaben 12 px, Leitsatz 17 px,
    Knopf 15 px, Abstände zwischen den Blöcken 22, 10, 18, 18, 18 px. Größer wird nichts: Mehr Platz geht wie in 0.158 an die Abstände.
    Bei weniger Platz, in dieser Reihenfolge:
@@ -5061,17 +5061,17 @@ function jrStaub(){const s=$('jr-staub');if(!s)return;let h='';const K=v=>`calc(
    Effekten (jrPlay) und bei jeder Größenänderung des Fensters, auch beim Drehen des Handys (ResizeObserver am Fenster, dazu „resize“).
    Reihenfolge: zuerst die Fußleiste (ihre Zeilen ändern den Platz darüber), dann die Kacheln von Seite 2 bzw. das Zahlenpaar von Seite 1,
    zuletzt --jrk am Schmetterling (Höhe geteilt durch 96) für Flügelschlag (Tiefe) und Goldstaub.
-   Ab 0.162 vor --jrk am PC der Faktor für das ganze Bild (jrFaktor); das Zahlenpaar (jrZwFit) wird vorher mit Faktor 1 gemessen. */
+   Ab 0.163 vor --jrk am PC der Faktor für das ganze Bild (jrFaktor); das Zahlenpaar (jrZwFit) wird vorher mit Faktor 1 gemessen. */
 function jrAnpassen(){if(!JR)return;const bx=$('jr-modal').querySelector('.box');
   // Platz der Scrollleiste auf Seite 1 frei halten (CSS .jrs1v), außer Seite 1 scrollt selbst (sehr niedriges Fenster)
   if(JR_SB==null){const t=document.createElement('div');t.style.cssText='position:absolute;left:-999px;top:0;width:60px;height:60px;overflow:scroll';document.body.appendChild(t);JR_SB=(t.offsetWidth-t.clientWidth)||0;t.remove();bx.style.setProperty('--jrsb',JR_SB+'px')}
-  // Ab 0.162: zuerst die volle Größe (Faktor 1); Seite 2 und „Wertschätzung teilen“ bleiben immer bei 1
+  // Ab 0.163: zuerst die volle Größe (Faktor 1); Seite 2 und „Wertschätzung teilen“ bleiben immer bei 1
   bx.style.setProperty('--jrf','1');
   bx.classList.toggle('jrs1v',JR.v===1&&JR_SB>0);
   jrFuss();if(JR.v===2)jrFit();if(JR.v!==1)return;jrZwFit();jrFaktor(bx);
   if(JR_SB>0&&bx.scrollHeight>bx.clientHeight+1){bx.classList.remove('jrs1v');jrFuss();bx.style.setProperty('--jrf','1');jrZwFit();jrFaktor(bx)}
   const bf=$('jr-bf'),h=bf&&bf.offsetHeight;if(h)bf.style.setProperty('--jrk',(h/96).toFixed(3))}
-// Ab 0.162 (Florians Auftrag): Faktor --jrf für Seite 1 am PC (CSS „Seite 1 am PC als ein Bild“). Gemessen wird Seite 1 mit allen Abständen an
+// Ab 0.163 (Florians Auftrag): Faktor --jrf für Seite 1 am PC (CSS „Seite 1 am PC als ein Bild“). Gemessen wird Seite 1 mit allen Abständen an
 // ihrer Untergrenze (.jrmin). Passt sie so in den Platz, bleibt der Faktor 1, und die Abstände teilen sich, was übrig ist. Sonst ist der Faktor
 // Platz geteilt durch Höhe, nachgemessen, weil kleine Schriften bei 12 px stehen bleiben; nie unter 0,8 (darunter scrollt das Fenster), nie
 // über 1. Am Handy (bis 640 px) immer 1. Läuft aus jrAnpassen: nach jedem Zeichnen, bei jeder Größenänderung, „Betrag zeigen“ und Tipp.
@@ -15831,7 +15831,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.162',VDATE='18.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.163',VDATE='18.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
