@@ -4546,7 +4546,8 @@ const msLinkH=t=>herzH(t).replace(/\{([^}]*)\}/,'<a href="#resonanz" data-msres>
 function msMissTxt(L){const nf=L.filter(a=>INV[a]==='nofac'),ot=L.filter(a=>INV[a]!=='nofac'),kt=X=>`${X.length===1?'Konto':'den Konten'} ${and2(X)}`;
   return [nf.length?MS_TXT.ohneTB.replace('{k}',kt(nf)):'',ot.length?MS_TXT.ohneInv.replace('{k}',kt(ot)):''].filter(Boolean).map(esc).join(' ')}
 // ---- Bild-Knopf: wie bei den Grafiken. Kann das Gerät Dateien teilen, ein kleines Menü mit „Speichern“ und „Teilen“, sonst „Bild speichern“.
-const msImgBtn=id=>`<span class="fdd msbd"><button type="button" class="btn msib" data-msimg="${esc(id)}"${CAN_SHARE_FILE?' aria-expanded="false" aria-controls="fp-msb"':''}>${CAN_SHARE_FILE?'Bild ▾':'Bild speichern'}</button></span>`;
+// Ab 0.161 (Florians Auftrag 0.161, Phase 5): ohne Teilen „Bild“ (vorgelesen „Bild speichern“), ▾ nur, wenn ein Menü aufgeht; bis 0.160 „Bild speichern“
+const msImgBtn=id=>`<span class="fdd msbd"><button type="button" class="btn msib" data-msimg="${esc(id)}"${CAN_SHARE_FILE?' aria-expanded="false" aria-controls="fp-msb">Bild ▾':' aria-label="Bild speichern">Bild'}</button></span>`;
 // Das eine Menü „Bild“ (#fp-msb) hängt am gerade gewählten Knopf. Vor jedem Neuzeichnen zurück an seinen Platz, sonst ginge es mit der Liste verloren.
 function msbHome(){if(FP_OPEN==='msb')closeFpanel();const p=$('fp-msb'),h=$('ms-menu-home');if(p&&h&&p.parentNode!==h)h.appendChild(p);
   for(const id of ['fb-msb','fdd-msb']){const x=$(id);if(x&&x.removeAttribute)x.removeAttribute('id')}}
@@ -13673,7 +13674,7 @@ const GL={
   // Ab 0.117: DFX.swiss
   dxpend:{t:'Ausstehend',h:'Bei DFX.swiss angekommen, noch nicht in deiner DFX-Datei.\nLies die DFX-Datei neu ein, sobald DFX.swiss fertig ist.\nDie Coins zählen nicht mehr zum Bestand der Wallet, damit er zur Blockchain passt. Steuerlich ist das noch kein Vorgang. Sobald eine DFX-Datei den Verkauf mit diesem Hash zeigt, verknüpft das Tool ihn. In „Alle Vorgänge“ wählst du bei der Bewegung, wie es ausgegangen ist.'},
   'k-ov':{t:'Überblick',h:'Die wichtigsten Zahlen für den gewählten Zeitraum und die gewählten Konten. Mit „Rendite ▾“ oder „Betrag ▾“ wechselst du, ob die Kacheln Prozent oder Beträge zeigen.'},
-  'k-ms':{t:'Meilensteine',get h(){const I=MS_TXT.info;return esc(I.zaehlt)+'\n'+esc(I.satz)+'\n<ul class="glul">'+I.punkte.map(t=>`<li>${esc(t)}</li>`).join('')+'</ul>'}},
+  'k-ms':{t:'Meilensteine',get h(){const I=MS_TXT.info;return esc(I.zaehlt)+'\n<ul class="glul">'+I.punkte.map(t=>`<li>${esc(t)}</li>`).join('')+'</ul>'}},
   'k-hl':{t:'Hochs und Tiefs',h:'Die besten und schwächsten Trades, Tage und Wochen, dazu Serien am Stück. Ein Datum führt dich zur Stelle in „Pro Woche“.'},
   'k-avg':{t:'Durchschnitt',h:'Was ein Handelstag, eine Woche, ein Monat und ein Trade im Schnitt gebracht haben, als Durchschnitt und als Median.'},
   'k-graf':{t:'Grafiken',h:'Deine Ergebnisse als Grafik. Oben wählst du, was gezeigt wird, unter der Grafik steht, was sie bedeutet.\n„Vollbild“ zeigt die Grafik über den ganzen Bildschirm. Mit „Bild“ speicherst oder teilst du sie als Bild (PNG), immer quer und hell, ohne Kontonamen.'},
@@ -14052,8 +14053,9 @@ const HB_CAL='<svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true"
 // Meilensteine, Konten: „Konten: alle ▾“ / „6 von 10 Konten ▾“ → „alle ▾“ / „6 von 10 ▾“ → „6/10 ▾“ → „6/10“. Zeitraum: „Gesamt ▾“ bzw. das Jahr, ab Stufe 3 ohne ▾.
 const msBtnK=(t,n,N)=>t===0?(n===N?'Konten: alle':`${n} von ${N} Konten`)+' ▾':t===1?(n===N?'alle':`${n} von ${N}`)+' ▾':`${n}/${N}`+(t===2?' ▾':'');
 const msBtnZ=(t,y)=>(y||MS_TXT.zeit.gesamt)+(t>=3?'':' ▾');
-// Grafiken: ohne Teilen „Bild speichern“, in der Kurzform „Bild“; mit Teilen immer „Bild ▾“
-const grafBtnT=t=>CAN_SHARE_FILE?'Bild ▾':t>=1?'Bild':'Bild speichern';
+// Grafiken: mit Teilen „Bild ▾“, ohne Teilen „Bild“ (vorgelesen „Bild speichern“). Ab 0.161 (Florians Auftrag 0.161, Phase 5); bis 0.160 ohne
+// Teilen „Bild speichern“, in der Kurzform der Titelleiste „Bild“
+const grafBtnT=()=>CAN_SHARE_FILE?'Bild ▾':'Bild';
 // Stand der Menü-Knöpfe der Meilensteine (msRender): n von N Konten gewählt, y = gewähltes Jahr ('' = Gesamt), ys = Jahre im Menü
 let MS_BTN={n:0,N:0,y:'',ys:[]};
 function msBtns(){const st=hbOf('st-ms'),{n,N,y}=MS_BTN,k=$('fb-msk'),z=$('fb-msz');
@@ -14067,7 +14069,8 @@ function hbTexts(){stSortBtns();msBtns();for(const u of UNIT_DD)$('fb-'+u).textC
 // Kurzform des Titels „Netto / Konto u. Monat“ (k), zuletzt für alle Karten die kleinere Titelschrift (.hbt). Passt auch das nicht, bricht
 // die Leiste um (allerletzte Notlösung). „Aufklappen ▾“ bleibt immer ganz, der Titel wird sonst nie gekürzt, kein Symbol für Konten.
 const HB_L=(()=>{const s=(e,t,f,k)=>({e,t,f:f||0,k:k||0}),sort=[s(0,0),s(1,0),s(1,1),s(1,2),s(1,2,1)],unit=[s(0,0),s(1,0),s(1,0,1)],plain=[s(0,0),s(1,0)];
-  return {'st-ov':unit,'st-graf':[s(0,0),s(1,0),s(1,1),s(1,1,1)],'st-hl':unit,'st-ms':[s(0,0),s(1,0),s(1,1),s(1,2),s(1,3),s(1,3,1),s(1,3,1,1)],'st-avg':plain,
+  // Ab 0.161: Die Grafiken haben keine kürzere Knopfstufe mehr (der Knopf heißt ohne Teilen schon „Bild“); bis 0.160 [s(0,0),s(1,0),s(1,1),s(1,1,1)]
+  return {'st-ov':unit,'st-graf':unit,'st-hl':unit,'st-ms':[s(0,0),s(1,0),s(1,1),s(1,2),s(1,3),s(1,3,1),s(1,3,1,1)],'st-avg':plain,
     'st-week':sort,'st-month':sort,'st-acc':unit,'st-matrix':[s(0,0),s(1,0),s(1,0,0,1)],'real-card':plain,'st-calc':plain}})();
 function hbSet(id,st){const c=$(id);HB[id]=st;c.toggleAttribute('data-hbe',!!st.e);c.toggleAttribute('data-hbf',!!st.f);c.toggleAttribute('data-hbk',!!st.k)}
 // Jeder mögliche Text je Knopf einer Karte in Stufe st (wie fbCands in der Filterzeile): [[Knopf, [HTML, …]], …]
@@ -14964,9 +14967,9 @@ function renderGraf(rows,sel,gx){
    Schließen: Knopf, Esc, Zurück-Taste (ein Eintrag im Verlauf) und Verlassen des Vollbilds durch das System. Keine Sperre der Ausrichtung.
    Bild: immer quer (960 × 540, gespeichert mit 1200 × 675 Pixeln), immer hell (Farben aus der hellen :root-Regel fest im Bild), komplett offline. */
 let GRAF_LAST=null,GFS=false,GFS_H=false,GPNG=null,GPNG_B=null;
-// Teilen von Dateien: einmal prüfen. Ohne heißt der Knopf „Bild speichern“ und speichert direkt.
+// Teilen von Dateien: einmal prüfen. Ohne heißt der Knopf „Bild“ (ab 0.161, vorgelesen „Bild speichern“; bis 0.160 „Bild speichern“) und speichert direkt.
 const CAN_SHARE_FILE=(()=>{try{return !!(navigator.canShare&&navigator.share&&navigator.canShare({files:[new File([new Uint8Array(8)],'t.png',{type:'image/png'})]}))}catch(e){return false}})();
-for(const w of ['gb','gb2']){const b=$('fb-'+w);b.textContent=CAN_SHARE_FILE?'Bild ▾':'Bild speichern';if(!CAN_SHARE_FILE){b.removeAttribute('aria-expanded');b.removeAttribute('aria-controls')}}
+for(const w of ['gb','gb2']){const b=$('fb-'+w);b.textContent=grafBtnT();if(!CAN_SHARE_FILE){b.removeAttribute('aria-expanded');b.removeAttribute('aria-controls');b.setAttribute('aria-label','Bild speichern')}}
 function grafSet(L){GRAF_LAST=L;GPNG=GPNG_B=null;$('graf-btns').hidden=!L;if(GFS){if(L)gfsHead();else gfsClose()}}
 // Kopf im Vollbild: Titel wie in der Karte (mit PF-Stellung und Legende), darunter der Zeitraum
 function gfsHead(){$('gfs-title').innerHTML=$('graf-title').innerHTML;$('gfs-range').textContent=GRAF_LAST?GRAF_LAST.rl:''}
@@ -14995,7 +14998,7 @@ document.addEventListener('fullscreenchange',()=>{if(!GFS)return;if(!document.fu
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&GFS&&!FP_OPEN&&!GP&&!MODAL){e.preventDefault();gfsClose()}},true);
 // Drehen oder Größe ändern im Vollbild: neu zeichnen (der allgemeine Handler zeichnet nur bei neuer Breite)
 {let q=0;const f=()=>{if(GFS&&!q)q=requestAnimationFrame(()=>{q=0;gfsRedraw()})};window.addEventListener('resize',f);window.addEventListener('orientationchange',f)}
-// Knöpfe „Bild ▾“ / „Bild speichern“ (Karte und Vollbild). Beim Öffnen des Menüs entsteht das Bild schon, damit „Teilen“ in der Nutzergeste bleibt.
+// Knöpfe „Bild ▾“ / „Bild“ (Karte und Vollbild; bis 0.160 ohne Teilen „Bild speichern“). Beim Öffnen des Menüs entsteht das Bild schon, damit „Teilen“ in der Nutzergeste bleibt.
 for(const w of ['gb','gb2'])$('fdd-'+w).addEventListener('click',e=>{e.stopPropagation();
   if(e.target.closest('#fb-'+w)){e.preventDefault();if(!CAN_SHARE_FILE){grafSave();return}if(FP_OPEN===w)closeFpanel();else{openFpanel(w);grafPrep()}return}
   const o=e.target.closest('[data-gimg]');if(o){closeFpanel();if(o.dataset.gimg==='share')grafShare();else grafSave()}});
@@ -15774,7 +15777,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.160',VDATE='18.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.161',VDATE='18.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -15823,7 +15826,8 @@ const MS_TXT={
   // Stellen, die er wiederholt, sind weg („Der Filter oben wirkt hier nicht.“, „Gesamt oder ein Jahr und die Konten wählst du rechts im
   // Titel.“, „Alle Werte nach PF (verteilt)“); „Stufen in USD.“ bleibt als Punkt; neu der Punkt zur Jahres-Ansicht (Florians Wortlaut)
   info:{zaehlt:'So zählen diese Karte und der Rückblick: Zeitraum und Konten wählst du in den Menüs rechts. Alle Werte sind immer nach PF, und die Durchschnitte beinhalten alle Handelstage, auch die ohne Trade. Von der Filterzeile oben übernehmen sie nur die Währung.',
-    satz:'Deine Rekorde, Serien und Stufen.',punkte:['Stufen in USD.','Eine Woche zählt erst nach der Abrechnung der PF.',
+    // Ab 0.161 (Florians Auftrag 0.161, Phase 5): ohne den Satz „Deine Rekorde, Serien und Stufen.“ (bis 0.160 nach dem Absatz zaehlt)
+    punkte:['Stufen in USD.','Eine Woche zählt erst nach der Abrechnung der PF.',
     'Die ersten zwei Wochen sind dein Ausgangsstand. Sie stehen hier ohne Hinweis, sonst wäre am Anfang fast jeder Tag ein Rekord.',
     'In der Jahres-Ansicht zählt eine Serie ab ihrem Beginn bis zum Jahresende, auch wenn sie im Vorjahr begann.','Auszahlungen kommen aus deinen Tag-Daten.',
     // ab 0.144 (Claude, von Florian bestätigt)
@@ -15838,7 +15842,10 @@ const MS_TXT={
   kat:{rek:'Rekord',ser:'Serie',stu:'Stufe',aus:'Auszahlung',ja:'Jahrestag',jr:'Rückblick'},
   lauf:'läuft noch',seit:'seit {d}',
   // ab 0.160 (Florians Wortlaut, Freigabe 0.160): laufSeit nur in den Kacheln der Karte; mehr = Zusatz zu einer Serie, die nach dem Zeitraum weiterlief
-  laufSeit:'läuft seit {d}',mehr:{bis:'lief weiter bis {n}',jetzt:'läuft noch, jetzt {n}'},
+  laufSeit:'läuft seit {d}',
+  // Ab 0.161 (Florians Auftrag 0.161, Phase 5): zwischen „bis“ bzw. „jetzt“ und der Zahl ein geschütztes Leerzeichen, damit die Zahl bei einem
+  // Umbruch nicht allein steht
+  mehr:{bis:'lief weiter bis\u00a0{n}',jetzt:'läuft noch, jetzt\u00a0{n}'},
   // Wert ohne Wert (ab 0.142, Fassung (c) aus Bericht 0.141; aw2, am2, mw2: es gibt ganze Wochen bzw. Monate, aber keine im Plus bzw. ohne Gewinn-Trade)
   ohne:{at:'noch kein Gewinn-Trade',ad:'noch kein Tag im Plus',aw:'noch keine ganze Woche',aw2:'noch keine Plus-Woche',am:'noch kein ganzer Monat',am2:'noch kein Monat im Plus',
     rg:'noch kein Gewinn-Trade',rd:'noch kein Tag im Plus',rw:'noch keine Plus-Woche',mw:'noch keine ganze Woche',mw2:'noch kein Gewinn-Trade'},
