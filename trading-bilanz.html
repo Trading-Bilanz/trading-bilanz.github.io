@@ -3809,7 +3809,9 @@ function sumTrades(rows,ex,usd){
    genau 0 zählt bei keinem (0). Ebenso entscheidet bei Tagen der Betrag in USD, ob ein Tag im Plus oder im Minus ist (serElem).
    Florians Antwort 3 zur Freigabe 0.161 (Fund 3 aus 0.160): Bis 0.160 entschied der Betrag in der Währung der Zeilen. Ohne Wechselkurs ist der
    Euro-Betrag keine Zahl, dann zählte das Excel mit allen Daten (Euro-Zeilen) im Blatt „Hochs und Tiefs“ 0 Gewinn-Trades, 0 Verlust-Trades und
-   keine Serien. Mit Kursen ist das Vorzeichen dasselbe: Alle Buchungen eines Tages haben denselben EZB-Kurs. */
+   keine Serien. Mit Kursen ist das Vorzeichen bei Trades und bei Tagen vor PF dasselbe (alle Buchungen eines Tages haben denselben EZB-Kurs).
+   Bei Tagen nach PF nicht immer: In Euro wird die PF eines Kontos zum Kurs ihres Samstags verteilt; heben sich an einem Tag zwei Konten genau
+   auf (0 USD nach PF), war der Tag in Euro bis 0.160 knapp im Plus oder im Minus (BERICHTE/0.161.md, OFFEN.md „Aus 0.161“). */
 const gvVz=p=>p.u>0?1:p.u<0?-1:0;
 // Ab 0.161 (Schritt 2): die eine Reihenfolge der Positionen: nach der Schließzeit, bei derselben Zeit wie eingelesen (fest, sort ist stabil).
 // Für die Serien (serElem) und „Hochs und Tiefs“ (glKz); bis 0.160 sortierte glKz mit einem Vergleich ohne feste Reihenfolge bei gleicher Zeit
