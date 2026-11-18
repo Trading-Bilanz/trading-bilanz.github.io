@@ -1460,10 +1460,10 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jrkorn{position:absolute;border-radius:50%;opacity:0;animation:jrkorn var(--d) ease-out var(--w) 1 both}
 @keyframes jrkorn{0%{opacity:0;transform:translate(0,0)}12%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y))}}
 @media(max-width:640px){.jrs1>.jrbf{max-height:140px}}
-.jrh{margin:10px 0 0;font-size:22px;overflow-wrap:break-word;text-wrap:balance}
+.jrh{margin:10px 0 0;overflow-wrap:break-word;text-wrap:balance}
 /* Ab 0.158: Titel von Seite 1 am PC 26 px; am Handy, auf Seite 2 und in „Wertschätzung teilen“ bleibt er, wie er ist (Florians Antwort 1 zum
-   Plan). Fund 0.158: Dort ist er seit 0.154 20 px groß, nicht 22 px: Die 22 px in .jrh oben wirken nicht, weil „.modal h2“ (20 px) stärker
-   ist. Nicht geändert (OFFEN.md, „Aus 0.158“). */
+   Plan): 20 px aus der Regel für Fenster-Titel („.modal h2“). Ab 0.160 (Florians Auftrag aus Werkstatt-Runde 9) ist die wirkungslose Angabe
+   von 22 px in .jrh weg; sie wirkte seit 0.154 nicht, weil „.modal h2“ stärker ist. Am Aussehen ändert sich nichts. */
 .jrs1>.jrh{margin:0}
 @media(min-width:641px){.jrs1>.jrh{font-size:26px}}
 /* Ab 0.158 (Florians Auftrag): Rendite und Netto-Gewinn gleich groß und nebeneinander, am PC 36 px, am Handy 32 px. Passen sie nicht
@@ -1501,6 +1501,10 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jrs2 .jrkat+.jrh{margin-top:4px}
 .jrgrp{margin-top:18px}
 .jrgrp>h3{margin:0 0 6px;font-size:var(--fs-xxs);letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink);font-weight:700}
+/* Ab 0.160: kleiner grauer Zusatz in derselben Zeile neben der Überschrift einer Gruppe („mit allen Handelstagen“ bei „Durchschnitt“) */
+.jrgrp>h3>.jrhz{margin-left:8px;letter-spacing:0;text-transform:none;font-weight:400;color:var(--muted);white-space:nowrap}
+/* Ab 0.160: „8 von 10 Konten“ auf Seite 1 klein und grau unter dem Titel (wie der Auftakt), auf Seite 2 oben (wie „Noch nicht vollständig“) */
+.jrunv.jrkto+.jrunv{margin-top:2px}
 .jrbody{border-top:1px solid var(--line)}
 .jrreihe{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr))}
 .jrk{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;padding:8px 10px 10px 12px;border-bottom:1px solid var(--line);border-left:1px solid var(--line)}
@@ -1510,7 +1514,8 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jrk>.v.none{font-size:var(--fs-s);font-weight:400;line-height:27.5px;color:var(--muted);white-space:normal}
 .jrk>.s{font-size:var(--fs-xs);color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
 @media(max-width:640px){.jrbody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.jrreihe{display:contents}
-  .jrk,.jrk.jrf{border-left:0;padding:8px 8px 10px 0}.jrk.jrr{border-left:1px solid var(--line);padding-left:10px}.jrk.jrw{grid-column:1/-1}.jrk>.s{white-space:normal}}
+  .jrk,.jrk.jrf{border-left:0;padding:8px 8px 10px 0}.jrk.jrr{border-left:1px solid var(--line);padding-left:10px}.jrk.jrw{grid-column:1/-1}.jrk>.s{white-space:normal}
+  .jrum .jrk>.k{white-space:normal;text-wrap:balance}}
 .jrpl{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:10px}
 .jrpl .msmk{cursor:default}
 .jrabs{margin-top:6px}
@@ -4838,22 +4843,32 @@ function jrBalkenH(st){const X=MS_TXT.jr,v=m=>st.miss?m.a:m.r,V=st.mon.map(m=>m.
     return `<div class="sp"><div class="z" style="top:${z}%"></div>${m.n?`<i class="${x<0?'m':''}" style="--w:${(0.3+i*0.11).toFixed(2)}s;${x<0?`top:${z}%`:`bottom:${+(100-z).toFixed(2)}%`};height:max(3px,${h}%)"></i>`:`<i class="o" style="top:max(0px,calc(${z}% - 1px))"></i>`}</div>`}).join('')}</div>
     <div class="jrml" aria-hidden="true">${X.mb.map(b=>`<span>${b}</span>`).join('')}</div><div class="jrkl">${esc(X.monate)}</div></div>`}
 // Ab 0.158: zwischen den sechs Blöcken stehen fünf Abstandhalter (.jrsp a bis e); sie und Schmetterling und Balken teilen sich die Höhe (CSS .jrs1)
-function jrS1H(){const X=MS_TXT.jr,st=JR.st,amt=jrAmt(),k=jrKopf(st,amt),u=jrUnvTxt(st),sp=c=>`<span class="jrsp ${c}" aria-hidden="true"></span>`;
+function jrS1H(){const X=MS_TXT.jr,st=JR.st,amt=jrAmt(),k=jrKopf(st,amt),u=jrUnvTxt(st),kt=jrKtoTxt(),sp=c=>`<span class="jrsp ${c}" aria-hidden="true"></span>`;
   return `<div class="jrs1"><div class="jrbf" id="jr-bf" aria-hidden="true">${bflyH(96,true)}<span class="jrteil jrfl-l"></span><span class="jrteil jrfl-r"></span><span class="jrteil jrkoerper"></span><span class="jrstaub" id="jr-staub"></span></div>${sp('a')}
-    <h2 class="jrh" id="jr-t">${esc(X.titel.replace('{j}',JR.y))}</h2>${JR.nach?`<p class="jrauf">${esc(X.auftakt.replace('{j}',JR.y))}</p>`:''}<div class="msgl"></div>${sp('b')}
+    <h2 class="jrh" id="jr-t">${esc(X.titel.replace('{j}',JR.y))}</h2>${JR.nach?`<p class="jrauf">${esc(X.auftakt.replace('{j}',JR.y))}</p>`:''}${kt?`<p class="jrauf jrkto">${esc(kt)}</p>`:''}<div class="msgl"></div>${sp('b')}
     <div class="jrzw${k.n!=null?' zwei':''}"><div class="jrz"><div class="jrgr">${esc(k.r)}</div><div class="jrkl">${esc(X.rendite)}</div></div>
     ${k.n!=null?`<div class="jrz"><div class="jrnet">${esc(k.n)}</div><div class="jrkl">${esc(X.netto.replace('{c}',jrCur(st.cur)))}</div></div>`:''}</div>
     ${st.miss?`<p class="small msmiss jrmiss">${msMissTxt(st.missAcc)}</p>`:''}${sp('c')}
     ${jrBalkenH(st)}${sp('d')}<div class="msgl jrtr"></div><p class="jrleit">${esc(JR.leit)}</p>${sp('e')}
     <div class="jrweiter"><button type="button" class="btn primary" data-jrgo="2">${esc(X.weiter)}</button></div>
     ${u?`<p class="jrunv">${esc(u)}</p>`:''}</div>`}
+// Ab 0.160 (Florians Antwort 6 zur Freigabe; „Gleicher Name, gleiche Rechnung“, GESTALTUNG Abschnitt 0): zwei kleine Zeilen, die erklären,
+// wonach der Rückblick zählt. Nur im Fenster, nie in einem Bild.
+// jrKtoTxt: „8 von 10 Konten“, wenn die Karte „Meilensteine“ nicht alle Konten zählt (sonst leer); Seite 1 klein unter dem Titel, Seite 2 oben.
+// jrAlleHt: „mit allen Handelstagen“ neben der Überschrift „Durchschnitt“ auf Seite 2, nur wenn „Tage ohne Trade mitzählen“ in der Filterzeile
+// aus ist (nur dann zeigen die Kacheln der Auswertung andere Durchschnitte; der Rückblick zählt immer mit, Florians Entscheidung b zu Fund 5).
+function jrKtoTxt(){const N=Object.keys(S.accounts).length,n=msAccs().length;return n<N?MS_TXT.jr.konten.replace('{n}',fI.format(n)).replace('{N}',fI.format(N)):''}
+const jrAlleHt=()=>S.ui.flt&&S.ui.flt.zeroDays===false?MS_TXT.jr.alleHt:'';
 // Kacheln einer Gruppe: Reihen wie im Modell (PC: Spaltenzahl je Reihe, --n); am Handy fließen alle Kacheln der Gruppe in zwei Spalten (jrFit)
+// Ab 0.160: g.hz = kleiner Zusatz neben der Überschrift (jrAlleHt); jrum = Gruppe, deren Beschriftungen am Handy auf zwei Zeilen umbrechen
+// dürfen („Beständigkeit“ und „Verhältnis“, Florians Entscheidung zu OFFEN „Aus 0.156“), damit die Kacheln auch bei 360 px zu zweit stehen
 function jrGrpH(g){if(g.pl)return `<div class="jrgrp"><h3>${esc(g.h)}</h3><div class="jrpl">${g.pl.map(t=>`<span class="msmk">${esc(t)}</span>`).join('')}</div></div>`;
   const tH=(t,i)=>`<div class="jrk${i===0?' jrf':''}"${t.mo?` data-mo="${t.mo}"`:''}><span class="k">${esc(t.k)}</span><span class="v${t.v.none?' none':''}">${esc(t.v.t)}</span>${t.s.map(x=>`<span class="s">${esc(x.t)}</span>`).join('')}</div>`;
-  return `<div class="jrgrp"><h3>${esc(g.h)}</h3><div class="jrbody">${g.reihen.map(r=>`<div class="jrreihe" style="--n:${r.length}">${r.map(tH).join('')}</div>`).join('')}</div></div>`}
-function jrS2H(){const X=MS_TXT.jr,st=JR.st,u=jrUnvTxt(st),G=jrModel(st,{amt:jrAmt(),weak:jrWeak(),art:'fenster'}),sg=jrSgOn();
+  return `<div class="jrgrp"><h3>${esc(g.h)}${g.hz?`<span class="jrhz">${esc(g.hz)}</span>`:''}</h3><div class="jrbody${g.id==='bst'||g.id==='vh'?' jrum':''}">${g.reihen.map(r=>`<div class="jrreihe" style="--n:${r.length}">${r.map(tH).join('')}</div>`).join('')}</div></div>`}
+function jrS2H(){const X=MS_TXT.jr,st=JR.st,u=jrUnvTxt(st),G=jrModel(st,{amt:jrAmt(),weak:jrWeak(),art:'fenster'}),sg=jrSgOn(),kt=jrKtoTxt();
+  {const g=G.find(g=>g.id==='avg'),z=jrAlleHt();if(g&&z)g.hz=z}
   const ein=sg?`<div class="jrein"><p>${herzH('💚 '+X.danke)}</p></div>`:`<div class="jrein"><p>${herzH('💚 '+(st.verlust?X.einladungV:X.einladung))}</p><button type="button" class="btn primary" data-jrgo="3">${esc(X.wert)}</button></div>`;
-  return `<div class="jrs2"><div class="jrkopf"><div class="jrkat">${esc(X.titel.replace('{j}',JR.y))}</div><h2 class="jrh" id="jr-t">${esc(X.zahlen)}</h2><div class="msgl"></div>${u?`<p class="jrunv">${esc(u)}</p>`:''}</div>
+  return `<div class="jrs2"><div class="jrkopf"><div class="jrkat">${esc(X.titel.replace('{j}',JR.y))}</div><h2 class="jrh" id="jr-t">${esc(X.zahlen)}</h2><div class="msgl"></div>${kt?`<p class="jrunv jrkto">${esc(kt)}</p>`:''}${u?`<p class="jrunv">${esc(u)}</p>`:''}</div>
     ${G.map(jrGrpH).join('')}<div class="jrabs"><div class="msgl jrtr"></div><p class="jrwunsch">${esc(X.wunsch)}</p>${ein}</div></div>`}
 // „Schon gespendet“ in den letzten 12 Monaten (365 Tage): dann steht im Kasten der Danke-Satz statt Einladung und Knopf (Florians Antwort 11)
 function jrSgOn(){const d=donGet(),sg=donSg(d);return !!sg&&fenDay(FEN_NOW())-fenDay(sg)<365}
@@ -4887,10 +4902,12 @@ function jrView(v,keep){if(!JR)return;const X=MS_TXT.jr,bx=$('jr-modal').querySe
   $('jr-body').innerHTML=v===1?jrS1H():v===2?jrS2H():jrS3H();
   $('jr-dots').innerHTML=v<3?`<span${v===1?' class="on"':''}></span><span${v===2?' class="on"':''}></span>`:'';
   $('jr-foot').hidden=v===3;$('jr-weakl').hidden=v!==2;
-  const b=$('fb-jrb');b.textContent=v===1&&!CAN_SHARE_FILE?X.bildS:X.bild;if(v===1&&!CAN_SHARE_FILE){b.removeAttribute('aria-expanded');b.removeAttribute('aria-controls')}else{b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','fp-jrb')}
-  // Ab 0.158: Ohne Teilen heißt der Knopf auf Seite 1 „Bild speichern“, auf Seite 2 „Bild ▾“. Er ist auf beiden so breit wie der längere
-  // Text (data-breit, CSS), damit die Punkte beim Blättern an ihrer Stelle bleiben.
-  if(CAN_SHARE_FILE)b.removeAttribute('data-breit');else b.setAttribute('data-breit',X.bildS);
+  const b=$('fb-jrb'),bm=!(v===1&&!CAN_SHARE_FILE);b.textContent=X.bild+(bm?' ▾':'');if(!bm){b.removeAttribute('aria-expanded');b.removeAttribute('aria-controls');b.setAttribute('aria-label',X.bildS)}else{b.removeAttribute('aria-label');b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','fp-jrb')}
+  // Ab 0.160 (Florians Auftrag aus Werkstatt-Runde 9, seine Antwort 8 zur Freigabe): Der Knopf heißt auf allen Seiten und in allen Browsern
+  // „Bild“; das ▾ steht nur, wenn ein Menü aufgeht (bm). Ohne Teilen speichert Seite 1 direkt (ein Bild, kein Menü): „Bild“, vorgelesen
+  // „Bild speichern“; auf Seite 2 „Bild ▾“. Bis 0.159 stand dort auf Seite 1 „Bild speichern“. Der Knopf ist auf beiden Seiten so breit wie
+  // der längere Text (data-breit, CSS), damit die Punkte beim Blättern an ihrer Stelle bleiben.
+  if(CAN_SHARE_FILE)b.removeAttribute('data-breit');else b.setAttribute('data-breit',X.bild+' ▾');
   const ar=$('jr-ar');ar.hidden=v===3;ar.textContent=v===1?'›':'‹';ar.classList.toggle('l',v===2);ar.setAttribute('aria-label',v===1?X.ariaWeiter:X.ariaZurueck);
   $('jr-amt').checked=jrAmt();$('jr-weak').checked=jrWeak();
   bx.scrollTop=keep?top:0;
@@ -4952,13 +4969,19 @@ function jrFuss(){const X=MS_TXT.jr,wl=$('jr-weakl'),aw=$('jr-amtw');if(!JR||JR.
 // Am Handy (bis 640 px) fließen die Kacheln einer Gruppe in zwei Spalten. Eine Kachel, deren Beschriftung oder Wert in der halben Breite nicht in
 // eine Zeile passt, nimmt die ganze Breite, ebenso eine, die sonst allein in ihrer Reihe stünde (jrw); jrr = rechte Spalte. Die kleinen Zeilen
 // darunter dürfen am Handy umbrechen. Platz: links die halbe Breite ohne 8 px rechts, rechts ohne 10 px links und 8 px rechts.
+// Ab 0.160 (Florians Entscheidung zu OFFEN „Aus 0.156“ und seine Antwort 7 zur Freigabe): In den Gruppen „Beständigkeit“ und „Verhältnis“ (.jrum)
+// darf die Beschriftung am Handy auf zwei Zeilen umbrechen (CSS), sie macht die Kachel nicht mehr breit; nur ein Wort, das allein nicht in die
+// halbe Breite passt, tut es noch. Stehen zwei Kacheln nebeneinander, sind ihre Beschriftungen gleich hoch (minHeight), damit die Werte auf
+// einer Linie stehen. Bis 0.159 stand bei 360 px jede Kachel dieser Gruppen allein in ihrer Reihe.
 function jrFit(){const b=$('jr-body');if(!b||!JR||JR.v!==2)return;const eng=matchMedia('(max-width:640px)').matches;
-  for(const g of b.querySelectorAll('.jrbody')){const K=[...g.querySelectorAll('.jrk')];K.forEach(k=>{k.classList.remove('jrr','jrw');k.style.order=eng&&k.dataset.mo?k.dataset.mo:''});if(!eng||!K.length)continue;
+  for(const g of b.querySelectorAll('.jrbody')){const K=[...g.querySelectorAll('.jrk')],um=g.classList.contains('jrum'),kOf=k=>k.querySelector(':scope>.k');
+    K.forEach(k=>{k.classList.remove('jrr','jrw');k.style.order=eng&&k.dataset.mo?k.dataset.mo:'';const c=kOf(k);if(c)c.style.minHeight=''});if(!eng||!K.length)continue;
     // Reihenfolge am Handy (data-mo, ab 0.156): Kacheln mit data-mo stehen nach den übrigen ihrer Gruppe
     K.sort((p,q)=>(+p.dataset.mo||0)-(+q.dataset.mo||0));
-    const half=g.clientWidth/2-18,wide=K.map(k=>[...k.querySelectorAll(':scope>.k,:scope>.v:not(.none)')].some(c=>c.scrollWidth>half));
+    const half=g.clientWidth/2-18,wide=K.map(k=>[...k.querySelectorAll(':scope>.k,:scope>.v:not(.none)')].some(c=>um&&c.classList.contains('k')?c.scrollWidth>c.clientWidth+1:c.scrollWidth>half));
     let col=0;K.forEach((k,i)=>{if(wide[i]){if(col===1)K[i-1].classList.add('jrw');k.classList.add('jrw');col=0;return}if(col===1){k.classList.add('jrr');col=0}else col=1});
-    if(col===1)K[K.length-1].classList.add('jrw')}}
+    if(col===1)K[K.length-1].classList.add('jrw');
+    if(um)K.forEach((k,i)=>{if(!k.classList.contains('jrr'))return;const p=kOf(K[i-1]),q=kOf(k),h=Math.max(p.offsetHeight,q.offsetHeight);p.style.minHeight=q.style.minHeight=h+'px'})}}
 // Nach dem Schließen: Effekte aus, Herz im Reiter „Resonanz“, danach ein wartendes Fenster nach einem Anlass (Bild); ab 0.158 ohne den Sprung
 // „Alle Meilensteine“
 function jrClosed(){JR_T.forEach(clearTimeout);JR_T=[];if(FP_OPEN==='jrb')closeFpanel();const bx=$('jr-modal').querySelector('.box');bx.classList.remove('jrspielt','jrschlaegt');
@@ -13555,7 +13578,7 @@ const GL={
   // Ab 0.117: DFX.swiss
   dxpend:{t:'Ausstehend',h:'Bei DFX.swiss angekommen, noch nicht in deiner DFX-Datei.\nLies die DFX-Datei neu ein, sobald DFX.swiss fertig ist.\nDie Coins zählen nicht mehr zum Bestand der Wallet, damit er zur Blockchain passt. Steuerlich ist das noch kein Vorgang. Sobald eine DFX-Datei den Verkauf mit diesem Hash zeigt, verknüpft das Tool ihn. In „Alle Vorgänge“ wählst du bei der Bewegung, wie es ausgegangen ist.'},
   'k-ov':{t:'Überblick',h:'Die wichtigsten Zahlen für den gewählten Zeitraum und die gewählten Konten. Mit „Rendite ▾“ oder „Betrag ▾“ wechselst du, ob die Kacheln Prozent oder Beträge zeigen.'},
-  'k-ms':{t:'Meilensteine',get h(){const I=MS_TXT.info;return esc(I.satz)+'\n<ul class="glul">'+I.punkte.map(t=>`<li>${esc(t)}</li>`).join('')+'</ul>'}},
+  'k-ms':{t:'Meilensteine',get h(){const I=MS_TXT.info;return esc(I.zaehlt)+'\n'+esc(I.satz)+'\n<ul class="glul">'+I.punkte.map(t=>`<li>${esc(t)}</li>`).join('')+'</ul>'}},
   'k-hl':{t:'Hochs und Tiefs',h:'Die besten und schwächsten Trades, Tage und Wochen, dazu Serien am Stück. Ein Datum führt dich zur Stelle in „Pro Woche“.'},
   'k-avg':{t:'Durchschnitt',h:'Was ein Handelstag, eine Woche, ein Monat und ein Trade im Schnitt gebracht haben, als Durchschnitt und als Median.'},
   'k-graf':{t:'Grafiken',h:'Deine Ergebnisse als Grafik. Oben wählst du, was gezeigt wird, unter der Grafik steht, was sie bedeutet.\n„Vollbild“ zeigt die Grafik über den ganzen Bildschirm. Mit „Bild“ speicherst oder teilst du sie als Bild (PNG), immer quer und hell, ohne Kontonamen.'},
@@ -15685,9 +15708,13 @@ const MS_TXT={
     ea:'Deine erste Auszahlung',ee:'So viel ausgezahlt wie eingezahlt',jr:'Dein Trading-Jahr {j}',
     jm:'Dein bester Monat {j}',jrg:'{n} Gewinn-Trades am Stück',jrd:'{n} Tage am Stück im Plus',jrw:'{n} Plus-Wochen in Folge',jmw:'{n} Gewinn-Trades in einer Woche'},
   // Ab 0.142 (Startfassung, von Florian im Grundsatz bestätigt): ein Satz und eine kurze Liste
-  info:{satz:'Deine Rekorde, Serien und Stufen. Der Filter oben wirkt hier nicht.',punkte:['Gesamt oder ein Jahr und die Konten wählst du rechts im Titel.',
-    'Alle Werte nach PF (verteilt), Stufen in USD.','Eine Woche zählt erst nach der Abrechnung der PF.',
-    'Die ersten zwei Wochen sind dein Ausgangsstand. Sie stehen hier ohne Hinweis, sonst wäre am Anfang fast jeder Tag ein Rekord.','Auszahlungen kommen aus deinen Tag-Daten.',
+  // Ab 0.160 (Florians Wortlaut und seine Antwort 5 zur Freigabe): zuerst der Absatz zaehlt (wonach Karte und Rückblick zählen); die drei
+  // Stellen, die er wiederholt, sind weg („Der Filter oben wirkt hier nicht.“, „Gesamt oder ein Jahr und die Konten wählst du rechts im
+  // Titel.“, „Alle Werte nach PF (verteilt)“); „Stufen in USD.“ bleibt als Punkt; neu der Punkt zur Jahres-Ansicht (Florians Wortlaut)
+  info:{zaehlt:'So zählen diese Karte und der Rückblick: Zeitraum und Konten wählst du in den Menüs rechts. Alle Werte sind immer nach PF, und die Durchschnitte beinhalten alle Handelstage, auch die ohne Trade. Von der Filterzeile oben übernehmen sie nur die Währung.',
+    satz:'Deine Rekorde, Serien und Stufen.',punkte:['Stufen in USD.','Eine Woche zählt erst nach der Abrechnung der PF.',
+    'Die ersten zwei Wochen sind dein Ausgangsstand. Sie stehen hier ohne Hinweis, sonst wäre am Anfang fast jeder Tag ein Rekord.',
+    'In der Jahres-Ansicht zählt eine Serie ab ihrem Beginn bis zum Jahresende, auch wenn sie im Vorjahr begann.','Auszahlungen kommen aus deinen Tag-Daten.',
     // ab 0.144 (Claude, von Florian bestätigt)
     'Wenn du ein Bild speicherst oder teilst, zeigt es nur den neuen Wert, ohne den vorigen Rekord. Den Betrag zeigt es nur mit „Betrag zeigen“.']},
   leer:'Noch keine Meilensteine. Die ersten zwei Wochen setzen den Ausgangsstand, danach zählt jeder neue Höchstwert.',
@@ -15744,7 +15771,7 @@ const MS_TXT={
     wAdr:'Wallet-Adresse (EVM), am liebsten USDC oder USDT',kopieren:'Adresse kopieren',paypal:'Lieber per PayPal?',
     sagen:'Und wenn gerade nichts übrig ist: Erzähle anderen in der Community davon. Auch das trägt uns alle.',
     schon:'Ich habe schon gespendet',danke:'Was du gegeben hast, fließt weiter, zu allen, die das Tool nutzen. Danke von Herzen.',
-    betrag:'Betrag zeigen',weak:'Schwächste Werte zeigen',betragK:'Beträge',weakK:'Schwächste Werte',bild:'Bild ▾',bildS:'Bild speichern',kurz:'Kurzfassung',kurzK:'(ohne Beträge)',alle:'Alle Werte',
+    betrag:'Betrag zeigen',weak:'Schwächste Werte zeigen',betragK:'Beträge',weakK:'Schwächste Werte',bild:'Bild',bildS:'Bild speichern',alleHt:'mit allen Handelstagen',konten:'{n} von {N} Konten',kurz:'Kurzfassung',kurzK:'(ohne Beträge)',alle:'Alle Werte',
     speichern:'Speichern',teilen:'Teilen',ariaWeiter:'Weiter zu Seite 2',ariaZurueck:'Zurück zu Seite 1',ariaBild:'Bild',
     karte:'Rückblick',ansehen:'Rückblick ansehen ›',liste:'Jahresrückblicke',netto2:'{v} Netto-Gewinn',
     datei:{s1:'Trading-Jahr-{j}',kurz:'Trading-Jahr-{j}-Kurzfassung',alle:'Trading-Jahr-{j}-Alle-Werte'}},
