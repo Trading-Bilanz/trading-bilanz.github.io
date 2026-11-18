@@ -1460,10 +1460,10 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jrkorn{position:absolute;border-radius:50%;opacity:0;animation:jrkorn var(--d) ease-out var(--w) 1 both}
 @keyframes jrkorn{0%{opacity:0;transform:translate(0,0)}12%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y))}}
 @media(max-width:640px){.jrs1>.jrbf{max-height:140px}}
-.jrh{margin:10px 0 0;font-size:22px;overflow-wrap:break-word;text-wrap:balance}
+.jrh{margin:10px 0 0;overflow-wrap:break-word;text-wrap:balance}
 /* Ab 0.158: Titel von Seite 1 am PC 26 px; am Handy, auf Seite 2 und in „Wertschätzung teilen“ bleibt er, wie er ist (Florians Antwort 1 zum
-   Plan). Fund 0.158: Dort ist er seit 0.154 20 px groß, nicht 22 px: Die 22 px in .jrh oben wirken nicht, weil „.modal h2“ (20 px) stärker
-   ist. Nicht geändert (OFFEN.md, „Aus 0.158“). */
+   Plan): 20 px aus der Regel für Fenster-Titel („.modal h2“). Ab 0.160 (Florians Auftrag aus Werkstatt-Runde 9) ist die wirkungslose Angabe
+   von 22 px in .jrh weg; sie wirkte seit 0.154 nicht, weil „.modal h2“ stärker ist. Am Aussehen ändert sich nichts. */
 .jrs1>.jrh{margin:0}
 @media(min-width:641px){.jrs1>.jrh{font-size:26px}}
 /* Ab 0.158 (Florians Auftrag): Rendite und Netto-Gewinn gleich groß und nebeneinander, am PC 36 px, am Handy 32 px. Passen sie nicht
@@ -1501,6 +1501,10 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jrs2 .jrkat+.jrh{margin-top:4px}
 .jrgrp{margin-top:18px}
 .jrgrp>h3{margin:0 0 6px;font-size:var(--fs-xxs);letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink);font-weight:700}
+/* Ab 0.160: kleiner grauer Zusatz in derselben Zeile neben der Überschrift einer Gruppe („mit allen Handelstagen“ bei „Durchschnitt“) */
+.jrgrp>h3>.jrhz{margin-left:8px;letter-spacing:0;text-transform:none;font-weight:400;color:var(--muted);white-space:nowrap}
+/* Ab 0.160: „8 von 10 Konten“ auf Seite 1 klein und grau unter dem Titel (wie der Auftakt), auf Seite 2 oben (wie „Noch nicht vollständig“) */
+.jrunv.jrkto+.jrunv{margin-top:2px}
 .jrbody{border-top:1px solid var(--line)}
 .jrreihe{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr))}
 .jrk{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;padding:8px 10px 10px 12px;border-bottom:1px solid var(--line);border-left:1px solid var(--line)}
@@ -1510,7 +1514,8 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jrk>.v.none{font-size:var(--fs-s);font-weight:400;line-height:27.5px;color:var(--muted);white-space:normal}
 .jrk>.s{font-size:var(--fs-xs);color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
 @media(max-width:640px){.jrbody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.jrreihe{display:contents}
-  .jrk,.jrk.jrf{border-left:0;padding:8px 8px 10px 0}.jrk.jrr{border-left:1px solid var(--line);padding-left:10px}.jrk.jrw{grid-column:1/-1}.jrk>.s{white-space:normal}}
+  .jrk,.jrk.jrf{border-left:0;padding:8px 8px 10px 0}.jrk.jrr{border-left:1px solid var(--line);padding-left:10px}.jrk.jrw{grid-column:1/-1}.jrk>.s{white-space:normal}
+  .jrum .jrk>.k{white-space:normal;text-wrap:balance}}
 .jrpl{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:10px}
 .jrpl .msmk{cursor:default}
 .jrabs{margin-top:6px}
@@ -3816,8 +3821,15 @@ const meanOf=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
    - htKal(d): Handelstag nach dem Kalender (Montag bis Freitag außer HT_FREI).
    - htListe(a, b, win, tage): alle Handelstage von a bis b, die im Fenster win liegen (win = null: ohne Grenze): die nach dem Kalender, dazu
      jeder Tag mit Trade (tage: Set oder Map der Tage mit Trade), auch ein Feiertag, Samstag oder Sonntag.
-   - htGanz(a, b, win): Der Zeitraum a bis b (eine Woche, ein Monat) ist ganz, wenn jeder seiner Handelstage nach dem Kalender im Fenster liegt.
+   - htGanz(a, b, win): Der Zeitraum a bis b (eine Woche, ein Monat) ist ganz, wenn jeder seiner Handelstage im Fenster liegt.
      Eine Woche mit dem 25.12. oder dem 01.01. hat so vier Handelstage und ist trotzdem ganz.
+     Ab 0.160 (Florians Beschluss 1 im Ablauf „Eine Wurzel“, Runde 2): Handelstage sind hier wie überall die nach dem Kalender und jeder Tag
+     mit Trade (win.tg = Tage mit Trade der gezählten Konten, aus cntWin). Liegt am 01.01. ein Trade, hat die Woche um Neujahr Handelstage
+     in zwei Jahren und ist mit einem Jahr als Zeitraum in keinem der beiden ganz; bei „Gesamt“ ist sie eine normale Woche. Die Woche
+     reicht dafür von Montag bis Sonntag (ein Trade am Wochenende zählt mit). Bis 0.159 schaute htGanz nur auf den Kalender (Montag bis
+     Freitag): Die Woche ab 28.12.2026 galt mit einem Trade am Freitag, 01.01.2027 im Jahr 2026 als ganz.
+   - htWkJahr(k, tg): das Jahr, in dem die Woche ab Montag k nach dem Kalender ganz liegt (alle ihre Handelstage in einem Jahr), sonst
+     null. Für Bestwerte eines Jahres in der Karte „Meilensteine“ (beste Woche, „Rekord des Jahres“).
    - cntWin(…, dataEnd, lastT): Der letzte Tag der Daten ist der Datenstand dataEnd (Datum des neuesten Reports der gezählten Konten, sonst
      die letzte Buchung). Liegt an ihm kein Trade (lastT = letzter Tag mit Trade der gezählten Konten), endet das gezählte Fenster am Tag davor.
      Grund: Eine Sicherung am frühen Morgen zählte den Tag schon als „Tag ohne Trade“.
@@ -3828,10 +3840,16 @@ const htKal=d=>wdIdx(d)<5&&!HT_FREI.includes(d.slice(5));
 function htListe(a,b,win,tage){const out=[],s=win&&win.s>a?win.s:a,e=win&&win.e<b?win.e:b;
   for(let d=s;d<=e;d=addDays(d,1))if(htKal(d)||(tage&&tage.has(d)))out.push(d);
   return out}
-function htGanz(a,b,win){for(let d=a;d<=b;d=addDays(d,1))if(htKal(d)&&(d<win.s||d>win.e))return false;return true}
+function htGanz(a,b,win){for(let d=a;d<=b;d=addDays(d,1))if((htKal(d)||(win.tg&&win.tg.has(d)))&&(d<win.s||d>win.e))return false;return true}
+function htWkJahr(k,tg){const e=addDays(k,6);for(const y of new Set([k.slice(0,4),e.slice(0,4)]))if(htGanz(k,e,{s:y+'-01-01',e:y+'-12-31',tg}))return y;return null}
+// Tage mit Trade in den Zeilen rows (für cntWin und htGanz)
+const tgSet=rows=>new Set(rows.filter(isTrade).map(r=>r.d));
+// Ab 0.160 (Florians Antwort 3 zu Bericht 0.159): der letzte gezählte Handelstag im Fenster win (tage = Tage mit Trade). Für die Kopfzeile im
+// Excel mit allen Daten „Handelstage vom … bis …“: nie ein Samstag oder Sonntag ohne Trade. Bis 0.159 stand dort das Ende des Fensters.
+function htLetzter(win,tage){const l=htListe(win.s,win.e,null,tage);return l.length?l[l.length-1]:win.e}
 // Letzter Tag mit Trade in den Zeilen rows ('' ohne Trade), für cntWin
 function lastTradeDay(rows){let l='';for(const r of rows)if(isTrade(r)&&r.d>l)l=r.d;return l}
-function cntWin(first,from,to,dataEnd,lastT){if(!first)return null;const de=lastT&&lastT<dataEnd?addDays(dataEnd,-1):dataEnd;return {s:from&&from>first?from:first,e:to&&to<de?to:de}}
+function cntWin(first,from,to,dataEnd,lastT,tg){if(!first)return null;const de=lastT&&lastT<dataEnd?addDays(dataEnd,-1):dataEnd;return {s:from&&from>first?from:first,e:to&&to<de?to:de,tg:tg||null}}
 // Erster und letzter Handelstag (nach dem Kalender) eines Monats 'YYYY-MM'
 function mWdays(ym){let f=ym+'-01',l=monthEnd(ym);while(!htKal(f))f=addDays(f,1);while(!htKal(l))l=addDays(l,-1);return [f,l]}
 // Tage (Handelstage im Fenster: htListe, Tage mit Trade sind immer dabei), Wochen oder Monate, die das Fenster schneiden. Je Periode: Trades, Zahl der Positionen,
@@ -3843,7 +3861,7 @@ function periods(R,win,res,scope,cw){
   else if(res==='week'){for(let w=monday(win.s);w<=win.e;w=addDays(w,7))ks.add(w)}
   else{for(let m=win.s.slice(0,7);m<=win.e.slice(0,7);m=addMonths(m+'-01',1).slice(0,7))ks.add(m)}
   return [...ks].sort().map(k=>{const rr=g.get(k)||[];let full=true;
-    if(res==='week')full=htGanz(k,addDays(k,4),win)&&k!==cw;else if(res==='month')full=htGanz(k+'-01',monthEnd(k),win)&&!(cw&&rr.some(r=>r.wk===cw));
+    if(res==='week')full=htGanz(k,addDays(k,6),win)&&k!==cw;else if(res==='month')full=htGanz(k+'-01',monthEnd(k),win)&&!(cw&&rr.some(r=>r.wk===cw));
     const ri=retSum(rr,scope,false),rx=retSum(rr,scope,true);
     return {key:k,rows:rr,n:rr.length?positions(rr,scope).length:0,full,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v,rI:ri.v,rX:rx.v}});
 }
@@ -3878,14 +3896,19 @@ function avgKz(R,win,scope,zero,ress,cw){
 // zählten hier mit „Tage ohne Trade mitzählen“ auch leere Wochen mit 0 (Zeile „Woche“ in „Hochs und Tiefs“, im Excel mit allen Daten die Zeilen
 // „Beste Woche“ und „Schwächste Woche“). Die Durchschnitte und die Listen bleiben, wie sie sind.
 // „Meiste Gewinn-/Verlust-Trades in einer Woche“ zählt alle Wochen mit Trades, auch angefangene.
-function glKz(R,scope,win,wks){
+// Ab 0.160 (eine Wurzel): Auch Karte „Meilensteine“ und Jahresrückblick holen die Werte eines Jahres von hier (msJahr). Einstellung o.ohne =
+// laufende Woche, die „Meiste in einer Woche“ nicht zählt (Karte und Rückblick zählen sie erst nach der Abrechnung, GESTALTUNG Abschnitt 25;
+// die Auswertung zählt sie sofort und gibt nichts mit).
+function glKz(R,scope,win,wks,o){
   const P=positions(R,scope).sort((a,b)=>a.t<b.t?-1:1);
   const Dm=new Map();for(const r of R){if(!isTrade(r))continue;if(!Dm.has(r.d))Dm.set(r.d,[]);Dm.get(r.d).push(r)}
   const D=[...Dm.keys()].sort().map(d=>{const rr=Dm.get(d);return {d,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v,rI:retSum(rr,scope,false).v,rX:retSum(rr,scope,true).v}});
   const W=(wks||[]).filter(p=>p.n).map(p=>({w:p.key,n:p.n,aI:p.aI,aX:p.aX,rI:p.rI,rX:p.rX}));
   const ext=(l,f,dir)=>{let b=null,bv=null;for(const x of l){const v=f(x);if(v==null)continue;if(b===null||(dir>0?v>bv:v<bv)){b=x;bv=v}}return b?{o:b,v:bv}:null};
-  // Längste Folge in l, deren Wert f das Vorzeichen sgn hat (0 unterbricht): {n, s = erstes Element, e = letztes}
-  const run=(l,f,sgn)=>{let best=null,cur=null;for(const x of l){if(sgn*f(x)>0){cur=cur?{n:cur.n+1,s:cur.s,e:x}:{n:1,s:x,e:x};if(!best||cur.n>best.n)best=cur}else cur=null}return best};
+  // Serien („Am Stück“, „Tage am Stück“): ab 0.160 aus der Wurzel (Block „Serien“, serStand). o.ser = die Elemente der gezählten Konten über
+  // alle Zeiträume (serElem), o.von und o.bis = der Zeitraum: Gezählt wird ab dem echten Beginn der Serie bis zum Ende des Zeitraums. Ohne o
+  // („Gesamt“, Excel) sind es die Elemente aus R. Bis 0.159 zählte run nur den Teil der Serie im Zeitraum.
+  const SE=o&&o.ser||serElem(R,scope,null),zr=o?serZr(o.von,o.bis):null;
   const sum=a=>a.reduce((s,x)=>s+x,0);
   const PW=P.filter(p=>p.eur>0),PL=P.filter(p=>p.eur<0);
   const one=ex=>{
@@ -3896,7 +3919,7 @@ function glKz(R,scope,win,wks){
       bigW:{a:ext(PW,a,1),r:ext(PW,r,1)},bigL:{a:ext(PL,a,-1),r:ext(PL,r,-1)},
       bestD:{a:ext(D,pa,1),r:ext(D,pr,1)},worstD:{a:ext(D,pa,-1),r:ext(D,pr,-1)},
       bestW:{a:ext(W,pa,1),r:ext(W,pr,1)},worstW:{a:ext(W,pa,-1),r:ext(W,pr,-1)},
-      dayP:run(D,pa,1),dayN:run(D,pa,-1),
+      dayP:serStand(ex?SE.dN:SE.dV,1,zr),dayN:serStand(ex?SE.dN:SE.dV,-1,zr),
       // Profit-Faktor aus den Positions-Renditen (auch im Excel)
       pf:rL.length?sum(rW)/-sum(rL):null,dd:maxDD(R,scope,ex),
       // Für „Verhältnis“: Summe der Gewinne und der Verluste (Rendite: dieselben Positionen wie pf, Betrag: nach Vorzeichen in der
@@ -3906,14 +3929,55 @@ function glKz(R,scope,win,wks){
   };
   // Meiste Gewinn- bzw. Verlust-Trades in einer Woche (Positionen, Vorzeichen vor PF; es ändert sich mit dem PF-Schalter nicht)
   // Ab 0.157: bei mehreren Wochen gleichauf die erste (first; bis 0.156 die letzte, last)
-  const most=sgn=>{const m=new Map();for(const p of P){const o=m.get(p.wk)||{w:p.wk,c:0,n:0};o.n++;if(sgn*p.eur>0)o.c++;m.set(p.wk,o)}
+  const ohneW=o&&o.ohne||null;
+  const most=sgn=>{const m=new Map();for(const p of P){if(p.wk===ohneW)continue;const o=m.get(p.wk)||{w:p.wk,c:0,n:0};o.n++;if(sgn*p.eur>0)o.c++;m.set(p.wk,o)}
     const l=[...m.values()].sort((x,y)=>x.w<y.w?-1:1);const mx=Math.max(0,...l.map(o=>o.c));const top=l.filter(o=>o.c===mx);
     return mx?{c:mx,weeks:top.length,first:top[0]}:null};
   return {V:one(false),N:one(true),miss:retSum(R,scope,false).miss,n:P.length,nW:PW.length,nL:PL.length,
-    runW:run(P,p=>p.eur,1),runL:run(P,p=>p.eur,-1),mostW:most(1),mostL:most(-1)};
+    runW:serStand(SE.t,1,zr),runL:serStand(SE.t,-1,zr),mostW:most(1),mostL:most(-1)};
 }
 // Text „Meiste in einer Woche“: eine Woche „9 von 10“, mehrere gleichauf „1, in 8 Wochen“ (Link dann ab 0.157 zur ersten, bis 0.156 zur letzten)
 const mostTxt=m=>m.weeks===1?`${m.c} von ${m.first.n}`:`${m.c}, in ${m.weeks} Wochen`;
+
+/* ---------------- Serien (ab 0.160): eine Wurzel ----------------
+   Florians Beschlüsse 3 bis 6 und 10 im Ablauf „Eine Wurzel“, Runde 2 (17.11.2026): Jede Serie (Trades, Tage oder Wochen in Folge mit Plus bzw.
+   Minus) wird hier gerechnet. „Hochs und Tiefs“ und das Excel mit allen Daten (glKz), die Karte „Meilensteine“ (msCalc, msJahr) und der
+   Jahresrückblick (jrCalc) holen sie von hier. Bis 0.159 gab es drei Rechnungen (run in glKz, runs in msCalc, serY in jrCalc) mit drei
+   verschiedenen Zahlen am Jahreswechsel.
+   Das Modell „Stand am Ende des Zeitraums“: Serien laufen immer weiter. Jede Ansicht auf einen Zeitraum (Jahr, Monat, Individuell) zeigt die
+   längste Serie mit mindestens einem Element im Zeitraum, gezählt ab ihrem echten Beginn (er darf vor dem Zeitraum liegen) bis zum Ende des
+   Zeitraums. Verglichen wird mit diesem Stand; bei Gleichstand gewinnt die erste (GESTALTUNG Abschnitt 25). Lief die Serie nach dem Zeitraum
+   weiter, trägt der Stand ihre volle Länge (voll) für den Zusatz „lief weiter bis 10“ bzw. „läuft noch, jetzt 14“ (serMehr).
+   - serElem(T, scope, cw): die Elemente in Zeitfolge aus den Trade-Zeilen T der gezählten Konten über alle Zeiträume. t = Trades (Positionen,
+     Vorzeichen vor PF, ein Trade über mehrere Konten zählt einmal), dV und dN = Tage mit Trades (Betrag vor bzw. nach PF), w = Wochen mit
+     Trades ohne die laufende Woche cw (Betrag nach PF; Wochen ohne Trades kommen nicht vor und unterbrechen nicht). Je Element: d = Datum
+     (Woche: Montag), key, v = Wert mit Vorzeichen, x = der Trade, der Tag bzw. die Woche. Dazu die Listen dahinter: P (Positionen), D (Tage),
+     W (Wochen; je Woche auch ihre Teile je Kalenderjahr, ys).
+   - serLaeufe(l, sgn): alle Folgen der Liste l mit dem Vorzeichen sgn; ein Wert von genau 0 unterbricht. Je Folge: n, s = erstes, e = letztes
+     Element, i = Index des ersten.
+   - serStand(l, sgn, zr): der Stand am Ende des Zeitraums. zr(x) = −1 vor, 0 im, 1 nach dem Zeitraum (null: alles zählt, „Gesamt“).
+     Ergebnis: n = Stand, s = erstes Element der Serie, e = ihr letztes Element im Zeitraum, voll = volle Länge, weiter = lief nach dem
+     Zeitraum weiter, lauf = reicht bis zum letzten bekannten Element (läuft noch), vor = begann vor dem Zeitraum.
+   - serZr(von, bis): Zeitraum nach dem Datum; serZrJahr(y, yOf): ein Jahr (yOf = Jahr eines Datums; für Wochen die Donnerstag-Regel msWkYear:
+     Jede Woche zählt genau einmal, im Jahr ihres Donnerstags). */
+function serElem(T,scope,cw){
+  const P=positions(T,scope).sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:0);
+  const dm=new Map();for(const r of T){if(!isTrade(r))continue;if(!dm.has(r.d))dm.set(r.d,[]);dm.get(r.d).push(r)}
+  const D=[...dm.keys()].sort().map(d=>{const rr=dm.get(d);return {d,rr,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v}});
+  const wm=new Map();for(const p of P){if(p.wk===cw)continue;const w=wm.get(p.wk)||{w:p.wk,a:0,c:0,n:0,ys:[]};w.a+=p.exE;w.n++;if(p.eur>0)w.c++;wm.set(p.wk,w);
+    const y=p.d.slice(0,4);let z=w.ys.find(z=>z.y===y);if(!z)w.ys.push(z={w:p.wk,y,c:0,n:0});z.n++;if(p.eur>0)z.c++}
+  const W=[...wm.values()].sort((a,b)=>a.w<b.w?-1:1);
+  return {P,D,W,t:P.map(p=>({d:p.d,key:p.t+'|'+p.sym,v:p.eur,x:p})),dV:D.map(x=>({d:x.d,key:x.d,v:x.aI,x})),dN:D.map(x=>({d:x.d,key:x.d,v:x.aX,x})),w:W.map(x=>({d:x.w,key:x.w,v:x.a,x}))}}
+function serLaeufe(l,sgn){const out=[];let c=null;l.forEach((x,i)=>{if(sgn*x.v>0){if(!c)out.push(c={n:0,s:x,e:x,i});c.n++;c.e=x}else c=null});return out}
+function serStand(l,sgn,zr){let best=null;
+  for(const r of serLaeufe(l,sgn)){let n=0,e=null,im=false;
+    for(let i=r.i;i<r.i+r.n;i++){const x=l[i],z=zr?zr(x):0;if(z>0)break;n++;e=x;if(z===0)im=true}
+    if(im&&(!best||n>best.n))best={n,s:r.s,e,voll:r.n,weiter:r.n>n,lauf:r.e===l[l.length-1],vor:!!zr&&zr(r.s)<0}}
+  return best}
+const serZr=(von,bis)=>von||bis?x=>von&&x.d<von?-1:bis&&x.d>bis?1:0:null;
+const serZrJahr=(y,yOf)=>x=>{const yy=yOf?yOf(x.d):x.d.slice(0,4);return yy<y?-1:yy>y?1:0};
+// Zusatz zu einer Serie, die nach dem Zeitraum weiterlief (Florians Wortlaut, Freigabe 0.160): n = volle Länge, lauf = sie läuft heute noch
+const serMehr=(n,lauf)=>(lauf?MS_TXT.mehr.jetzt:MS_TXT.mehr.bis).replace('{n}',fI.format(n));
 
 /* ---------------- Meilensteine (ab 0.139): Rechenkern ----------------
    msCalc(rows, sel, o) liefert aus den Buchungen (rows wie nach enrich und addAnalysis), den gezählten Konten (sel) und den Tag-Zeilen (o.tags)
@@ -3954,10 +4018,25 @@ function msBasis(rows,sel,o){
   const capC=new Map(),capS=t=>{if(capC.has(t))return capC.get(t);let s=0;for(const a of sel){const c=CAP(a,t);if(c==null){s=null;break}s+=c}capC.set(t,s);return s};
   const T=b.T=TR.map(r=>Object.assign({},r,{cS:capS(r.x.t)},cur==='usd'?{eur:r.amt,exE:r.exU}:null));
   b.miss=T.some(r=>r.cS==null);b.cw=curWeek(T0,sel,RD);
+  // Ab 0.160: Elemente der Serien (Block „Serien“), daraus auch die Positionen in Zeitfolge
+  b.se=serElem(T,'sel',b.cw);
   let dataEnd=T0[T0.length-1].d;for(const a of sel){const rd=RD(a);if(rd>dataEnd)dataEnd=rd}
-  b.dataEnd=dataEnd;b.first=T[0].d;b.lastT=lastTradeDay(TR);b.win=cntWin(b.first,null,null,dataEnd,b.lastT);
-  b.P=positions(T,'sel').sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:0);
+  b.dataEnd=dataEnd;b.first=T[0].d;b.lastT=lastTradeDay(TR);b.tg=tgSet(TR);b.win=cntWin(b.first,null,null,dataEnd,b.lastT,b.tg);
+  b.P=b.se.P;
   return b}
+// Ab 0.160 (eine Wurzel, Florians Beschlüsse 1 und 2 im Ablauf „Eine Wurzel“, Runde 2): das Jahr y der Konten der Karte, gezählt wie die
+// Auswertung mit dem Zeitraum dieses Jahres. Dieselben Rechnungen wie dort: Fenster des Jahres (cntWin), Durchschnitte (avgKz), beste und
+// schwächste Woche und „Meiste Gewinn-Trades in einer Woche“ (glKz). Karte „Meilensteine“ (Ansicht auf ein Jahr) und Jahresrückblick holen
+// diese Werte von hier; bis 0.159 rechneten beide sie selbst und nach der Donnerstag-Regel (msWkYear). Eigene Einstellungen von Karte und
+// Rückblick: „Tage ohne Trade mitzählen“ gilt immer (Florians Entscheidung b zu Fund 5, Freigabe 0.160), „Meiste Gewinn-Trades“ ohne die
+// laufende Woche, Serien mit dem Stand am Ende des Jahres. Je Jahr einmal gerechnet (BS.jc).
+function msJahr(BS,y){const C=BS.jc||(BS.jc={});if(C[y])return C[y];
+  const win=cntWin(BS.first,y+'-01-01',y+'-12-31',BS.dataEnd,BS.lastT,BS.tg),R=BS.T.filter(r=>r.y===y);
+  const AK=avgKz(R,win,'sel',true,['day','week','month','trade'],BS.cw),G=glKz(R,'sel',win,AK.week.ps,{ohne:BS.cw,ser:BS.se,von:y+'-01-01',bis:y+'-12-31'});
+  // Serien des Jahres (Stand am 31.12., Block „Serien“): Gewinn-Trades und Tage im Plus (nach PF) wie „Hochs und Tiefs“ mit dem Jahr oben,
+  // Plus-Wochen in Folge bis zur letzten Woche des Jahres nach der Donnerstag-Regel, längste Verlustserie (Verlust-Trades am Stück)
+  const ser={rg:G.runW,rd:G.N.dayP,rw:serStand(BS.se.w,1,serZrJahr(y,msWkYear)),vs:G.runL};
+  return C[y]={y,win,R,AK,G,ser}}
 function msCalc(rows,sel,o){
   o=o||{};const today=o.today||todayLocal(),list=[],RD=o.rd||repDay;
   const BS=msBasis(rows,sel,o),T0=BS.T0,TR=BS.TR;
@@ -3989,19 +4068,22 @@ function msCalc(rows,sel,o){
   const first=res.first=BS.first,B=res.B=addDays(monday(first),14),win=BS.win;
   const P=BS.P;
   const pk=p=>p.t+'|'+p.sym,sat=w=>addDays(w,5);
-  // Ausgangsstand je Jahr: zwei Kalenderwochen ab der ersten Woche des Jahres mit Trades
-  const YB={};for(const p of P){const y=msWkYear(p.wk);if(!(y in YB))YB[y]=addDays(p.wk,14)}
-  const yIn=(y,d)=>!!YB[y]&&d>=YB[y];
-  // Rekord nach Rendite über eine zeitlich geordnete Liste. v = Wert, dOf = Datum für den Ausgangsstand, yOf = Jahr; mk(x, Wert, Vorgänger, Jahr)
+  // Ausgangsstand je Jahr. Ab 0.160 (Florians Antwort 4 zur Freigabe 0.160): die ersten zwei Kalenderwochen ab dem ersten Trade des Jahres
+  // (Kalenderjahr), wie beim allerersten Start; dazu kein Jahres-Rekord vor dem Ende des Allzeit-Ausgangsstands (B). Bis 0.159: ab der ersten
+  // Woche mit Trades des Jahres nach der Donnerstag-Regel.
+  const YB={};for(const p of P){const y=p.d.slice(0,4);if(!(y in YB))YB[y]=addDays(monday(p.d),14)}
+  const yIn=(y,d)=>!!YB[y]&&d>=YB[y]&&d>=B;
+  // Rekord nach Rendite über eine zeitlich geordnete Liste. v = Wert, dOf = Datum für den Ausgangsstand, yOf = Jahr (ab 0.160 null: zählt für
+  // kein Jahr, eine Woche mit Handelstagen in zwei Jahren); mk(x, Wert, Vorgänger, Jahr)
   // baut den Eintrag. Rückgabe: bester Wert je Jahr (für den Jahresrückblick), auch aus dem Ausgangsstand.
   // Ab 0.141: bk = Art für den heutigen Bestwert (res.best). Ab 0.142 dazu die Bestwerte je Jahr (res.yb[bk], Jahres-Ansicht der Karte), und
   // der beste Wert am Ende des Ausgangsstands wird ein Eintrag ohne Vorgänger (mk mit Vorgänger null: vor, kein Schmetterling); ebenso der erste
   // Wert einer Art, wenn es im Ausgangsstand noch keinen gab.
   const rec=(l,v,dOf,yOf,mk,bk)=>{let b=null,cr=false;const by={};
     const cb=()=>{cr=true;if(b&&b.v>0)mk(b.x,b.v,null,null)};
-    for(const x of l){const val=v(x);if(val==null)continue;const d=dOf(x);if(!cr&&d>=B)cb();const y=yOf(x),yb=by[y];
+    for(const x of l){const val=v(x);if(val==null)continue;const d=dOf(x);if(!cr&&d>=B)cb();const y=yOf(x),yb=y==null?null:by[y];
       if(val>0){if(!b&&d>=B)mk(x,val,null,null);else if(b&&val>b.v&&d>=B)mk(x,val,b,null);else if(yb&&val>yb.v&&yIn(y,d))mk(x,val,yb,y)}
-      if(!b||val>b.v)b={v:val,x};if(!yb||val>yb.v)by[y]={v:val,x}}
+      if(!b||val>b.v)b={v:val,x};if(y!=null&&(!yb||val>yb.v))by[y]={v:val,x}}
     if(!cr)cb();
     if(bk){if(b&&b.v>0)res.best[bk]=b;res.yb[bk]=by}return by};
   const pv=(b,f)=>b?{prev:f(b)}:{vor:true};
@@ -4012,14 +4094,19 @@ function msCalc(rows,sel,o){
   const yT=miss?{}:rec(P.filter(p=>p.eur>0),p=>p.rMiss?null:p.rX,p=>p.d,p=>p.d.slice(0,4),MK.at=(p,v,b,y)=>
     add(y?'jt':'at',(y?y+'|':'')+pk(p),p.d,Object.assign({r:v,a:p.exE,y,sym:p.sym,j:['t',pk(p)],o:pk(p),tr:p.t},pv(b,b=>({r:b.v,a:b.x.exE,d:b.x.d,dk:'d'})))),'at');
   // ---- Tage mit Trades: Betrag und Rendite nach PF
-  const dM=new Map();for(const r of T){if(!dM.has(r.d))dM.set(r.d,[]);dM.get(r.d).push(r)}
-  const D=[...dM.keys()].sort().map(d=>{const rr=dM.get(d);return {d,rr,a:sumTrades(rr,true).v,r:miss?null:retSum(rr,'sel',true).v}});
+  // ab 0.160 aus den Elementen der Serien (BS.se.D): dieselben Tage und Beträge wie dort
+  const D=BS.se.D.map(x=>({d:x.d,rr:x.rr,a:x.aX,r:miss?null:retSum(x.rr,'sel',true).v}));
   const yD=miss?{}:rec(D,x=>x.r,x=>x.d,x=>x.d.slice(0,4),MK.ad=(x,v,b,y)=>
     add(y?'jd':'ad',(y?y+'|':'')+x.d,x.d,Object.assign({r:v,a:x.a,y,j:['d',x.d],o:x.d,tr:(b&&cross(x.rr,rOf,b.v))||x.rr[x.rr.length-1].x.t},pv(b,b=>({r:b.v,a:b.x.a,d:b.x.d,dk:'d'})))),'ad');
   // ---- Beste Woche: nur ganze, abgerechnete Wochen (wie „Hochs und Tiefs“)
+  // Ab 0.160 (Florians Beschluss 1): Die beste Woche eines Jahres zählt nach dem Kalender. Eine Woche, deren Handelstage in zwei Jahren liegen,
+  // ist in keinem der beiden eine ganze Woche (htWkJahr = null), für den Allzeit-Rekord ist sie eine normale Woche. Bis 0.159 zählte sie ganz
+  // zum Jahr ihres Donnerstags. Der Wert der Karte auf einem Jahr (res.yb.aw) kommt aus derselben Rechnung wie Auswertung und Rückblick (msJahr).
   const WK=periods(T,win,'week','sel',cw);
-  const yW=miss?{}:rec(WK.filter(p=>p.full),p=>p.rX,p=>p.key,p=>msWkYear(p.key),MK.aw=(p,v,b,y)=>
+  const yW=miss?{}:rec(WK.filter(p=>p.full),p=>p.rX,p=>p.key,p=>htWkJahr(p.key,BS.tg),MK.aw=(p,v,b,y)=>
     add(y?'jw':'aw',(y?y+'|':'')+p.key,p.key,Object.assign({dk:'w',r:v,a:p.aX,y,j:p.n?['w',p.key]:null,o:p.key,sd:sat(p.key)},pv(b,b=>({r:b.v,a:b.x.aX,d:b.x.key,dk:'w'})))),'aw');
+  const JY=[...new Set(P.map(p=>p.d.slice(0,4)))].sort();
+  if(!miss){const wm=new Map(WK.map(p=>[p.key,p])),by={};for(const y of JY){const o=msJahr(BS,y).G.N.bestW.r;if(o&&wm.has(o.o.w))by[y]={v:o.v,x:wm.get(o.o.w)}}res.yb.aw=by}
   // ---- Bester Monat: nur ganze Monate. Ab 0.142: Der erste ganze Monat wird ein Eintrag ohne Vorgänger (vor, wie bisher kein Anlass zum
   // Feiern). Jahres-Rekord des Monats (jm): Der erste ganze Monat des Jahres setzt den Stand des Jahres; ist ein Monat zugleich Allzeit-Rekord,
   // gilt nur dieser.
@@ -4050,39 +4137,62 @@ function msCalc(rows,sel,o){
   // wenn sie nach dem Ausgangsstand des Jahres die längste frühere Serie dieses Jahres überholt und kein Allzeit-Rekord ist (sonst gilt nur
   // dieser). res.best[k] = {n, c} (die längste, bei gleicher Länge die frühere), res.yb[k][Y] = die längste Serie, die Y berührt.
   // Ab 0.156: res.sl[k] = die Elemente der Serie in Zeitfolge (für den Jahresrückblick: Stand am 31.12. und „Wochen im Plus“)
+  // Ab 0.160 (Florians Beschlüsse 3 bis 6 und 10): Die Zählung kommt aus der Wurzel (Block „Serien“): serLaeufe sagt je Element, das wievielte
+  // seiner Folge es ist; die Elemente sind BS.se (dieselben wie in „Hochs und Tiefs“ und im Rückblick). Hier bleibt nur, was ein Meilenstein
+  // ist: Überholen, Stufen, Ausgangsstand. Für ein Jahr zählt eine Serie jetzt mit ihrem Stand am Ende des Jahres, gezählt ab ihrem echten
+  // Beginn (c.ys[Y]); bis 0.159 zählte sie für jedes berührte Jahr mit voller Länge (0.142). Der Eintrag „Bestserie des Jahres“ zeigt diesen
+  // Stand und endet im Jahr; lief die Serie danach weiter, trägt er die volle Länge für den Zusatz (mehr: {n, lauf}). Die Werte der Karte auf
+  // einem Jahr (res.yb[k]) kommen aus msJahr (serStand). mom(x) = Zeitpunkt, zu dem das Element als neu gilt (tr bzw. sd).
   res.sl={};
-  const runs=(k,l,dk,jk,yOf,eOf)=>{const st=MS_RUN[k];let best=0,bc=null,c=null,cr=false,vd=false;const yb={},yo={};res.sl[k]=l;
-    const ent=(z,kk,id,x)=>add(kk,id,eOf(z.e.d),Object.assign({dk,n:z.n,ab:z.s.d,end:eOf(z.e.d),j:[jk,z.s.key],o:z.s.key},z.lauf?{lauf:true}:null,x));
+  const runs=(k,l,dk,jk,yOf,eOf,mom)=>{const st=MS_RUN[k];let best=0,bc=null,c=null,cr=false,vd=false;const yb={};res.sl[k]=l;
+    const pos=new Map();for(const r of serLaeufe(l,1))for(let i=0;i<r.n;i++)pos.set(l[r.i+i],i+1);
+    const ent=(z,kk,id,x)=>add(kk,id,eOf(z.e.d),Object.assign({dk,n:z.n,ab:z.s.d,end:eOf(z.e.d),j:[jk,z.s.key],o:z.s.key},z.weiter?{mehr:{n:z.voll,lauf:!!z.lauf}}:z.lauf?{lauf:true}:null,x));
+    // Stand der Folge c am Ende des Jahres Y (bis zu ihrem letzten Element in Y)
+    const stY=(c,Y)=>{const q=c.ys[Y];return {n:q.n,s:c.s,e:q.e,voll:c.n,weiter:c.n>q.n,lauf:c.lauf}};
+    // Das Jahr der Folge endet (Jahreswechsel in der Folge oder ihr Ende): Ihr Stand zählt als bisher längste Serie dieses Jahres
+    const jEnde=()=>{const q=c.ys[c.yl];if(q.n>(yb[c.yl]||0))yb[c.yl]=q.n};
     const done=lauf=>{if(!c)return;c.lauf=!!lauf;
       if(c.n>best){best=c.n;bc=c}
-      for(let y=+yOf(c.s.d);y<=+yOf(c.e.d);y++){const Y=String(y);if(c.n>(yb[Y]||0)){yb[Y]=c.n;yo[Y]=c}}
-      if(c.f)ent(c,k,c.s.key,Object.assign({ln:c.ln,prev:c.pb?{n:c.pb}:null},c.l.tr?{tr:c.l.tr}:{sd:c.l.sd}));
+      jEnde();
+      if(c.f)ent(c,k,c.s.key,Object.assign({ln:c.ln,prev:c.pb?{n:c.pb}:null},mom(c.l)));
       else{if(c.vor)ent(c,k,c.s.key,{vor:true});
-        for(const Y of Object.keys(c.yr)){const z=c.yr[Y];ent(c,'j'+k,Y+'|'+c.s.key,Object.assign({y:Y,ln:z.n,prev:{n:z.pb}},z.x.tr?{tr:z.x.tr}:{sd:z.x.sd}))}}
+        for(const Y of Object.keys(c.yr)){const z=c.yr[Y];ent(stY(c,Y),'j'+k,Y+'|'+c.s.key,Object.assign({y:Y,ln:z.n,prev:{n:z.pb}},mom(z.x)))}}
       c=null};
     const crossB=()=>{cr=true;if(c&&c.n>(bc?bc.n:0)){c.vor=true;vd=true}else if(bc){ent(bc,k,bc.s.key,{vor:true});vd=true}};
-    for(const x of l){if(!cr&&x.d>=B)crossB();if(!x.plus){done();continue}
-      if(!c){c={n:0,s:x,pb:best,f:null,l:null,yr:{}};if(cr&&!vd){c.vor=true;vd=true}}c.n++;c.e=x;
+    for(const x of l){if(!cr&&x.d>=B)crossB();const n=pos.get(x);if(!n){done();continue}
+      const Y=yOf(x.d);
+      if(!c){c={n:0,s:x,pb:best,f:null,l:null,yr:{},ys:{}};if(cr&&!vd){c.vor=true;vd=true}}
+      else if(c.yl!==Y)jEnde();
+      c.n=n;c.e=x;c.yl=Y;c.ys[Y]={n,e:x};
       if(c.n>c.pb&&((c.pb>0&&c.n===c.pb+1)||st.includes(c.n))&&x.d>=B){c.l=x;c.ln=c.n;if(!c.f)c.f=x}
-      else if(!c.vor&&!c.f&&c.n<=c.pb){const Y=yOf(x.d),p=yb[Y]||0;if(p>0&&c.n>p&&YB[Y]&&x.d>=YB[Y]&&!c.yr[Y])c.yr[Y]={x,n:c.n,pb:p}}}
+      else if(!c.vor&&!c.f&&c.n<=c.pb){const p=yb[Y]||0;if(p>0&&c.n>p&&yIn(Y,x.d)&&!c.yr[Y])c.yr[Y]={x,n:c.n,pb:p}}}
     if(!cr)crossB();done(true);
-    if(bc)res.best[k]={n:bc.n,c:bc};res.yb[k]=yo;MK[k]=(z,v,pr,y)=>ent(z,'j'+k,y+'|'+z.s.key,{y})};
+    if(bc)res.best[k]={n:bc.n,c:bc};
+    {const yo={};for(const y of JY){const z=msJahr(BS,y).ser[k];if(z)yo[y]=z}res.yb[k]=yo}
+    MK[k]=(z,v,pr,y)=>ent(z,'j'+k,y+'|'+z.s.key,{y})};
   const dY=d=>d.slice(0,4),dE=d=>d;
-  runs('rg',P.map(p=>({plus:p.eur>0,d:p.d,key:pk(p),tr:p.t})),'d','t',dY,dE);
-  runs('rd',D.map(x=>({plus:x.a>0,d:x.d,key:x.d,tr:cross(x.rr,r=>r.exE,0)||x.rr[x.rr.length-1].x.t})),'d','d',dY,dE);
-  // Wochen mit Trades, ohne die laufende. Wochen ohne Trades unterbrechen nicht (sie kommen in der Liste nicht vor).
-  const wM=new Map();for(const p of P){if(p.wk===cw)continue;const w=wM.get(p.wk)||{w:p.wk,a:0,c:0,n:0};w.a+=p.exE;w.n++;if(p.eur>0)w.c++;wM.set(p.wk,w)}
-  const WW=[...wM.values()].sort((a,b)=>a.w<b.w?-1:1);
-  runs('rw',WW.map(w=>({plus:w.a>0,d:w.w,key:w.w,sd:sat(w.w)})),'w','w',msWkYear,w=>addDays(w,6));
+  runs('rg',BS.se.t,'d','t',dY,dE,x=>({tr:x.x.t}));
+  runs('rd',BS.se.dN,'d','d',dY,dE,x=>({tr:cross(x.x.rr,r=>r.exE,0)||x.x.rr[x.x.rr.length-1].x.t}));
+  // Wochen mit Trades, ohne die laufende (BS.se.W). Wochen ohne Trades unterbrechen nicht (sie kommen in der Liste nicht vor). Je Woche auch
+  // ihre Teile je Kalenderjahr (ys; die Woche um Neujahr hat zwei), für „Meiste Gewinn-Trades in einer Woche“ eines Jahres (Florians Beschluss:
+  // nur die Trades der Woche, die im Jahr liegen, wie „Hochs und Tiefs“ mit Jahresfilter)
+  const WW=BS.se.W,wM=new Map(WW.map(w=>[w.w,w]));
+  runs('rw',BS.se.w,'w','w',msWkYear,w=>addDays(w,6),x=>({sd:sat(x.d)}));
   // ---- Meiste Gewinn-Trades in einer Woche: nur der Rekord. Ab 0.142 wie die Rekorde nach Rendite: der Stand am Ende des Ausgangsstands als
   // Eintrag ohne Vorgänger (vor), Jahres-Rekord (jmw) nach dem Ausgangsstand des Jahres, zugleich Allzeit-Rekord: nur dieser.
+  // Ab 0.160 (Florians Beschluss): Der Wert eines Jahres zählt nur die Trades der Woche, die im Jahr liegen (Teile w.ys), wie „Hochs und Tiefs“
+  // mit Jahresfilter; der Allzeit-Rekord zählt die ganze Woche. Bis 0.159 zählte die ganze Woche zum Jahr ihres Donnerstags. Der Wert der
+  // Karte auf einem Jahr (res.yb.mw) kommt aus derselben Rechnung wie Auswertung und Rückblick (msJahr, glKz).
   {let b=null,cr=false;const by={};
    const mk=MK.mw=(w,pr,y)=>add(y?'jmw':'mw',(y?y+'|':'')+w.w,w.w,Object.assign({dk:'w',n:w.c,of:w.n,y,j:['w',w.w],o:w.w,sd:sat(w.w)},pr?{prev:{n:pr.c,d:pr.w,dk:'w'}}:{vor:true}));
    const crossB=()=>{cr=true;if(b&&b.c>0)mk(b,null)};
-   for(const w of WW){if(!cr&&w.w>=B)crossB();const y=msWkYear(w.w),q=by[y];
-     if(w.c>0){if(!b&&w.w>=B)mk(w,null);else if(b&&w.c>b.c&&w.w>=B)mk(w,b);else if(q&&w.c>q.c&&YB[y]&&w.w>=YB[y])mk(w,q,y)}
-     if(!b||w.c>b.c)b=w;if(!q||w.c>q.c)by[y]=w}
-   if(!cr)crossB();if(b&&b.c>0)res.best.mw={n:b.c,w:b.w};res.yb.mw=by}
+   for(const w of WW){if(!cr&&w.w>=B)crossB();let at=false;
+     if(w.c>0){if(!b&&w.w>=B){mk(w,null);at=true}else if(b&&w.c>b.c&&w.w>=B){mk(w,b);at=true}}
+     for(const z of w.ys){const q=by[z.y];if(z.c>0&&!at&&q&&z.c>q.c&&yIn(z.y,w.w))mk(z,q,z.y);if(!q||z.c>q.c)by[z.y]=z}
+     if(!b||w.c>b.c)b=w}
+   if(!cr)crossB();if(b&&b.c>0)res.best.mw={n:b.c,w:b.w};
+   const yb={};for(const y of JY){const m=msJahr(BS,y).G.mostW,w=m&&wM.get(m.first.w),z=w&&w.ys.find(z=>z.y===y);if(z)yb[y]=z}
+   res.yb.mw=yb}
   // ---- Jahrestag: jedes Jahr seit dem ersten Trade der gezählten Konten, sobald der Tag da ist (Uhr des Geräts). Er wartet zwei Monate.
   {for(let n=1;n<200;n++){const ad=addMonths(first,12*n);if(ad>today)break;add('ja',n,ad,{n,clock:true,from:ad,until:addMonths(ad,2)})}}
   // ---- Jahresrückblick: jedes vergangene Kalenderjahr mit Trades. Ab 0.154 (Florians Auftrag) ohne die Grenze Ende Februar: voll = die Daten
@@ -4098,7 +4208,10 @@ function msCalc(rows,sel,o){
    const KEY={at:x=>pk(x),ad:x=>x.d,aw:x=>x.key,am:x=>x.key,mw:x=>x.w,rg:c=>c.s.key,rd:c=>c.s.key,rw:c=>c.s.key};
    const val=(k,o)=>!o?null:MS_SERK.includes(k)?(o.n>0?o:null):k==='mw'?(o.c>0?o:null):(o.v>0?o:null);
    const pick=(k,o,y)=>{const x=k==='mw'||MS_SERK.includes(k)?o:o.x,key=KEY[k](x),jk=k==='mw'?'jmw':k.length===2&&k[0]==='a'?'j'+k[1]:'j'+k;
-     const e=(y&&byId.get(jk+'|'+y+'|'+key))||byId.get(k+'|'+key);if(e)return e;
+     // Ab 0.160: Der Allzeit-Eintrag einer Woche passt zum Wert eines Jahres nur, wenn er dieselbe Zahl zeigt (die Woche um Neujahr zählt im
+     // Jahr nur mit ihren Trades des Jahres); ebenso eine Serie nur mit dem Eintrag, der denselben Stand zeigt (eine Serie über den
+     // Jahreswechsel steht im Jahr mit ihrem Stand am 31.12., bei „Gesamt“ mit voller Länge). Sonst entsteht ein Blatt aus dem Wert.
+     const e0=(y&&byId.get(jk+'|'+y+'|'+key))||byId.get(k+'|'+key),e=e0&&y&&(k==='mw'?e0.n!==x.c||e0.of!==x.n:MS_SERK.includes(k)&&(e0.n!==x.n||!!e0.mehr!==!!x.weiter))?null:e0;if(e)return e;
      PX=true;try{return MS_SERK.includes(k)?MK[k](x,0,null,y):k==='mw'?MK.mw(x,null,y):MK[k](x,o.v,null,y)}finally{PX=false}};
    for(const k of ['at','ad','aw','am','rg','rd','rw','mw']){const b=res.best[k],o=b?(MS_SERK.includes(k)?b.c:k==='mw'?WW.find(w=>w.w===b.w):b):null;G[k]=val(k,o)?pick(k,o,null):null;
      for(const y of ys){const z=val(k,(res.yb[k]||{})[y]);(Y[y]||(Y[y]={}))[k]=z?pick(k,z,y):null}}
@@ -4140,7 +4253,6 @@ function jrCalc(rows,sel,y,o){
   const {T,P,win,cw}=BS,miss=res.miss=!!BS.miss,R=T.filter(r=>r.y===y),rN=v=>miss?null:v;
   res.fehlt=jrFehlt(BS,sel,y);res.voll=today>=ny&&!res.fehlt.length;
   if(!R.length)return res;
-  const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
   // erster Extremwert bei Gleichstand (wie „Hochs und Tiefs“ und die Kacheln); f = Wert oder null
   const ext=(l,f,dir)=>{let b=null,bv=null;for(const x of l){const v=f(x);if(v==null)continue;if(b===null||(dir>0?v>bv:v<bv)){b=x;bv=v}}return b};
   // ---- Ergebnis
@@ -4154,46 +4266,43 @@ function jrCalc(rows,sel,y,o){
   const pr=p=>miss||p.rMiss?null:p.rX;
   const DM=new Map();for(const r of R){if(!DM.has(r.d))DM.set(r.d,[]);DM.get(r.d).push(r)}
   const DY=[...DM.keys()].sort().map(d=>{const rr=DM.get(d);return {d,r:rN(retSum(rr,'sel',true).v),a:sumTrades(rr,true).v}});
-  const WK=periods(T,win,'week','sel',cw).filter(p=>p.full&&msWkYear(p.key)===y);
-  const MO=periods(T,win,'month','sel',cw).filter(p=>p.full&&p.key.slice(0,4)===y);
-  const DA=periods(T,win,'day','sel',cw).filter(p=>p.key.slice(0,4)===y);
-  const tOf=p=>p&&{r:pr(p),a:p.exE,d:p.d},dOf2=x=>x&&{r:x.r,a:x.a,d:x.d},wOf=p=>p&&{r:rN(p.rX),a:p.aX,w:p.key},mOf=p=>p&&{r:rN(p.rX),a:p.aX,m:p.key};
+  // Ab 0.160 (eine Wurzel, Florians Beschluss 1): ganze Wochen, ganze Monate, Handelstage und ihre Durchschnitte, beste und schwächste Woche
+  // und „Meiste Gewinn-Trades in einer Woche“ kommen aus msJahr, also aus derselben Rechnung wie die Auswertung mit dem Zeitraum des Jahres
+  // (nach dem Kalender). Bis 0.159 rechnete jrCalc sie selbst, die Wochen nach der Donnerstag-Regel.
+  const J=msJahr(BS,y),AK=J.AK,GJ=J.G,WK=AK.week.ps,MO=AK.month.ps;
+  const tOf=p=>p&&{r:pr(p),a:p.exE,d:p.d},dOf2=x=>x&&{r:x.r,a:x.a,d:x.d},mOf=p=>p&&{r:rN(p.rX),a:p.aX,m:p.key};
   const pw=p=>rN(p.rX);
   // Ab 0.156 (Florians Auftrag): Beste und schwächste Woche und Monat nur aus Wochen und Monaten mit Trades. Eine Woche oder ein Monat ohne
   // Trades ist leer, nicht schwach (0.154: „Schwächste Woche 0,00 %“) und im Verlustjahr auch nicht die beste.
   const WKT=WK.filter(p=>p.n),MOT=MO.filter(p=>p.n);
-  res.best={t:tOf(ext(PY,pr,1)),d:dOf2(ext(DY,x=>x.r,1)),w:wOf(ext(WKT,pw,1)),m:mOf(ext(MOT,pw,1))};
-  res.worst={t:tOf(ext(PY,pr,-1)),d:dOf2(ext(DY,x=>x.r,-1)),w:wOf(ext(WKT,pw,-1)),m:mOf(ext(MOT,pw,-1))};
+  // beste und schwächste Woche aus glKz (wie Kacheln, „Hochs und Tiefs“ und Excel); ohne Investition gibt es keinen Extremwert nach Rendite
+  const gW=o=>miss||!o?null:{r:o.v,a:o.o.aX,w:o.o.w};
+  res.best={t:tOf(ext(PY,pr,1)),d:dOf2(ext(DY,x=>x.r,1)),w:gW(GJ.N.bestW.r),m:mOf(ext(MOT,pw,1))};
+  res.worst={t:tOf(ext(PY,pr,-1)),d:dOf2(ext(DY,x=>x.r,-1)),w:gW(GJ.N.worstW.r),m:mOf(ext(MOT,pw,-1))};
   // ohne Investition: Extremwerte nach Rendite gibt es nicht; die Kachel zeigt dann „–“ (k = es gibt Trades, Wochen bzw. Monate mit Trades)
   res.has={t:PY.length>0,d:DY.length>0,w:WKT.length>0,m:MOT.length>0};
   // Die Durchschnitte zählen wie die Auswertung mit „Tage ohne Trade mitzählen“: ganze Wochen und Monate ohne Trade mit 0 (Florians Antwort 6
   // zum Plan 0.156)
-  res.avg={t:res.r!=null&&res.n?res.r/res.n:null,d:rN(mean(DA.map(p=>p.rX))),w:WK.length?rN(mean(WK.map(p=>p.rX))):null,m:MO.length?rN(mean(MO.map(p=>p.rX))):null};
+  // Ab 0.160: aus avgKz mit der Einstellung „mitzählen“ (Florians Entscheidung b zu Fund 5: Der Rückblick zählt immer mit, die Filterzeile
+  // wirkt nicht; das Fenster erklärt den Unterschied, wenn das Häkchen dort aus ist)
+  res.avg={t:rN(AK.trade.rX),d:rN(AK.day.rX),w:AK.week.k?rN(AK.week.rX):null,m:AK.month.k?rN(AK.month.rX):null};
   // „Wochen im Plus“ zählt ab 0.156 wie die Serie „Plus-Wochen in Folge“ (Florians Antwort 5 zum Plan 0.156): jede abgerechnete Woche mit Trades,
   // auch eine angeschnittene, im Jahr nach der Donnerstag-Regel; im Plus = Netto-Gewinn nach PF über 0. Zähler und Nenner aus denselben Wochen.
   // So ist eine Serie des Jahres nie länger als die Zahl der Plus-Wochen des Jahres. 0.154 und 0.155: nur ganze Wochen.
-  const SL=M.sl||{};
-  {const wl=(SL.rw||[]).filter(x=>msWkYear(x.d)===y);res.wPlus={n:wl.filter(x=>x.plus).length,of:wl.length}}
+  {const wl=BS.se.w.filter(x=>msWkYear(x.d)===y);res.wPlus={n:wl.filter(x=>x.v>0).length,of:wl.length}}
   {const dd=maxDD(R,'sel',true);res.dd=miss||!dd.n?null:{v:dd.v,d:dd.d}}
   // ---- Serien, wie sie am 31.12. des Jahres standen (ab 0.156, Florians Antwort 4 zum Plan 0.156): gezählt ab dem echten Beginn der Serie, auch
   // wenn er in einem früheren Jahr liegt, bis zum 31.12. (Wochen: bis zur letzten Woche des Jahres nach der Donnerstag-Regel). Gezeigt wird die
-  // längste Serie mit mindestens einem Element im Jahr. Was nach dem Jahresende kommt, ändert die Zahl nie; es sagt nur, ob die Serie ins neue
-  // Jahr weiterlief (weiter). lauf: Die Serie reicht bis zum letzten bekannten Element (läuft noch). 0.154 und 0.155: volle Länge über den
-  // Jahreswechsel wie die Karte „Meilensteine“; die Karte bleibt dabei.
-  // l = Elemente in Zeitfolge {plus, d}, yOf = Jahr eines Elements, eOf = Ende eines Elements; bei gleicher Länge die erste Serie (ab 0.157 auch
-  // bei der Verlustserie; bis 0.156 nahm sie mit dem Schalter „letzte“ die letzte)
-  const serY=(l,yOf,eOf)=>{let best=null,c=null;const fin=()=>{if(c&&c.iny&&(!best||c.n>best.n))best=c;c=null};
-    for(let i=0;i<l.length;i++){const x=l[i],yy=yOf(x.d);
-      if(yy>y){if(c&&x.plus)c.weiter=true;break}
-      if(!x.plus){fin();continue}
-      if(!c)c={n:0,s:x,iny:false};c.n++;c.e=x;if(yy===y)c.iny=true;if(i===l.length-1)c.lauf=true}
-    fin();return best&&{n:best.n,ab:best.s.d,end:eOf(best.e.d),lauf:!!best.lauf,weiter:!!best.weiter}};
-  const dJ=d=>d.slice(0,4),dE=d=>d;
-  // Längste Verlustserie über alle Positionen der gezählten Konten (Vorzeichen vor PF; bei gleicher Länge ab 0.157 die erste wie überall, bis 0.156 die letzte)
-  res.vs=serY(P.map(p=>({plus:p.eur<0,d:p.d})),dJ,dE);
-  // Serien aus denselben Elementen wie die Meilensteine (bei gleicher Länge die erste, wie die Karte); „Meiste Gewinn-Trades“ ist der Wert des Jahres
-  {const w=((M.yb||{}).mw||{})[y];
-   res.ser={rg:serY(SL.rg||[],dJ,dE),rd:serY(SL.rd||[],dJ,dE),rw:serY(SL.rw||[],msWkYear,d=>addDays(d,6)),mw:w&&w.c>0?{n:w.c,of:w.n,w:w.w}:null}}
+  // längste Serie mit mindestens einem Element im Jahr. Was nach dem Jahresende kommt, ändert die Zahl nie.
+  // Ab 0.160 aus der Wurzel (Block „Serien“, über msJahr): dieselbe Rechnung wie „Hochs und Tiefs“ mit dem Jahr oben und die Karte auf dem
+  // Jahr; bis 0.159 rechnete hier serY. weiter = die Serie lief nach dem Jahresende weiter, voll = ihre volle Länge, lauf = sie reicht bis zum
+  // letzten bekannten Element (läuft noch). Bei gleicher Länge die erste Serie, auch bei der Verlustserie.
+  const sz=(z,eOf)=>z?{n:z.n,ab:z.s.d,end:eOf(z.e.d),lauf:!!z.lauf,weiter:!!z.weiter,voll:z.voll}:null,dE=d=>d;
+  // Längste Verlustserie über alle Positionen der gezählten Konten (Vorzeichen vor PF)
+  res.vs=sz(J.ser.vs,dE);
+  // „Meiste Gewinn-Trades“ ist der Wert des Jahres (nur Trades im Jahr, ohne die laufende Woche)
+  {const m=GJ.mostW;
+   res.ser={rg:sz(J.ser.rg,dE),rd:sz(J.ser.rd,dE),rw:sz(J.ser.rw,d=>addDays(d,6)),mw:m?{n:m.c,of:m.first.n,w:m.first.w}:null}}
   // ---- Stärkster Wochentag: Summe der Rendite je Wochentag ÷ Zahl dieses Wochentags im Jahr (im gezählten Fenster); nur Wochentage mit Trades
   // Ab 0.159: gezählt werden die Handelstage (htListe), ein Samstag oder Sonntag also nur mit Trade; bis 0.158 jeder Tag im Fenster
   if(!miss){const cnt=[0,0,0,0,0,0,0],sum=[0,0,0,0,0,0,0],has=[];
@@ -4203,7 +4312,7 @@ function jrCalc(rows,sel,y,o){
     res.wd=bi<0?null:{i:bi,v:bv}}else res.wd=null;
   // ---- Verhältnis wie die Tabelle in „Hochs und Tiefs“ (nach PF, Rendite): Summen, größter Trade in Handelstagen (geteilt durch Ø pro
   // Handelstag), Profit-Faktor aus den Renditen
-  if(!miss){const N=glKz(R,'sel',null,[]).N,dA=res.avg.d,h=(o,sg)=>!o?false:dA==null||!(dA>0)?null:sg*o.v/dA;
+  if(!miss){const N=GJ.N,dA=res.avg.d,h=(o,sg)=>!o?false:dA==null||!(dA>0)?null:sg*o.v/dA;
     res.vh={sumW:N.sumW.r,sumL:N.sumL.r,pf:N.pf,htgW:h(N.bigW.r,1),htgL:h(N.bigL.r,-1)}}else res.vh=null;
   // ---- Geld des Jahres aus den Tag-Daten (in Euro nur, wenn jeder Kurs da ist)
   {const L=(o.tags||[]).filter(t=>t.status==='ok'&&String(tagD(t)).slice(0,4)===y);
@@ -4339,8 +4448,12 @@ const msMon=(v,c)=>c==='eur'?fE.format(v):usd(v);
 function msTitle(e){const T=MS_TXT.titel;return T[e.k==='ja'&&e.n===1?'ja1':e.k].replace('{n}',fI.format(e.n||0)).replace('{j}',e.y||'')}
 // Datum eines Eintrags, wie es dasteht: Serien mit ihrem Beginn („ab …“ wie „Hochs und Tiefs“), Wochen „ab <Montag>“, Monate mit Namen
 // Ab 0.142: Serien mit ihrem Zeitraum („05.08. - 21.08.2026“, über den Jahreswechsel mit beiden Jahren), eine laufende „seit …“ (bis 0.141 „ab …“)
-function msDate(e){if(e.k==='jr')return '';
-  if(e.ab&&e.end){if(e.lauf)return MS_TXT.seit.replace('{d}',fD(e.ab));if(e.ab===e.end)return fD(e.end);return (e.ab.slice(0,4)===e.end.slice(0,4)?fD(e.ab).slice(0,6):fD(e.ab))+DS+fD(e.end)}
+// Ab 0.160 (Florians Antworten 1 und 3 zur Freigabe): Eine Serie, die nach dem Zeitraum des Eintrags weiterlief (mehr), steht mit „seit …“,
+// der Zusatz dazu (msMehr) in einer eigenen Zeile darunter: Kachel der Karte, Blatt und Bild, nicht in der Zeile im Verlauf. kachel = Kachel
+// der Karte: Eine Serie, die bis heute läuft, steht dort mit „läuft seit …“, sonst überall „seit …“.
+const msMehr=e=>e.mehr?serMehr(e.mehr.n,e.mehr.lauf):'';
+function msDate(e,kachel){if(e.k==='jr')return '';
+  if(e.ab&&e.end){if(e.lauf)return (kachel?MS_TXT.laufSeit:MS_TXT.seit).replace('{d}',fD(e.ab));if(e.mehr)return MS_TXT.seit.replace('{d}',fD(e.ab));if(e.ab===e.end)return fD(e.end);return (e.ab.slice(0,4)===e.end.slice(0,4)?fD(e.ab).slice(0,6):fD(e.ab))+DS+fD(e.end)}
   return e.dk==='w'?'ab '+fD(e.d):e.dk==='m'?fM(e.m):fD(e.d)}
 function msPrev(e){const p=e.prev;if(!p)return '';
   const w=p.n!=null&&p.r==null?fI.format(p.n):fR.format(p.r)+(p.dk==='w'?' in der Woche ab '+fD(p.d):p.dk==='m'?' im '+fM(p.d):' am '+fD(p.d));
@@ -4389,7 +4502,7 @@ function msOhne(M,k,y){const O=MS_TXT.ohne,yb=M.yb[k]||{},any=y?yb[y]!=null:Obje
 function msValH(M,k,g,y,nl){const e=y?(M.val.Y[y]||{})[k]:M.val.G[k],T=esc(MS_TXT.kachel[k]);
   if(!e)return `<div class="msv"><span class="k">${T}</span><span class="v none">${esc(msOhne(M,k,y))}</span></div>`;
   const bf=nl.has(e.id)?`<span class="bfw bf-k${MS_FLASH.includes(e.id)?' fl':''} noprint">${bflyH(BF_H.k)}</span>`:'';
-  return `<button type="button" class="msv${bf?' hasbf':''}" data-ms="${esc(e.id)}" data-msg="${g}"><span class="k">${T}</span><span class="v">${esc(e.r!=null?fR.format(e.r):fI.format(e.n))}${bf}</span><span class="s">${esc(msDate(e))}</span></button>`}
+  return `<button type="button" class="msv${bf?' hasbf':''}" data-ms="${esc(e.id)}" data-msg="${g}"><span class="k">${T}</span><span class="v">${esc(e.r!=null?fR.format(e.r):fI.format(e.n))}${bf}</span><span class="s">${esc(msDate(e,true))}</span>${e.mehr?`<span class="s">${esc(msMehr(e))}</span>`:''}</button>`}
 // „Erreicht“: je Art die höchste Stufe (bei einem Jahr die höchste in diesem Jahr); Auszahlungen: „Ausgezahlt wie eingezahlt“ vor „Erste Auszahlung“
 function msErrH(M,L,nl){const K=MS_TXT.marke,top=k=>L.filter(e=>e.k===k).sort((a,b)=>(b.n||0)-(a.n||0)||(a.d<b.d?1:-1))[0];
   const ms=[top('sn'),M.miss?null:top('sr'),top('sg'),top('ee')||top('ea'),top('ja')].filter(Boolean);
@@ -4428,7 +4541,7 @@ function zaehlSig(R,sel,win,cw){const T=R.filter(isTrade),K='K:'+[...sel].sort()
   const ps=res=>periods(T,win,res,'sel',cw).filter(p=>p.rows.length).map(p=>p.key+(p.full?'+':'-')+p.rows.length).join(',');
   return [K,'T:'+T.map(r=>r.a+':'+r.x.id).join(','),'W:'+ps('week'),'M:'+ps('month')].join('|')}
 function msZaehlSig(M){const BS=M.bs,y=MS_Y;if(!BS||!BS.T)return 'K:'+[...msAccs()].sort().join(',')+'|leer';
-  return y?zaehlSig(BS.T.filter(r=>r.d.slice(0,4)===y),msAccs(),cntWin(BS.first,y+'-01-01',y+'-12-31',BS.dataEnd,BS.lastT),BS.cw):zaehlSig(BS.T,msAccs(),BS.win,BS.cw)}
+  const J=y?msJahr(BS,y):null;return y?zaehlSig(J.R,msAccs(),J.win,BS.cw):zaehlSig(BS.T,msAccs(),BS.win,BS.cw)}
 // Ab 0.159 (Florians Beschluss): Die Zeile erscheint oder verschwindet erst beim Schließen eines Menüs, nie während es offen ist. Sonst sprang
 // der Inhalt der Karte beim Anklicken eines Kontos um etwa zwei Zeilen (Florian am Handy). Das gilt für alle Menüs, die sie ändern können
 // (MS_NOTE_FP): Zeitraum und Konten der Karte (msz, msk), Zeitraum der Filterzeile mit seinen Häkchen (range) und Konten der Filterzeile (acc).
@@ -4447,7 +4560,10 @@ function msRender(){const M=MS;if(!M)return;
   msNote();
   const L=msSort(M.list),nl=new Set(MS_NL.map(e=>e.id));
   if(!M.first&&!L.length){$('ms-list').innerHTML=`<p class="small" style="margin:0">${esc(MS_TXT.leer)}</p>`;return}
-  const inY=e=>!y||e.d.slice(0,4)===y||(e.lauf&&e.ab&&e.ab.slice(0,4)<=y),LY=L.filter(e=>!y||e.d.slice(0,4)===y);
+  // Jahr eines Eintrags: bei „Rekord des Jahres“ und „Bestserie des Jahres“ dieses Jahr (ab 0.160; eine Wochen-Serie endet am Sonntag ihrer
+  // letzten Woche, der im neuen Jahr liegen kann), sonst das Jahr des Datums
+  const eY=e=>e.y||e.d.slice(0,4);
+  const inY=e=>!y||eY(e)===y||(e.lauf&&e.ab&&e.ab.slice(0,4)<=y),LY=L.filter(e=>!y||eY(e)===y);
   let h=y?jrKarteH(M,y):'';
   if(M.first){h+=`<h3 class="msh3">${esc(yt(T.rek))}</h3>`+(M.miss?`<p class="small msmiss">${msMissTxt(M.missAcc)}</p>`:`<div class="msvals">${MS_REK.map(k=>msValH(M,k,'r',y,nl)).join('')}</div>`);
     h+=`<h3 class="msh3">${esc(yt(T.ser))}</h3><div class="msvals">${MS_SER.map(k=>msValH(M,k,'s',y,nl)).join('')}</div>`;
@@ -4456,8 +4572,8 @@ function msRender(){const M=MS;if(!M)return;
   const V=L.filter(inY);
   if(!y)h+=jrKarteH(M,'');
   if(V.length){h+=`<h3 class="msvh"><button type="button" class="zlink msvt" data-msmore aria-expanded="${MS_ALL}">${esc(yt(T.verlauf))} (${fI.format(V.length)})</button></h3>`;
-    if(MS_ALL){const lauf=V.filter(e=>e.lauf),rest=V.filter(e=>!e.lauf),ys=[...new Set(rest.map(e=>e.d.slice(0,4)))];
-      h+=`<div class="msvl">${lauf.length?`<div class="msl">${lauf.map(e=>msEntryH(e,M.cur)).join('')}</div>`:''}${ys.map(z=>`${y?'':`<h4>${z}</h4>`}<div class="msl">${rest.filter(e=>e.d.slice(0,4)===z).map(e=>msEntryH(e,M.cur)).join('')}</div>`).join('')}</div>`}}
+    if(MS_ALL){const lauf=V.filter(e=>e.lauf),rest=V.filter(e=>!e.lauf),ys=[...new Set(rest.map(eY))];
+      h+=`<div class="msvl">${lauf.length?`<div class="msl">${lauf.map(e=>msEntryH(e,M.cur)).join('')}</div>`:''}${ys.map(z=>`${y?'':`<h4>${z}</h4>`}<div class="msl">${rest.filter(e=>eY(e)===z).map(e=>msEntryH(e,M.cur)).join('')}</div>`).join('')}</div>`}}
   $('ms-list').innerHTML=h}
 // Einträge eines Teils der Karte in der Reihenfolge, in der sie dort stehen (für die Pfeile im Feier-Fenster)
 // ab 0.154 ohne Jahresrückblick (eigenes Fenster)
@@ -4520,7 +4636,7 @@ function msSheetH(e,cur){const amt=MS_AMT;let h=`<div id="ms-bf" class="msbfl">$
     if(b.unter)h+=`<div class="msun">${esc(b.unter)}</div>`;
     if(b.betrag)h+=`<div class="msbt">${esc(b.betrag)}</div>`;
     if(b.betragK)h+=`<div class="msbk">${esc(b.betragK)}</div>`;
-    h+=`<p class="msi">${e.k==='ja'?esc(MS_TXT.erster.replace('{d}',fD(MS.first))):e.j?`<a href="#" class="jl" data-msj="${esc(e.id)}">${esc(dt)}</a>`:esc(dt)}</p>`;
+    h+=`<p class="msi">${e.k==='ja'?esc(MS_TXT.erster.replace('{d}',fD(MS.first))):e.j?`<a href="#" class="jl" data-msj="${esc(e.id)}">${esc(dt)}</a>`:esc(dt)}${e.mehr?`<br><span class="msmehr">${esc(msMehr(e))}</span>`:''}</p>`;
     const pv=msPrev(e);if(pv)h+=`<p class="small msp">${esc(pv)}</p>`;
     if(b.satz)h+=`<p class="msq">${esc(b.satz)}</p>`}
   return `<div class="mss" data-msa="${esc(e.id)}">${h}</div>`}
@@ -4601,6 +4717,8 @@ function msCardSpec(e,amt,cur){const o={titel:msTitle(e),gross:null,unter:null,b
   // ab 0.142 wie das Blatt (msBlatt): Kategorie klein, große Zahl, Zeile darunter, Betrag nur mit Häkchen, Datum; ohne „vorher“ (Florians Antwort 7)
   const b=msBlatt(e,amt,cur);o.titel=null;o.kat=b.kat;o.gross=b.gross;o.statt=b.statt;o.unter=b.unter;o.betrag=b.betrag;o.betragK=b.betragK;o.satz=b.satz;
   if(e.k==='ja')o.datum=MS_TXT.erster.replace('{d}',fD(MS.first));
+  // ab 0.160: Zusatz einer Serie, die nach ihrem Zeitraum weiterlief, in einer eigenen Zeile unter dem Datum (wie das Blatt)
+  o.mehr=msMehr(e)||null;
   return o}
 function msPng(e,amt){const Sp=msCardSpec(e,amt,MS.cur),[W,H]=MS_BILD.hoch,ff=getComputedStyle(document.body).fontFamily||'sans-serif';
   const C={bg:'#f6f5f2',card:'#ffffff',line:'#e2e0da',gold:'#C49A55',goldInk:'#86601c',ink:'#1a1a1a',ink2:'#373d43',muted:'#454b51'};
@@ -4620,7 +4738,7 @@ function msPng(e,amt){const Sp=msCardSpec(e,amt,MS.cur),[W,H]=MS_BILD.hoch,ff=ge
         const R=[[Sp.kat.toUpperCase(),78,40,700,C.goldInk]];
         if(Sp.gross)R.push([Sp.gross,176,150,700,C.ink]);else if(Sp.statt)R.push([Sp.statt,124,80,700,C.ink]);
         if(Sp.unter)R.push([Sp.unter,80,46,600,C.ink2]);if(Sp.betrag)R.push([Sp.betrag,76,54,600,C.ink2]);if(Sp.betragK)R.push([Sp.betragK,60,38,400,C.ink2]);
-        if(Sp.datum)R.push([Sp.datum,68,42,400,C.muted]);if(Sp.satz)R.push([Sp.satz,74,40,600,C.ink]);
+        if(Sp.datum)R.push([Sp.datum,68,42,400,C.muted]);if(Sp.mehr)R.push([Sp.mehr,56,42,400,C.muted]);if(Sp.satz)R.push([Sp.satz,74,40,600,C.ink]);
         const bh=R.length>=6?240:R.length===5?270:300,bw=bh*BFLY_WH[0]/BFLY_WH[1],tot=bh+R.reduce((s,r)=>s+r[1],0)+30;
         let y=Math.max(70,Math.round(70+(H-70-170-tot)/2));c.drawImage(img,(W-bw)/2,y,bw,bh);y+=bh;
         R.forEach((r,i)=>{y+=r[1];txt(r[0],y,r[2],r[3],r[4],W-160);if(i===0){c.fillStyle=C.gold;c.fillRect(W/2-80,y+28,160,5);y+=20}})}
@@ -4654,11 +4772,14 @@ let JR=null,JR_T=[],JRP=null,JR_SB=null;
 const jrAmt=()=>msGet().rb!==false,jrWeak=()=>msGet().rs!==false;
 // Rechnung für das Fenster: Konten der Karte „Meilensteine“, Währung wie die Liste der Meilensteine (MS.cur)
 function jrNow(y){const M=MS;return jrCalc(window.__rows||[],msAccs(),y,{cur:M?M.cur:'usd',today:msToday(),tags:Object.values(S.tag||{}),M})}
-// Zeitraum einer Serie wie in der Karte: „05.08. - 21.08.2026“, über den Jahreswechsel mit beiden Jahren, eine laufende „seit …, läuft noch“;
-// ab 0.156 eine Serie, die über den 31.12. des Jahres hinausging: „seit …, lief ins neue Jahr weiter“ (die Zahl ist der Stand am 31.12.)
-function jrSpan(z){if(z.weiter)return MS_TXT.seit.replace('{d}',fD(z.ab))+', '+MS_TXT.jr.weiterJ;
-  if(z.lauf)return MS_TXT.seit.replace('{d}',fD(z.ab))+', '+MS_TXT.lauf;if(z.ab===z.end)return fD(z.end);
-  return (z.ab.slice(0,4)===z.end.slice(0,4)?fD(z.ab).slice(0,6):fD(z.ab))+DS+fD(z.end)}
+// Zeitraum einer Serie wie in der Karte: „05.08. - 21.08.2026“, über den Jahreswechsel mit beiden Jahren. Ergebnis: die kleinen Zeilen der
+// Kachel. Ab 0.160 (Florians Antwort 1 zur Freigabe) zwei Zeilen: eine laufende „seit …“ und darunter „läuft noch“; eine Serie, die über den
+// 31.12. des Jahres hinausging, „seit …“ und darunter der Zusatz „lief weiter bis 10“ bzw. „läuft noch, jetzt 14“ (die Zahl der Kachel ist der
+// Stand am 31.12.). Bis 0.159 eine Zeile: „seit …, läuft noch“ bzw. „seit …, lief ins neue Jahr weiter“.
+function jrSpan(z){const seit=MS_TXT.seit.replace('{d}',fD(z.ab));
+  if(z.weiter)return [seit,serMehr(z.voll,z.lauf)];
+  if(z.lauf)return [seit,MS_TXT.lauf];if(z.ab===z.end)return [fD(z.end)];
+  return [(z.ab.slice(0,4)===z.end.slice(0,4)?fD(z.ab).slice(0,6):fD(z.ab))+DS+fD(z.end)]}
 // Hinweis bei unvollständigen Daten (nie im Bild): ein Konto mit Nummer und Datenstand, mehrere nur die Zahl
 function jrUnvTxt(st){const X=MS_TXT.jr,f=st.fehlt||[];if(!f.length)return '';
   return f.length===1?X.unvoll1.replace('{k}',f[0].a).replace('{d}',fD(f[0].bis)):X.unvollN.replace('{n}',fI.format(f.length))}
@@ -4687,7 +4808,7 @@ function jrModel(st,o){const X=MS_TXT.jr,K=X.k,Sx=X.s,O=X.ohne,cur=st.cur,amt=!!
    G.push({id:'avg',h:X.gr.avg,reihen:[[tile(K.pTrade,R(a.t)),tile(K.pTag,R(a.d)),tile(K.pWoche,nv(a.w,st.has.w,O.w)),tile(K.pMonat,nv(a.m,st.has.m,O.m))]]})}
   if(art!=='kurz'){
     // Beständigkeit: Wochen im Plus, Serien aus den Meilensteinen, meiste Gewinn-Trades in einer Woche, stärkster Wochentag
-    const S2=st.ser||{},ser=(k,z)=>z?tile(K[k],T(fI.format(z.n)),[T(jrSpan(z))]):tile(K[k],N(O[k]));
+    const S2=st.ser||{},ser=(k,z)=>z?tile(K[k],T(fI.format(z.n)),jrSpan(z).map(T)):tile(K[k],N(O[k]));
     const wp=st.wPlus&&st.wPlus.of?tile(K.wPlus,T(fI.format(st.wPlus.n)),[T(Sx.wPlus.replace('{n}',`${fI.format(st.wPlus.of)} ${st.wPlus.of===1?'Woche':'Wochen'}`))]):tile(K.wPlus,N(O.w));
     const mw=S2.mw?tile(K.mw,T(fI.format(S2.mw.n)),[T(Sx.mw.replace('{d}',fD(S2.mw.w)))]):tile(K.mw,N(O.mw));
     // der Durchschnitt des Wochentags steht in der kleinen Zeile hinter „Ø“; in dieser Gruppe hat sonst kein Wert ein Vorzeichen, die Plus-Regel ändert hier nichts
@@ -4702,7 +4823,7 @@ function jrModel(st,o){const X=MS_TXT.jr,K=X.k,Sx=X.s,O=X.ohne,cur=st.cur,amt=!!
     G.push({id:'vh',h:X.gr.vh,reihen:v?[[tile(K.sumW,R(v.sumW)),tile(K.sumL,R(v.sumL)),mo(tile(K.pf,v.pf==null?N(O.pf):T(Sx.pf.replace('{v}',fmtDec(v.pf,1)))))],[tile(K.htgW,htg(v.htgW),hs(v.htgW)),tile(K.htgL,htg(v.htgL),hs(v.htgL))]]
       :[[tile(K.sumW,T('–')),tile(K.sumL,T('–')),mo(tile(K.pf,T('–')))],[tile(K.htgW,T('–')),tile(K.htgL,T('–'))]]})}
   if(o.weak){const W=four(st.worst,['t','d','w','m']),dd=st.dd?tile(K.dd,R(st.dd.v),[st.dd.v<0&&st.dd.d?T(Sx.dd.replace('{d}',fD(st.dd.d))):null]):tile(K.dd,T('–'));
-    const vs=st.vs?tile(K.vs,T(`${fI.format(st.vs.n)} ${st.vs.n===1?'Trade':'Trades'}`),[T(jrSpan(st.vs))]):tile(K.vs,N(O.vs));
+    const vs=st.vs?tile(K.vs,T(`${fI.format(st.vs.n)} ${st.vs.n===1?'Trade':'Trades'}`),jrSpan(st.vs).map(T)):tile(K.vs,N(O.vs));
     G.push({id:'weak',h:X.gr.weak,reihen:art==='kurz'?[[W[0],W[1],W[2],dd]]:[[W[0],W[1],W[2]],[W[3],dd,vs]]})}
   if(amt&&st.geld&&art!=='kurz'){const g=st.geld,c=jrCur(g.c);
     G.push({id:'geld',h:X.gr.geld,reihen:[[tile(kc(K.ein,c),T(fN.format(g.ein))),tile(kc(K.aus,c),T(fN.format(g.aus))),tile(kc(K.einsatz,c),{t:fN.format(g.net),s:true},[T(Sx.einsatz)])]]})}
@@ -4722,22 +4843,32 @@ function jrBalkenH(st){const X=MS_TXT.jr,v=m=>st.miss?m.a:m.r,V=st.mon.map(m=>m.
     return `<div class="sp"><div class="z" style="top:${z}%"></div>${m.n?`<i class="${x<0?'m':''}" style="--w:${(0.3+i*0.11).toFixed(2)}s;${x<0?`top:${z}%`:`bottom:${+(100-z).toFixed(2)}%`};height:max(3px,${h}%)"></i>`:`<i class="o" style="top:max(0px,calc(${z}% - 1px))"></i>`}</div>`}).join('')}</div>
     <div class="jrml" aria-hidden="true">${X.mb.map(b=>`<span>${b}</span>`).join('')}</div><div class="jrkl">${esc(X.monate)}</div></div>`}
 // Ab 0.158: zwischen den sechs Blöcken stehen fünf Abstandhalter (.jrsp a bis e); sie und Schmetterling und Balken teilen sich die Höhe (CSS .jrs1)
-function jrS1H(){const X=MS_TXT.jr,st=JR.st,amt=jrAmt(),k=jrKopf(st,amt),u=jrUnvTxt(st),sp=c=>`<span class="jrsp ${c}" aria-hidden="true"></span>`;
+function jrS1H(){const X=MS_TXT.jr,st=JR.st,amt=jrAmt(),k=jrKopf(st,amt),u=jrUnvTxt(st),kt=jrKtoTxt(),sp=c=>`<span class="jrsp ${c}" aria-hidden="true"></span>`;
   return `<div class="jrs1"><div class="jrbf" id="jr-bf" aria-hidden="true">${bflyH(96,true)}<span class="jrteil jrfl-l"></span><span class="jrteil jrfl-r"></span><span class="jrteil jrkoerper"></span><span class="jrstaub" id="jr-staub"></span></div>${sp('a')}
-    <h2 class="jrh" id="jr-t">${esc(X.titel.replace('{j}',JR.y))}</h2>${JR.nach?`<p class="jrauf">${esc(X.auftakt.replace('{j}',JR.y))}</p>`:''}<div class="msgl"></div>${sp('b')}
+    <h2 class="jrh" id="jr-t">${esc(X.titel.replace('{j}',JR.y))}</h2>${JR.nach?`<p class="jrauf">${esc(X.auftakt.replace('{j}',JR.y))}</p>`:''}${kt?`<p class="jrauf jrkto">${esc(kt)}</p>`:''}<div class="msgl"></div>${sp('b')}
     <div class="jrzw${k.n!=null?' zwei':''}"><div class="jrz"><div class="jrgr">${esc(k.r)}</div><div class="jrkl">${esc(X.rendite)}</div></div>
     ${k.n!=null?`<div class="jrz"><div class="jrnet">${esc(k.n)}</div><div class="jrkl">${esc(X.netto.replace('{c}',jrCur(st.cur)))}</div></div>`:''}</div>
     ${st.miss?`<p class="small msmiss jrmiss">${msMissTxt(st.missAcc)}</p>`:''}${sp('c')}
     ${jrBalkenH(st)}${sp('d')}<div class="msgl jrtr"></div><p class="jrleit">${esc(JR.leit)}</p>${sp('e')}
     <div class="jrweiter"><button type="button" class="btn primary" data-jrgo="2">${esc(X.weiter)}</button></div>
     ${u?`<p class="jrunv">${esc(u)}</p>`:''}</div>`}
+// Ab 0.160 (Florians Antwort 6 zur Freigabe; „Gleicher Name, gleiche Rechnung“, GESTALTUNG Abschnitt 0): zwei kleine Zeilen, die erklären,
+// wonach der Rückblick zählt. Nur im Fenster, nie in einem Bild.
+// jrKtoTxt: „8 von 10 Konten“, wenn die Karte „Meilensteine“ nicht alle Konten zählt (sonst leer); Seite 1 klein unter dem Titel, Seite 2 oben.
+// jrAlleHt: „mit allen Handelstagen“ neben der Überschrift „Durchschnitt“ auf Seite 2, nur wenn „Tage ohne Trade mitzählen“ in der Filterzeile
+// aus ist (nur dann zeigen die Kacheln der Auswertung andere Durchschnitte; der Rückblick zählt immer mit, Florians Entscheidung b zu Fund 5).
+function jrKtoTxt(){const N=Object.keys(S.accounts).length,n=msAccs().length;return n<N?MS_TXT.jr.konten.replace('{n}',fI.format(n)).replace('{N}',fI.format(N)):''}
+const jrAlleHt=()=>S.ui.flt&&S.ui.flt.zeroDays===false?MS_TXT.jr.alleHt:'';
 // Kacheln einer Gruppe: Reihen wie im Modell (PC: Spaltenzahl je Reihe, --n); am Handy fließen alle Kacheln der Gruppe in zwei Spalten (jrFit)
+// Ab 0.160: g.hz = kleiner Zusatz neben der Überschrift (jrAlleHt); jrum = Gruppe, deren Beschriftungen am Handy auf zwei Zeilen umbrechen
+// dürfen („Beständigkeit“ und „Verhältnis“, Florians Entscheidung zu OFFEN „Aus 0.156“), damit die Kacheln auch bei 360 px zu zweit stehen
 function jrGrpH(g){if(g.pl)return `<div class="jrgrp"><h3>${esc(g.h)}</h3><div class="jrpl">${g.pl.map(t=>`<span class="msmk">${esc(t)}</span>`).join('')}</div></div>`;
   const tH=(t,i)=>`<div class="jrk${i===0?' jrf':''}"${t.mo?` data-mo="${t.mo}"`:''}><span class="k">${esc(t.k)}</span><span class="v${t.v.none?' none':''}">${esc(t.v.t)}</span>${t.s.map(x=>`<span class="s">${esc(x.t)}</span>`).join('')}</div>`;
-  return `<div class="jrgrp"><h3>${esc(g.h)}</h3><div class="jrbody">${g.reihen.map(r=>`<div class="jrreihe" style="--n:${r.length}">${r.map(tH).join('')}</div>`).join('')}</div></div>`}
-function jrS2H(){const X=MS_TXT.jr,st=JR.st,u=jrUnvTxt(st),G=jrModel(st,{amt:jrAmt(),weak:jrWeak(),art:'fenster'}),sg=jrSgOn();
+  return `<div class="jrgrp"><h3>${esc(g.h)}${g.hz?`<span class="jrhz">${esc(g.hz)}</span>`:''}</h3><div class="jrbody${g.id==='bst'||g.id==='vh'?' jrum':''}">${g.reihen.map(r=>`<div class="jrreihe" style="--n:${r.length}">${r.map(tH).join('')}</div>`).join('')}</div></div>`}
+function jrS2H(){const X=MS_TXT.jr,st=JR.st,u=jrUnvTxt(st),G=jrModel(st,{amt:jrAmt(),weak:jrWeak(),art:'fenster'}),sg=jrSgOn(),kt=jrKtoTxt();
+  {const g=G.find(g=>g.id==='avg'),z=jrAlleHt();if(g&&z)g.hz=z}
   const ein=sg?`<div class="jrein"><p>${herzH('💚 '+X.danke)}</p></div>`:`<div class="jrein"><p>${herzH('💚 '+(st.verlust?X.einladungV:X.einladung))}</p><button type="button" class="btn primary" data-jrgo="3">${esc(X.wert)}</button></div>`;
-  return `<div class="jrs2"><div class="jrkopf"><div class="jrkat">${esc(X.titel.replace('{j}',JR.y))}</div><h2 class="jrh" id="jr-t">${esc(X.zahlen)}</h2><div class="msgl"></div>${u?`<p class="jrunv">${esc(u)}</p>`:''}</div>
+  return `<div class="jrs2"><div class="jrkopf"><div class="jrkat">${esc(X.titel.replace('{j}',JR.y))}</div><h2 class="jrh" id="jr-t">${esc(X.zahlen)}</h2><div class="msgl"></div>${kt?`<p class="jrunv jrkto">${esc(kt)}</p>`:''}${u?`<p class="jrunv">${esc(u)}</p>`:''}</div>
     ${G.map(jrGrpH).join('')}<div class="jrabs"><div class="msgl jrtr"></div><p class="jrwunsch">${esc(X.wunsch)}</p>${ein}</div></div>`}
 // „Schon gespendet“ in den letzten 12 Monaten (365 Tage): dann steht im Kasten der Danke-Satz statt Einladung und Knopf (Florians Antwort 11)
 function jrSgOn(){const d=donGet(),sg=donSg(d);return !!sg&&fenDay(FEN_NOW())-fenDay(sg)<365}
@@ -4771,10 +4902,12 @@ function jrView(v,keep){if(!JR)return;const X=MS_TXT.jr,bx=$('jr-modal').querySe
   $('jr-body').innerHTML=v===1?jrS1H():v===2?jrS2H():jrS3H();
   $('jr-dots').innerHTML=v<3?`<span${v===1?' class="on"':''}></span><span${v===2?' class="on"':''}></span>`:'';
   $('jr-foot').hidden=v===3;$('jr-weakl').hidden=v!==2;
-  const b=$('fb-jrb');b.textContent=v===1&&!CAN_SHARE_FILE?X.bildS:X.bild;if(v===1&&!CAN_SHARE_FILE){b.removeAttribute('aria-expanded');b.removeAttribute('aria-controls')}else{b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','fp-jrb')}
-  // Ab 0.158: Ohne Teilen heißt der Knopf auf Seite 1 „Bild speichern“, auf Seite 2 „Bild ▾“. Er ist auf beiden so breit wie der längere
-  // Text (data-breit, CSS), damit die Punkte beim Blättern an ihrer Stelle bleiben.
-  if(CAN_SHARE_FILE)b.removeAttribute('data-breit');else b.setAttribute('data-breit',X.bildS);
+  const b=$('fb-jrb'),bm=!(v===1&&!CAN_SHARE_FILE);b.textContent=X.bild+(bm?' ▾':'');if(!bm){b.removeAttribute('aria-expanded');b.removeAttribute('aria-controls');b.setAttribute('aria-label',X.bildS)}else{b.removeAttribute('aria-label');b.setAttribute('aria-expanded','false');b.setAttribute('aria-controls','fp-jrb')}
+  // Ab 0.160 (Florians Auftrag aus Werkstatt-Runde 9, seine Antwort 8 zur Freigabe): Der Knopf heißt auf allen Seiten und in allen Browsern
+  // „Bild“; das ▾ steht nur, wenn ein Menü aufgeht (bm). Ohne Teilen speichert Seite 1 direkt (ein Bild, kein Menü): „Bild“, vorgelesen
+  // „Bild speichern“; auf Seite 2 „Bild ▾“. Bis 0.159 stand dort auf Seite 1 „Bild speichern“. Der Knopf ist auf beiden Seiten so breit wie
+  // der längere Text (data-breit, CSS), damit die Punkte beim Blättern an ihrer Stelle bleiben.
+  if(CAN_SHARE_FILE)b.removeAttribute('data-breit');else b.setAttribute('data-breit',X.bild+' ▾');
   const ar=$('jr-ar');ar.hidden=v===3;ar.textContent=v===1?'›':'‹';ar.classList.toggle('l',v===2);ar.setAttribute('aria-label',v===1?X.ariaWeiter:X.ariaZurueck);
   $('jr-amt').checked=jrAmt();$('jr-weak').checked=jrWeak();
   bx.scrollTop=keep?top:0;
@@ -4836,13 +4969,19 @@ function jrFuss(){const X=MS_TXT.jr,wl=$('jr-weakl'),aw=$('jr-amtw');if(!JR||JR.
 // Am Handy (bis 640 px) fließen die Kacheln einer Gruppe in zwei Spalten. Eine Kachel, deren Beschriftung oder Wert in der halben Breite nicht in
 // eine Zeile passt, nimmt die ganze Breite, ebenso eine, die sonst allein in ihrer Reihe stünde (jrw); jrr = rechte Spalte. Die kleinen Zeilen
 // darunter dürfen am Handy umbrechen. Platz: links die halbe Breite ohne 8 px rechts, rechts ohne 10 px links und 8 px rechts.
+// Ab 0.160 (Florians Entscheidung zu OFFEN „Aus 0.156“ und seine Antwort 7 zur Freigabe): In den Gruppen „Beständigkeit“ und „Verhältnis“ (.jrum)
+// darf die Beschriftung am Handy auf zwei Zeilen umbrechen (CSS), sie macht die Kachel nicht mehr breit; nur ein Wort, das allein nicht in die
+// halbe Breite passt, tut es noch. Stehen zwei Kacheln nebeneinander, sind ihre Beschriftungen gleich hoch (minHeight), damit die Werte auf
+// einer Linie stehen. Bis 0.159 stand bei 360 px jede Kachel dieser Gruppen allein in ihrer Reihe.
 function jrFit(){const b=$('jr-body');if(!b||!JR||JR.v!==2)return;const eng=matchMedia('(max-width:640px)').matches;
-  for(const g of b.querySelectorAll('.jrbody')){const K=[...g.querySelectorAll('.jrk')];K.forEach(k=>{k.classList.remove('jrr','jrw');k.style.order=eng&&k.dataset.mo?k.dataset.mo:''});if(!eng||!K.length)continue;
+  for(const g of b.querySelectorAll('.jrbody')){const K=[...g.querySelectorAll('.jrk')],um=g.classList.contains('jrum'),kOf=k=>k.querySelector(':scope>.k');
+    K.forEach(k=>{k.classList.remove('jrr','jrw');k.style.order=eng&&k.dataset.mo?k.dataset.mo:'';const c=kOf(k);if(c)c.style.minHeight=''});if(!eng||!K.length)continue;
     // Reihenfolge am Handy (data-mo, ab 0.156): Kacheln mit data-mo stehen nach den übrigen ihrer Gruppe
     K.sort((p,q)=>(+p.dataset.mo||0)-(+q.dataset.mo||0));
-    const half=g.clientWidth/2-18,wide=K.map(k=>[...k.querySelectorAll(':scope>.k,:scope>.v:not(.none)')].some(c=>c.scrollWidth>half));
+    const half=g.clientWidth/2-18,wide=K.map(k=>[...k.querySelectorAll(':scope>.k,:scope>.v:not(.none)')].some(c=>um&&c.classList.contains('k')?c.scrollWidth>c.clientWidth+1:c.scrollWidth>half));
     let col=0;K.forEach((k,i)=>{if(wide[i]){if(col===1)K[i-1].classList.add('jrw');k.classList.add('jrw');col=0;return}if(col===1){k.classList.add('jrr');col=0}else col=1});
-    if(col===1)K[K.length-1].classList.add('jrw')}}
+    if(col===1)K[K.length-1].classList.add('jrw');
+    if(um)K.forEach((k,i)=>{if(!k.classList.contains('jrr'))return;const p=kOf(K[i-1]),q=kOf(k),h=Math.max(p.offsetHeight,q.offsetHeight);p.style.minHeight=q.style.minHeight=h+'px'})}}
 // Nach dem Schließen: Effekte aus, Herz im Reiter „Resonanz“, danach ein wartendes Fenster nach einem Anlass (Bild); ab 0.158 ohne den Sprung
 // „Alle Meilensteine“
 function jrClosed(){JR_T.forEach(clearTimeout);JR_T=[];if(FP_OPEN==='jrb')closeFpanel();const bx=$('jr-modal').querySelector('.box');bx.classList.remove('jrspielt','jrschlaegt');
@@ -12200,7 +12339,7 @@ function xlsxAll(rows,o){
   const {C}=o,accs=Object.keys(S.accounts).sort(),zero=S.ui.flt.zeroDays!==false,XPF='Ergebnis nach PF (am Abbuchungstag)';
   const RU=curRows(rows,'usd'),U=new Map(rows.map((r,i)=>[r,RU[i]])),u=rr=>rr.map(r=>U.get(r));
   let dataEnd=rows[rows.length-1].d;for(const a of accs){const rd=repDay(a);if(rd>dataEnd)dataEnd=rd}
-  const win=cntWin(tr[0].d,null,null,dataEnd,lastTradeDay(tr));
+  const win=cntWin(tr[0].d,null,null,dataEnd,lastTradeDay(tr),tgSet(tr));
   // Ab 0.100: laufende Woche aller Konten (PF noch nicht gebucht), sie ist keine ganze Woche (wie in der Auswertung)
   const cw=curWeek(rows,accs);
   const capAll=tm=>{let s=0;for(const a of accs){const c=CAP(a,tm);if(c==null)return null;s+=c}return s};
@@ -12278,7 +12417,7 @@ function xlsxAll(rows,o){
   const GE=glKz(rows,'all',win,AE.week.ps),GU=glKz(RU,'all',win,AU.week.ps);
   // Blätter „Durchschnitt“ und „Hochs und Tiefs“: alle Konten, ganzer Zeitraum, vor und nach PF, EUR und USD, je Wert eigener Extremwert und eigenes Datum
   const P0=v=>v==null||miss?'':X.P(v),E0=v=>v==null?'':X.E(v),N0=v=>v==null?'':X.N(v),D0=o=>o?X.D(o.d||o.w):'';
-  const head=t=>[[X.T(t)],[`Alle Konten, ganzer Zeitraum: Handelstage vom ${fD(win.s)} bis ${fD(win.e)}`],
+  const head=t=>[[X.T(t)],[`Alle Konten, ganzer Zeitraum: Handelstage vom ${fD(win.s)} bis ${fD(htLetzter(win,win.tg))}`],
     ['Rendite auf die Investition aller Konten. Durchschnitte pro Woche und Monat sowie beste und schwächste Woche nur aus ganzen Wochen und Monaten.'],
     [`Zählweise beim Export: Tage ohne Trade mitgezählt: ${zero?'ja':'nein'}`],[]];
   const newSheet=(name,t)=>({name,rows:head(t),merges:[],hdr:[],grp:[],skip:[0,1,2,3]});
@@ -13439,7 +13578,7 @@ const GL={
   // Ab 0.117: DFX.swiss
   dxpend:{t:'Ausstehend',h:'Bei DFX.swiss angekommen, noch nicht in deiner DFX-Datei.\nLies die DFX-Datei neu ein, sobald DFX.swiss fertig ist.\nDie Coins zählen nicht mehr zum Bestand der Wallet, damit er zur Blockchain passt. Steuerlich ist das noch kein Vorgang. Sobald eine DFX-Datei den Verkauf mit diesem Hash zeigt, verknüpft das Tool ihn. In „Alle Vorgänge“ wählst du bei der Bewegung, wie es ausgegangen ist.'},
   'k-ov':{t:'Überblick',h:'Die wichtigsten Zahlen für den gewählten Zeitraum und die gewählten Konten. Mit „Rendite ▾“ oder „Betrag ▾“ wechselst du, ob die Kacheln Prozent oder Beträge zeigen.'},
-  'k-ms':{t:'Meilensteine',get h(){const I=MS_TXT.info;return esc(I.satz)+'\n<ul class="glul">'+I.punkte.map(t=>`<li>${esc(t)}</li>`).join('')+'</ul>'}},
+  'k-ms':{t:'Meilensteine',get h(){const I=MS_TXT.info;return esc(I.zaehlt)+'\n'+esc(I.satz)+'\n<ul class="glul">'+I.punkte.map(t=>`<li>${esc(t)}</li>`).join('')+'</ul>'}},
   'k-hl':{t:'Hochs und Tiefs',h:'Die besten und schwächsten Trades, Tage und Wochen, dazu Serien am Stück. Ein Datum führt dich zur Stelle in „Pro Woche“.'},
   'k-avg':{t:'Durchschnitt',h:'Was ein Handelstag, eine Woche, ein Monat und ein Trade im Schnitt gebracht haben, als Durchschnitt und als Median.'},
   'k-graf':{t:'Grafiken',h:'Deine Ergebnisse als Grafik. Oben wählst du, was gezeigt wird, unter der Grafik steht, was sie bedeutet.\n„Vollbild“ zeigt die Grafik über den ganzen Bildschirm. Mit „Bild“ speicherst oder teilst du sie als Bild (PNG), immer quer und hell, ohne Kontonamen.'},
@@ -13900,7 +14039,7 @@ function renderStats(rows){
   for(const r of [...R,...CWR]){if(!isTrade(r))continue;let s=0,miss=false;for(const a of sel){const c=CAP(a,r.x.t);if(c==null){miss=true;break}s+=c}r.cS=miss?null:s}
   // Ab 0.157: was die Auswertung zählt (zaehlSig), für die Zeile oben in der Karte „Meilensteine“ (msNote); Fenster wie unten (cntWin)
   {let de=RA.length?RA[RA.length-1].d:'';for(const a of sel){const rd=repDay(a);if(rd>de)de=rd}const f=(RA.find(isTrade)||{}).d;
-   AW_SIG=zaehlSig(R,sel,f&&!rg.bad?cntWin(f,rg.from,rg.to,de,lastTradeDay(RA)):null,CW);msNote()}
+   AW_SIG=zaehlSig(R,sel,f&&!rg.bad?cntWin(f,rg.from,rg.to,de,lastTradeDay(RA),tgSet(RA)):null,CW);msNote()}
   // Angeschnittene Wochen und Monate: Die gewählten Konten haben dort auch Buchungen außerhalb des Zeitraums
   const cutW=new Set(),cutM=new Set();
   if(!rg.bad&&(rg.from||rg.to))for(const r of RA)if(!inRg(r)){cutW.add(r.wk);cutM.add(r.ym)}
@@ -13937,7 +14076,7 @@ function renderStats(rows){
   let dataEnd=RA[RA.length-1].d;
   for(const a of sel){const rd=repDay(a);if(rd>dataEnd)dataEnd=rd}
   const firstT=(RA.find(isTrade)||{}).d,zero=S.ui.flt.zeroDays!==false;
-  const lastT=lastTradeDay(RA),win=cntWin(firstT,rg.from,rg.to,dataEnd,lastT),tdS=win.s,tdE=win.e;
+  const lastT=lastTradeDay(RA),win=cntWin(firstT,rg.from,rg.to,dataEnd,lastT,tgSet(RA)),tdS=win.s,tdE=win.e;
   // Anzahl jedes Wochentags für „Nach Wochentag (Durchschnitt)“: die Handelstage im Fenster (htListe; ab 0.159, bis 0.158 alle Tage im Fenster,
   // auch Samstage und Sonntage ohne Trade), ohne „Tage ohne Trade mitzählen“ nur Tage mit Trade
   const wdCnt=[0,0,0,0,0,0,0],tDays=new Set(R.filter(isTrade).map(r=>r.d));
@@ -13964,7 +14103,7 @@ function renderStats(rows){
   // Ab 0.159 (eine Wurzel, CLAUDE.md „Code“): Die Kacheln holen beste und schwächste Woche aus glKz, derselben Rechnung wie „Hochs und Tiefs“
   // und das Excel mit allen Daten (GW = Werte der gewählten PF-Stellung; je Einheit {o: Woche, v: Wert} oder null). Bis 0.158 suchten sie
   // selbst (extW über AK.week.ps).
-  const G=glKz(R,'sel',win,AK.week.ps),GW=ex?G.N:G.V;
+  const G=glKz(R,'sel',win,AK.week.ps,rg.bad?null:{ser:serElem(RA,'sel',null),von:rg.from||null,bis:rg.to||null}),GW=ex?G.N:G.V;
   const wkSubL=x=>jlink('w',x.o.w,wkSub(x.o.w));
   const wkTile=dir=>{const o=dir>0?GW.bestW:GW.worstW;if(!o.a)return ['–','noch keine ganze Woche',''];
     return pick({v:monT(o.a.v),s:wkSubL(o.a),f:fCur(o.a.v)},AK.miss?noR:{v:fR.format(o.r.v),s:wkSubL(o.r),f:fR.format(o.r.v)})};
@@ -14117,8 +14256,11 @@ function renderHL(G,AK,h){
   // Anteil an allen Trades in Klammern, in einer Zeile
   const share=n=>G.n?`${n} (${fmtDec(n/G.n*100,0)} %)`:'0';
   // „am Stück“: Zahl, darunter der Link „ab …“ zum ersten Trade bzw. Tag der Folge
-  const runT=(r,bf)=>r?String(r.n)+sm(jlink('t',r.s.t+'|'+r.s.sym,'ab '+dS(r.s.d))+(bf?bf(r):'')):'–';
-  const runD=(r,t,none,bf)=>r?`${r.n} ${t}`+sm(jlink('d',r.s.d,'ab '+dS(r.s.d))+(bf?bf(r):'')):none;
+  // Ab 0.160 (Florians Antwort 2 zur Freigabe): Die Serie zählt ab ihrem echten Beginn. Liegt er vor dem Zeitraum (r.vor), steht das Datum als
+  // Text ohne Link (die Zeile in „Pro Woche“ gibt es dann nicht). Lief sie nach dem Zeitraum weiter, steht der Zusatz als zweite kleine Zeile.
+  const runAb=(r,k,key)=>r.vor?'ab '+dS(r.s.d):jlink(k,key,'ab '+dS(r.s.d)),runZ=r=>r.weiter?sm(esc(serMehr(r.voll,r.lauf))):'';
+  const runT=(r,bf)=>r?String(r.n)+sm(runAb(r,'t',r.s.key)+(bf?bf(r):''))+runZ(r):'–';
+  const runD=(r,t,none,bf)=>r?`${r.n} ${t}`+sm(runAb(r,'d',r.s.d)+(bf?bf(r):''))+runZ(r):none;
   const most=(m,none,bf)=>m?mostTxt(m)+sm(jlink('w',m.first.w,wkSub(m.first.w))+(bf?bf(m):'')):none;
   const noW='–<span class="sm hlno">noch keine ganze Woche</span>';
   // „Meiste pro Woche“ zählt Trades, deshalb in der Tabelle „Trades“ (Gewinne: meiste Gewinn-Trades, Verluste: meiste Verlust-Trades)
@@ -14127,7 +14269,7 @@ function renderHL(G,AK,h){
     `<tr><td>Anzahl</td><td>${share(G.nW)}</td><td>${share(G.nL)}</td></tr>`+
     `<tr><td>Ø${pfS}</td>${cellU((s,u)=>Fu(u)(s.avgW[u]))}${cellU((s,u)=>Fu(u)(s.avgL[u]))}</tr>`+
     `<tr><td>Größter${pfS}</td>${cellU((s,u)=>ext(s.bigW[u],lT,u))}${cellU((s,u)=>ext(s.bigL[u],lT,u))}</tr>`+
-    `<tr><td>Am Stück</td><td>${runT(G.runW,r=>msBf('h:rg',['rg','jrg'],r.s.t+'|'+r.s.sym))}</td><td>${runT(G.runL)}</td></tr>`+
+    `<tr><td>Am Stück</td><td>${runT(G.runW,r=>msBf('h:rg',['rg','jrg'],r.s.key))}</td><td>${runT(G.runL)}</td></tr>`+
     `<tr><td>${gl('meiste','Meiste pro Woche')}</td><td>${most(G.mostW,'kein Gewinn-Trade',m=>msBf('h:mw',['mw','jmw'],m.first.w))}</td><td>${most(G.mostL,'kein Verlust-Trade')}</td></tr>`;
   $('t-hl2').innerHTML=`<tr><th></th><th>Beste</th><th>Schwächste</th></tr>`+
     `<tr><td>${gl('tag','Handels&shy;tag')}${pfS}</td>${cellU((s,u)=>ext(s.bestD[u],lD,u,act(s,u)?x=>msBf('h:ad',['ad','jd'],x.d):null))}${cellU((s,u)=>ext(s.worstD[u],lD,u))}</tr>`+
@@ -15521,7 +15663,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.159',VDATE='17.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.160',VDATE='18.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -15566,9 +15708,13 @@ const MS_TXT={
     ea:'Deine erste Auszahlung',ee:'So viel ausgezahlt wie eingezahlt',jr:'Dein Trading-Jahr {j}',
     jm:'Dein bester Monat {j}',jrg:'{n} Gewinn-Trades am Stück',jrd:'{n} Tage am Stück im Plus',jrw:'{n} Plus-Wochen in Folge',jmw:'{n} Gewinn-Trades in einer Woche'},
   // Ab 0.142 (Startfassung, von Florian im Grundsatz bestätigt): ein Satz und eine kurze Liste
-  info:{satz:'Deine Rekorde, Serien und Stufen. Der Filter oben wirkt hier nicht.',punkte:['Gesamt oder ein Jahr und die Konten wählst du rechts im Titel.',
-    'Alle Werte nach PF (verteilt), Stufen in USD.','Eine Woche zählt erst nach der Abrechnung der PF.',
-    'Die ersten zwei Wochen sind dein Ausgangsstand. Sie stehen hier ohne Hinweis, sonst wäre am Anfang fast jeder Tag ein Rekord.','Auszahlungen kommen aus deinen Tag-Daten.',
+  // Ab 0.160 (Florians Wortlaut und seine Antwort 5 zur Freigabe): zuerst der Absatz zaehlt (wonach Karte und Rückblick zählen); die drei
+  // Stellen, die er wiederholt, sind weg („Der Filter oben wirkt hier nicht.“, „Gesamt oder ein Jahr und die Konten wählst du rechts im
+  // Titel.“, „Alle Werte nach PF (verteilt)“); „Stufen in USD.“ bleibt als Punkt; neu der Punkt zur Jahres-Ansicht (Florians Wortlaut)
+  info:{zaehlt:'So zählen diese Karte und der Rückblick: Zeitraum und Konten wählst du in den Menüs rechts. Alle Werte sind immer nach PF, und die Durchschnitte beinhalten alle Handelstage, auch die ohne Trade. Von der Filterzeile oben übernehmen sie nur die Währung.',
+    satz:'Deine Rekorde, Serien und Stufen.',punkte:['Stufen in USD.','Eine Woche zählt erst nach der Abrechnung der PF.',
+    'Die ersten zwei Wochen sind dein Ausgangsstand. Sie stehen hier ohne Hinweis, sonst wäre am Anfang fast jeder Tag ein Rekord.',
+    'In der Jahres-Ansicht zählt eine Serie ab ihrem Beginn bis zum Jahresende, auch wenn sie im Vorjahr begann.','Auszahlungen kommen aus deinen Tag-Daten.',
     // ab 0.144 (Claude, von Florian bestätigt)
     'Wenn du ein Bild speicherst oder teilst, zeigt es nur den neuen Wert, ohne den vorigen Rekord. Den Betrag zeigt es nur mit „Betrag zeigen“.']},
   leer:'Noch keine Meilensteine. Die ersten zwei Wochen setzen den Ausgangsstand, danach zählt jeder neue Höchstwert.',
@@ -15580,6 +15726,8 @@ const MS_TXT={
   // Kategorie im Verlauf (ab 0.142)
   kat:{rek:'Rekord',ser:'Serie',stu:'Stufe',aus:'Auszahlung',ja:'Jahrestag',jr:'Rückblick'},
   lauf:'läuft noch',seit:'seit {d}',
+  // ab 0.160 (Florians Wortlaut, Freigabe 0.160): laufSeit nur in den Kacheln der Karte; mehr = Zusatz zu einer Serie, die nach dem Zeitraum weiterlief
+  laufSeit:'läuft seit {d}',mehr:{bis:'lief weiter bis {n}',jetzt:'läuft noch, jetzt {n}'},
   // Wert ohne Wert (ab 0.142, Fassung (c) aus Bericht 0.141; aw2, am2, mw2: es gibt ganze Wochen bzw. Monate, aber keine im Plus bzw. ohne Gewinn-Trade)
   ohne:{at:'noch kein Gewinn-Trade',ad:'noch kein Tag im Plus',aw:'noch keine ganze Woche',aw2:'noch keine Plus-Woche',am:'noch kein ganzer Monat',am2:'noch kein Monat im Plus',
     rg:'noch kein Gewinn-Trade',rd:'noch kein Tag im Plus',rw:'noch keine Plus-Woche',mw:'noch keine ganze Woche',mw2:'noch kein Gewinn-Trade'},
@@ -15599,7 +15747,7 @@ const MS_TXT={
   // Verlustjahre), Neujahrswunsch und Einladung aus der Testseite (Florian), Einladung im Verlustjahr (einladungV, Platzhalter von Claude Code),
   // Danke-Satz nach „Ich habe schon gespendet“ (Florians Wahl). Alles andere: Beschriftungen aus dem Auftrag und der Testseite.
   jr:{titel:'Dein Trading-Jahr {j}',rendite:'Rendite',netto:'Netto-Gewinn ({c})',monate:'Rendite je Monat',mb:['J','F','M','A','M','J','J','A','S','O','N','D'],
-    weiter:'Dein Jahr in Zahlen ›',auftakt:'Schön, dass du da bist. So sah dein Trading-Jahr {j} aus.',weiterJ:'lief ins neue Jahr weiter',unvoll1:'Noch nicht vollständig: Daten von Konto {k} bis {d}.',unvollN:'Noch nicht vollständig: {n} Konten noch ohne Report bis Jahresende.',
+    weiter:'Dein Jahr in Zahlen ›',auftakt:'Schön, dass du da bist. So sah dein Trading-Jahr {j} aus.',unvoll1:'Noch nicht vollständig: Daten von Konto {k} bis {d}.',unvollN:'Noch nicht vollständig: {n} Konten noch ohne Report bis Jahresende.',
     marke:'unvollständig',
     leit:{rund:{t:'Ein Jahr wird rund. Schau es dir in Ruhe noch einmal an.',art:'beide'},wuerdigen:{t:'Bevor das Neue beginnt, darf das Alte noch einmal gewürdigt werden.',art:'beide'},
       feiere:{t:'Feiere das Alte, um gestärkt ins Neue zu gehen.',art:'gewinn'},weg:{t:'Auch dieses Jahr gehört zu deinem Weg. Schau es dir in Ruhe an.',art:'verlust'}},
@@ -15623,7 +15771,7 @@ const MS_TXT={
     wAdr:'Wallet-Adresse (EVM), am liebsten USDC oder USDT',kopieren:'Adresse kopieren',paypal:'Lieber per PayPal?',
     sagen:'Und wenn gerade nichts übrig ist: Erzähle anderen in der Community davon. Auch das trägt uns alle.',
     schon:'Ich habe schon gespendet',danke:'Was du gegeben hast, fließt weiter, zu allen, die das Tool nutzen. Danke von Herzen.',
-    betrag:'Betrag zeigen',weak:'Schwächste Werte zeigen',betragK:'Beträge',weakK:'Schwächste Werte',bild:'Bild ▾',bildS:'Bild speichern',kurz:'Kurzfassung',kurzK:'(ohne Beträge)',alle:'Alle Werte',
+    betrag:'Betrag zeigen',weak:'Schwächste Werte zeigen',betragK:'Beträge',weakK:'Schwächste Werte',bild:'Bild',bildS:'Bild speichern',alleHt:'mit allen Handelstagen',konten:'{n} von {N} Konten',kurz:'Kurzfassung',kurzK:'(ohne Beträge)',alle:'Alle Werte',
     speichern:'Speichern',teilen:'Teilen',ariaWeiter:'Weiter zu Seite 2',ariaZurueck:'Zurück zu Seite 1',ariaBild:'Bild',
     karte:'Rückblick',ansehen:'Rückblick ansehen ›',liste:'Jahresrückblicke',netto2:'{v} Netto-Gewinn',
     datei:{s1:'Trading-Jahr-{j}',kurz:'Trading-Jahr-{j}-Kurzfassung',alle:'Trading-Jahr-{j}-Alle-Werte'}},
