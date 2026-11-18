@@ -1536,9 +1536,10 @@ button.zlink.jrzur{color:var(--accent);padding:0}
    Knopf 15 px, Abstände zwischen den Blöcken 22, 10, 18, 18, 18 px. Größer wird nichts: Mehr Platz geht wie in 0.158 an die Abstände.
    Bei weniger Platz, in dieser Reihenfolge:
    1. die Abstände werden enger bis zur Untergrenze 15, 7, 12, 12, 12 px (zwei Drittel, Florians Antwort 1 zum Plan),
-   2. dann wird das ganze Bild gemeinsam kleiner: Jede Größe hier rechnet mit dem Faktor --jrf (jrFaktor setzt ihn am Fenster, 0,8 bis 1),
-   3. kleine Schriften nie unter 12 px (max(12px, …)), der Rest wird weiter kleiner,
-   4. unter 80 % scrollt das Fenster wie jedes andere (Pfeil „↓“).
+   2. dann wird das ganze Bild gemeinsam kleiner: Jede Größe hier rechnet mit dem Faktor --jrf (jrFaktor setzt ihn am Fenster, 0,75 bis 1;
+      bis 0.163 0,8 bis 1, ab 0.164 Florians Antwort 2 zu Bericht 0.163),
+   3. kleine Schriften nie unter 12 px (max(12px, …)), ab 0.164 auch der Knopf, der Rest wird weiter kleiner,
+   4. unter 75 % scrollt das Fenster wie jedes andere (Pfeil „↓“).
    Echte Schriftgrößen statt transform oder zoom: Die Schrift bleibt scharf, Firefox und Chromium rechnen dieselben Größen. Das Fenster bleibt
    gleich breit (Seite 2 braucht die Breite), das Bild wird schmaler. Effekte: Teile des Flügelschlags in Prozent, Tiefe und Wege des Goldstaubs
    über --jrk (Höhe des Schmetterlings geteilt durch 96), die Körner über --jrkg (1,4 mal Faktor), Schimmer mit dem Bild als Maske, Morgenlicht
@@ -1558,7 +1559,7 @@ button.zlink.jrzur{color:var(--accent);padding:0}
   .jrs1 .jrml{font-size:12px;gap:calc(6px*var(--jrf));margin-top:calc(4px*var(--jrf));width:min(100%,calc(480px*var(--jrf)))}
   .jrs1>.jrleit{font-size:calc(17px*var(--jrf));margin-top:calc(14px*var(--jrf))}
   .jrs1>.jrweiter{margin-bottom:calc(4px*var(--jrf))}
-  .jrs1>.jrweiter>.btn{font-size:calc(15px*var(--jrf));padding:calc(8px*var(--jrf)) calc(14px*var(--jrf));border-radius:calc(8px*var(--jrf))}
+  .jrs1>.jrweiter>.btn{font-size:max(12px,calc(15px*var(--jrf)));padding:calc(8px*var(--jrf)) calc(14px*var(--jrf));border-radius:calc(8px*var(--jrf))}
   .jrs1>.jrunv{margin-top:calc(10px*var(--jrf));font-size:max(12px,calc(13px*var(--jrf)))}
   .jrmorgen{height:min(100%,max(calc(560px*var(--jrf)),70%))}
   /* Messen (jrFaktor): alle Abstände an ihrer Untergrenze, Seite 1 nur so hoch wie ihr Inhalt und außerhalb des Flusses, damit #jr-body genau
@@ -5080,7 +5081,7 @@ function jrAnpassen(){if(!JR)return;const bx=$('jr-modal').querySelector('.box')
   const bf=$('jr-bf'),h=bf&&bf.offsetHeight;if(h)bf.style.setProperty('--jrk',(h/96).toFixed(3))}
 // Ab 0.163 (Florians Auftrag): Faktor --jrf für Seite 1 am PC (CSS „Seite 1 am PC als ein Bild“). Gemessen wird Seite 1 mit allen Abständen an
 // ihrer Untergrenze (.jrmin). Passt sie so in den Platz, bleibt der Faktor 1, und die Abstände teilen sich, was übrig ist. Sonst ist der Faktor
-// Platz geteilt durch Höhe, nachgemessen, weil kleine Schriften bei 12 px stehen bleiben; nie unter 0,8 (darunter scrollt das Fenster), nie
+// Platz geteilt durch Höhe, nachgemessen, weil kleine Schriften bei 12 px stehen bleiben; nie unter 0,75 (ab 0.164, bis 0.163 0,8; darunter scrollt das Fenster), nie
 // über 1. Am Handy (bis 640 px) immer 1. Läuft aus jrAnpassen: nach jedem Zeichnen, bei jeder Größenänderung, „Betrag zeigen“ und Tipp.
 function jrFaktor(bx){const s1=document.querySelector('#jr-body>.jrs1'),body=$('jr-body');bx.style.setProperty('--jrf','1');
   if(!s1||!s1.getBoundingClientRect||!matchMedia('(min-width:641px)').matches)return;
@@ -5089,8 +5090,8 @@ function jrFaktor(bx){const s1=document.querySelector('#jr-body>.jrs1'),body=$('
   const A=body.getBoundingClientRect().height;
   // Ziel knapp unter dem Platz: Firefox rundet Schriftgrößen auf 1/64 px, sonst bliebe dort 1 px zum Scrollen
   let f=1,h=H();const Z=A-0.25;
-  if(h>A)for(let i=0;i<6&&h>A-0.05&&f>0.8;i++){f=Math.max(0.8,f*Z/h);set(f);h=H()}
-  while(h>A-0.05&&f>0.8&&f<1){f=Math.max(0.8,f-0.002);set(f);h=H()}
+  if(h>A)for(let i=0;i<6&&h>A-0.05&&f>0.75;i++){f=Math.max(0.75,f*Z/h);set(f);h=H()}
+  while(h>A-0.05&&f>0.75&&f<1){f=Math.max(0.75,f-0.002);set(f);h=H()}
   s1.classList.remove('jrmin')}
 // Rendite und Netto-Gewinn auf Seite 1 (Florians Auftrag 0.158): nebeneinander in der normalen Größe (CSS: PC 36 px, Handy 32 px). Passen sie
 // nicht, werden beide gemeinsam kleiner, in Schritten von 1 px bis 28 px. Reicht auch das nicht, steht der Netto-Gewinn unter der Rendite
@@ -15840,7 +15841,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.163',VDATE='18.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.164',VDATE='18.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
