@@ -3512,9 +3512,10 @@ function agg(rows){
 }
 function positions(rows,scope){ // gleiche Position auf mehreren Konten zusammenfassen. scope: Investition für rI/rX (Standard 'sel', siehe capOf)
   // Ab 0.161: u = Ergebnis vor PF in USD (Kontowährung), für Gewinn oder Verlust (gvVz)
+  // Ab 0.162: uX = Ergebnis nach PF in USD, für die Woche im Plus (serElem; Florians Entscheidung vom 18.11.2026 zu Fund D)
   const m=new Map();
   // cap = Investition des Scopes zum Zeitpunkt der Position (Trade-Zeilen in „Pro Woche“)
-  for(const r of rows){if(r.cat!=='close')continue;const k=r.x.t+'|'+r.x.sym;const p=m.get(k)||{t:r.x.t,sym:r.x.sym,eur:0,exE:0,u:0,accs:0,d:r.d,wk:r.wk,ym:r.ym,by:{},acc:{},rI:0,rX:0,rMiss:false,cap:capOf(r,scope||'sel')};p.eur+=r.eur;p.exE+=r.exE;p.u+=r.amt;p.accs++;p.by[r.a]=(p.by[r.a]||0)+r.eur;
+  for(const r of rows){if(r.cat!=='close')continue;const k=r.x.t+'|'+r.x.sym;const p=m.get(k)||{t:r.x.t,sym:r.x.sym,eur:0,exE:0,u:0,uX:0,accs:0,d:r.d,wk:r.wk,ym:r.ym,by:{},acc:{},rI:0,rX:0,rMiss:false,cap:capOf(r,scope||'sel')};p.eur+=r.eur;p.exE+=r.exE;p.u+=r.amt;p.uX+=r.exU;p.accs++;p.by[r.a]=(p.by[r.a]||0)+r.eur;
     // Werte je Konto (Konto-Zeilen in „Pro Woche“), Rendite dort auf die Investition dieses Kontos (cO)
     const q=p.acc[r.a]||(p.acc[r.a]={eur:0,exE:0,amt:0,exU:0,cO:r.cO});q.eur+=r.eur;q.exE+=r.exE;q.amt+=r.amt;q.exU+=r.exU;
     // Rendite der Position auf die Investition der gewählten Konten (r.cS, gesetzt in renderStats) bzw. des Scopes, vor und nach PF
@@ -3846,7 +3847,10 @@ function sumTrades(rows,ex,usd){
    Euro-Betrag keine Zahl, dann zählte das Excel mit allen Daten (Euro-Zeilen) im Blatt „Hochs und Tiefs“ 0 Gewinn-Trades, 0 Verlust-Trades und
    keine Serien. Mit Kursen ist das Vorzeichen bei Trades und bei Tagen vor PF dasselbe (alle Buchungen eines Tages haben denselben EZB-Kurs).
    Bei Tagen nach PF nicht immer: In Euro wird die PF eines Kontos zum Kurs ihres Samstags verteilt; heben sich an einem Tag zwei Konten genau
-   auf (0 USD nach PF), war der Tag in Euro bis 0.160 knapp im Plus oder im Minus (BERICHTE/0.161.md, OFFEN.md „Aus 0.161“). */
+   auf (0 USD nach PF), war der Tag in Euro bis 0.160 knapp im Plus oder im Minus (BERICHTE/0.161.md, OFFEN.md „Aus 0.161“).
+   Ab 0.162 (Florians Entscheidung vom 18.11.2026 zu Fund D) ebenso bei Wochen: Ob eine Woche im Plus ist, entscheidet ihr Betrag in USD in der
+   PF-Stellung der Stelle (Serien und „Wochen im Plus“: nach PF, serElem; Leiste „Diese Woche“, „PF noch offen“: vor PF). Monate im Plus
+   (Karte: bester Monat) entscheidet die Rendite, und die rechnet immer aus USD (trRet). */
 const gvVz=p=>p.u>0?1:p.u<0?-1:0;
 // Ab 0.161 (Schritt 2): die eine Reihenfolge der Positionen: nach der Schließzeit, bei derselben Zeit wie eingelesen (fest, sort ist stabil).
 // Für die Serien (serElem) und „Hochs und Tiefs“ (glKz); bis 0.160 sortierte glKz mit einem Vergleich ohne feste Reihenfolge bei gleicher Zeit
@@ -4058,12 +4062,14 @@ function serElem(T,scope,cw){
   const dm=new Map();for(const r of T){if(!isTrade(r))continue;if(!dm.has(r.d))dm.set(r.d,[]);dm.get(r.d).push(r)}
   // Ab 0.161: uI und uX = Betrag des Tages in USD vor bzw. nach PF; sie entscheiden, ob ein Tag im Plus ist (wie gvVz bei Trades)
   const D=[...dm.keys()].sort().map(d=>{const rr=dm.get(d);return {d,rr,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v,uI:sumTrades(rr,false,true).v,uX:sumTrades(rr,true,true).v}});
-  const wm=new Map();for(const p of P){if(p.wk===cw)continue;const w=wm.get(p.wk)||{w:p.wk,a:0,c:0,n:0,ys:[]};w.a+=p.exE;w.n++;if(gvVz(p)>0)w.c++;wm.set(p.wk,w);
+  // Ab 0.162: u = Netto-Gewinn der Woche nach PF in USD; er entscheidet, ob eine Woche im Plus ist (Florians Entscheidung vom 18.11.2026 zu
+  // Fund D: wie bei Trades und Tagen der USD-Betrag in der PF-Stellung der Stelle). a bleibt der Betrag in der Währung der Zeilen.
+  const wm=new Map();for(const p of P){if(p.wk===cw)continue;const w=wm.get(p.wk)||{w:p.wk,a:0,u:0,c:0,n:0,ys:[]};w.a+=p.exE;w.u+=p.uX;w.n++;if(gvVz(p)>0)w.c++;wm.set(p.wk,w);
     const y=p.d.slice(0,4);let z=w.ys.find(z=>z.y===y);if(!z)w.ys.push(z={w:p.wk,y,c:0,n:0});z.n++;if(gvVz(p)>0)z.c++}
   const W=[...wm.values()].sort((a,b)=>a.w<b.w?-1:1);
-  // Trades und Tage mit dem Vorzeichen in USD (ab 0.161; bis 0.160 in der Währung der Zeilen), Wochen weiter mit dem Netto-Gewinn nach PF in der
-  // Währung der Zeilen
-  return {P,D,W,t:P.map(p=>({d:p.d,key:p.t+'|'+p.sym,v:p.u,x:p})),dV:D.map(x=>({d:x.d,key:x.d,v:x.uI,x})),dN:D.map(x=>({d:x.d,key:x.d,v:x.uX,x})),w:W.map(x=>({d:x.w,key:x.w,v:x.a,x}))}}
+  // Trades und Tage mit dem Vorzeichen in USD (ab 0.161; bis 0.160 in der Währung der Zeilen), Wochen mit dem Netto-Gewinn nach PF in USD (ab
+  // 0.162; bis 0.161 in der Währung der Zeilen)
+  return {P,D,W,t:P.map(p=>({d:p.d,key:p.t+'|'+p.sym,v:p.u,x:p})),dV:D.map(x=>({d:x.d,key:x.d,v:x.uI,x})),dN:D.map(x=>({d:x.d,key:x.d,v:x.uX,x})),w:W.map(x=>({d:x.w,key:x.w,v:x.u,x}))}}
 function serLaeufe(l,sgn){const out=[];let c=null;l.forEach((x,i)=>{if(sgn*x.v>0){if(!c)out.push(c={n:0,s:x,e:x,i});c.n++;c.e=x}else c=null});return out}
 function serStand(l,sgn,zr){let best=null;
   for(const r of serLaeufe(l,sgn)){let n=0,e=null,im=false;
@@ -4352,7 +4358,7 @@ function msCalc(rows,sel,o){
    - Wochen nach der Donnerstag-Regel wie die Karte (Florians Antwort 5): Eine Woche zählt zu dem Jahr, in dem ihr Donnerstag liegt; ganz ist
      sie wie in der Karte (alle fünf Handelstage im Datenstand, abgerechnet). So geht am Jahreswechsel keine Woche verloren, und Karte und
      Rückblick zeigen dieselbe beste Woche. Beste und schwächste Woche (ab 0.156 nur ganze Wochen mit Trades), Ø pro Woche (ganze Wochen, die
-     ohne Trade mit 0) und „Wochen im Plus“ (Zähler und Nenner aus denselben Wochen; im Plus = Netto-Gewinn nach PF über 0; ab 0.156 wie die
+     ohne Trade mit 0) und „Wochen im Plus“ (Zähler und Nenner aus denselben Wochen; im Plus = Netto-Gewinn nach PF über 0, ab 0.162 in USD; ab 0.156 wie die
      Serie „Plus-Wochen in Folge“ jede abgerechnete Woche mit Trades, auch eine angeschnittene; 0.154 und 0.155 nur ganze Wochen).
    - Serien (ab 0.156): der Stand am 31.12. des Jahres, gezählt ab dem echten Beginn der Serie; aus denselben Elementen wie die Meilensteine
      (o.M.sl). Lief die Serie danach weiter, steht „seit …, lief ins neue Jahr weiter“. Die längste Verlustserie (Verlust-Trades am Stück,
@@ -4409,7 +4415,8 @@ function jrCalc(rows,sel,y,o){
   // wirkt nicht; das Fenster erklärt den Unterschied, wenn das Häkchen dort aus ist)
   res.avg={t:rN(AK.trade.rX),d:rN(AK.day.rX),w:AK.week.k?rN(AK.week.rX):null,m:AK.month.k?rN(AK.month.rX):null};
   // „Wochen im Plus“ zählt ab 0.156 wie die Serie „Plus-Wochen in Folge“ (Florians Antwort 5 zum Plan 0.156): jede abgerechnete Woche mit Trades,
-  // auch eine angeschnittene, im Jahr nach der Donnerstag-Regel; im Plus = Netto-Gewinn nach PF über 0. Zähler und Nenner aus denselben Wochen.
+  // auch eine angeschnittene, im Jahr nach der Donnerstag-Regel; im Plus = Netto-Gewinn nach PF über 0 (ab 0.162 in USD, serElem). Zähler und
+  // Nenner aus denselben Wochen.
   // So ist eine Serie des Jahres nie länger als die Zahl der Plus-Wochen des Jahres. 0.154 und 0.155: nur ganze Wochen.
   {const wl=BS.se.w.filter(x=>msWkYear(x.d)===y);res.wPlus={n:wl.filter(x=>x.v>0).length,of:wl.length}}
   {const dd=maxDD(R,'sel',true);res.dd=miss||!dd.n?null:{v:dd.v,d:dd.d}}
@@ -14288,7 +14295,7 @@ function renderStats(rows){
   // Ab 0.100: Leiste „Diese Woche“. Sichtbar, wenn die Woche (Mo bis So) des neuesten Trades der gewählten Konten die heutige Woche ist (Uhr des Geräts)
   // und im gewählten Zeitraum liegt, also bis Sonntag 23:59, auch nach der Abrechnung. Stand: laufend (CW) vor Samstag „bisher · n von 5 Handelstagen“
   // (n = Handelstage der Woche bis zum Datenstand, ab 0.159 aus htListe: der Datenstand zählt nur mit Trade, in einer Woche mit dem 25.12. oder
-  // dem 01.01. ohne Trade „von 4“), ab Samstag „Handel vorbei“ (mit „· PF noch offen“, wenn die Woche vor PF im Plus ist), sonst „abgerechnet“.
+  // dem 01.01. ohne Trade „von 4“), ab Samstag „Handel vorbei“ (mit „· PF noch offen“, wenn die Woche vor PF in USD im Plus ist), sonst „abgerechnet“.
   // Werte wie die erste Kachel (PF verteilt: Netto-Gewinn, PF laut MT5: Ergebnis vor PF) und die Rendite nach PF-Schalter, immer beide.
   {const bar=$('cwbar');let lt=null;for(const r of RA)if(isTrade(r))lt=r;
    const W=lt?lt.wk:null,inO=r=>(!rg.from||r.d>=rg.from)&&(!toOrig||r.d<=toOrig);
@@ -14297,7 +14304,9 @@ function renderStats(rows){
    if(on){const rw=nocwOn()?CWR:R.filter(r=>r.wk===W),z=pfz(rw);
      // Handelstage der Woche W (Montag bis Freitag): alle und die bis zum gezählten Ende der Daten
      const wT=new Set(RA.filter(r=>isTrade(r)&&r.wk===W).map(r=>r.d)),wE=addDays(W,4),wN=htListe(W,wE,null,wT).length,wB=htListe(W,wE,cntWin(W,null,null,dataEnd,lastT),wT).length;
-     let st=CW!==W?'abgerechnet':dataEnd<addDays(W,5)?`bisher · ${wB} von ${wN} Handelstagen`:z.res>0?'Handel vorbei · PF noch offen':'Handel vorbei';
+     // Ab 0.162 (Florians Antwort 1 zur Freigabe 0.162): „PF noch offen“, wenn die Woche vor PF in USD im Plus ist (bis 0.161 in der Währung der
+     // Anzeige; in Euro konnte eine Woche mit genau 0 USD knapp im Plus sein, weil ihre Tage verschiedene Kurse haben)
+     let st=CW!==W?'abgerechnet':dataEnd<addDays(W,5)?`bisher · ${wB} von ${wN} Handelstagen`:sumTrades(rw,false,true).v>0?'Handel vorbei · PF noch offen':'Handel vorbei';
      if(nocwOn())st+=' · nicht in den Kennzahlen';
      bar.innerHTML=`<div class="cwt"><div class="cwh">${jlink('w',W,'Diese Woche')}</div><div class="s">${st}</div></div><div class="cwv"><div><div class="k">${ex?gl('netto','Netto-Gewinn'):gl('vorpf','Ergebnis vor PF')}</div><div class="v">${monT(ex?z.nN:z.res)}</div></div><div><div class="k">${gl('rendite','Rendite')}</div><div class="v">${retHtml(retSum(rw,'sel',ex),'–',true)}</div></div></div>`}
    else bar.innerHTML=''}
