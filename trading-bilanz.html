@@ -3476,9 +3476,10 @@ function agg(rows){
   z.tax=z.res+z.fee;return z;
 }
 function positions(rows,scope){ // gleiche Position auf mehreren Konten zusammenfassen. scope: Investition für rI/rX (Standard 'sel', siehe capOf)
+  // Ab 0.161: u = Ergebnis vor PF in USD (Kontowährung), für Gewinn oder Verlust (gvVz)
   const m=new Map();
   // cap = Investition des Scopes zum Zeitpunkt der Position (Trade-Zeilen in „Pro Woche“)
-  for(const r of rows){if(r.cat!=='close')continue;const k=r.x.t+'|'+r.x.sym;const p=m.get(k)||{t:r.x.t,sym:r.x.sym,eur:0,exE:0,accs:0,d:r.d,wk:r.wk,ym:r.ym,by:{},acc:{},rI:0,rX:0,rMiss:false,cap:capOf(r,scope||'sel')};p.eur+=r.eur;p.exE+=r.exE;p.accs++;p.by[r.a]=(p.by[r.a]||0)+r.eur;
+  for(const r of rows){if(r.cat!=='close')continue;const k=r.x.t+'|'+r.x.sym;const p=m.get(k)||{t:r.x.t,sym:r.x.sym,eur:0,exE:0,u:0,accs:0,d:r.d,wk:r.wk,ym:r.ym,by:{},acc:{},rI:0,rX:0,rMiss:false,cap:capOf(r,scope||'sel')};p.eur+=r.eur;p.exE+=r.exE;p.u+=r.amt;p.accs++;p.by[r.a]=(p.by[r.a]||0)+r.eur;
     // Werte je Konto (Konto-Zeilen in „Pro Woche“), Rendite dort auf die Investition dieses Kontos (cO)
     const q=p.acc[r.a]||(p.acc[r.a]={eur:0,exE:0,amt:0,exU:0,cO:r.cO});q.eur+=r.eur;q.exE+=r.exE;q.amt+=r.amt;q.exU+=r.exU;
     // Rendite der Position auf die Investition der gewählten Konten (r.cS, gesetzt in renderStats) bzw. des Scopes, vor und nach PF
@@ -3788,11 +3789,26 @@ const ddSw=(rows,sc,empty,ma)=>sw(ddHtml(maxDD(rows,sc,false),empty,false,ma),dd
 // Ab 0.58 (2): gewählte Konten der Auswertung (renderStats), für den Begriff zur fehlenden Investition
 let MISS_SEL=[];
 // Gewinn der Trades (in der Währung des Schalters) vor oder nach PF, wie res in agg()
-function sumTrades(rows,ex){
+// Ab 0.161: usd = in USD (Kontowährung, amt bzw. exU), unabhängig von der Währung der Zeilen
+function sumTrades(rows,ex,usd){
   let v=0;
-  for(const r of rows){if(r.cat!=='close'&&r.cat!=='open')continue;v+=ex?r.exE:r.eur}
+  for(const r of rows){if(r.cat!=='close'&&r.cat!=='open')continue;v+=usd?(ex?r.exU:r.amt):(ex?r.exE:r.eur)}
   return {v};
 }
+/* ---------------- Gewinn oder Verlust (ab 0.161): eine Wurzel ----------------
+   Ob ein Trade ein Gewinn-Trade (+1) oder ein Verlust-Trade (−1) ist, entscheidet sein Ergebnis vor PF in USD (Kontowährung); ein Trade mit
+   genau 0 zählt bei keinem (0). Ebenso entscheidet bei Tagen der Betrag in USD, ob ein Tag im Plus oder im Minus ist (serElem).
+   Florians Antwort 3 zur Freigabe 0.161 (Fund 3 aus 0.160): Bis 0.160 entschied der Betrag in der Währung der Zeilen. Ohne Wechselkurs ist der
+   Euro-Betrag keine Zahl, dann zählte das Excel mit allen Daten (Euro-Zeilen) im Blatt „Hochs und Tiefs“ 0 Gewinn-Trades, 0 Verlust-Trades und
+   keine Serien. Mit Kursen ist das Vorzeichen dasselbe: Alle Buchungen eines Tages haben denselben EZB-Kurs. */
+const gvVz=p=>p.u>0?1:p.u<0?-1:0;
+/* ---------------- Erster Extremwert (ab 0.161): eine Wurzel ----------------
+   extErst(l, f, dir): das erste Element von l mit dem größten (dir > 0) bzw. kleinsten (dir < 0) Wert f(x), als {o: Element, v: Wert}, sonst
+   null. Florians Regel (GESTALTUNG Abschnitt 25): „Bei Gleichstand zeigt das Tool überall das erste.“ Ein Element ohne Wert (null) oder mit
+   einem Wert, der keine Zahl ist (NaN: Euro-Betrag ohne Wechselkurs), zählt nicht; so steht nie ein Datum ohne Wert (GESTALTUNG Abschnitt 0).
+   Bis 0.160 stand dieselbe Suche an fünf Stellen (ext in glKz, extP in renderStats, tradeStats, ext in jrCalc, trR in „Pro Konto“), und ein
+   Euro-Betrag ohne Kurs zählte als erster Wert: Das Excel mit allen Daten zeigte ohne Kurse beim besten Handelstag ein Datum ohne Betrag. */
+function extErst(l,f,dir){let b=null,bv=null;for(const x of l){const v=f(x);if(v==null||v!==v)continue;if(b===null||(dir>0?v>bv:v<bv)){b=x;bv=v}}return b?{o:b,v:bv}:null}
 function tradeStats(list,key){ // list of {eur,t}
   let n=0,win=0,best=null,worst=null,sum=0;
   for(const p of list){n++;sum+=p[key];if(p[key]>0)win++;if(!best||p[key]>best[key])best=p;if(!worst||p[key]<worst[key])worst=p}
@@ -3904,13 +3920,15 @@ function glKz(R,scope,win,wks,o){
   const Dm=new Map();for(const r of R){if(!isTrade(r))continue;if(!Dm.has(r.d))Dm.set(r.d,[]);Dm.get(r.d).push(r)}
   const D=[...Dm.keys()].sort().map(d=>{const rr=Dm.get(d);return {d,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v,rI:retSum(rr,scope,false).v,rX:retSum(rr,scope,true).v}});
   const W=(wks||[]).filter(p=>p.n).map(p=>({w:p.key,n:p.n,aI:p.aI,aX:p.aX,rI:p.rI,rX:p.rX}));
-  const ext=(l,f,dir)=>{let b=null,bv=null;for(const x of l){const v=f(x);if(v==null)continue;if(b===null||(dir>0?v>bv:v<bv)){b=x;bv=v}}return b?{o:b,v:bv}:null};
+  // Ab 0.161: die Suche aus der Wurzel extErst (bis 0.160 eine eigene Kopie hier)
+  const ext=extErst;
   // Serien („Am Stück“, „Tage am Stück“): ab 0.160 aus der Wurzel (Block „Serien“, serStand). o.ser = die Elemente der gezählten Konten über
   // alle Zeiträume (serElem), o.von und o.bis = der Zeitraum: Gezählt wird ab dem echten Beginn der Serie bis zum Ende des Zeitraums. Ohne o
   // („Gesamt“, Excel) sind es die Elemente aus R. Bis 0.159 zählte run nur den Teil der Serie im Zeitraum.
   const SE=o&&o.ser||serElem(R,scope,null),zr=o?serZr(o.von,o.bis):null;
   const sum=a=>a.reduce((s,x)=>s+x,0);
-  const PW=P.filter(p=>p.eur>0),PL=P.filter(p=>p.eur<0);
+  // Gewinn- und Verlust-Trades nach dem Ergebnis vor PF in USD (ab 0.161, gvVz; bis 0.160 nach dem Betrag in der Währung der Zeilen)
+  const PW=P.filter(p=>gvVz(p)>0),PL=P.filter(p=>gvVz(p)<0);
   const one=ex=>{
     const a=p=>ex?p.exE:p.eur,r=p=>p.rMiss?null:(ex?p.rX:p.rI),pa=x=>ex?x.aX:x.aI,pr=x=>ex?x.rX:x.rI;
     const avg=(l,f)=>meanOf(l.map(f).filter(v=>v!=null));
@@ -3930,7 +3948,7 @@ function glKz(R,scope,win,wks,o){
   // Meiste Gewinn- bzw. Verlust-Trades in einer Woche (Positionen, Vorzeichen vor PF; es ändert sich mit dem PF-Schalter nicht)
   // Ab 0.157: bei mehreren Wochen gleichauf die erste (first; bis 0.156 die letzte, last)
   const ohneW=o&&o.ohne||null;
-  const most=sgn=>{const m=new Map();for(const p of P){if(p.wk===ohneW)continue;const o=m.get(p.wk)||{w:p.wk,c:0,n:0};o.n++;if(sgn*p.eur>0)o.c++;m.set(p.wk,o)}
+  const most=sgn=>{const m=new Map();for(const p of P){if(p.wk===ohneW)continue;const o=m.get(p.wk)||{w:p.wk,c:0,n:0};o.n++;if(sgn*gvVz(p)>0)o.c++;m.set(p.wk,o)}
     const l=[...m.values()].sort((x,y)=>x.w<y.w?-1:1);const mx=Math.max(0,...l.map(o=>o.c));const top=l.filter(o=>o.c===mx);
     return mx?{c:mx,weeks:top.length,first:top[0]}:null};
   return {V:one(false),N:one(true),miss:retSum(R,scope,false).miss,n:P.length,nW:PW.length,nL:PL.length,
@@ -3963,11 +3981,14 @@ const mostTxt=m=>m.weeks===1?`${m.c} von ${m.first.n}`:`${m.c}, in ${m.weeks} Wo
 function serElem(T,scope,cw){
   const P=positions(T,scope).sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:0);
   const dm=new Map();for(const r of T){if(!isTrade(r))continue;if(!dm.has(r.d))dm.set(r.d,[]);dm.get(r.d).push(r)}
-  const D=[...dm.keys()].sort().map(d=>{const rr=dm.get(d);return {d,rr,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v}});
-  const wm=new Map();for(const p of P){if(p.wk===cw)continue;const w=wm.get(p.wk)||{w:p.wk,a:0,c:0,n:0,ys:[]};w.a+=p.exE;w.n++;if(p.eur>0)w.c++;wm.set(p.wk,w);
-    const y=p.d.slice(0,4);let z=w.ys.find(z=>z.y===y);if(!z)w.ys.push(z={w:p.wk,y,c:0,n:0});z.n++;if(p.eur>0)z.c++}
+  // Ab 0.161: uI und uX = Betrag des Tages in USD vor bzw. nach PF; sie entscheiden, ob ein Tag im Plus ist (wie gvVz bei Trades)
+  const D=[...dm.keys()].sort().map(d=>{const rr=dm.get(d);return {d,rr,aI:sumTrades(rr,false).v,aX:sumTrades(rr,true).v,uI:sumTrades(rr,false,true).v,uX:sumTrades(rr,true,true).v}});
+  const wm=new Map();for(const p of P){if(p.wk===cw)continue;const w=wm.get(p.wk)||{w:p.wk,a:0,c:0,n:0,ys:[]};w.a+=p.exE;w.n++;if(gvVz(p)>0)w.c++;wm.set(p.wk,w);
+    const y=p.d.slice(0,4);let z=w.ys.find(z=>z.y===y);if(!z)w.ys.push(z={w:p.wk,y,c:0,n:0});z.n++;if(gvVz(p)>0)z.c++}
   const W=[...wm.values()].sort((a,b)=>a.w<b.w?-1:1);
-  return {P,D,W,t:P.map(p=>({d:p.d,key:p.t+'|'+p.sym,v:p.eur,x:p})),dV:D.map(x=>({d:x.d,key:x.d,v:x.aI,x})),dN:D.map(x=>({d:x.d,key:x.d,v:x.aX,x})),w:W.map(x=>({d:x.w,key:x.w,v:x.a,x}))}}
+  // Trades und Tage mit dem Vorzeichen in USD (ab 0.161; bis 0.160 in der Währung der Zeilen), Wochen weiter mit dem Netto-Gewinn nach PF in der
+  // Währung der Zeilen
+  return {P,D,W,t:P.map(p=>({d:p.d,key:p.t+'|'+p.sym,v:p.u,x:p})),dV:D.map(x=>({d:x.d,key:x.d,v:x.uI,x})),dN:D.map(x=>({d:x.d,key:x.d,v:x.uX,x})),w:W.map(x=>({d:x.w,key:x.w,v:x.a,x}))}}
 function serLaeufe(l,sgn){const out=[];let c=null;l.forEach((x,i)=>{if(sgn*x.v>0){if(!c)out.push(c={n:0,s:x,e:x,i});c.n++;c.e=x}else c=null});return out}
 function serStand(l,sgn,zr){let best=null;
   for(const r of serLaeufe(l,sgn)){let n=0,e=null,im=false;
