@@ -1439,13 +1439,15 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
    3. was dann noch übrig ist, gleichmäßig an die fünf Abstände (margin-top:auto).
    Bei wenig Platz läuft es umgekehrt: Zuerst werden Schmetterling und Balken gemeinsam kleiner, erst an ihrer Untergrenze die Abstände, danach
    scrollt das Fenster. Die Stufen nach der Fensterhöhe aus 0.156 (780, 745, 690 px) sind damit weg. Die Breite des Schmetterlings folgt seiner
-   Höhe (aspect-ratio aus BFLY_WH, Regel im Skript); --jrk = Höhe geteilt durch 96 (jrAnpassen) für Flügelschlag und Goldstaub. */
+   Höhe (aspect-ratio aus BFLY_WH, Regel im Skript); --jrk = Höhe geteilt durch 96 (jrAnpassen) für Flügelschlag und Goldstaub.
+   Ab 0.163 gilt das Wachsen von Schmetterling und Balken (Schritt 2, Verhältnis 10 : 9, Grenzen) nur noch am Handy (bis 640 px Breite). Am PC ist
+   Seite 1 ein festes Bild, das als Ganzes kleiner wird: Block „Seite 1 am PC als ein Bild (ab 0.163)“ weiter unten. */
 .jrs1{display:flex;flex-direction:column;align-items:center;text-align:center}
 .jrs1>*{flex:none;max-width:100%}
 .jrsp{flex:1000 0 var(--mi);max-height:var(--no);margin-top:auto;width:1px;--no:18px;--mi:8px}
 .jrsp.a{--no:22px;--mi:10px}.jrsp.b{--no:10px;--mi:6px}
 @media(max-width:640px){.jrsp.a{--no:14px;--mi:8px}}
-.jrs1>.jrbf{flex:10 0 0px;min-height:60px;max-height:180px}
+@media(max-width:640px){.jrs1>.jrbf{flex:10 0 0px;min-height:60px;max-height:140px}}
 .jrbf{position:relative;perspective:calc(var(--jrk,1)*420px);cursor:pointer}
 .jrbf>.bfs{display:block;width:100%;height:100%}.jrbf img.bfly{width:100%;height:100%}.jrbf .bfs.g{--bfd:2.2s}
 .jrteil{position:absolute;inset:0;display:none;pointer-events:none;background-position:center;background-size:100% 100%;background-repeat:no-repeat}
@@ -1459,13 +1461,12 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jrstaub{position:absolute;left:50%;top:23%;width:0;height:0;pointer-events:none}
 .jrkorn{position:absolute;border-radius:50%;opacity:0;animation:jrkorn var(--d) ease-out var(--w) 1 both}
 @keyframes jrkorn{0%{opacity:0;transform:translate(0,0)}12%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y))}}
-@media(max-width:640px){.jrs1>.jrbf{max-height:140px}}
 .jrh{margin:10px 0 0;overflow-wrap:break-word;text-wrap:balance}
 /* Ab 0.158: Titel von Seite 1 am PC 26 px; am Handy, auf Seite 2 und in „Wertschätzung teilen“ bleibt er, wie er ist (Florians Antwort 1 zum
    Plan): 20 px aus der Regel für Fenster-Titel („.modal h2“). Ab 0.160 (Florians Auftrag aus Werkstatt-Runde 9) ist die wirkungslose Angabe
    von 22 px in .jrh weg; sie wirkte seit 0.154 nicht, weil „.modal h2“ stärker ist. Am Aussehen ändert sich nichts. */
 .jrs1>.jrh{margin:0}
-@media(min-width:641px){.jrs1>.jrh{font-size:26px}}
+@media(min-width:641px){.jrs1>.jrh{font-size:calc(26px*var(--jrf))}}
 /* Ab 0.158 (Florians Auftrag): Rendite und Netto-Gewinn gleich groß und nebeneinander, am PC 36 px, am Handy 32 px. Passen sie nicht
    nebeneinander, macht jrZwFit beide gemeinsam kleiner (--jrzf, bis 28 px); reicht auch das nicht, steht der Netto-Gewinn unter der Rendite
    (.unter), beide wieder in der normalen Größe. Ohne „Betrag zeigen“ steht die Rendite allein, in derselben Größe.
@@ -1473,15 +1474,15 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jrgr,.jrnet{font-size:var(--jrzf,32px);font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
 .jrzw.zwei{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;column-gap:24px}
 .jrzw.zwei.unter{flex-direction:column;align-items:center;row-gap:10px}
-@media(min-width:641px){.jrgr,.jrnet{font-size:var(--jrzf,36px)}.jrzw.zwei{column-gap:56px}}
+@media(min-width:641px){.jrgr,.jrnet{font-size:calc(var(--jrzf,36px)*var(--jrf))}.jrzw.zwei{column-gap:calc(56px*var(--jrf))}}
 .jrauf{margin:4px auto 0;max-width:34em;font-size:var(--fs-xs);color:var(--ink2);text-wrap:balance}
 .jrkl{font-size:var(--fs-xs);color:var(--ink2);margin-top:2px}
 .jrmiss{margin:10px auto 0;max-width:30em}
 /* Ab 0.158: Die Balken wachsen mit dem Schmetterling (9/10 seiner Höhe, siehe .jrs1 oben); Balkenfläche am PC 480 px breit, am Handy wie
    bisher höchstens 420 px. .jrmon ist nur noch eine Hülle ohne eigenes Kästchen, Balken, Monatsbuchstaben und Zeile stehen direkt in .jrs1. */
 .jrs1>.jrmon{display:contents}
-.jrbal{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;flex:9 0 0px;min-height:54px;max-height:160px;width:min(100%,420px)}
-@media(max-width:640px){.jrbal{max-height:125px}}
+.jrbal{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;width:min(100%,420px)}
+@media(max-width:640px){.jrbal{flex:9 0 0px;min-height:54px;max-height:125px}}
 .jrbal .sp{position:relative}
 .jrbal .z{position:absolute;left:0;right:0;height:1px;background:var(--line)}
 .jrbal i{position:absolute;left:0;right:0;border-radius:3px 3px 0 0;background:var(--tab-line);transform-origin:50% 100%}
@@ -1490,7 +1491,6 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jrspielt .jrbal i:not(.o){animation:jrwachs .45s cubic-bezier(.2,.7,.3,1) var(--w) both}
 @keyframes jrwachs{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 .jrml{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;font-size:11px;color:var(--ink2);margin-top:4px;flex:none;width:min(100%,420px)}
-@media(min-width:641px){.jrbal,.jrml{width:min(100%,480px)}}
 .msgl.jrtr{margin-top:18px}
 .jrleit{margin:14px auto 0;max-width:30em;font-weight:600;text-wrap:balance}
 .jrweiter{margin:18px 0 4px}
@@ -1531,6 +1531,41 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jrdanke{margin:8px 0 0}
 button.zlink.jrzur{color:var(--accent);padding:0}
 .jrs1{padding-top:6px}
+/* Ab 0.163 (Florians Auftrag): Seite 1 am PC als ein Bild (Fenster breiter als 640 px). Volle Größe bei --jrf 1: Schmetterling 164 px hoch,
+   Balken 160 px, Balkenfläche 480 px, Titel 26 px, Rendite und Netto-Gewinn 36 px, Beschriftungen 13 px, Monatsbuchstaben 12 px, Leitsatz 17 px,
+   Knopf 15 px, Abstände zwischen den Blöcken 22, 10, 18, 18, 18 px. Größer wird nichts: Mehr Platz geht wie in 0.158 an die Abstände.
+   Bei weniger Platz, in dieser Reihenfolge:
+   1. die Abstände werden enger bis zur Untergrenze 15, 7, 12, 12, 12 px (zwei Drittel, Florians Antwort 1 zum Plan),
+   2. dann wird das ganze Bild gemeinsam kleiner: Jede Größe hier rechnet mit dem Faktor --jrf (jrFaktor setzt ihn am Fenster, 0,8 bis 1),
+   3. kleine Schriften nie unter 12 px (max(12px, …)), der Rest wird weiter kleiner,
+   4. unter 80 % scrollt das Fenster wie jedes andere (Pfeil „↓“).
+   Echte Schriftgrößen statt transform oder zoom: Die Schrift bleibt scharf, Firefox und Chromium rechnen dieselben Größen. Das Fenster bleibt
+   gleich breit (Seite 2 braucht die Breite), das Bild wird schmaler. Effekte: Teile des Flügelschlags in Prozent, Tiefe und Wege des Goldstaubs
+   über --jrk (Höhe des Schmetterlings geteilt durch 96), die Körner über --jrkg (1,4 mal Faktor), Schimmer mit dem Bild als Maske, Morgenlicht
+   mindestens 560 px mal Faktor hoch. Am Handy gilt weiter der Aufbau aus 0.158 (Schmetterling und Balken wachsen im Verhältnis 10 : 9). */
+.jrbox{--jrf:1}
+@media(min-width:641px){
+  .jrs1{padding-top:calc(6px*var(--jrf))}
+  .jrs1>.jrbf{height:calc(164px*var(--jrf));--jrkg:calc(1.4*var(--jrf))}
+  .jrsp{flex-basis:calc(var(--mi)*var(--jrf));max-height:calc(var(--no)*var(--jrf));--mi:12px}.jrsp.a{--mi:15px}.jrsp.b{--mi:7px}
+  .jrs1>.jrauf{margin-top:calc(4px*var(--jrf));font-size:max(12px,calc(13px*var(--jrf)))}
+  .jrs1>.msgl{width:calc(64px*var(--jrf));height:calc(3px*var(--jrf));border-radius:calc(2px*var(--jrf));margin-top:calc(12px*var(--jrf))}
+  .jrs1 .jrkl{font-size:max(12px,calc(13px*var(--jrf)));margin-top:calc(2px*var(--jrf))}
+  .jrs1>.jrmiss{margin-top:calc(10px*var(--jrf));font-size:max(12px,calc(14px*var(--jrf)))}
+  .jrs1 .jrbal{height:calc(160px*var(--jrf));gap:calc(6px*var(--jrf));width:min(100%,calc(480px*var(--jrf)))}
+  .jrs1 .jrbal i{border-radius:calc(3px*var(--jrf)) calc(3px*var(--jrf)) 0 0}.jrs1 .jrbal i.m{border-radius:0 0 calc(3px*var(--jrf)) calc(3px*var(--jrf))}
+  .jrs1 .jrbal i.o{height:calc(2px*var(--jrf))}
+  .jrs1 .jrml{font-size:12px;gap:calc(6px*var(--jrf));margin-top:calc(4px*var(--jrf));width:min(100%,calc(480px*var(--jrf)))}
+  .jrs1>.jrleit{font-size:calc(17px*var(--jrf));margin-top:calc(14px*var(--jrf))}
+  .jrs1>.jrweiter{margin-bottom:calc(4px*var(--jrf))}
+  .jrs1>.jrweiter>.btn{font-size:calc(15px*var(--jrf));padding:calc(8px*var(--jrf)) calc(14px*var(--jrf));border-radius:calc(8px*var(--jrf))}
+  .jrs1>.jrunv{margin-top:calc(10px*var(--jrf));font-size:max(12px,calc(13px*var(--jrf)))}
+  .jrmorgen{height:min(100%,max(calc(560px*var(--jrf)),70%))}
+  /* Messen (jrFaktor): alle Abstände an ihrer Untergrenze, Seite 1 nur so hoch wie ihr Inhalt und außerhalb des Flusses, damit #jr-body genau
+     den Platz zeigt, den Seite 1 hat */
+  .jrbox.jrvoll>#jr-body>.jrs1.jrmin{flex:none;position:absolute;left:0;right:0;top:0}
+  .jrs1.jrmin>.jrsp{flex:none;height:calc(var(--mi)*var(--jrf));max-height:none;margin-top:0}
+}
 /* Ab 0.158 (Florians Auftrag): Fußleiste schlanker, „Alle Meilensteine“ ist weg. Am PC eine Zeile: links „Bild ▾“, „Betrag zeigen“ und auf
    Seite 2 „Schwächste Werte zeigen“, dann die Punkte, rechts „Schließen“. Die Punkte stehen auf beiden Seiten an derselben Stelle (Florians
    Antwort 5a): Auf Seite 1 bleibt der Platz von „Schwächste Werte zeigen“ frei (unsichtbar, nicht weg), und der Knopf „Bild“ ist immer so
@@ -5025,21 +5060,38 @@ function jrPlay(){const bx=$('jr-modal').querySelector('.box');JR_T.forEach(clea
 function jrStill(){const bx=$('jr-modal').querySelector('.box');JR_T.forEach(clearTimeout);JR_T=[];bx.classList.remove('jrspielt','jrschlaegt')}
 // Goldstaub: 24 Funken um den Schmetterling. Ab 0.158 wachsen Lage und Weg mit dem Schmetterling (--jrk = seine Höhe geteilt durch 96, die Maße
 // unten gelten für 96 px; ändert sich die Größe während des Flugs, ziehen die Funken mit), die Funken selbst höchstens auf das 1,4-Fache.
-function jrStaub(){const s=$('jr-staub');if(!s)return;let h='';const K=v=>`calc(var(--jrk,1)*${v.toFixed(1)}px)`,G=v=>`calc(min(var(--jrk,1),1.4)*${v.toFixed(1)}px)`;
+function jrStaub(){const s=$('jr-staub');if(!s)return;let h='';const K=v=>`calc(var(--jrk,1)*${v.toFixed(1)}px)`,G=v=>`calc(min(var(--jrk,1),var(--jrkg,1.4))*${v.toFixed(1)}px)`;
   for(let i=0;i<24;i++){const g=2+Math.random()*2.6,x0=(Math.random()-.5)*130,y0=Math.random()*50,f=['--jr-st1','--jr-st2','--jr-st3'][i%3];
     h+=`<span class="jrkorn" style="left:${K(x0)};top:${K(y0)};width:${G(g)};height:${G(g)};background:var(${f});box-shadow:0 0 6px var(${f});--x:${K((Math.random()-.5)*40)};--y:${K(70+Math.random()*110)};--d:${(2.4+Math.random()*1.4).toFixed(2)}s;--w:${(0.35+Math.random()*0.9).toFixed(2)}s"></span>`}
   s.innerHTML=h}
 /* Ab 0.158: Was sich nach der Größe des Fensters richtet und nicht im CSS geht. Läuft nach jedem Zeichnen einer Ansicht (jrView), vor den
    Effekten (jrPlay) und bei jeder Größenänderung des Fensters, auch beim Drehen des Handys (ResizeObserver am Fenster, dazu „resize“).
    Reihenfolge: zuerst die Fußleiste (ihre Zeilen ändern den Platz darüber), dann die Kacheln von Seite 2 bzw. das Zahlenpaar von Seite 1,
-   zuletzt --jrk am Schmetterling (Höhe geteilt durch 96) für Flügelschlag (Tiefe) und Goldstaub. */
+   zuletzt --jrk am Schmetterling (Höhe geteilt durch 96) für Flügelschlag (Tiefe) und Goldstaub.
+   Ab 0.163 vor --jrk am PC der Faktor für das ganze Bild (jrFaktor); das Zahlenpaar (jrZwFit) wird vorher mit Faktor 1 gemessen. */
 function jrAnpassen(){if(!JR)return;const bx=$('jr-modal').querySelector('.box');
   // Platz der Scrollleiste auf Seite 1 frei halten (CSS .jrs1v), außer Seite 1 scrollt selbst (sehr niedriges Fenster)
   if(JR_SB==null){const t=document.createElement('div');t.style.cssText='position:absolute;left:-999px;top:0;width:60px;height:60px;overflow:scroll';document.body.appendChild(t);JR_SB=(t.offsetWidth-t.clientWidth)||0;t.remove();bx.style.setProperty('--jrsb',JR_SB+'px')}
+  // Ab 0.163: zuerst die volle Größe (Faktor 1); Seite 2 und „Wertschätzung teilen“ bleiben immer bei 1
+  bx.style.setProperty('--jrf','1');
   bx.classList.toggle('jrs1v',JR.v===1&&JR_SB>0);
-  jrFuss();if(JR.v===2)jrFit();if(JR.v!==1)return;jrZwFit();
-  if(JR_SB>0&&bx.scrollHeight>bx.clientHeight+1){bx.classList.remove('jrs1v');jrFuss();jrZwFit()}
+  jrFuss();if(JR.v===2)jrFit();if(JR.v!==1)return;jrZwFit();jrFaktor(bx);
+  if(JR_SB>0&&bx.scrollHeight>bx.clientHeight+1){bx.classList.remove('jrs1v');jrFuss();bx.style.setProperty('--jrf','1');jrZwFit();jrFaktor(bx)}
   const bf=$('jr-bf'),h=bf&&bf.offsetHeight;if(h)bf.style.setProperty('--jrk',(h/96).toFixed(3))}
+// Ab 0.163 (Florians Auftrag): Faktor --jrf für Seite 1 am PC (CSS „Seite 1 am PC als ein Bild“). Gemessen wird Seite 1 mit allen Abständen an
+// ihrer Untergrenze (.jrmin). Passt sie so in den Platz, bleibt der Faktor 1, und die Abstände teilen sich, was übrig ist. Sonst ist der Faktor
+// Platz geteilt durch Höhe, nachgemessen, weil kleine Schriften bei 12 px stehen bleiben; nie unter 0,8 (darunter scrollt das Fenster), nie
+// über 1. Am Handy (bis 640 px) immer 1. Läuft aus jrAnpassen: nach jedem Zeichnen, bei jeder Größenänderung, „Betrag zeigen“ und Tipp.
+function jrFaktor(bx){const s1=document.querySelector('#jr-body>.jrs1'),body=$('jr-body');bx.style.setProperty('--jrf','1');
+  if(!s1||!s1.getBoundingClientRect||!matchMedia('(min-width:641px)').matches)return;
+  s1.classList.add('jrmin');const H=()=>s1.getBoundingClientRect().height,set=f=>bx.style.setProperty('--jrf',f.toFixed(4));
+  // Platz für Seite 1: Während des Messens steht sie außerhalb des Flusses, #jr-body ist dann genau so hoch wie der Platz
+  const A=body.getBoundingClientRect().height;
+  // Ziel knapp unter dem Platz: Firefox rundet Schriftgrößen auf 1/64 px, sonst bliebe dort 1 px zum Scrollen
+  let f=1,h=H();const Z=A-0.25;
+  if(h>A)for(let i=0;i<6&&h>A-0.05&&f>0.8;i++){f=Math.max(0.8,f*Z/h);set(f);h=H()}
+  while(h>A-0.05&&f>0.8&&f<1){f=Math.max(0.8,f-0.002);set(f);h=H()}
+  s1.classList.remove('jrmin')}
 // Rendite und Netto-Gewinn auf Seite 1 (Florians Auftrag 0.158): nebeneinander in der normalen Größe (CSS: PC 36 px, Handy 32 px). Passen sie
 // nicht, werden beide gemeinsam kleiner, in Schritten von 1 px bis 28 px. Reicht auch das nicht, steht der Netto-Gewinn unter der Rendite
 // (.unter), beide wieder in der normalen Größe.
@@ -15788,7 +15840,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.162',VDATE='18.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.163',VDATE='18.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
