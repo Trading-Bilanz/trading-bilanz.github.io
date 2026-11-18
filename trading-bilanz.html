@@ -14253,7 +14253,7 @@ function renderStats(rows){
      // Handelstage der Woche W (Montag bis Freitag): alle und die bis zum gezählten Ende der Daten
      const wT=new Set(RA.filter(r=>isTrade(r)&&r.wk===W).map(r=>r.d)),wE=addDays(W,4),wN=htListe(W,wE,null,wT).length,wB=htListe(W,wE,cntWin(W,null,null,dataEnd,lastT),wT).length;
      // Ab 0.162 (Florians Antwort 1 zur Freigabe 0.162): „PF noch offen“, wenn die Woche vor PF in USD im Plus ist (bis 0.161 in der Währung der
-     // Anzeige; ohne Kurs zählte der Euro-Betrag 0, dann fehlte der Zusatz)
+     // Anzeige; in Euro konnte eine Woche mit genau 0 USD knapp im Plus sein, weil ihre Tage verschiedene Kurse haben)
      let st=CW!==W?'abgerechnet':dataEnd<addDays(W,5)?`bisher · ${wB} von ${wN} Handelstagen`:sumTrades(rw,false,true).v>0?'Handel vorbei · PF noch offen':'Handel vorbei';
      if(nocwOn())st+=' · nicht in den Kennzahlen';
      bar.innerHTML=`<div class="cwt"><div class="cwh">${jlink('w',W,'Diese Woche')}</div><div class="s">${st}</div></div><div class="cwv"><div><div class="k">${ex?gl('netto','Netto-Gewinn'):gl('vorpf','Ergebnis vor PF')}</div><div class="v">${monT(ex?z.nN:z.res)}</div></div><div><div class="k">${gl('rendite','Rendite')}</div><div class="v">${retHtml(retSum(rw,'sel',ex),'–',true)}</div></div></div>`}
