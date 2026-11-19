@@ -3857,7 +3857,7 @@ function sumTrades(rows,ex,usd){
    (Karte: bester Monat) entscheidet die Rendite, und die rechnet immer aus USD (trRet). */
 const gvVz=p=>p.u>0?1:p.u<0?-1:0;
 // Ab 0.161 (Schritt 2): die eine Reihenfolge der Positionen: nach der Schließzeit, bei derselben Zeit wie eingelesen (fest, sort ist stabil).
-// Für die Serien (serElem) und „Hochs und Tiefs“ (glKz); bis 0.160 sortierte glKz mit einem Vergleich ohne feste Reihenfolge bei gleicher Zeit
+// Für die Serien (serElem), „Hochs und Tiefs“ (glKz) und ab 0.166 die Trades eines Tages in „Pro Woche“; bis 0.160 sortierte glKz mit einem Vergleich ohne feste Reihenfolge bei gleicher Zeit
 // (das Ergebnis war dasselbe, weil die Positionen schon zeitlich sortiert ankommen).
 const posFolge=P=>P.sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:0);
 // Ab 0.161 (Ablauf „Eine Wurzel“, Runde 3, Schritt 6): die eine Zählung der Trades P (Positionen): n = Trades, win = Gewinn-Trades, loss =
@@ -9447,6 +9447,10 @@ const kxAddDays=(d,n)=>{const x=new Date(d+'T00:00:00Z');x.setUTCDate(x.getUTCDa
 // Haltefrist DE: Sie endet am Jahrestag des Kaufs (gibt es ihn nicht, am 28.02., § 188 Abs. 3 BGB). Steuerfrei ist ein Verkauf ab dem Tag danach.
 function kxFreiAb(kd){const [y,m,d]=kd.split('-').map(Number);const last=new Date(Date.UTC(y+1,m,0)).getUTCDate();
   return kxAddDays(`${y+1}-${String(m).padStart(2,'0')}-${String(Math.min(d,last)).padStart(2,'0')}`,1)}
+// Ab 0.166 (Ablauf „Eine Wurzel“, Runde 5): Steht die Gebühr eines eigenen Eintrags in USD? Ja, wenn der Eintrag in USD ist oder eine
+// Kartenzahlung (feeU, payFeeSync; Florians Entscheidung zur Kartenzahlung, GESTALTUNG Abschnitt 23), sonst in Euro. Die eine Regel für die
+// Rechnung (kxEvents), „Alle Vorgänge“ (vgCxEuro) und beide Excel (cxGeb); bis 0.165 stand sie an diesen drei Stellen je für sich.
+const kxGebUsd=c=>c.cur==='USD'||!!c.feeU;
 const kxDays=(a,b)=>Math.round((Date.UTC(+b.slice(0,4),+b.slice(5,7)-1,+b.slice(8,10))-Date.UTC(+a.slice(0,4),+a.slice(5,7)-1,+a.slice(8,10)))/864e5);
 // Euro-Wert eines eigenen Eintrags. Kauf und Verkauf in USD (ab 0.37): Betrag zum EZB-Kurs des Tages, ohne Kurs NaN.
 function kxEur(c,rf){if(c.cur!=='USD')return c.eur;const r=rf(c.date,'');return r?c.usd/r:NaN}
@@ -9486,7 +9490,7 @@ function kxEvents(tag,cx,rf,bo){
     const nt=c.note?': '+c.note:'',b={k:c.kind,d:c.date,tm:c.time||'',w:c.wallet,coin:c.coin,q:c.qty,cx:i,est:!!c.est};
     const mv=()=>{const r=rf(c.date,'');return r?c.qty/r:NaN}; // Marktwert am Tag
     // Ab 0.137: feeU = Gebühr in USD auch bei einem Wert in einer anderen Währung (Kartenzahlung, payFeeSync), zum EZB-Kurs des Tages in Euro
-    const fe=()=>{if(!(c.fee>0))return 0;if(c.cur!=='USD'&&!c.feeU)return c.fee;const r=rf(c.date,'');return r?c.fee/r:NaN};
+    const fe=()=>{if(!(c.fee>0))return 0;if(!kxGebUsd(c))return c.fee;const r=rf(c.date,'');return r?c.fee/r:NaN};
     const k=c.kind;
     // Ab 0.133: Kauf über DFX.swiss mit späterem Zugang: in der Wallet ab dem Zugang (d, tm), Kaufdatum für die Haltefrist bleibt der Tag des Kaufs (kd, kdx)
     if(k==='kauf'||k==='hatte'){const Bq=k==='kauf'&&DX.buy?DX.buy[c.id]:null;ev.push(Object.assign(b,{label:KIND[k]+nt,val:kxEur(c,rf)},Bq?{d:Bq.date,tm:Bq.time,kd:c.date,kdx:1,nm:Bq.nm}:{}))}
@@ -9691,7 +9695,9 @@ const taxOff=()=>S.ui.country==='none'||S.ui.cxIncl===false;
 // Ab 0.40: Tag-Zeilen als Kopien mit österreichischem Datum und Uhrzeit (tagCp), S.tag bleibt, wie es ist
 const tagATAll=()=>{const o={};for(const [k,t] of Object.entries(S.tag))o[k]=tagCp(t);return o};
 // Ab 0.117: ausstehende Abgänge an DFX.swiss (dxPendBo) wie offene Abgänge einer Börse: Menge und Einkaufswert verlassen den Topf, kein Erlös, kein Gewinn
-function cryptoCalc(L,until){RD=null;payFeeSync(S);const R=kxRun(L||cxLand(),kxEvents(tagATAll(),S.cx,(d,t)=>rateFor(d,'USD',t),Object.assign({},S.bxOpen,dxPendBo(S),{'@dx':dxStepBo(S)})),until);
+// Ab 0.166 (Fund I, Florians Antwort 2 zur Freigabe 0.166): kursTage = die Tage, deren EZB-Kurs die Krypto-Rechnung holt (für die Wurzel kursTage)
+function cryptoCalc(L,until){RD=null;payFeeSync(S);const KT=new Set();const R=kxRun(L||cxLand(),kxEvents(tagATAll(),S.cx,(d,t)=>{KT.add(rateDateFor(d,'USD',t||''));return rateFor(d,'USD',t)},Object.assign({},S.bxOpen,dxPendBo(S),{'@dx':dxStepBo(S)})),until);
+  R.kursTage=KT;
   // Ab 0.117: ein fehlender Einkauf bei einem ausstehenden Abgang an DFX.swiss ist kein Punkt (kein steuerlicher Vorgang); er zeigt sich beim Verkauf
   R.short=R.short.filter(s=>!(s.e&&s.e.dx));
   for(const s of R.short)Object.defineProperty(s,'_all',{value:R.short});return R}   // Ab 0.71 Nachtrag 2: für cxKept (keepPick)
@@ -10201,7 +10207,7 @@ function vgTagH(id){const t=S.tag[id];if(!t)return '';const a=tagAT(t),dis=t.sta
     <span>${t.fiat?'<span class="small">Bank/Euro, kein Krypto</span>':`${gl('tagmenge','Menge')} ${fmtNum(t.qty)} ${t.coin}`}</span><span>${t.wq==='g'&&!t.fiat?`${t.kind==='ein'?'Woher':'Wohin'}: <b>${esc(tagWN(t))}</b>`:t.fiat?`${t.kind==='ein'?'Woher':'Wohin'}: <b>Bank</b>`:`${gl('tagwallet','Wallet')} ${esc(tagWN(t))}`}</span>
     ${t.kind==='ein'?`<span>${gl('meingeld','Mein Geld')}: ${t.own?'ja':'nein'}</span>`:''}<span class="small">${gl('herkunft','Herkunft')}: ${srcH(t.hand?'von Hand':'Tag-Daten')}${t.wk&&S.wtx[t.wk]?' + '+srcH('Datei '+vgMvW(t.wk)):''}</span></div>${tagNaH(t)}${tagGiftEst(t)?`<div class="msg info">${giftHint(!tagGE(t))}</div>`:''}</div>`}
 // Euro-Wert eines Eintrags (wie bis 0.42 in „Woher kamen deine Coins?“)
-function vgCxEuro(c){const money=v=>c.cur==='USD'?usd(v):fE.format(v),feeM=v=>c.cur==='USD'||c.feeU?usd(v):fE.format(v);
+function vgCxEuro(c){const money=v=>c.cur==='USD'?usd(v):fE.format(v),feeM=v=>kxGebUsd(c)?usd(v):fE.format(v);
   if(c.kind==='tauschaus')return c.eur>0?eur(c.eur,false)+' <span class="small">erhalten</span>':'';
   if(['uebertrag','tausch','gebuehr','weg','verloren'].includes(c.kind)||cxMissing(c).length)return '';const v=cxEur(c);
   return (c.cur==='USD'?(isNaN(v)?'<span class="small">Kurs fehlt</span>':eur(v,false))+` <span class="small">aus ${usd(c.usd)}</span>`:eur(v,false))+(cxEst(c)?` <span class="small">(${gl('geschaetzt','geschätzt')})</span>`:'')+
@@ -12314,7 +12320,115 @@ function xlBuchungen(R,o){const tr=r=>r.cat==='close'||r.cat==='open';
 // in USD (feeU, auch bei Weg 2 mit einem Wert in Euro, GESTALTUNG Abschnitt 23). Bis 0.164 eine Spalte „Gebühr“ ohne Einheit: Euro mit €-Format, USD
 // als Zahl ohne Zeichen, bei Weg 2 mit „EUR“ in der Spalte „Währung“. Die Rechnung ändert sich nicht.
 const CX_GEB_H=['Gebühr EUR','Gebühr USD'];
-const cxGeb=c=>!(c.fee>0)?['','']:c.cur==='USD'||c.feeU?['',X.N(c.fee)]:[X.E(c.fee),''];
+const cxGeb=c=>!(c.fee>0)?['','']:kxGebUsd(c)?['',X.N(c.fee)]:[X.E(c.fee),''];
+/* ---------------- Ab 0.166 (Ablauf „Eine Wurzel“, Runde 5): Blätter „Kurse“ und „Wallet-Bewegungen“ beider Excel ----------------
+   kursTage(R, tags, C, bis): die Tage, deren EZB-Kurs ein Excel verwendet, die eine Wurzel für beide Excel (Fund I, Florians Antwort 2 zur
+   Freigabe 0.166): der Kurs des Buchungstags jeder Buchung R, der Kurs jeder Tag-Zeile tags (Euro-Wert im Blatt) und die Tage, an denen die
+   Krypto-Rechnung C den Kurs holt (C.kursTage aus cryptoCalc), bis zum Jahr bis (null: alle). Bis 0.165 rechnete jedes Excel seine Liste selbst:
+   das Excel mit allen Daten mit den eigenen Einträgen in USD statt der Krypto-Rechnung (in allen Test-Sicherungen dieselben Tage), die
+   Steuer-Excel mit jedem Tag eines eigenen Eintrags, auch ohne Kurs (z. B. ein Kauf in Euro).
+   xlKurse(used, o): o.alle = Excel mit allen Daten (alle Kurse o.tage mit Spalte „verwendet“ und der Quelle mit Namen), sonst nur die
+   verwendeten Kurse mit Quelle „EZB“ bzw. „von Hand“ (Steuer-Excel, 4.8).
+   xlWallet(L, o): die Bewegungen L; o.steuer = Steuer-Excel: Broker statt „Tag“, Kartenguthaben statt WUSD, Zuordnung mit Datum, Art des Eintrags
+   mit txKind, ohne „du“ (GESTALTUNG Abschnitt 13). Der Status einer ignorierten Bewegung nennt ab 0.166 in beiden Excel den Grund (Fund H,
+   Florians Antwort 1 zur Freigabe 0.166; bis 0.165 im Excel mit allen Daten nur „ignoriert“). */
+function kursTage(R,tags,C,bis){return new Set([...R.map(r=>r.rd),...tags.map(t=>rateDateFor(tagD(t),'USD',tagT(t))),...(C&&C.kursTage?[...C.kursTage].filter(d=>!bis||d.slice(0,4)<=bis):[])].filter(Boolean))}
+function xlKurse(used,o){const A=!!o.alle,kq={frank:'Frankfurter (EZB-Daten)',ezb:'EZB',file:'Datei (EZB)',rb:RB_SRC(),own:'von Hand'};
+  const rows=[[X.B('Datum'),X.B('USD je 1 EUR (EZB-Referenzkurs)'),X.B('EUR je 1 USD'),...(A?[X.B('verwendet')]:[]),X.B('Quelle')]];
+  (A?o.tage:rateDates().filter(d=>used.has(d))).forEach((d,i)=>rows.push([X.D(d),X.R(rateVal(d)),X.F(`1/B${i+2}`,1/rateVal(d),9),...(A?[used.has(d)?'ja':'']:[]),A?kq[rateSrc(d)]:rateSrc(d)==='own'?'von Hand':'EZB']));
+  rows.push([],[ECB_CITE]);
+  return {name:'Kurse',rows,freeze:1,widths:A?[11,28,14,10,30]:[11,28,14,10],skip:[rows.length-1]}}
+const wbStatus=m=>m.st==='tag'||m.st==='cx'?'zugeordnet':m.st==='ign'?(m.sus?'ignoriert (Kleinstbetrag, vermutlich Spam)':'ignoriert (von Hand)'):m.st==='int'?'intern':m.sus?'verdächtig':'offen';
+function xlWallet(L,o){const ST=!!o.steuer,kg=x=>ST?x.replace(/\bWUSD\b/g,'Kartenguthaben'):x;
+  const rows=[[X.B('Datum'),X.B('Zeit'),X.B('Netzwerk'),X.B('Wallet von'),X.B('Wallet nach'),X.B('rein/raus'),X.B('Coin'),X.B('ausgegeben von'),X.B('Menge'),X.B('Gegenseite'),X.B('Hash'),X.B('Status'),X.B('zugeordnet zu')]];
+  for(const m of L){const sd=wSide(m),cp=sd==='in'?m.from:sd==='out'?m.to:'',cw=cp&&(m.st==='tag'||wIsTag(cp))?(ST?'Broker':'Tag'):cp&&wIsPay(cp)?'Kartenzahlungen':cp&&wIsBr(cp)?'Brücke / Dienst':sd==='in'?m.wFrom:sd==='out'?m.wTo:'',c=m.st==='cx'?cxById(m.ref):null,t=ST&&m.st==='tag'?S.tag[m.ref]:null;
+    const zu=ST?(t?`${t.kind==='ein'?'Einzahlung beim Broker':'Auszahlung vom Broker'} vom ${fD(tagAT(t).date)}`:c?`Eintrag: ${txKind(c.kind)} vom ${fD(c.date)}${m.xin?' (Eingang)':''}`:null)
+      :(m.st==='tag'?'Tag-ID '+m.ref:c?`Eintrag: ${kindL(c)} vom ${fD(c.date)}${m.xin?' (Eingang)':''}`:null);
+    rows.push([X.D(m.date),m.time,wNet(m.net),m.wFrom||'',m.wTo||'',sd==='in'?'rein':sd==='out'?'raus':sd==='zw'?'zwischen eigenen Wallets':'',ST&&m.card?`${m.coin} (Kartenguthaben)`:wCoinT(m),
+      m.tok&&!m.card?(ST?'unbekannt (als USDC bestätigt)':'unbekannt (von dir bestätigt)'):m.iss||'',X.N(m.qty),cp?(cw?`${cw} (${cp})`:cp):'',m.hash,wbStatus(m),
+      zu!=null?zu:m.st==='int'&&m.swap?kg(wSwapTxt(m)):m.st==='int'&&(m.brg||m.chain)?kg(wBrTxt(m)):''])}
+  return {name:'Wallet-Bewegungen',rows,freeze:1,widths:[11,9,11,14,14,10,14,10,14,30,68,30,30]}}
+/* ---------------- Ab 0.166 (Ablauf „Eine Wurzel“, Runde 5): die Krypto-Blätter beider Excel ----------------
+   Bis 0.165 baute jede Excel sie für sich. Was die zwei Fassungen unterscheidet, ist eine Einstellung o (GESTALTUNG Abschnitt 13: Namen von
+   Personen, Tag-IDs, „Notiz“, „Menge hergegeben“ und alle Spalten nur im Excel mit allen Daten; Rechnung und Schätzung nach Land und „Bestand von
+   früher“ nur in der Steuer-Excel; dort Broker statt „Tag“). Die Listen kommen gefiltert (Jahr, ohne fremdes Geld). Die Wallet steht in beiden
+   Excel über wDispW (Ersatz-Wallets „Wallet offen“, „Geschenk ohne Wallet“; bis 0.165 im Excel mit allen Daten bei „Bestand“ und „Gebühren in
+   Coins“ die rohe Kennung).
+   - xlKrypto(fl, o): Blatt „Krypto“ aus den Vorgängen fl der Rechnung; o.DE (Land), o.lab(f) (Name des Vorgangs: f.label bzw. txLab), o.alle
+     (Kopf „Euro-Wert (Erlös)“ und der Satz KR_NOTE über dem Kopf), o.bz (Zeilen [Text, Betrag] zu erhaltenen Bezahlungen unter dem Blatt).
+   - xlFifo(sales): Blatt „Verkäufe nach FIFO“ (nur Steuer-Excel Deutschland).
+   - xlBestand(tage, o): Blatt „Bestand“ bzw. „Bestand zum Jahresende“, je Stichtag [Ende, Text in der Spalte „Stichtag“] ein Block; o.L (Rechnung),
+     o.DE, o.name, o.steuer (Spalte „Stichtag“ breiter für „… (Datenstand)“).
+   - xlCoinGeb(fees, o): Blatt „Gebühren in Coins“; o.DE, o.lab.
+   - xlTagBroker(tags, o): Blatt „Tag Wallet“ bzw. (o.steuer) „Ein- und Auszahlungen Broker“, ohne Tag-ID, „Mein Geld“ und Namen von Personen;
+     o.y = Jahr (Datum in österreichischer Zeit) oder null. Die Formel für den Euro-Wert holt ihre Spalten über die Namen.
+   - xlEigene(list, o): Blatt „Eigene Krypto-Einträge“ aus den Einträgen list (mit Nummer i in S.cx); o.steuer (nur Spalten mit Inhalt, ohne „Notiz“
+     und „Menge hergegeben“, txKind statt kindL, Schätzung nach Land), o.DE, o.C0 (Rechnung mit allen Einträgen: Weitergeben, Bezahlungen,
+     übertragener Einkaufswert). Jede Spalte bringt ihre Breite mit. */
+function xlKrypto(fl,o){const DE=!!o.DE;
+  const giveX=f=>!f.give?'':DE?' (Zum Weitergeben: '+f.give.map(x=>`${fmtNum(x.q)} ${f.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join(', ')+')':` (Zum Weitergeben: ${fmtNum(f.give.q)} ${f.coin}, Ø-Preis ${fDec(f.give.avg,4)} €)`;
+  const kr=[[X.B('Datum'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Coins rein/raus'),X.B(o.alle?'Euro-Wert (Erlös)':'Euro-Wert'),X.B(DE?'Werbungskosten':'Gebühr'),X.B('Einkaufswert der Coins'),X.B('Gewinn/Verlust'),...(DE?[X.B('davon steuerpflichtig')]:[]),X.B('Coins danach'),X.B('Einkaufswert danach'),...(DE?[]:[X.B('Ø-Preis danach (EUR je Coin)')])]];
+  for(const f of fl)kr.push([X.D(f.d),o.lab(f)+(f.miss?' (Einkauf fehlt)':'')+(f.kest?' (KESt abgezogen'+(f.kestEur>0?' '+fE.format(f.kestEur):'')+')':'')+(f.xfer!=null?` (Einkaufswert ${fE.format(f.xfer)} geht auf ${f.other} über)`:'')+giveX(f),wDispW(f.w),f.coin,X.N(f.q),f.eur!=null&&isFinite(f.eur)?X.E(f.eur):'',f.fee>0?X.E(f.fee):'',f.ak!=null?X.E(f.ak):'',f.gain!=null?X.E(f.gain):'',...(DE?[f.taxGain!=null?X.E(f.taxGain):'']:[]),X.N(f.qa),X.E(f.aka),...(DE?[]:[f.avg?X.R(f.avg):''])]);
+  if(o.bz&&o.bz.length){kr.push([]);for(const [t,v] of o.bz)kr.push(['',t,'','','',X.E(v)])}
+  const widths=DE?[11,40,14,6,13,16,14,14,12,14,12,14]:[11,40,14,6,13,14,10,14,12,12,14,12];
+  return o.alle?{name:'Krypto',rows:[[KR_NOTE],[],...kr],hdr:[2],skip:[0],freeze:3,widths}:{name:'Krypto',rows:kr,freeze:1,widths}}
+function xlFifo(sales){const ff=[[X.B('Verkauf am'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Kaufdatum'),X.B('Menge'),X.B('Einkaufswert'),X.B('Veräußerungspreis'),X.B('Werbungskosten'),X.B('Haltedauer (Tage)'),X.B('steuerpflichtig'),X.B('Gewinn/Verlust')]];
+  const sm={vp:0,ak:0,wk:0,g:0};
+  for(const s of sales)for(const x of s.parts||[]){
+    ff.push([X.D(s.d),txLab(s),wDispW(s.w),s.coin,x.kd?X.D(x.kd):'Einkauf fehlt',X.N(x.q),X.E(x.ak),X.E(x.vp),X.E(x.wk),x.miss?'':x.days,x.tax===true?'ja':x.tax===false?'nein':'ohne Gewinn',X.E(x.gain)]);
+    if(x.tax===true){sm.vp+=x.vp;sm.ak+=x.ak;sm.wk+=x.wk;sm.g+=x.gain}}
+  ff.push([],[X.B('Summe steuerpflichtig'),'','','','','',X.EB(sm.ak),X.EB(sm.vp),X.EB(sm.wk),'','',X.EB(sm.g)]);
+  return {name:'Verkäufe nach FIFO',rows:ff,freeze:1,widths:[11,32,14,6,11,13,12,14,13,10,12,13]}}
+function xlBestand(tage,o){const DE=!!o.DE;
+  const be=[[X.B('Stichtag'),X.B('Wallet'),X.B('Coin'),...(DE?[X.B('Kaufdatum')]:[]),X.B('Menge'),X.B('Einkaufswert'),X.B(DE?'steuerfrei ab':'Ø-Preis (EUR je Coin)')]];
+  for(const [end,st] of tage){const CE=cryptoCalc(o.L,end);
+    for(const p of CE.pots){if(DE)for(const l of p.lots)be.push([st,wDispW(p.w),p.c,X.D(l.kd),X.N(l.q),X.E(l.ak),X.D(l.frei)]);else be.push([st,wDispW(p.w),p.c,X.N(p.q),X.E(p.ak),p.q?X.R(p.ak/p.q):''])}
+    const nb=beExtra(be,st,end,CE,DE,X,wDispW);
+    if(!CE.pots.length&&!nb)be.push([st,'kein Bestand'])}
+  const w0=o.steuer?22:11;
+  return {name:o.name,rows:be,freeze:1,widths:DE?[w0,14,6,11,13,12,12]:[w0,14,6,13,12,14]}}
+function xlCoinGeb(fees,o){const DE=!!o.DE;
+  const ge=[[X.B('Datum'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Menge'),X.B('Einkaufswert der Coins'),X.B('Marktwert am Tag'),X.B('Gewinn/Verlust'),...(DE?[X.B('davon steuerpflichtig')]:[])]];
+  for(const f of fees)ge.push([X.D(f.d),o.lab(f),wDispW(f.w),f.coin,X.N(-f.q),X.E(f.ak),f.eur!=null&&isFinite(f.eur)?X.E(f.eur):'',f.gain!=null&&isFinite(f.gain)?X.E(f.gain):'',...(DE?[f.taxGain!=null?X.E(f.taxGain):'']:[])]);
+  return {name:'Gebühren in Coins',rows:ge,freeze:1,widths:[11,30,14,6,11,14,14,13,14]}}
+// Ab 0.40: Hat eine Tag-Zeile eine Uhrzeit, stehen beide Zeiten da (Tag zeigt Zypern-Zeit), Datum und Jahr in österreichischer Zeit. Ab 0.39:
+// Spalte „verknüpft mit (Hash)“ nur, wenn Bewegungen aus einer Wallet-Datei gespeichert sind.
+function xlTagBroker(tags,o){const ST=!!o.steuer,HW=Object.keys(S.wtx).length>0,TZ=Object.values(S.tag).some(t=>t.time),tA=t=>TZ?tagAT(t):{date:t.date,time:t.time};
+  const tw=t=>t.wq==='q'?'Wallet offen':t.wq==='g'?(t.kind==='aus'?'Geschenk gemacht':'Geschenk erhalten'):t.wallet;
+  const col=[...(ST?[]:[['Tag-ID',10,(t)=>t.id]]),['Datum',11,(t,a)=>X.D(a.date)],
+    ...(TZ?[[ST?'Zeit beim Broker (Zypern)':'Zeit bei Tag (Zypern)',11,t=>t.tz==='datei'?'':t.time||''],['Zeit (Österreich)',11,(t,a)=>a.time]]:[['Zeit',8,t=>t.time]]),
+    ['Art',11,t=>t.kind==='ein'?'Einzahlung':'Auszahlung'],['Betrag USD',11,t=>X.N(t.usd)],['Coin',6,t=>t.coin],['Menge',11,t=>X.N(t.qty)],['Wallet',14,t=>ST?tw(t):tagWN(t)],
+    ...(ST?[]:[['Mein Geld',9,t=>t.kind==='ein'?(t.own?'ja':'nein'):'ja']]),['Status',15,t=>t.status==='ok'?'durchgeführt':'nicht durchgeführt'],
+    ['Kurs vom',11,t=>X.D(rateDateFor(tagD(t),'USD',tagT(t)))],['Kurs USD je EUR',10,(t,a,r)=>r?X.R(r):''],['Euro-Wert',12,(t,a,r,n)=>r?X.F(`${sp('Betrag USD')}${n}/${sp('Kurs USD je EUR')}${n}`,t.usd/r,2):''],
+    ...(HW?[['verknüpft mit (Hash)',68,t=>t.wk&&S.wtx[t.wk]?S.wtx[t.wk].hash:'']]:[])];
+  // Buchstabe der Spalte mit dem Namen h (A, B, …; das Blatt hat weniger als 26 Spalten)
+  const sp=h=>String.fromCharCode(65+col.findIndex(c=>c[0]===h));
+  const rows=[col.map(c=>X.B(c[0]))];
+  tags.map(t=>[t,tA(t)]).filter(([,a])=>!o.y||a.date.slice(0,4)===o.y).sort(([,a],[,b])=>(a.date+a.time)<(b.date+b.time)?-1:1).forEach(([t,a],i)=>{const r=rateFor(tagD(t),'USD',tagT(t));rows.push(col.map(c=>c[2](t,a,r,i+2)))});
+  return {name:ST?'Ein- und Auszahlungen Broker':'Tag Wallet',rows,freeze:1,widths:col.map(c=>c[1])}}
+// Ab 0.37: anderer Coin (in/aus), Währung und Betrag in USD (Kauf/Verkauf in USD), übertragener Einkaufswert (In anderen Coin getauscht). Ab 0.38:
+// Kaufdatum der schenkenden Person, Datum geschätzt, Gebühr, KESt abgezogen, keine Kryptowährung (NFT), Werte zum Weitergeben (Verschenkt). Ab 0.41:
+// Spalte „Menge angekommen“ nur, wenn ein Übertrag sie hat. Ab 0.74 Nachtrag 1: Spalte „Menge hergegeben“ nur im Excel mit allen Daten und nur, wenn ein
+// Eintrag sie hat; Zahl ohne Format (X.N zeigt nur 2 Stellen, 0,0024865 stünde als 0,00 da). Ab 0.74 (4): „Euro geschätzt“ auch, wenn der weitergegebene
+// Einkaufswert geschätzte Werte enthält. Ab 0.120: „Bezahlung erhalten“ mit dem Wert beim Erhalt (Tageswert aus der Rechnung) in der Spalte „Euro“.
+function xlEigene(list,o){const ST=!!o.steuer,DE=!!o.DE,C0=o.C0,HW=Object.keys(S.wtx).length>0;
+  const QI=ST||list.some(c=>c.kind==='uebertrag'&&c.qtyIn>0),OQ=!ST&&list.some(c=>c.kind==='tauschein'&&c.otherQ>0);
+  const gv={};for(const f of C0.flow)if(f.give&&f.cx!=null)gv[f.cx]=f;
+  const bzE={};for(const f of C0.flow)if(f.k==='bzein'&&f.cx!=null&&isFinite(f.eur))bzE[f.cx]=f.eur;
+  const xf={},xes={};for(const f of C0.flow)if(f.xfer!=null&&f.cx!=null){xf[f.cx]=f.xfer;if(f.estV)xes[f.cx]=1}
+  // [Kopf, Breite, Wert(c, ev, ve, gt)]; die Steuer-Excel behält Datum, Was, Wallet, Coin und Menge immer, die anderen Spalten nur mit Inhalt
+  const col=[['Datum',11,c=>X.D(c.date)],['Was',28,c=>ST?txKind(c.kind):kindL(c)],['Wallet',14,c=>c.wallet],['nach Wallet',14,c=>c.to||''],['Coin',6,c=>c.coin],['Menge',12,c=>X.N(c.qty)],
+    ...(QI?[['Menge angekommen',12,c=>c.kind==='uebertrag'&&c.qtyIn>0?X.N(c.qtyIn):'']]:[]),['in Coin',7,c=>c.coin2||''],['Menge erhalten',13,c=>c.qty2?X.N(c.qty2):''],['anderer Coin (in/aus)',14,c=>c.other||''],
+    ...(OQ?[['Menge hergegeben',13,c=>c.kind==='tauschein'&&c.otherQ>0?c.otherQ:'']]:[]),['Währung',8,(c,ev)=>ev?(c.cur==='USD'?'USD':'EUR'):bzE[c.i]!=null?'EUR':''],['Betrag USD',12,c=>c.cur==='USD'&&c.usd!=null?X.N(c.usd):''],
+    ['Euro',12,(c,ev,ve)=>ev&&isFinite(ve)&&!cxMissing(c).length?X.E(ve):bzE[c.i]!=null?X.E(bzE[c.i]):(c.kind==='tauschaus'&&c.eur>0?X.E(c.eur):'')],['Euro geschätzt',9,c=>(ST?cxEst(c):c.est)||xes[c.i]?'ja':''],
+    ['Einkaufswert übertragen',16,c=>xf[c.i]!=null?X.E(xf[c.i]):''],['Kaufdatum der schenkenden Person',14,c=>c.gd?X.D(c.gd):''],['Kaufdatum geschätzt',10,c=>c.kind==='eingang'&&(c.estD||(DE&&!c.gd))?'ja':''],
+    ...CX_GEB_H.map((h,k)=>[h,10,c=>cxGeb(c)[k]]),['KESt abgezogen',9,c=>c.kest?'ja':''],['KESt EUR',10,c=>c.kestEur>0?X.E(c.kestEur):''],['keine Kryptowährung (NFT)',10,c=>c.nft?'ja':''],
+    ['Zum Weitergeben (Verschenkt)',40,(c,ev,ve,gt)=>gt],...(ST?[]:[['Notiz',30,c=>c.note||'']]),...(HW?[['Herkunft',11,c=>cxOrigN(c)]]:[])];
+  const rows=[...list].sort((a,b)=>a.date<b.date?-1:1).map(c=>{const ev=CX_FIELDS[c.kind]&&CX_FIELDS[c.kind].eur,ve=ev?cxEur(c):null;
+    const g=gv[c.i],gt=!g?'':DE?g.give.map(x=>`${fmtNum(x.q)} ${c.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join(', '):`${fmtNum(g.give.q)} ${c.coin}, Ø-Preis ${fmtDec(g.give.avg,4)} €, Einkaufswert ${fE.format(g.give.q*g.give.avg)}`;
+    return col.map(k=>k[2](c,ev,ve,gt))});
+  const keep=col.map((k,j)=>!ST||['Datum','Was','Wallet','Coin','Menge'].includes(k[0])||rows.some(r=>r[j]!==''&&r[j]!=null));
+  return {name:'Eigene Krypto-Einträge',rows:[col.filter((k,j)=>keep[j]).map(k=>X.B(k[0])),...rows.map(r=>r.filter((v,j)=>keep[j]))],freeze:1,widths:col.filter((k,j)=>keep[j]).map(k=>k[1])}}
 function exportXlsx(year){
   // Ab 0.38: Krypto in beiden Ländern (AT gleitender Ø-Preis, DE FIFO mit Haltefrist)
   // Ab 0.77 (Teil 3): ohne Land und ohne Steuersprache. Bis 0.76 rechnete alles außer DE, auch „Ohne Steuer“, als Österreich. Jetzt immer der
@@ -12348,74 +12462,28 @@ function exportXlsx(year){
       [X.B('Annahmen')],...assumptions({pay:payBN(C,year),cx:C.n>0,tb:accs.some(a=>S.accounts[a].factor>1)}).map(a=>['',a])]});
   const shMo=XA?XA.monate:xlMonate(R,{nach:NPF,pw:true,krypto:m=>C.byM[m]||0,kryptoSumme:cy.gain+cy.loss}),shWo=XA?XA.wochen:xlWochen(R,{nach:NPF,pw:true});
   const shKo=xlKonten(R,accs,{voll:true,nach:NPF}),shTr=XA?XA.trades:xlTrades(positions(R),accs,{}),shBu=xlBuchungen(R,{zeitDT:!!XA});
-  const fl=C.flow.filter(f=>!year||f.d.slice(0,4)===year);
-  const giveX=f=>!f.give?'':DE?' (Zum Weitergeben: '+f.give.map(x=>`${fmtNum(x.q)} ${f.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join('; ')+')':` (Zum Weitergeben: ${fmtNum(f.give.q)} ${f.coin}, Ø-Preis ${fDec(f.give.avg,4)} €)`;
-  const kr=[[X.B('Datum'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Coins rein/raus'),X.B(DE?'Euro-Wert (Veräußerungspreis)':'Euro-Wert (Erlös)'),X.B(DE?'Werbungskosten':'Gebühr'),X.B('Einkaufswert der Coins'),X.B('Gewinn/Verlust'),...(DE?[X.B('davon steuerpflichtig')]:[]),X.B('Coins danach'),X.B('Einkaufswert danach'),...(DE?[]:[X.B('Ø-Preis danach (EUR je Coin)')])]];
-  for(const f of fl)kr.push([X.D(f.d),f.label+(f.miss?' (Einkauf fehlt)':'')+(f.kest?' (KESt abgezogen'+(f.kestEur>0?' '+fE.format(f.kestEur):'')+')':'')+(f.xfer!=null?` (Einkaufswert ${fE.format(f.xfer)} geht auf ${f.other} über)`:'')+giveX(f),wDispW(f.w),f.coin,X.N(f.q),f.eur!=null&&isFinite(f.eur)?X.E(f.eur):'',f.fee>0?X.E(f.fee):'',f.ak!=null?X.E(f.ak):'',f.gain!=null?X.E(f.gain):'',...(DE?[f.taxGain!=null?X.E(f.taxGain):'']:[]),X.N(f.qa),X.E(f.aka),...(DE?[]:[f.avg?X.R(f.avg):''])]);
-  // Ab 0.120: je Jahr die Summe der erhaltenen Bezahlungen (Wert beim Erhalt), neutral benannt (ohne Steuerbezug, GESTALTUNG Abschnitt 13)
-  {const bzY=bzYears(C).filter(y=>!year||y===year);if(bzY.length){kr.push([]);for(const y of bzY)kr.push(['',`Bezahlungen erhalten ${y} (Summe, Wert beim Erhalt)`,'','','',X.E(bzSum(C,y))])}}
-  // DE: Verkäufe nach FIFO, je verbrauchter Posten eine Zeile (gesonderte Aufstellung zur Anlage SO)
-  const ff=[[X.B('Verkauf am'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Kaufdatum'),X.B('Menge'),X.B('Einkaufswert'),X.B('Veräußerungspreis'),X.B('Werbungskosten'),X.B('Haltedauer (Tage)'),X.B('steuerpflichtig'),X.B('Gewinn/Verlust')]];
-  if(DE){const sm={vp:0,ak:0,wk:0,g:0};
-    for(const s of C.sales.filter(s=>!year||s.d.slice(0,4)===year))for(const x of s.parts||[]){
-      ff.push([X.D(s.d),s.label,s.w,s.coin,x.kd?X.D(x.kd):'Einkauf fehlt',X.N(x.q),X.E(x.ak),X.E(x.vp),X.E(x.wk),x.miss?'':x.days,x.tax===true?'ja':x.tax===false?'nein':'ohne Gewinn',X.E(x.gain)]);
-      if(x.tax===true){sm.vp+=x.vp;sm.ak+=x.ak;sm.wk+=x.wk;sm.g+=x.gain}}
-    ff.push([],[X.B('Summe steuerpflichtig'),'','','','','',X.EB(sm.ak),X.EB(sm.vp),X.EB(sm.wk),'','',X.EB(sm.g)])}
-  // Bestand zum Jahresende (BMF Rn. 104): Excel eines Jahres zum 31.12., Excel aller Jahre je Jahr ein Block
-  const be=[[X.B('Stichtag'),X.B('Wallet'),X.B('Coin'),...(DE?[X.B('Kaufdatum')]:[]),X.B('Menge'),X.B('Einkaufswert'),X.B(DE?'steuerfrei ab':'Ø-Preis (EUR je Coin)')]];
-  if(C.n){const yrs=year?[year]:[...new Set(C.flow.map(f=>f.d.slice(0,4)))].sort();
-    for(const yy of yrs){const end=yy+'-12-31',CE=cryptoCalc(L,end);
-      for(const p of CE.pots){if(DE)for(const l of p.lots)be.push([X.D(end),p.w,p.c,X.D(l.kd),X.N(l.q),X.E(l.ak),X.D(l.frei)]);else be.push([X.D(end),p.w,p.c,X.N(p.q),X.E(p.ak),p.q?X.R(p.ak/p.q):''])}
-      const nb=beExtra(be,X.D(end),end,CE,DE,X,w=>w);
-      if(!CE.pots.length&&!nb)be.push([X.D(end),'kein Bestand'])}}
-  // Gebühren in Coins: Menge, Einkaufswert der Coins, Marktwert am Tag, Gewinn/Verlust
-  const ge=[[X.B('Datum'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Menge'),X.B('Einkaufswert der Coins'),X.B('Marktwert am Tag'),X.B('Gewinn/Verlust'),...(DE?[X.B('davon steuerpflichtig')]:[])]];
-  for(const f of C.fees.filter(f=>!year||f.d.slice(0,4)===year))ge.push([X.D(f.d),f.label,f.w,f.coin,X.N(-f.q),X.E(f.ak),f.eur!=null&&isFinite(f.eur)?X.E(f.eur):'',f.gain!=null&&isFinite(f.gain)?X.E(f.gain):'',...(DE?[f.taxGain!=null?X.E(f.taxGain):'']:[])]);
-  // Ab 0.39: Spalten zur Wallet-Datei nur, wenn Bewegungen gespeichert sind (ohne Datei bleibt die Excel wie bisher)
-  const HW=Object.keys(S.wtx).length>0;
-  // Ab 0.40: Hat eine Tag-Zeile eine Uhrzeit, stehen beide Zeiten da (Tag zeigt Zypern-Zeit), Datum und Jahr in österreichischer Zeit. Ohne
-  // Uhrzeiten bleibt das Blatt wie bis 0.39.
-  const TZ=Object.values(S.tag).some(t=>t.time),tA=t=>TZ?tagAT(t):{date:t.date,time:t.time};
-  const tg=[[X.B('Tag-ID'),X.B('Datum'),...(TZ?[X.B('Zeit bei Tag (Zypern)'),X.B('Zeit (Österreich)')]:[X.B('Zeit')]),X.B('Art'),X.B('Betrag USD'),X.B('Coin'),X.B('Menge'),X.B('Wallet'),X.B('Mein Geld'),X.B('Status'),X.B('Kurs vom'),X.B('Kurs USD je EUR'),X.B('Euro-Wert'),...(HW?[X.B('verknüpft mit (Hash)')]:[])]];
-  Object.values(S.tag).map(t=>[t,tA(t)]).filter(([,a])=>!year||a.date.slice(0,4)===year).sort(([,a],[,b])=>(a.date+a.time)<(b.date+b.time)?-1:1).forEach(([t,a],i)=>{const n=i+2;const r=rateFor(tagD(t),'USD',tagT(t));tg.push([t.id,X.D(a.date),...(TZ?[t.tz==='datei'?'':t.time||'',a.time]:[t.time]),t.kind==='ein'?'Einzahlung':'Auszahlung',X.N(t.usd),t.coin,X.N(t.qty),tagWN(t),t.kind==='ein'?(t.own?'ja':'nein'):'ja',t.status==='ok'?'durchgeführt':'nicht durchgeführt',X.D(rateDateFor(tagD(t),'USD',tagT(t))),r?X.R(r):'',r?X.F(TZ?`F${n}/M${n}`:`E${n}/L${n}`,t.usd/r,2):'',...(HW?[t.wk&&S.wtx[t.wk]?S.wtx[t.wk].hash:'']:[])])});
-  // Ab 0.37: anderer Coin (in/aus), Währung und Betrag in USD (Kauf/Verkauf in USD), übertragener Einkaufswert (In anderen Coin getauscht)
-  // Ab 0.38: Kaufdatum der schenkenden Person, Datum geschätzt, Gebühr, KESt abgezogen, keine Kryptowährung (NFT), Werte zum Weitergeben (Verschenkt)
-  // Ab 0.41: Spalte „Menge angekommen“ nur, wenn ein Übertrag sie hat (sonst bleibt das Blatt wie bisher)
-  const QI=S.cx.some(c=>c.kind==='uebertrag'&&c.qtyIn>0);
-  // Ab 0.74 Nachtrag 1: Spalte „Menge hergegeben“ nur in dieser Excel und nur, wenn ein Eintrag sie hat (sonst bleibt das Blatt wie bisher). Zahl ohne Format: X.N zeigt nur 2 Stellen, 0,0024865 stünde als 0,00 da
-
-  const OQ=S.cx.some(c=>c.kind==='tauschein'&&c.otherQ>0);
-  const cx=[[X.B('Datum'),X.B('Was'),X.B('Wallet'),X.B('nach Wallet'),X.B('Coin'),X.B('Menge'),...(QI?[X.B('Menge angekommen')]:[]),X.B('in Coin'),X.B('Menge erhalten'),X.B('anderer Coin (in/aus)'),...(OQ?[X.B('Menge hergegeben')]:[]),X.B('Währung'),X.B('Betrag USD'),X.B('Euro'),X.B('Euro geschätzt'),X.B('Einkaufswert übertragen'),
-    X.B('Kaufdatum der schenkenden Person'),X.B('Kaufdatum geschätzt'),...CX_GEB_H.map(h=>X.B(h)),X.B('KESt abgezogen'),X.B('KESt EUR'),X.B('keine Kryptowährung (NFT)'),X.B('Zum Weitergeben (Verschenkt)'),X.B('Notiz'),...(HW?[X.B('Herkunft')]:[])]];
-  const gv={};for(const f of C0.flow)if(f.give&&f.cx!=null)gv[f.cx]=f;
-  // Ab 0.120: „Bezahlung erhalten“ mit dem Wert beim Erhalt (Tageswert aus der Rechnung) in der Spalte „Euro“
-  const bzE={};for(const f of C0.flow)if(f.k==='bzein'&&f.cx!=null&&isFinite(f.eur))bzE[f.cx]=f.eur;
-  // Ab 0.74 (4): xes = weitergegebener Einkaufswert enthält geschätzte Werte
-  const xf={},xes={};for(const f of C0.flow)if(f.xfer!=null&&f.cx!=null){xf[f.cx]=f.xfer;if(f.estV)xes[f.cx]=1}
-  S.cx.map((c,i)=>Object.assign({i},c)).filter(c=>!year||c.date.slice(0,4)===year).sort((a,b)=>a.date<b.date?-1:1).forEach(c=>{const ev=CX_FIELDS[c.kind]&&CX_FIELDS[c.kind].eur,ve=ev?cxEur(c):null;
-    const g=gv[c.i],gt=!g?'':DE?g.give.map(x=>`${fmtNum(x.q)} ${c.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join('; '):`${fmtNum(g.give.q)} ${c.coin}, Ø-Preis ${fmtDec(g.give.avg,4)} €, Einkaufswert ${fE.format(g.give.q*g.give.avg)}`;
-    cx.push([X.D(c.date),kindL(c),c.wallet,c.to||'',c.coin,X.N(c.qty),...(QI?[c.kind==='uebertrag'&&c.qtyIn>0?X.N(c.qtyIn):'']:[]),c.coin2||'',c.qty2?X.N(c.qty2):'',c.other||'',...(OQ?[c.kind==='tauschein'&&c.otherQ>0?c.otherQ:'']:[]),ev?(c.cur==='USD'?'USD':'EUR'):bzE[c.i]!=null?'EUR':'',c.cur==='USD'&&c.usd!=null?X.N(c.usd):'',ev&&isFinite(ve)&&!cxMissing(c).length?X.E(ve):bzE[c.i]!=null?X.E(bzE[c.i]):(c.kind==='tauschaus'&&c.eur>0?X.E(c.eur):''),c.est||xes[c.i]?'ja':'',xf[c.i]!=null?X.E(xf[c.i]):'',
-      c.gd?X.D(c.gd):'',c.kind==='eingang'&&c.estD?'ja':'',...cxGeb(c),c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,c.note||'',...(HW?[cxOrigN(c)]:[])])});
-  // Ab 0.39: Bewegungen aus der Wallet-Datei (Jahres-Excel: nur die des Jahres)
-  const wb=[[X.B('Datum'),X.B('Zeit'),X.B('Netzwerk'),X.B('Wallet von'),X.B('Wallet nach'),X.B('rein/raus'),X.B('Coin'),X.B('ausgegeben von'),X.B('Menge'),X.B('Gegenseite'),X.B('Hash'),X.B('Status'),X.B('zugeordnet zu')]];
-  Object.values(S.wtx).filter(m=>!year||m.date.slice(0,4)===year).sort((a,b)=>a.ts-b.ts).forEach(m=>{const sd=wSide(m),cp=sd==='in'?m.from:sd==='out'?m.to:'',cw=cp&&(m.st==='tag'||wIsTag(cp))?'Tag':cp&&wIsPay(cp)?'Kartenzahlungen':cp&&wIsBr(cp)?'Brücke / Dienst':sd==='in'?m.wFrom:sd==='out'?m.wTo:'',c=m.st==='cx'?cxById(m.ref):null;
-    wb.push([X.D(m.date),m.time,wNet(m.net),m.wFrom||'',m.wTo||'',sd==='in'?'rein':sd==='out'?'raus':sd==='zw'?'zwischen eigenen Wallets':'',wCoinT(m),m.tok&&!m.card?'unbekannt (von dir bestätigt)':m.iss||'',X.N(m.qty),cp?(cw?`${cw} (${cp})`:cp):'',m.hash,
-      m.st==='tag'?'zugeordnet':m.st==='cx'?'zugeordnet':m.st==='ign'?'ignoriert':m.st==='int'?'intern':m.sus?'verdächtig':'offen',m.st==='tag'?'Tag-ID '+m.ref:c?`Eintrag: ${kindL(c)} vom ${fD(c.date)}${m.xin?' (Eingang)':''}`:m.st==='int'&&m.swap?wSwapTxt(m):m.st==='int'&&(m.brg||m.chain)?wBrTxt(m):''])});
-  const used=new Set([...R.map(r=>r.rd),...Object.values(S.tag).map(t=>rateDateFor(tagD(t),'USD',tagT(t))),...S.cx.filter(c=>c.cur==='USD'&&c.date).map(c=>rateDateFor(c.date,'USD',''))].filter(Boolean));
-  // Kurse aller Ebenen (geladen, Datei, eingebaut, von Hand) mit Quelle, darunter die Quellenangabe der EZB
-  const ku=[[X.B('Datum'),X.B('USD je 1 EUR (EZB-Referenzkurs)'),X.B('EUR je 1 USD'),X.B('verwendet'),X.B('Quelle')]];
-  const kq={frank:'Frankfurter (EZB-Daten)',ezb:'EZB',file:'Datei (EZB)',rb:RB_SRC(),own:'von Hand'};
-  rateDates().filter(d=>!year||(d>=addDays(year+'-01-01',-10)&&d<=year+'-12-31')).forEach((d,i)=>ku.push([X.D(d),X.R(rateVal(d)),X.F(`1/B${i+2}`,1/rateVal(d),9),used.has(d)?'ja':'',kq[rateSrc(d)]]));
-  ku.push([],[ECB_CITE]);
+  // Ab 0.166 (Ablauf „Eine Wurzel“, Runde 5): die Krypto-Blätter aus den Bausteinen beider Excel (xlKrypto, xlBestand, xlCoinGeb, xlTagBroker, xlEigene).
+  // Das Blatt „Verkäufe nach FIFO“ gibt es hier nicht (Rechnung immer gleitender Ø-Preis; bis 0.165 stand dafür hier Code, der nie lief). Ab 0.120: je
+  // Jahr die Summe der erhaltenen Bezahlungen (Wert beim Erhalt), neutral benannt (ohne Steuerbezug, GESTALTUNG Abschnitt 13). Bestand zum Jahresende
+  // (BMF Rn. 104): Excel eines Jahres zum 31.12., Excel aller Jahre je Jahr ein Block.
+  const shKr=xlKrypto(C.flow.filter(f=>!year||f.d.slice(0,4)===year),{DE,alle:true,lab:f=>f.label,bz:bzYears(C).filter(y=>!year||y===year).map(y=>[`Bezahlungen erhalten ${y} (Summe, Wert beim Erhalt)`,bzSum(C,y)])});
+  const shBe=C.n?xlBestand((year?[year]:[...new Set(C.flow.map(f=>f.d.slice(0,4)))].sort()).map(yy=>[yy+'-12-31',X.D(yy+'-12-31')]),{L,DE,name:'Bestand zum Jahresende'}):null;
+  const shGe=xlCoinGeb(C.fees.filter(f=>!year||f.d.slice(0,4)===year),{DE,lab:f=>f.label});
+  const shTg=xlTagBroker(Object.values(S.tag),{y:year||null});
+  // Ab 0.166 (OFFEN „Aus 0.165“): die Breiten kommen aus den Spalten (xlEigene). Bis 0.165 fehlte in der Liste die Breite von „Menge hergegeben“, die
+  // Breiten danach waren um eine Spalte verschoben (sichtbar nur ohne Trades, mit Trades setzt xNice die Breiten neu).
+  const shCx=xlEigene(S.cx.map((c,i)=>Object.assign({i},c)).filter(c=>!year||c.date.slice(0,4)===year),{DE,C0});
+  // Ab 0.39: Bewegungen aus der Wallet-Datei (Jahres-Excel: nur die des Jahres). Ab 0.166 aus dem Baustein beider Excel (xlWallet).
+  const shWb=xlWallet(Object.values(S.wtx).filter(m=>!year||m.date.slice(0,4)===year).sort((a,b)=>a.ts-b.ts),{});
+  // Kurse aller Ebenen (geladen, Datei, eingebaut, von Hand) mit Quelle, darunter die Quellenangabe der EZB. Ab 0.166 „verwendet“ aus der Wurzel
+  // kursTage (Buchungen, alle Tag-Zeilen, Tage der Krypto-Rechnung; bis 0.165 die eigenen Einträge in USD statt der Krypto-Rechnung).
+  const shKu=xlKurse(kursTage(R,Object.values(S.tag),C,year||null),{alle:true,tage:rateDates().filter(d=>!year||(d>=addDays(year+'-01-01',-10)&&d<=year+'-12-31'))});
   const sheets=[ovS,shMo,shWo,shKo,shTr,shBu];
   // Ab 0.77 (Teil 3): Blatt „Krypto“ mit einem neutralen Satz über dem Kopf; Krypto-Blätter nur mit Krypto-Daten
-  if(C.n){sheets.push({name:'Krypto',rows:[[KR_NOTE],[],...kr],hdr:[2],skip:[0],freeze:3,widths:DE?[11,40,14,6,13,16,14,14,12,14,12,14]:[11,40,14,6,13,14,10,14,12,12,14,12]});
-    if(DE)sheets.push({name:'Verkäufe nach FIFO',rows:ff,freeze:1,widths:[11,32,14,6,11,13,12,14,13,10,12,13]});
-    sheets.push({name:'Bestand zum Jahresende',rows:be,freeze:1,widths:DE?[11,14,6,11,13,12,12]:[11,14,6,13,12,14]});
-    if(ge.length>1)sheets.push({name:'Gebühren in Coins',rows:ge,freeze:1,widths:[11,30,14,6,11,14,14,13,14]})}
-  if(C.n||Object.keys(S.tag).length||S.cx.length)sheets.push({name:'Tag Wallet',rows:tg,freeze:1,widths:[10,11,...(TZ?[11,11]:[8]),11,11,6,11,14,9,15,11,10,12,...(HW?[68]:[])]},{name:'Eigene Krypto-Einträge',rows:cx,freeze:1,widths:[11,28,14,14,6,12,...(QI?[12]:[]),7,13,14,8,12,12,9,16,14,10,10,10,9,10,10,40,30,...(HW?[11]:[])]});
-  if(wb.length>1)sheets.push({name:'Wallet-Bewegungen',rows:wb,freeze:1,widths:[11,9,11,14,14,10,14,10,14,30,68,11,30]});
-  sheets.push({name:'Kurse',rows:ku,freeze:1,widths:[11,28,14,10,30],skip:[ku.length-1]});
+  if(C.n){sheets.push(shKr,shBe);if(shGe.rows.length>1)sheets.push(shGe)}
+  if(C.n||Object.keys(S.tag).length||S.cx.length)sheets.push(shTg,shCx);
+  if(shWb.rows.length>1)sheets.push(shWb);
+  sheets.push(shKu);
   // Excel mit allen Daten: dazu Durchschnitt, Hochs und Tiefs, Tage und Investition; dann alle Blätter lesbar machen (Kopf, Breiten, Umbruch, fixiert).
   // Die Zeitpunkte in „Buchungen MT5“ sind hier schon echte Datum-Uhrzeiten (xlBuchungen mit zeitDT; bis 0.164 danach umgewandelt).
   if(XA){const at=n=>sheets.findIndex(s=>s.name===n);
@@ -12876,69 +12944,30 @@ function taxXlsx(y){
   const shMo=xlMonate(R,{nach:DE?NDE:{h:'Steuerpflichtig (CFD)',v:z=>z.tax},krypto:m=>C.byM[m]||0,kryptoSumme:cy.gain+cy.loss});
   const NST=DE?NDE:{h:'Steuerpflichtig',v:z=>z.tax},shWo=xlWochen(R,{nach:NST}),shKo=xlKonten(R,accs,{nach:NST});
   const shTr=xlTrades(positions(R),accs,{fuss:'Ein Trade „gesamt“ ist dieselbe Position auf mehreren Konten (gleicher Schließzeitpunkt und gleiches Symbol), zusammengezählt.'}),shBu=xlBuchungen(R,{steuer:true});
-  const fl=C.flow.filter(f=>yr(f.d)===y);
-  const giveX=f=>!f.give?'':DE?' (Zum Weitergeben: '+f.give.map(x=>`${fmtNum(x.q)} ${f.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join(', ')+')':` (Zum Weitergeben: ${fmtNum(f.give.q)} ${f.coin}, Ø-Preis ${fDec(f.give.avg,4)} €)`;
-  const kr=[[X.B('Datum'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Coins rein/raus'),X.B('Euro-Wert'),X.B(DE?'Werbungskosten':'Gebühr'),X.B('Einkaufswert der Coins'),X.B('Gewinn/Verlust'),...(DE?[X.B('davon steuerpflichtig')]:[]),X.B('Coins danach'),X.B('Einkaufswert danach'),...(DE?[]:[X.B('Ø-Preis danach (EUR je Coin)')])]];
-  for(const f of fl)kr.push([X.D(f.d),txLab(f)+(f.miss?' (Einkauf fehlt)':'')+(f.kest?' (KESt abgezogen'+(f.kestEur>0?' '+fE.format(f.kestEur):'')+')':'')+(f.xfer!=null?` (Einkaufswert ${fE.format(f.xfer)} geht auf ${f.other} über)`:'')+giveX(f),wDispW(f.w),f.coin,X.N(f.q),f.eur!=null&&isFinite(f.eur)?X.E(f.eur):'',f.fee>0?X.E(f.fee):'',f.ak!=null?X.E(f.ak):'',f.gain!=null?X.E(f.gain):'',...(DE?[f.taxGain!=null?X.E(f.taxGain):'']:[]),X.N(f.qa),X.E(f.aka),...(DE?[]:[f.avg?X.R(f.avg):''])]);
-  // Ab 0.120 (Florians Antwort im Plan): Summen- und Einkommenszeile der erhaltenen Bezahlungen, die Zugänge stehen oben wie ein Kauf
-  {const bz=bzSum(C,y);if(bz>0){kr.push([]);kr.push(['',`Summe Bezahlungen in Coins erhalten ${y} (Einkommen, gesondert zu versteuern, Wert beim Erhalt)`,'','','',X.E(bz)])}}
-  const ff=[[X.B('Verkauf am'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Kaufdatum'),X.B('Menge'),X.B('Einkaufswert'),X.B('Veräußerungspreis'),X.B('Werbungskosten'),X.B('Haltedauer (Tage)'),X.B('steuerpflichtig'),X.B('Gewinn/Verlust')]];
-  if(DE){const sm={vp:0,ak:0,wk:0,g:0};
-    for(const s of C.sales.filter(s=>yr(s.d)===y))for(const x of s.parts||[]){
-      ff.push([X.D(s.d),txLab(s),wDispW(s.w),s.coin,x.kd?X.D(x.kd):'Einkauf fehlt',X.N(x.q),X.E(x.ak),X.E(x.vp),X.E(x.wk),x.miss?'':x.days,x.tax===true?'ja':x.tax===false?'nein':'ohne Gewinn',X.E(x.gain)]);
-      if(x.tax===true){sm.vp+=x.vp;sm.ak+=x.ak;sm.wk+=x.wk;sm.g+=x.gain}}
-    ff.push([],[X.B('Summe steuerpflichtig'),'','','','','',X.EB(sm.ak),X.EB(sm.vp),X.EB(sm.wk),'','',X.EB(sm.g)])}
-  // Bestand am 31.12., bei unvollständigem Jahr am Datenstand (4.11)
-  const part=ds&&ds<yEnd&&yr(ds)===y,end=part?ds:yEnd,stT=part?fD(ds)+' (Datenstand)':X.D(end);
-  const be=[[X.B('Stichtag'),X.B('Wallet'),X.B('Coin'),...(DE?[X.B('Kaufdatum')]:[]),X.B('Menge'),X.B('Einkaufswert'),X.B(DE?'steuerfrei ab':'Ø-Preis (EUR je Coin)')]];
-  if(cxOn&&C.n){const CE=cryptoCalc(L,end);
-    for(const p of CE.pots){if(DE)for(const l of p.lots)be.push([stT,wDispW(p.w),p.c,X.D(l.kd),X.N(l.q),X.E(l.ak),X.D(l.frei)]);else be.push([stT,wDispW(p.w),p.c,X.N(p.q),X.E(p.ak),p.q?X.R(p.ak/p.q):''])}
-    const nb=beExtra(be,stT,end,CE,DE,X,wDispW);
-    if(!CE.pots.length&&!nb)be.push([stT,'kein Bestand'])}
-  const ge=[[X.B('Datum'),X.B('Vorgang'),X.B('Wallet'),X.B('Coin'),X.B('Menge'),X.B('Einkaufswert der Coins'),X.B('Marktwert am Tag'),X.B('Gewinn/Verlust'),...(DE?[X.B('davon steuerpflichtig')]:[])]];
-  for(const f of C.fees.filter(f=>yr(f.d)===y))ge.push([X.D(f.d),txLab(f),wDispW(f.w),f.coin,X.N(-f.q),X.E(f.ak),f.eur!=null&&isFinite(f.eur)?X.E(f.eur):'',f.gain!=null&&isFinite(f.gain)?X.E(f.gain):'',...(DE?[f.taxGain!=null?X.E(f.taxGain):'']:[])]);
-  // Ein- und Auszahlungen beim Broker (bis 0.71 „Tag Wallet“): ohne Vorgangsnummer, ohne „Mein Geld“, ohne fremdes Geld (4.2, 4.4)
-  const HW=Object.keys(S.wtx).length>0,fremd=t=>t.kind==='ein'&&!t.own;
-  const TZ=Object.values(S.tag).some(t=>t.time),tA=t=>TZ?tagAT(t):{date:t.date,time:t.time};
-  const tw=t=>t.wq==='q'?'Wallet offen':t.wq==='g'?(t.kind==='aus'?'Geschenk gemacht':'Geschenk erhalten'):t.wallet;
-  const tg=[[X.B('Datum'),...(TZ?[X.B('Zeit beim Broker (Zypern)'),X.B('Zeit (Österreich)')]:[X.B('Zeit')]),X.B('Art'),X.B('Betrag USD'),X.B('Coin'),X.B('Menge'),X.B('Wallet'),X.B('Status'),X.B('Kurs vom'),X.B('Kurs USD je EUR'),X.B('Euro-Wert'),...(HW?[X.B('verknüpft mit (Hash)')]:[])]];
-  Object.values(S.tag).filter(t=>!fremd(t)).map(t=>[t,tA(t)]).filter(([,a])=>yr(a.date)===y).sort(([,a],[,b])=>(a.date+a.time)<(b.date+b.time)?-1:1).forEach(([t,a],i)=>{const n=i+2;const r=rateFor(tagD(t),'USD',tagT(t));
-    tg.push([X.D(a.date),...(TZ?[t.tz==='datei'?'':t.time||'',a.time]:[t.time]),t.kind==='ein'?'Einzahlung':'Auszahlung',X.N(t.usd),t.coin,X.N(t.qty),tw(t),t.status==='ok'?'durchgeführt':'nicht durchgeführt',X.D(rateDateFor(tagD(t),'USD',tagT(t))),r?X.R(r):'',r?X.F(TZ?`E${n}/K${n}`:`D${n}/J${n}`,t.usd/r,2):'',...(HW?[t.wk&&S.wtx[t.wk]?S.wtx[t.wk].hash:'']:[])])});
-  // Eigene Krypto-Einträge: ohne Notiz, eine Spalte nur, wenn im Jahr etwas darin steht (4.5, 4.7)
-  const gv={};for(const f of C0.flow)if(f.give&&f.cx!=null)gv[f.cx]=f;
-  // Ab 0.120: „Bezahlung erhalten“ mit dem Wert beim Erhalt (Tageswert aus der Rechnung) in der Spalte „Euro“
-  const bzE={};for(const f of C0.flow)if(f.k==='bzein'&&f.cx!=null&&isFinite(f.eur))bzE[f.cx]=f.eur;
-  // Ab 0.74 (4): xes = weitergegebener Einkaufswert enthält geschätzte Werte
-  const xf={},xes={};for(const f of C0.flow)if(f.xfer!=null&&f.cx!=null){xf[f.cx]=f.xfer;if(f.estV)xes[f.cx]=1}
-  const CH=['Datum','Was','Wallet','nach Wallet','Coin','Menge','Menge angekommen','in Coin','Menge erhalten','anderer Coin (in/aus)','Währung','Betrag USD','Euro','Euro geschätzt','Einkaufswert übertragen',
-    'Kaufdatum der schenkenden Person','Kaufdatum geschätzt',...CX_GEB_H,'KESt abgezogen','KESt EUR','keine Kryptowährung (NFT)','Zum Weitergeben (Verschenkt)',...(HW?['Herkunft']:[])];
-  const CW=[11,28,14,14,6,12,12,7,13,14,8,12,12,9,16,14,10,10,10,9,10,10,40,11];
-  const crows=S.cx.map((c,i)=>Object.assign({i},c)).filter(c=>yr(c.date)===y).sort((a,b)=>a.date<b.date?-1:1).map(c=>{const ev=CX_FIELDS[c.kind]&&CX_FIELDS[c.kind].eur,ve=ev?cxEur(c):null;
-    const g=gv[c.i],gt=!g?'':DE?g.give.map(x=>`${fmtNum(x.q)} ${c.coin} gekauft am ${fD(x.kd)}, Einkaufswert ${fE.format(x.ak)}`).join(', '):`${fmtNum(g.give.q)} ${c.coin}, Ø-Preis ${fmtDec(g.give.avg,4)} €, Einkaufswert ${fE.format(g.give.q*g.give.avg)}`;
-    return [X.D(c.date),txKind(c.kind),c.wallet,c.to||'',c.coin,X.N(c.qty),c.kind==='uebertrag'&&c.qtyIn>0?X.N(c.qtyIn):'',c.coin2||'',c.qty2?X.N(c.qty2):'',c.other||'',ev?(c.cur==='USD'?'USD':'EUR'):bzE[c.i]!=null?'EUR':'',c.cur==='USD'&&c.usd!=null?X.N(c.usd):'',ev&&isFinite(ve)&&!cxMissing(c).length?X.E(ve):bzE[c.i]!=null?X.E(bzE[c.i]):(c.kind==='tauschaus'&&c.eur>0?X.E(c.eur):''),cxEst(c)||xes[c.i]?'ja':'',xf[c.i]!=null?X.E(xf[c.i]):'',
-      c.gd?X.D(c.gd):'',c.kind==='eingang'&&(c.estD||(DE&&!c.gd))?'ja':'',...cxGeb(c),c.kest?'ja':'',c.kestEur>0?X.E(c.kestEur):'',c.nft?'ja':'',gt,...(HW?[cxOrigN(c)]:[])]});
-  const keep=CH.map((h,j)=>j<2||j===2||j===4||j===5||crows.some(r=>r[j]!==''&&r[j]!=null));
-  const cx=[CH.filter((h,j)=>keep[j]).map(h=>X.B(h)),...crows.map(r=>r.filter((v,j)=>keep[j]))],cxW=CW.filter((w,j)=>keep[j]);
-  // Wallet-Bewegungen: Broker statt „Tag“, Zuordnung mit Datum, ohne fremdes Geld, ignoriert mit Grund, Kartenguthaben statt WUSD (4.2 bis 4.4, 4.11)
-  const wb=[[X.B('Datum'),X.B('Zeit'),X.B('Netzwerk'),X.B('Wallet von'),X.B('Wallet nach'),X.B('rein/raus'),X.B('Coin'),X.B('ausgegeben von'),X.B('Menge'),X.B('Gegenseite'),X.B('Hash'),X.B('Status'),X.B('zugeordnet zu')]];
-  Object.values(S.wtx).filter(m=>yr(m.date)===y&&!(m.st==='tag'&&S.tag[m.ref]&&fremd(S.tag[m.ref]))).sort((a,b)=>a.ts-b.ts).forEach(m=>{const sd=wSide(m),cp=sd==='in'?m.from:sd==='out'?m.to:'',cw=cp&&(m.st==='tag'||wIsTag(cp))?'Broker':cp&&wIsPay(cp)?'Kartenzahlungen':cp&&wIsBr(cp)?'Brücke / Dienst':sd==='in'?m.wFrom:sd==='out'?m.wTo:'',c=m.st==='cx'?cxById(m.ref):null,t=m.st==='tag'?S.tag[m.ref]:null;
-    wb.push([X.D(m.date),m.time,wNet(m.net),m.wFrom||'',m.wTo||'',sd==='in'?'rein':sd==='out'?'raus':sd==='zw'?'zwischen eigenen Wallets':'',m.card?`${m.coin} (Kartenguthaben)`:wCoinT(m),m.tok&&!m.card?'unbekannt (als USDC bestätigt)':m.iss||'',X.N(m.qty),cp?(cw?`${cw} (${cp})`:cp):'',m.hash,
-      m.st==='tag'||m.st==='cx'?'zugeordnet':m.st==='ign'?(m.sus?'ignoriert (Kleinstbetrag, vermutlich Spam)':'ignoriert (von Hand)'):m.st==='int'?'intern':m.sus?'verdächtig':'offen',
-      t?`${t.kind==='ein'?'Einzahlung beim Broker':'Auszahlung vom Broker'} vom ${fD(tagAT(t).date)}`:c?`Eintrag: ${txKind(c.kind)} vom ${fD(c.date)}${m.xin?' (Eingang)':''}`:m.st==='int'&&m.swap?wSwapTxt(m).replace(/\bWUSD\b/g,'Kartenguthaben'):m.st==='int'&&(m.brg||m.chain)?wBrTxt(m).replace(/\bWUSD\b/g,'Kartenguthaben'):''])});
-  // Kurse: nur Tage, die die Rechnung des Jahres verwendet (CFD im Jahr, Krypto bis 31.12.), Quelle „EZB“ (4.8)
-  const used=new Set([...R.map(r=>r.rd),...Object.values(S.tag).filter(t=>!fremd(t)&&t.status==='ok'&&yr(tagD(t))<=y).map(t=>rateDateFor(tagD(t),'USD',tagT(t))),
-    ...S.cx.filter(c=>c.cur==='USD'&&c.date&&yr(c.date)<=y).map(c=>rateDateFor(c.date,'USD','')),...(cxOn?C.flow.filter(f=>yr(f.d)<=y&&f.cx!=null).map(f=>rateDateFor(f.d,'USD','')):[])].filter(Boolean));
-  const ku=[[X.B('Datum'),X.B('USD je 1 EUR (EZB-Referenzkurs)'),X.B('EUR je 1 USD'),X.B('Quelle')]];
-  rateDates().filter(d=>used.has(d)).forEach((d,i)=>ku.push([X.D(d),X.R(rateVal(d)),X.F(`1/B${i+2}`,1/rateVal(d),9),rateSrc(d)==='own'?'von Hand':'EZB']));
-  ku.push([],[ECB_CITE]);
+  // Ab 0.166 (Ablauf „Eine Wurzel“, Runde 5): die Krypto-Blätter aus den Bausteinen beider Excel (xlKrypto, xlFifo, xlBestand, xlCoinGeb, xlTagBroker,
+  // xlEigene) mit den Einstellungen der Steuer: Namen der Vorgänge mit txLab (Broker statt „Tag“, ohne Vorgangsnummer und Notiz, 4.2, 4.5, 4.11);
+  // ab 0.120 (Florians Antwort im Plan) Summen- und Einkommenszeile der erhaltenen Bezahlungen, die Zugänge stehen oben wie ein Kauf; Bestand am
+  // 31.12., bei unvollständigem Jahr am Datenstand (4.11); Ein- und Auszahlungen beim Broker (bis 0.71 „Tag Wallet“) ohne Vorgangsnummer, ohne „Mein
+  // Geld“, ohne fremdes Geld (4.2, 4.4); eigene Krypto-Einträge ohne Notiz, eine Spalte nur, wenn im Jahr etwas darin steht (4.5, 4.7).
+  const bz=bzSum(C,y),shKr=xlKrypto(C.flow.filter(f=>yr(f.d)===y),{DE,lab:txLab,bz:bz>0?[[`Summe Bezahlungen in Coins erhalten ${y} (Einkommen, gesondert zu versteuern, Wert beim Erhalt)`,bz]]:[]});
+  const shFf=DE?xlFifo(C.sales.filter(s=>yr(s.d)===y)):null;
+  const part=ds&&ds<yEnd&&yr(ds)===y,end=part?ds:yEnd;
+  const shBe=cxOn&&C.n?xlBestand([[end,part?fD(ds)+' (Datenstand)':X.D(end)]],{L,DE,name:part?'Bestand':'Bestand zum Jahresende',steuer:true}):null;
+  const shGe=xlCoinGeb(C.fees.filter(f=>yr(f.d)===y),{DE,lab:txLab});
+  const fremd=t=>t.kind==='ein'&&!t.own;
+  const shTg=xlTagBroker(Object.values(S.tag).filter(t=>!fremd(t)),{steuer:true,y});
+  const shCx=xlEigene(S.cx.map((c,i)=>Object.assign({i},c)).filter(c=>yr(c.date)===y),{steuer:true,DE,C0});
+  // Wallet-Bewegungen: Broker statt „Tag“, Zuordnung mit Datum, ohne fremdes Geld, ignoriert mit Grund, Kartenguthaben statt WUSD (4.2 bis 4.4, 4.11);
+  // ab 0.166 aus dem Baustein beider Excel (xlWallet mit steuer)
+  const shWb=xlWallet(Object.values(S.wtx).filter(m=>yr(m.date)===y&&!(m.st==='tag'&&S.tag[m.ref]&&fremd(S.tag[m.ref]))).sort((a,b)=>a.ts-b.ts),{steuer:true});
+  // Kurse: nur Tage, die die Rechnung des Jahres verwendet (CFD im Jahr, Krypto bis 31.12.), Quelle „EZB“ (4.8). Ab 0.166 aus der Wurzel kursTage:
+  // eigene Tag-Zeilen, die durchgeführt sind, und die Tage, an denen die Krypto-Rechnung den Kurs holt (bis 0.165 jeder Tag eines eigenen Eintrags)
+  const shKu=xlKurse(kursTage(R,Object.values(S.tag).filter(t=>!fremd(t)&&t.status==='ok'&&yr(tagD(t))<=y),cxOn?C:null,y),{});
   const sheets=[ovS,shMo,shWo,shKo,shTr,shBu];
-  if(cxOn&&C.n){sheets.push({name:'Krypto',rows:kr,freeze:1,widths:DE?[11,40,14,6,13,16,14,14,12,14,12,14]:[11,40,14,6,13,14,10,14,12,12,14,12]});
-    if(DE)sheets.push({name:'Verkäufe nach FIFO',rows:ff,freeze:1,widths:[11,32,14,6,11,13,12,14,13,10,12,13]});
-    sheets.push({name:part?'Bestand':'Bestand zum Jahresende',rows:be,freeze:1,widths:DE?[22,14,6,11,13,12,12]:[22,14,6,13,12,14]});
-    if(ge.length>1)sheets.push({name:'Gebühren in Coins',rows:ge,freeze:1,widths:[11,30,14,6,11,14,14,13,14]})}
-  if((cxOn&&C.n)||(DE&&(Object.keys(S.tag).length||S.cx.length)))sheets.push({name:'Ein- und Auszahlungen Broker',rows:tg,freeze:1,widths:[11,...(TZ?[11,11]:[8]),11,11,6,11,14,15,11,10,12,...(HW?[68]:[])]},{name:'Eigene Krypto-Einträge',rows:cx,freeze:1,widths:cxW});
-  if(wb.length>1)sheets.push({name:'Wallet-Bewegungen',rows:wb,freeze:1,widths:[11,9,11,14,14,10,14,10,14,30,68,30,30]});
-  sheets.push({name:'Kurse',rows:ku,freeze:1,widths:[11,28,14,10],skip:[ku.length-1]});
+  if(cxOn&&C.n){sheets.push(shKr);if(DE)sheets.push(shFf);sheets.push(shBe);if(shGe.rows.length>1)sheets.push(shGe)}
+  if((cxOn&&C.n)||(DE&&(Object.keys(S.tag).length||S.cx.length)))sheets.push(shTg,shCx);
+  if(shWb.rows.length>1)sheets.push(shWb);
+  sheets.push(shKu);
   const blob=buildXlsx(sheets,false);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Trading-Bilanz-${y}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);maybeDonate('steuer');
 }
 
@@ -14671,7 +14700,9 @@ function weekTree(R0,cx){
       if(!tr.length&&!(fr&&!ex))continue;
       // Tag nur mit gebuchter PF: gibt es nur bei PF laut MT5. Seine Breite hält die Wochenzeile (gF, gN), damit beim Umschalten nichts springt.
       if(!tr.length){gF.push(fee(fCur(zd.fV)));gN.push(netD(zd.nV,zd.res))}
-      const ps=positions(rd).sort((a,b)=>a.t<b.t?-1:1);
+      // Ab 0.166 (Ablauf „Eine Wurzel“, Runde 5): die Trades des Tages in der einen Reihenfolge (posFolge); bis 0.165 hier mit eigenem Vergleich
+      // ohne feste Reihenfolge bei gleicher Zeit (das Ergebnis war dasselbe, die Positionen kommen zeitlich sortiert an)
+      const ps=posFolge(positions(rd));
       const wdI=(new Date(d+'T12:00:00Z').getUTCDay()+6)%7;
       dh+=`<tr class="dy" data-w="${w}" data-d="${d}">${c1(`${ps.length?'<span class="tw">▸</span> ':'<span class="tw"></span> '}${WD[wdI]} ${dm(d)}`)}<td>${ps.length||''}</td><td>${sw(tr.length||fr?netD(zd.nV,zd.res):'',tr.length?netD(zd.nN,zd.res):'')}</td><td>${rtSw(rd,'sel','')}</td><td>${invM(invStart(rd,cx.sel,d),cx.sel)}</td><td>${tr.length?mon(zd.res):''}</td><td>${sw(fr?fee(fCur(zd.fV)):'',tr.length?pfP(zd.fN):'')}</td><td>${ddSw(rd,'sel','')}</td><td></td></tr>`;
       for(const p of ps){
@@ -14740,10 +14771,12 @@ function cumulatePoints(pts){let c=0;return pts.map(p=>{c+=p.v;return {key:p.key
 // Ø pro Trade je Zeitraum. Ein Trade ist eine Position: gleiche Schließzeit und gleiches Symbol auf mehreren Konten zählt einmal.
 function avgPoints(rows,res,unit,ex){
   const m=byBucket(rows,res);const out=[];
-  // Ab 0.161 (Schritt 5): die Rendite aus avgKz wie die Karte „Durchschnitt“; der Betrag bleibt die Summe aller Trade-Zeilen ÷ Zahl der Trades
-  // (mit der Kommission beim Eröffnen, avgKz nimmt nur die Schließung; Florians Antwort 6 zur Freigabe 0.161, offen in OFFEN.md)
-  for(const k of [...m.keys()].sort()){const rr=m.get(k);const n=positions(rr).length;if(!n)continue;const o=grpVal(rr,unit,ex);
-    if(o){const z=unit==='pct'?avgKz(rr,null,'sel',false,['trade']).trade:null;out.push(mkPt(k,bucketLabel(k,res),{v:z?(ex?z.rX:z.rI):o.v/n}))}}
+  // Ab 0.161 (Schritt 5): die Rendite aus avgKz wie die Karte „Durchschnitt“. Ab 0.166 auch der Betrag (Durchschnitt der Positionen, aI bzw. aX):
+  // Tag bucht die Kommission beim Schließen, eine Kommission beim Eröffnen gibt es nicht (Florians Entscheidung vom 19.11.2026). Bis 0.165 war der
+  // Betrag die Summe aller Trade-Zeilen ÷ Zahl der Trades, mit der Kommission beim Eröffnen, die es nur in Test-Sicherungen gab (Resonanz).
+  for(const k of [...m.keys()].sort()){const rr=m.get(k);const z=avgKz(rr,null,'sel',false,['trade']).trade;if(!z.k)continue;
+    if(unit==='pct'&&!grpVal(rr,unit,ex))continue;
+    out.push(mkPt(k,bucketLabel(k,res),{v:unit==='pct'?(ex?z.rX:z.rI):(ex?z.aX:z.aI)}))}
   return out;
 }
 const WDL=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
@@ -15886,7 +15919,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.165',VDATE='18.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.166',VDATE='19.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
