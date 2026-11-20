@@ -1226,12 +1226,21 @@ table.vgtb{width:100%;border-collapse:collapse;font-size:var(--fs-s);margin:4px 
 .modal .box>.mx{position:sticky;top:-12px;z-index:8;display:block;margin:-12px -16px -32px auto;width:32px;height:32px;border:0;border-radius:6px;background:var(--card);color:var(--muted);font:22px/1 system-ui,sans-serif;cursor:pointer}
 .modal .box>.mx:hover,.modal .box>.mx:focus-visible{background:var(--bg);color:var(--ink)}
 .modal .box.hx>h2{padding-right:34px}
-/* Checkliste „Erste Schritte“ (stepsHTML): Kreis wie bei den Reitern, erledigt grün mit ✓, offen blau mit Nummer, neutral grau */
-ol.chk{list-style:none;padding:0;margin:8px 0 12px}
-.chki{display:flex;align-items:flex-start;gap:10px;width:100%;padding:5px 8px;border:0;border-radius:8px;background:none;color:inherit;font:inherit;text-align:left}
+/* Checkliste „Erste Schritte“ (stepsHTML): Kreis wie bei den Reitern, erledigt grün mit ✓, offen blau mit Nummer, neutral grau.
+   Ab 0.168 (Florians Auftrag): jeder Schritt sichtbar anklickbar. Fläche und Rundung wie die Kacheln in „Überblick“ (.ov .tile), rechts „›“,
+   beim Darüberfahren und mit dem Fokus ein Rand in --accent wie bei button.btn:hover. Bis 0.167 nur ein grauer Hintergrund beim Darüberfahren. */
+ol.chk{list-style:none;padding:0;margin:6px 0 12px;display:grid;gap:6px}
+.chki{display:flex;align-items:flex-start;gap:10px;width:100%;padding:7px 10px;border:1px solid transparent;border-radius:8px;background:var(--bg);color:inherit;font:inherit;text-align:left}
 button.chki{cursor:pointer}
-button.chki:hover,button.chki:focus-visible{background:var(--bg)}
-.chki .dot{flex:none;margin-top:1px}
+button.chki:hover,button.chki:focus-visible{border-color:var(--accent)}
+.chki .dot{flex:none;margin-top:2px}
+.chki .chkt{flex:1;min-width:0}
+.chki .chkp{flex:none;align-self:center;color:var(--muted);font-size:22px;line-height:1;margin-left:4px}
+/* Ab 0.168 (Florians Regel, GESTALTUNG Abschnitt 6): „Anleitung mit Bildern ↗“ als blauer Knopf ganz oben (a.btn), darunter der Satz zum Wiederfinden */
+#steps-body .ganl{margin:2px 0 8px}
+/* Ab 0.168: „Klicke“ nur mit Maus, sonst „Tippe“ (dieselbe Abfrage wie .dhint und .bkzieh) */
+.mklick{display:none}
+@media (hover:hover) and (pointer:fine){.mklick{display:inline}.mtipp{display:none}}
 .chkm{font-size:var(--fs-s);color:var(--ink2)}
 .chkm ol.steps{margin:2px 0 10px}
 .chkm p{margin:4px 0}
@@ -15919,7 +15928,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.166',VDATE='19.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.168',VDATE='20.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -16264,6 +16273,11 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{FB_KEY=''
 // Texte zum Original und zu den getrennten Speichern, einmal hier (Begrüßung, Resonanz, Erste Schritte, Sicherung)
 const ORIG_HTML='Das Original der Trading-Bilanz läuft nur unter genau dieser Adresse: <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>.<span class="odl"> Dort kannst du sie auch herunterladen und ohne Internet nutzen.</span> Kopien aus anderen Quellen können verändert sein, zum Beispiel mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.';
 const GTK='Deine Daten liegen nur in diesem Browser. Online-Version und heruntergeladene Datei sehen nicht dieselben Daten. Mit einer Sicherung nimmst du sie mit.';
+// Ab 0.168 (Florians Auftrag): Satz zum Wiederfinden der heruntergeladenen Datei („Erste Schritte“) und der Satz zu Firefox (auch im Fenster nach dem
+// Herunterladen). Gemessen in 0.168: In Chromium teilen sich alle lokalen Dateien einen Speicher; in Firefox (mit seiner Vorgabe für Dateien) gehören
+// die Daten zu Ort und Name der Datei, umbenannt oder verschoben startet das Tool leer, zurück am alten Ort sind die Daten wieder da.
+const DATEI_FF='In Firefox gehören deine Daten zu Ort und Name der Datei.';
+const STEPS_ORT='Tipp: Lege die Datei an einen festen Ort, bevor du anfängst, und öffne sie immer von dort. '+DATEI_FF;
 document.querySelectorAll('[data-orig]').forEach(e=>{e.innerHTML=ORIG_HTML});
 document.querySelectorAll('[data-gtk]').forEach(e=>{e.textContent=GTK});
 // Ab 0.63: „Genieße die Auswertung“ vor Wallet, damit man zuerst die Zahlen sieht
@@ -16281,10 +16295,13 @@ function stepState(){
 function stepsHTML(){
   const st=stepState();
   const li=(t,i)=>{const s=st[i],d=`<span class="dot ${s}"${s==='ok'?' role="img" aria-label="erledigt"':' aria-hidden="true"'}>${s==='ok'?'✓':i+1}</span>`;
-    return `<li><button type="button" class="chki" data-step="${i+1}">${d}<span>${t}</span></button></li>`};
-  // Ab 0.64: „Anleitung mit Bildern“ als Erstes
-  return `<p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
+    return `<li><button type="button" class="chki" data-step="${i+1}">${d}<span class="chkt">${t}</span><span class="chkp" aria-hidden="true">›</span></button></li>`};
+  // Ab 0.64: „Anleitung mit Bildern“ als Erstes. Ab 0.168 (Florians Regel, GESTALTUNG Abschnitt 6): blauer Knopf, „(braucht Internet)“ nur in der
+  // heruntergeladenen Datei (.offl), darunter der Satz zum Wiederfinden (online .onl, in der Datei .offl) und der Satz über der Liste („Klicke“ mit Maus, sonst „Tippe“)
+  return `<p class="ganl"><a class="btn" href="https://trading-bilanz.github.io/anleitung.html" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗<span class="offl"> (braucht Internet)</span></a></p>
+  <p><span class="onl">Tipp: Speichere dir das Tool als Lesezeichen, dann findest du es immer schnell.</span><span class="offl">${STEPS_ORT}</span></p>
   <p>Für die Reports brauchst du einen Computer mit MetaTrader 5. Alles andere geht auch am Handy.</p>
+  <p><span class="mklick">Klicke</span><span class="mtipp">Tippe</span> auf einen Schritt, dann bringt dich das Tool an die richtige Stelle.</p>
   <ol class="chk">${STEPS.map(li).join('')}</ol>
   <div class="chkm"><p><b>Jeden Monat (empfohlen)</b></p><ol class="steps"><li>Speichere in MetaTrader 5 für jedes Konto den Report neu.</li><li>Ziehe alle Reports in den Reiter <b>„Reports“</b>. Das Tool erkennt, was schon da ist.</li><li>Füge die neuen Tag-Daten ein und sieh in <b>„Noch offen“</b> nach.</li><li>Speichere eine Sicherung.</li></ol>
   <p><b>Gut zu wissen:</b> ${GTK}<span class="onl"> Du kannst das Tool auch herunterladen und ohne Internet nutzen.</span></p>
@@ -16758,7 +16775,8 @@ async function offlineDL(){try{const r=await fetch(location.href.split('#')[0],{
   catch(e){offShow(false,e.message)}}
 function offShow(ok,err){const has=hasData();
   $('off-t').textContent=ok?'Datei gespeichert':'Herunterladen hat nicht geklappt';
-  $('off-body').innerHTML=ok?`<p>Die Datei „trading-bilanz.html“ liegt meist im Ordner „Downloads“. Lege sie am besten an einen Ort, wo du sie leicht wiederfindest. Öffne sie per Doppelklick, sie läuft im Browser ohne Internet.${has?' Hast du hier schon Daten? Speichere eine Sicherung und lade sie in der heruntergeladenen Datei im Reiter „Sicherung“.':''}</p>`+
+  // Ab 0.168 (Florians Antwort 4 zum Plan): Satz zu Firefox und zu neuen Versionen (der Browser speichert eine neue Version oft als „trading-bilanz (1).html“)
+  $('off-body').innerHTML=ok?`<p>Die Datei „trading-bilanz.html“ liegt meist im Ordner „Downloads“. Lege sie am besten an einen Ort, wo du sie leicht wiederfindest. Öffne sie per Doppelklick, sie läuft im Browser ohne Internet. Öffne sie danach immer von diesem Ort. ${DATEI_FF}${has?' Hast du hier schon Daten? Speichere eine Sicherung und lade sie in der heruntergeladenen Datei im Reiter „Sicherung“.':''}</p><p>Bei einer neuen Version ersetzt du die alte Datei: gleicher Ort, gleicher Name. Heißt die neue Datei zum Beispiel „trading-bilanz (1).html“, gib ihr den alten Namen.</p>`+
     (has?'<div class="row"><button type="button" class="btn primary" id="off-bk">Sicherung speichern</button></div><div id="off-msg"></div>':'')
     :`<p>Das Herunterladen hat nicht geklappt (${esc(err)}). Prüfe die Internetverbindung und versuche es noch einmal.</p>`;
   openModal('off-modal');
