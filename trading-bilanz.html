@@ -2603,8 +2603,9 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <!-- Ab 0.44: Börsen (Börsen-Datei, sonst von Hand). Ab 0.51 (1): Namen der Börsen aus BX_FMT (#bx-fmts setzt das Skript) -->
   <div class="wpan" id="bx-load" hidden>
     <h3>Börsen</h3>
-    <!-- Ab 0.53: wie man die Datei bei Bitvavo bekommt, steht in der Anleitung (Abschnitt „Börsen-Datei laden“). Ab 0.64 direkt unter dem Titel -->
-    <p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#boerse-datei" target="_blank" rel="noopener">So bekommst du die Datei bei Bitvavo: Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
+    <!-- Ab 0.53: wie man die Datei bei Bitvavo bekommt, steht in der Anleitung (Abschnitt „Börsen-Datei laden“). Ab 0.64 direkt unter dem Titel.
+         Ab 0.168 (Florians Antwort 5 zum Plan): darunter die Zeile zu DFX.swiss (Anleitung #dfx) -->
+    <p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#boerse-datei" target="_blank" rel="noopener">So bekommst du die Datei bei Bitvavo: Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a><br><a href="https://trading-bilanz.github.io/anleitung.html#dfx" target="_blank" rel="noopener">So bekommst du die Datei bei DFX.swiss: Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
     <p class="small">Lade bei deiner Börse die Datei mit deinen Transaktionen herunter (CSV) und ziehe sie hierher. Das Tool übernimmt Käufe, Verkäufe und Überträge zu deinen Wallets und erkennt, was schon da ist.</p>
     <p class="small" id="bx-fmts"></p>
     <div class="drop" id="bxdrop" role="button" tabindex="0"><b id="bxdrop-t">Börsen-Datei (.csv) hierher ziehen</b><span class="small" id="bxdrop-s">oder klicken, um sie auszuwählen</span></div>
@@ -7108,6 +7109,8 @@ const DX_CHAIN_K=['timestamp','transactiontype','inputamount','inputasset','outp
 const DX_HOW='Nimm bitte den CoinTracking-Export: in der DFX-App unter Transaktionen → CSV-Export → CoinTracking.';
 const DX_KOMPAKT='Das ist der Kompakt-Export von DFX.swiss. Darin verrutschen bei DFX.swiss manchmal die Spalten. '+DX_HOW;
 const DX_CHAIN='Das ist der Chain-Report von DFX.swiss. '+DX_HOW;
+// Ab 0.168 (Florians Auftrag): unter dem Hinweis zum Kompakt-Export und zum Chain-Report der Link zur Stelle in der Anleitung (wie bei Bitvavo im Bereich „Börsen“)
+const DX_ANL='<a href="https://trading-bilanz.github.io/anleitung.html#dfx" target="_blank" rel="noopener">So bekommst du die richtige Datei: Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a>';
 const DX_NAME='DFX.swiss';
 const dxLines=t=>String(t||'').replace(/^﻿/,'').replace(/\r/g,'').split('\n').filter(l=>l.trim());
 const dxHead=(l,sep)=>csvCells(l||'',sep).map(x=>x.trim().toLowerCase());
@@ -7122,7 +7125,7 @@ const dxStable=c=>c==='USDC'||c==='USDT';
 // Rückgabe {err} oder {dx:1, rows [{id, hash, type 'buy'|'sell', coin, date, time, ts, qty, val (Kauf: bezahlt inkl. Gebühr; Verkauf: ausbezahlt), fee (Euro,
 // ungerundet), feeQ, feeCur, erl (Verkauf: Erlös inkl. Gebühr), chk (Wert laut Datei, falls er um mehr als 1 Cent abweicht), note}], eur {deposit, withdrawal},
 // other {Coin: Zahl} (andere Coins als USDC/USDT, wie bei Bitvavo), unk {Beschreibung: Zahl} (kennt das Tool noch nicht), from, to}
-function parseDfx(text){const k=dxKind(text);if(k==='kompakt')return {err:DX_KOMPAKT};if(k==='chain')return {err:DX_CHAIN};if(k!=='ct')return {err:BV_BAD};
+function parseDfx(text){const k=dxKind(text);if(k==='kompakt')return {err:DX_KOMPAKT,anl:DX_ANL};if(k==='chain')return {err:DX_CHAIN,anl:DX_ANL};if(k!=='ct')return {err:BV_BAD};
   const L=dxLines(text),H=dxHead(L[0],','),rows=[],eur={deposit:0,withdrawal:0},other={},unk={},cnt=(o,x)=>{o[x]=(o[x]||0)+1};
   for(let i=1;i<L.length;i++){const c=csvCells(L[i],','),g=n=>{const j=H.indexOf(n);return j>=0?String(c[j]==null?'':c[j]).trim():''};
     const type=g('type'),tl=type.toLowerCase(),bA=g('buyasset').toUpperCase(),sA=g('sellasset').toUpperCase(),bN=dxN(g('buyamount')),sN=dxN(g('sellamount')),
@@ -8162,7 +8165,8 @@ $('bx-fmts').textContent=`Bisher kann das Tool Dateien von ${bxNames()} lesen (B
 // nennt die Meldung, dann kommt gleich die nächste aus BX_Q. Warten danach noch Dateien, sagt die Meldung, wie viele.
 function bxLoadText(name,t,pre){const M=pre?[pre]:[];let bad=0;BXP=null;needReset($('bxprev'));
   for(let x={name,text:t};x;x=!BXP&&BX_Q.length?BX_Q.shift():null){const F=bxFmt(x.text)||BX_FMT[0],P=F.parse(x.text);
-    if(P.err){M.push(`<b>${esc(x.name)}</b>: ${P.err}`);bad=1;continue}
+    // Ab 0.168: anl = Link zur Anleitung in eigener Zeile unter der Meldung (Kompakt-Export und Chain-Report von DFX.swiss)
+    if(P.err){M.push(`<b>${esc(x.name)}</b>: ${P.err}${P.anl?'<br>'+P.anl:''}`);bad=1;continue}
     // Ab 0.121 (Phase 2): gelöschte Zeilen (S.wdel) bleiben weg
     {const n=bxDelSkip(S,P);if(n)M.push(`${fI.format(n)} ${n===1?'Zeile dieser Datei hast du gelöscht, sie bleibt':'Zeilen dieser Datei hast du gelöscht, sie bleiben'} weg. Zurückholen kannst du sie unter „Eingelesene Dateien“.`)}
     // Ab 0.51 (1, ersetzt 0.46 3.3): gibt es keine Wallet mit dem erkannten Namen, ist „+ Neue Wallet …“ mit ihm vorbelegt (z. B. „Bitvavo“)
