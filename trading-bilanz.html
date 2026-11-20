@@ -1341,6 +1341,9 @@ img.bfly{width:auto;flex:none;display:block}
 /* ab 0.143: der Schmetterling steht frei rechts neben der großen Zahl (bis 0.142 oben rechts, der Titel hielt 40 px frei) */
 .msv>.v{position:relative}.msv .v>.bfw{position:absolute;left:100%;top:50%;margin:-10px 0 0 8px}
 button.msv{cursor:pointer}button.msv:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+/* Ab 0.167: Kachel mit Begriff (msValH, „Plus-Wochen in Folge“): Knopf über der ganzen Fläche, Wert und Datum lassen den Klick durch, der Begriff liegt darüber */
+.msvb{cursor:pointer}.msvbtn{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;border-radius:0;background:none;cursor:pointer}
+.msvbtn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}.msvb>.v,.msvb>.s{pointer-events:none}.msvb>.k{position:relative;z-index:1}
 @media (hover:hover) and (pointer:fine){button.msv:hover>.k{text-decoration:underline}}
 .msmks{display:flex;flex-wrap:wrap;gap:8px}
 .msmk{position:relative;display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:var(--fs-s);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;padding:4px 12px;border-radius:999px;border:1.5px solid var(--tab-line);background:var(--gold-soft);color:var(--ink);margin:0;line-height:1.4}
@@ -1538,6 +1541,8 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jradrt{flex:1 1 220px;min-width:0}
 .jradr .qr{width:150px;height:150px;padding:8px}
 .jrdanke{margin:8px 0 0}
+/* Ab 0.167: Einleitung auf Seite 2 des Jahresrückblicks, unter „Dein Jahr in Zahlen“ */
+.jreinl{margin:10px auto 0;max-width:34em;font-size:var(--fs-s);color:var(--ink2);text-wrap:balance}
 button.zlink.jrzur{color:var(--accent);padding:0}
 .jrs1{padding-top:6px}
 /* Ab 0.163 (Florians Auftrag): Seite 1 am PC als ein Bild (Fenster breiter als 640 px). Volle Größe bei --jrf 1: Schmetterling 164 px hoch,
@@ -2227,6 +2232,10 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     </div>
     <h3 style="margin-top:18px">Lieber per PayPal?</h3>
     <p><a class="btn primary" id="don-paypal" href="https://www.paypal.com/donate?hosted_button_id=KHXGUFJ6FVVRN" target="_blank" rel="noopener">Mit PayPal spenden&nbsp;↗</a></p>
+    <!-- Ab 0.167 (Florians Auftrag 0.167, Abschnitt 5): „Ich habe schon gespendet“ wie im Jahresrückblick (eine Quelle: „Wertschätzung teilen“ holt diesen
+         Baustein von hier). Antippen merkt das Datum und gibt 12 Monate Ruhe (donSchon), der Dank erscheint darunter (data-dank), der Link bleibt. -->
+    <p class="small" id="don-schon" style="margin:8px 0 0"><button type="button" class="zlink" data-schon>Ich habe schon gespendet</button></p>
+    <p class="jrdanke" data-dank hidden></p>
     <div class="msg info" style="margin-top:16px" data-orig></div>
     <p class="small" style="margin:14px 0 0"><a href="https://weltenwandel.at" target="_blank" rel="noopener">Mehr von mir&nbsp;↗</a></p>
   </div>
@@ -2342,13 +2351,14 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <div id="boot-b"></div><div id="boot-msg"></div>
   <div class="row" style="justify-content:flex-end"><button type="button" class="btn danger" id="btn-boot-wipe">Alles löschen</button><button type="button" class="btn primary" id="btn-boot-load">Sicherung laden</button></div>
 </div></div>
-<!-- Ab 0.134: Fenster nach einem Anlass (Export, „Sicherung speichern“, Bild einer Grafik). Titel und Text kommen aus der Liste FENSTER im Skript,
+<!-- Ab 0.134: Fenster nach einem Anlass (Export, „Sicherung speichern“, Bild einer Grafik; ab 0.167 das Spenden-Fenster nur nach einem Steuer-Export,
+     „Schließen“ nur nach „Schon gespendet“, ohne „Link kopieren“). Titel und Text kommen aus der Liste FENSTER im Skript,
      die Knöpfe richten sich nach der Art des Eintrags (fenShow). × und Esc schließen und zählen wie „Jetzt nicht“. Ein Klick daneben schließt nicht:
      Das Fenster kommt von selbst kurz nach einem Klick, ein verirrter Klick soll es nicht ungelesen schließen. Öffnet über modalOn, nicht über openModal. -->
 <div class="modal" id="don-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="don-t" aria-describedby="don-p"><button type="button" class="mx" id="don-x" aria-label="Schließen">×</button>
   <h2 id="don-t"></h2>
   <p id="don-p"></p>
-  <div class="row" style="justify-content:flex-end"><button type="button" class="btn primary" id="btn-don-go" style="background:var(--don);border-color:var(--don);color:#fff">Zur Spende</button><button type="button" class="btn primary" id="btn-don-fb" hidden>Feedback schreiben</button><button type="button" class="btn primary" id="btn-don-link" hidden>Link kopieren</button><button type="button" class="btn primary" id="btn-don-ok" hidden></button><button type="button" class="btn" id="btn-don-no">Jetzt nicht</button><button type="button" class="btn" id="btn-don-done">Schon gespendet</button></div>
+  <div class="row" style="justify-content:flex-end"><button type="button" class="btn primary" id="btn-don-go" style="background:var(--don);border-color:var(--don);color:#fff">Zur Spende</button><button type="button" class="btn primary" id="btn-don-fb" hidden>Feedback schreiben</button><button type="button" class="btn primary" id="btn-don-ok" hidden>Schließen</button><button type="button" class="btn" id="btn-don-no">Jetzt nicht</button><button type="button" class="btn" id="btn-don-done">Schon gespendet</button></div>
 </div></div>
 <!-- Ab 0.139: Feier-Fenster der Meilensteine (msShow). Kopf: Schmetterling und Titel, je Anlass ein Block, darunter „Betrag zeigen“,
      Freude-Satz und Zeile, unten „Alle Meilensteine“, „Ausblenden“ und „Schließen“. Öffnet über openModal (×, Esc, Klick daneben schließen);
@@ -4118,8 +4128,29 @@ const serMehr=(n,lauf)=>(lauf?MS_TXT.mehr.jetzt:MS_TXT.mehr.bis).replace('{n}',f
    zeigen muss, damit der Schmetterling dort sitzt. Wann ein Eintrag als neu gilt, entscheidet msCheck: tr = Zeitpunkt des Trades (sofort
    gezählte Anlässe), sd = Tag der Abrechnung (Anlässe nach der Abrechnung), tg = Tag-Zeile (Auszahlungen), clock = nach der Uhr des Geräts
    (Jahrestag, Jahresrückblick; from bis until wartet er). */
-const MS_NET=[100,500,1000,2500,5000,10000,25000,50000,100000,250000,500000,1000000],MS_RET=[10,25,50,100],MS_WINS=[100,500,1000,2500,5000,10000];
-const MS_RUN={rg:[25,50,100,250,500],rd:[25,50,100,250],rw:[10,25,52,100]};
+/* Ab 0.167 (Florians Auftrag 0.167, „Stufen ohne Ende“): ein Baustein für alle Stufenreihen. Eine Leiter hat Startwerte (start) und eine Einstellung,
+   wie es danach weitergeht: dekade = je Zehnerstufe diese Faktoren (z. B. [1, 2.5, 5]: 1.000, 2.500, 5.000, 10.000 …), plus = immer so viel dazu.
+   Ohne beides endet die Leiter nach den Startwerten. stufe(L, i) = die i-te Stufe (ab 0; nach dem Ende Infinity), istStufe(L, n) = n ist eine
+   Stufe. Neue Reihen nutzen denselben Baustein. Bis 0.166 feste Listen (MS_NET, MS_RET, MS_WINS, MS_RUN), die nach der letzten Stufe endeten. */
+function stufe(L,i){const c=L._c||(L._c=L.start.slice());
+  while(c.length<=i){const v=c[c.length-1];let n=Infinity;
+    if(L.plus)n=v+L.plus;
+    else if(L.dekade){let e=1;while(e*10<=v)e*=10;for(const k of [e,e*10])for(const f of L.dekade){const x=Math.round(f*k*1000)/1000;if(x>v+1e-9&&x<n)n=x}}
+    if(!isFinite(n))return Infinity;c.push(n)}
+  return c[i]}
+function istStufe(L,n){for(let i=0;;i++){const s=stufe(L,i);if(!(s<n-1e-9))return Math.abs(s-n)<1e-9}}
+// Die Leitern je Art (Florians Auftrag 0.167; gelten von vorne neu): sn Netto-Gewinn in USD (100, 250, 500, 1.000 … je Zehnerstufe 1, 2,5 und 5;
+// bis 0.166 ohne die 250 und bis 1 Mio.), sr Rendite in % (10, 25, 50, 100, danach alle +100; bis 0.166 bis 100), sg Gewinn-Trades (100 … 1.000
+// alle +100, danach alle +500; bis 0.166 100, 500, 1.000, 2.500, 5.000, 10.000), rg Gewinn-Trades am Stück (25, 50, 100, 250, 500, danach je
+// Zehnerstufe 1, 2,5 und 5; bis 0.166 bis 500), rd Tage am Stück im Plus (25, 50, 100, 250, danach alle +250; bis 0.166 bis 250), rw Plus-Wochen
+// in Folge (10, 25, 52, danach alle 26 Wochen; bis 0.166 10, 25, 52, 100), ex n-mal so viel ausgezahlt wie eingezahlt in % (100, 200, 300 …; neu)
+const MS_LEITER={sn:{start:[100,250,500],dekade:[1,2.5,5]},sr:{start:[10,25,50,100],plus:100},sg:{start:[100,200,300,400,500,600,700,800,900,1000],plus:500},
+  rg:{start:[25,50,100,250,500],dekade:[1,2.5,5]},rd:{start:[25,50,100,250],plus:250},rw:{start:[10,25,52],plus:26},ex:{start:[100],plus:100}};
+// Ab 0.167: Plus-Wochen in Jahren. Liegt eine Serie „Plus-Wochen in Folge“ (Art rw oder jrw) auf einer Stufe ab 52 Wochen (52, 78, 104 …), zählt sie
+// in Jahren: 52 Wochen = 1 Jahr, jede weitere Stufe ein halbes Jahr. Rückgabe {j: Jahre (1, 1.5, 2 …), gross: „1 Jahr“, „1½ Jahre“} oder null
+// (eine Bestserie, die nicht auf einer solchen Stufe liegt, z. B. 53, bleibt in Wochen).
+function msPlusJahre(e){if(!e||!/^j?rw$/.test(e.k)||!(e.n>=52)||!istStufe(MS_LEITER.rw,e.n))return null;const j=1+(e.n-52)/52,g=Math.floor(j),Z=MS_TXT.jahre;
+  return {j,gross:(j>g?Z.halb:g===1?Z.eins:Z.viele).replace('{n}',fI.format(g))}}
 const msWkYear=w=>addDays(w,3).slice(0,4),MS_SERK=['rg','rd','rw'];
 // Ab 0.154: gemeinsame Grundlage von msCalc und jrCalc (Jahresrückblick). Trades der gezählten Konten sel als Kopien mit der Investition der
 // gezählten Konten zum Zeitpunkt des Trades (cS) und den Beträgen in der Währung cur (ohne Kurs USD), dazu laufende Woche (cw), Datenstand
@@ -4174,13 +4205,17 @@ function msCalc(rows,sel,o){
   // Datum vor dem Ende der ersten zwei Kalenderwochen ab dem ersten Trade ohne Schmetterling (vor), auch eine lange vor dem ersten Trade.
   // Ausgangsstand der Tag-Daten ist nur noch, was beim ersten Einfügen da ist, außer den letzten 14 Tagen (msCheck).
   // ---- Auszahlungen: nur aus den Tag-Daten, wie „Dein echtes Geld“ (Einzahlungen nur „Mein Geld“). Die Kontenauswahl wirkt hier nicht.
-  {let ce=0,ca=0,caE=0,arm=false,first=true;
+  // Ab 0.167 (Florians Auftrag „Stufen ohne Ende“): n-mal so viel ausgezahlt wie eingezahlt (Art ex, 200 % und mehr, Leiter MS_LEITER.ex ab der
+  // zweiten Stufe) aus derselben laufenden Summe. Jede Stufe kommt einmal; nach einer Einzahlung kommt erst die nächste, noch nie erreichte. 100 %
+  // (ee) bleibt wie bisher: wieder nach jeder neuen Einzahlung, sobald sie erneut erreicht ist.
+  {let ce=0,ca=0,caE=0,arm=false,first=true,xi=1;
    for(const x of tags){const t=x.t;
      if(x.art==='ein'){ce+=x.usd;if(ce>ca+0.005)arm=true;continue}
      if(x.art==='fremd')continue;
      ca+=x.usd;caE+=x.eur;
      if(first){first=false;const e=x.eur,E=o.cur==='eur'&&isFinite(e);add('ea',t.id,x.d,{a:E?e:t.usd,ac:E?'eur':'usd',tg:String(t.id)})}
-     if(arm&&ce>0&&ca>=ce-0.005){arm=false;const E=o.cur==='eur'&&isFinite(caE);add('ee',t.id,x.d,{a:E?caE:ca,ac:E?'eur':'usd',tg:String(t.id)})}}}
+     if(arm&&ce>0&&ca>=ce-0.005){arm=false;const E=o.cur==='eur'&&isFinite(caE);add('ee',t.id,x.d,{a:E?caE:ca,ac:E?'eur':'usd',tg:String(t.id)})}
+     if(ce>0)for(let v=stufe(MS_LEITER.ex,xi);ca>=ce*v/100-0.005;v=stufe(MS_LEITER.ex,++xi)){const E=o.cur==='eur'&&isFinite(caE);add('ex',v,x.d,{n:v,a:E?caE:ca,ac:E?'eur':'usd',tg:String(t.id)})}}}
   if(!TR.length)return res;
   // ---- Zeilen der gezählten Konten als Kopien (ab 0.154 aus msBasis): cS = Investition der gezählten Konten zum Zeitpunkt des Trades,
   // Beträge in der Währung cur
@@ -4262,10 +4297,12 @@ function msCalc(rows,sel,o){
    // Stufe wie bisher bis zum Ende ihrer Woche hält
    for(const [wk,rr] of WS){let eu=cu,er=cr;for(const r of rr){eu+=trNetto(r,true,true);er+=rOf(r)}
     for(const r of rr){cu+=trNetto(r,true,true);cr+=rOf(r);const z=wk===cw?{tr:r.x.t}:{sd:sat(wk)};
-      while(iu<MS_NET.length&&cu>=MS_NET[iu]-1e-9&&eu>=MS_NET[iu]-1e-9){add('sn',MS_NET[iu],r.d,Object.assign({n:MS_NET[iu],j:['d',r.d]},z,r.d<B?{vor:true}:null));iu++}
-      while(!miss&&ir<MS_RET.length&&cr*100>=MS_RET[ir]-1e-9&&er*100>=MS_RET[ir]-1e-9){add('sr',MS_RET[ir],r.d,Object.assign({n:MS_RET[ir],j:['d',r.d]},z,r.d<B?{vor:true}:null));ir++}}}}
+      // ab 0.167 aus den Leitern (stufe, MS_LEITER); bis 0.166 die Listen MS_NET und MS_RET
+      for(let v=stufe(MS_LEITER.sn,iu);cu>=v-1e-9&&eu>=v-1e-9;v=stufe(MS_LEITER.sn,++iu))add('sn',v,r.d,Object.assign({n:v,j:['d',r.d]},z,r.d<B?{vor:true}:null));
+      for(let v=stufe(MS_LEITER.sr,ir);!miss&&cr*100>=v-1e-9&&er*100>=v-1e-9;v=stufe(MS_LEITER.sr,++ir))add('sr',v,r.d,Object.assign({n:v,j:['d',r.d]},z,r.d<B?{vor:true}:null));}}}
   // ---- Zahl der Gewinn-Trades: sofort
-  {let c=0,i=0;for(const p of P){if(!(gvVz(p)>0))continue;c++;if(i<MS_WINS.length&&c>=MS_WINS[i]){add('sg',MS_WINS[i],p.d,Object.assign({n:MS_WINS[i],tr:p.t,j:['t',pk(p)]},p.d<B?{vor:true}:null));i++}}}
+  // ab 0.167 aus der Leiter (stufe, MS_LEITER.sg); bis 0.166 die Liste MS_WINS
+  {let c=0,i=0;for(const p of P){if(!(gvVz(p)>0))continue;c++;const v=stufe(MS_LEITER.sg,i);if(c>=v){add('sg',v,p.d,Object.assign({n:v,tr:p.t,j:['t',pk(p)]},p.d<B?{vor:true}:null));i++}}}
   // ---- Serien. l = Elemente in Zeitfolge {plus, d, key, tr oder sd}; pb = längste frühere Serie (der Vorgänger).
   // Ab 0.142: Der Eintrag steht am Ende der Serie (d = end; eOf: bei Wochen der Sonntag der letzten Woche), mit Beginn (ab) und „läuft noch“
   // (lauf, die letzte Zeit ist im Plus). Die längste Serie am Ende des Ausgangsstands wird ein Eintrag ohne Vorgänger (vor); läuft sie da noch,
@@ -4281,7 +4318,7 @@ function msCalc(rows,sel,o){
   // Stand und endet im Jahr; lief die Serie danach weiter, trägt er die volle Länge für den Zusatz (mehr: {n, lauf}). Die Werte der Karte auf
   // einem Jahr (res.yb[k]) kommen aus msJahr (serStand). mom(x) = Zeitpunkt, zu dem das Element als neu gilt (tr bzw. sd).
   res.sl={};
-  const runs=(k,l,dk,jk,yOf,eOf,mom)=>{const st=MS_RUN[k];let best=0,bc=null,c=null,cr=false,vd=false;const yb={};res.sl[k]=l;
+  const runs=(k,l,dk,jk,yOf,eOf,mom)=>{const st=MS_LEITER[k];let best=0,bc=null,c=null,cr=false,vd=false;const yb={};res.sl[k]=l;
     const pos=new Map();for(const r of serLaeufe(l,1))for(let i=0;i<r.n;i++)pos.set(l[r.i+i],i+1);
     const ent=(z,kk,id,x)=>add(kk,id,eOf(z.e.d),Object.assign({dk,n:z.n,ab:z.s.d,end:eOf(z.e.d),j:[jk,z.s.key],o:z.s.key},z.weiter?{mehr:{n:z.voll,lauf:!!z.lauf}}:z.lauf?{lauf:true}:null,x));
     // Stand der Folge c am Ende des Jahres Y (bis zu ihrem letzten Element in Y)
@@ -4301,7 +4338,7 @@ function msCalc(rows,sel,o){
       if(!c){c={n:0,s:x,pb:best,f:null,l:null,yr:{},ys:{}};if(cr&&!vd){c.vor=true;vd=true}}
       else if(c.yl!==Y)jEnde();
       c.n=n;c.e=x;c.yl=Y;c.ys[Y]={n,e:x};
-      if(c.n>c.pb&&((c.pb>0&&c.n===c.pb+1)||st.includes(c.n))&&x.d>=B){c.l=x;c.ln=c.n;if(!c.f)c.f=x}
+      if(c.n>c.pb&&((c.pb>0&&c.n===c.pb+1)||istStufe(st,c.n))&&x.d>=B){c.l=x;c.ln=c.n;if(!c.f)c.f=x}
       else if(!c.vor&&!c.f&&c.n<=c.pb){const p=yb[Y]||0;if(p>0&&c.n>p&&yIn(Y,x.d)&&!c.yr[Y])c.yr[Y]={x,n:c.n,pb:p}}}
     if(!cr)crossB();done(true);
     if(bc)res.best[k]={n:bc.n,c:bc};
@@ -4380,6 +4417,13 @@ function msCalc(rows,sel,o){
    Fehlt die Investition eines gezählten Kontos (miss), sind alle Werte nach Rendite null. */
 // Konten, die das Jahr y noch aufhalten: gezählt, mit Trades im Dezember, ohne Report vom 1. Jänner des Folgejahrs oder später; je Konto der
 // Datenstand (Report-Datum, sonst die neueste Buchung). BS = msBasis.
+// Ab 0.167 (Eine Wurzel): Verlustjahr. r = Rendite des Jahres (null ohne Investition), netU = Netto-Gewinn des Jahres in USD; gerundet wie angezeigt.
+// Benutzt vom Jahresrückblick (jrCalc: Leitsatz, Kasten auf Seite 2) und vom Fenster nach dem Steuer-Export (jahrVerlust). Bis 0.166 nur in jrCalc.
+function verlustJahr(r,netU){return r!=null?Math.round(r*10000)<0:Math.round(netU*100)<0}
+// Das Jahr y mit den Konten der Karte „Meilensteine“, wie der Rückblick (Florians Antwort 6 zum Plan 0.167): true = Verlustjahr, false = Gewinnjahr,
+// null = keine Trades in diesem Jahr (das Fenster nach dem Steuer-Export zeigt dann die neutrale Fassung)
+function jahrVerlust(y,rows){const BS=msBasis(rows||window.__rows||[],msAccs(),{cur:'usd'});if(!BS.T)return null;const R=BS.T.filter(r=>r.y===String(y));if(!R.length)return null;
+  return verlustJahr(BS.miss?null:retSum(R,'sel',true).v,sumTrades(R,true,true).v)}
 function jrFehlt(BS,sel,y){const ny=(+y+1)+'-01-01',dz=y+'-12-01',ye=y+'-12-31',out=[];
   for(const a of sel){if(!BS.TR.some(r=>r.a===a&&r.d>=dz&&r.d<=ye))continue;const rd=BS.RD(a);if(rd>=ny)continue;
     out.push({a,bis:datenStand(BS.T0.filter(r=>r.a===a),[a],BS.RD)})}
@@ -4394,8 +4438,8 @@ function jrCalc(rows,sel,y,o){
   // ---- Ergebnis
   const PY=positions(R,'sel'),GZ=gvZahl(PY);res.n=GZ.n;res.win=GZ.win;res.tage=new Set(R.map(r=>r.d)).size;
   res.r=rN(retSum(R,'sel',true).v);res.net=sumTrades(R,true).v;res.netU=sumTrades(R,true,true).v;
-  // Verlustjahr: Rendite unter 0, wie angezeigt gerundet (ohne Investition: Netto-Gewinn in USD unter 0)
-  res.verlust=res.r!=null?Math.round(res.r*10000)<0:Math.round(res.netU*100)<0;
+  // Verlustjahr: Rendite unter 0, wie angezeigt gerundet (ohne Investition: Netto-Gewinn in USD unter 0); ab 0.167 aus der Wurzel verlustJahr
+  res.verlust=verlustJahr(res.r,res.netU);
   // ---- Rendite je Monat (Balken), Jänner bis Dezember; n = Zahl der Trade-Zeilen (0: Monat ohne Trades)
   res.mon=[];for(let m=1;m<=12;m++){const k=y+'-'+String(m).padStart(2,'0'),rr=R.filter(r=>r.ym===k);res.mon.push({m:k,n:rr.length,r:rN(retSum(rr,'sel',true).v),a:sumTrades(rr,true).v})}
   // ---- Trades, Tage, Wochen, Monate
@@ -4456,15 +4500,17 @@ function jrCalc(rows,sel,y,o){
   {const z=geldSumme(geldZeilen(o.tags),y+'-01-01',y+'-12-31');
    if(z.n){const E=cur==='eur'&&isFinite(z.einE)&&isFinite(z.ausE);res.geld={ein:E?z.einE:z.ein,aus:E?z.ausE:z.aus,c:E?'eur':'usd'};res.geld.net=res.geld.ein-res.geld.aus}else res.geld=null}
   // ---- Meilensteine des Jahres (Reihenfolge der Art, dann der Stufe; „Ausgezahlt wie eingezahlt“ nur einmal)
-  {const ORD=['sn','sr','sg','ea','ee','ja'],seen=new Set();
+  // ab 0.167 dazu 200 % und mehr (ex), je Stufe eine Plakette
+  {const ORD=['sn','sr','sg','ea','ee','ex','ja'],seen=new Set();
    res.ms=(M.list||[]).filter(e=>ORD.includes(e.k)&&e.d.slice(0,4)===y&&!(e.k==='sr'&&M.miss)).sort((a,b)=>ORD.indexOf(a.k)-ORD.indexOf(b.k)||(a.n||0)-(b.n||0))
      .filter(e=>{const k=e.k+'|'+(e.k==='ee'||e.k==='ea'?'':e.n);if(seen.has(k))return false;seen.add(k);return true}).map(e=>({k:e.k,n:e.n||0,id:e.id}))}
   return res}
 // Leitsatz vor dem Knopf (ab 0.154): je Jahr einmal zufällig gewählt und gemerkt (S.ui.ms.jl, Schlüssel aus MS_TXT.jr.leit), damit der Rückblick
 // beim Wiedersehen und im Bild gleich ist. Passt der gemerkte nicht mehr zur Art des Jahres (Gewinn- oder Verlustjahr), wählt das Tool neu.
-function jrLeitPick(alt,verlust,rnd){const L=MS_TXT.jr.leit,ok=Object.keys(L).filter(k=>L[k].art==='beide'||L[k].art===(verlust?'verlust':'gewinn'));
-  return ok.includes(alt)?alt:ok[Math.min(ok.length-1,Math.floor((rnd==null?Math.random():rnd)*ok.length))]}
-function jrLeit(y,verlust){const ms=msSync(),k=jrLeitPick(ms.jl[y],verlust);if(ms.jl[y]!==k){ms.jl[y]=k;ms.v=(ms.v|0)+1;save()}return MS_TXT.jr.leit[k].t}
+// Ab 0.167 über die Bausteine der Satzwahl (wahlNeu, merkWahl mit dem Feld jl und ohne „nie zweimal hintereinander“); bis 0.166 eigene Wahl mit Math.random
+function jrLeitKand(verlust){const L=MS_TXT.jr.leit;return Object.keys(L).filter(k=>L[k].art==='beide'||L[k].art===(verlust?'verlust':'gewinn'))}
+function jrLeitPick(alt,verlust,rnd){const ok=jrLeitKand(verlust);return ok.includes(alt)?alt:wahlNeu(ok,null,rnd==null?null:()=>rnd)}
+function jrLeit(y,verlust){return MS_TXT.jr.leit[merkWahl('leit',y,jrLeitKand(verlust),{feld:'jl',nie:false})].t}
 // Florians Regel (ab 0.154, nur Jahresrückblick, GESTALTUNG Abschnitt 25): „Im Jahresrückblick bekommen in einer Gruppe, in der mindestens ein
 // Wert negativ ist, die positiven Werte ein „+“. Sonst nirgends im Tool.“ Werte mit Vorzeichen (Florians Antwort 8 zum Plan 0.154): Rendite,
 // Netto-Gewinn, Beträge, Bestwerte und schwächste Werte, Durchschnitte, Summe der Gewinne und der Verluste, Max. Drawdown, Netto-Einsatz; nicht
@@ -4503,10 +4549,28 @@ function msGet(){const m=S.ui.ms&&typeof S.ui.ms==='object'?S.ui.ms:(S.ui.ms={})
 // Mehrere Tabs: vor jeder Prüfung frisch aus dem Speicher lesen (wie donSync); der Stand mit dem höheren Zähler gilt
 function msSync(){const m=msGet();if(BOOT_BAD)return m;let o=null;try{const j=JSON.parse(localStorage.getItem(KEY)||'null');o=j&&j.ui&&j.ui.ms}catch(e){}
   if(o&&typeof o==='object'&&(o.v|0)>(m.v|0)){S.ui.ms=o;return msGet()}return m}
+/* ---------------- Satzwahl (ab 0.167, Fassungen-Runde; Eine Wurzel) ----------------
+   wahlNeu(L, letzte, rnd, key): die eine zufällige Wahl aus der Liste L, nie zweimal hintereinander dieselbe. letzte = Schlüssel der letzten Wahl
+   (key bildet den Schlüssel eines Elements, ohne key ist es das Element selbst); gibt es andere, wählt das Tool unter den anderen. Zufall aus rnd,
+   sonst FEN_RND (in den Tests gestellt). Benutzt von den Fenstern nach einem Anlass (fenPick: letzte = Kennzahl des zuletzt gezeigten Eintrags),
+   der leisen Zeile, der Danke-Auswahl und über merkWahl von allen gemerkten Sätzen. Bis 0.166 stand diese Wahl nur in fenPick.
+   merkWahl(ort, schl, kand, o): wählt einmal und merkt es sich (S.ui.ms, reist mit der Sicherung). Ein gemerkter Schlüssel bleibt, solange er unter
+   den Kandidaten kand ist; passt er nicht mehr (z. B. ein Leitsatz nach dem Wechsel zwischen Gewinn- und Verlustjahr), wählt das Tool neu.
+   Gemerkt in S.ui.ms.w['ort|schl'], mit o.feld in S.ui.ms[o.feld][schl] (Leitsatz: jl je Jahr, wie bis 0.166). Nie zweimal hintereinander je Ort
+   (S.ui.ms.wl[ort] = zuletzt gewählter Schlüssel), mit o.nie===false ohne diese Einstellung (Leitsatz). Bis 0.166 gab es das nur für den Leitsatz. */
+function wahlNeu(L,letzte,rnd,key){if(!L||!L.length)return null;const K=key||(x=>x),M=L.length>1&&letzte!=null?L.filter(x=>K(x)!==letzte):L,P=M.length?M:L;
+  return P[Math.min(P.length-1,Math.floor((rnd||FEN_RND)()*P.length))]}
+function merkWahl(ort,schl,kand,o){o=o||{};const ms=msSync(),F=o.feld?ms[o.feld]:ms.w&&typeof ms.w==='object'?ms.w:(ms.w={}),id=o.feld?schl:ort+'|'+schl;
+  if(kand.includes(F[id]))return F[id];
+  const wl=ms.wl&&typeof ms.wl==='object'?ms.wl:(ms.wl={}),k=wahlNeu(kand,o.nie===false?null:wl[ort],o.rnd);
+  F[id]=k;if(o.nie!==false)wl[ort]=k;ms.v=(ms.v|0)+1;save();return k}
+// Gemerkte Wahl ohne zu wählen (für Bilder und Prüfungen): der Schlüssel oder undefined
+function merkGet(ort,schl,o){o=o||{};const ms=msGet(),F=o.feld?ms[o.feld]:ms.w;return F&&typeof F==='object'?F[o.feld?schl:ort+'|'+schl]:undefined}
 function msAccs(){const all=Object.keys(S.accounts).sort(),off=msGet().off,sel=all.filter(a=>!off.includes(a));return sel.length?sel:all}
 function msToday(){const d=FEN_NOW();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 // Art eines Eintrags: Im Feier-Fenster und an den Schmetterlingen steht je Art nur der letzte Stand
-const msArt=e=>e.y&&/^j/.test(e.k)?e.k+'|'+e.y:e.k;
+// ab 0.167 sind 100 % (ee) und 200 % und mehr (ex) eine Art: Erreicht eine Auszahlung mehrere Stufen, ist nur die höchste neu
+const msArt=e=>e.y&&/^j/.test(e.k)?e.k+'|'+e.y:e.k==='ex'?'ee':e.k;
 let MS=null,MS_FLASH=[];
 function msNow(rows,cur){return msCalc(rows||window.__rows||[],msAccs(),{cur:cur||(S.ui.flt&&S.ui.flt.cur==='usd'?'usd':'eur'),today:msToday(),tags:Object.values(S.tag||{})})}
 // Gleicht den Stand mit der frisch gerechneten Liste M ab und merkt, was neu ist. o.still: nichts wird neu (geänderte Kontenauswahl).
@@ -4582,7 +4646,10 @@ function msGesehen(e){const ms=msSync();if(!e||!ms.neu.includes(e.id))return;ms.
    (Regel 6, msAuto). „Schließen“, × und Esc: angesehen, das Herz im Reiter „Resonanz“ pulsiert einmal. „Ausblenden“: dazu verschwinden alle
    Schmetterlinge, bis ein neuer Anlass kommt. */
 const msMon=(v,c)=>c==='eur'?fE.format(v):usd(v);
-function msTitle(e){const T=MS_TXT.titel;return T[e.k==='ja'&&e.n===1?'ja1':e.k].replace('{n}',fI.format(e.n||0)).replace('{j}',e.y||'')}
+// Ab 0.167: „zweimal“ … „zwölfmal“, ab 13 „13-mal“ (MS_TXT.zahl); gross = am Satzanfang groß, 2 dann „Doppelt“ (Titel bei 200 %)
+function msMal(n,gross){const Z=MS_TXT.zahl;if(gross&&n===2)return Z.doppelt;const t=n<=12?Z.mal.replace('{w}',Z.w[n]):Z.malZ.replace('{n}',fI.format(n));return gross?t[0].toUpperCase()+t.slice(1):t}
+// ab 0.167: Titel von 200 % und mehr mit Zahlwort („Doppelt so viel …“, „Dreimal so viel …“ … „Zwölfmal so viel …“, ab 13 „13-mal so viel …“)
+function msTitle(e){const T=MS_TXT.titel;if(e.k==='ex')return T.ex.replace('{Mal}',msMal(e.n/100,true));return T[e.k==='ja'&&e.n===1?'ja1':e.k].replace('{n}',fI.format(e.n||0)).replace('{j}',e.y||'')}
 // Datum eines Eintrags, wie es dasteht: Serien mit ihrem Beginn („ab …“ wie „Hochs und Tiefs“), Wochen „ab <Montag>“, Monate mit Namen
 // Ab 0.142: Serien mit ihrem Zeitraum („05.08. - 21.08.2026“, über den Jahreswechsel mit beiden Jahren), eine laufende „seit …“ (bis 0.141 „ab …“)
 // Ab 0.160 (Florians Antworten 1 und 3 zur Freigabe): Eine Serie, die nach dem Zeitraum des Eintrags weiterlief (mehr), steht mit „seit …“,
@@ -4628,7 +4695,7 @@ function jrKarteH(M,y){const X=MS_TXT.jr;
 const MS_REK=['at','ad','aw','am'],MS_SER=['rg','rd','rw','mw'],MS_STU=['sn','sr','sg'];
 const msIsSer=k=>/^j?r[gdw]$/.test(k),msIsMw=k=>/^j?mw$/.test(k),msIsRek=k=>/^[aj][tdwm]$/.test(k);
 // Kategorie eines Eintrags im Verlauf
-function msKat(e){const K=MS_TXT.kat;return msIsSer(e.k)?K.ser:msIsRek(e.k)||msIsMw(e.k)?K.rek:MS_STU.includes(e.k)?K.stu:e.k==='ea'||e.k==='ee'?K.aus:e.k==='ja'?K.ja:K.jr}
+function msKat(e){const K=MS_TXT.kat;return msIsSer(e.k)?K.ser:msIsRek(e.k)||msIsMw(e.k)?K.rek:MS_STU.includes(e.k)?K.stu:e.k==='ea'||e.k==='ee'||e.k==='ex'?K.aus:e.k==='ja'?K.ja:K.jr}
 const msById=id=>MS&&(MS.list.find(e=>e.id===id)||(MS.px||[]).find(e=>e.id===id))||null;
 // Letzter Eintrag einer Art; überholt ist ein Eintrag, wenn es einen neueren derselben Art gibt
 function msLast(M,k){return msSort(M.list).find(e=>e.k===k)||null}
@@ -4638,22 +4705,29 @@ function msAlt(M,e){const a=msArt(e);return msSort(M.list).find(x=>msArt(x)===a)
 function msOhne(M,k,y){const O=MS_TXT.ohne,yb=k==='am'?(M.mGanz||{}):M.yb[k]||{},any=y?yb[y]!=null:Object.keys(yb).length>0;
   if(k==='aw'||k==='am'||k==='mw')return any?O[k+'2']:O[k];return O[k]}
 // Ein Wert in „Rekorde“ oder „Serien“: Titel, Wert, Datum; mit Eintrag ein Knopf (öffnet das Blatt)
-function msValH(M,k,g,y,nl){const e=y?(M.val.Y[y]||{})[k]:M.val.G[k],T=esc(MS_TXT.kachel[k]);
+// Ab 0.167 (Florians Auftrag 0.167, Abschnitt 6.7, und seine Antwort 15 zur Freigabe): Die Beschriftung „Plus-Wochen in Folge“ ist der Begriff
+// „Plus-Woche“. Ein Begriff darf nicht in einem Knopf liegen: Diese Kachel ist deshalb ein Kasten (.msvb) mit einem Knopf über der ganzen Fläche
+// (.msvbtn, öffnet das Blatt wie bisher), der Begriff liegt darüber. Aussehen wie die anderen Kacheln.
+function msValH(M,k,g,y,nl){const e=y?(M.val.Y[y]||{})[k]:M.val.G[k],T=k==='rw'?gl('plusw',esc(MS_TXT.kachel[k])):esc(MS_TXT.kachel[k]);
   if(!e)return `<div class="msv"><span class="k">${T}</span><span class="v none">${esc(msOhne(M,k,y))}</span></div>`;
   const bf=nl.has(e.id)?`<span class="bfw bf-k${MS_FLASH.includes(e.id)?' fl':''} noprint">${bflyH(BF_H.k)}</span>`:'';
+  if(k==='rw'){const w=e.r!=null?fR.format(e.r):fI.format(e.n),d=msDate(e,true),m=e.mehr?msMehr(e):'';
+    return `<div class="msv msvb${bf?' hasbf':''}"><button type="button" class="msvbtn" data-ms="${esc(e.id)}" data-msg="${g}" aria-label="${esc([MS_TXT.kachel[k],w,d,m].filter(Boolean).join(' '))}"></button><span class="k">${T}</span><span class="v">${esc(w)}${bf}</span><span class="s">${esc(d)}</span>${m?`<span class="s">${esc(m)}</span>`:''}</div>`}
   return `<button type="button" class="msv${bf?' hasbf':''}" data-ms="${esc(e.id)}" data-msg="${g}"><span class="k">${T}</span><span class="v">${esc(e.r!=null?fR.format(e.r):fI.format(e.n))}${bf}</span><span class="s">${esc(msDate(e,true))}</span>${e.mehr?`<span class="s">${esc(msMehr(e))}</span>`:''}</button>`}
 // „Erreicht“: je Art die höchste Stufe (bei einem Jahr die höchste in diesem Jahr); Auszahlungen: „Ausgezahlt wie eingezahlt“ vor „Erste Auszahlung“
 function msErrH(M,L,nl){const K=MS_TXT.marke,top=k=>L.filter(e=>e.k===k).sort((a,b)=>(b.n||0)-(a.n||0)||(a.d<b.d?1:-1))[0];
-  const ms=[top('sn'),M.miss?null:top('sr'),top('sg'),top('ee')||top('ea'),top('ja')].filter(Boolean);
+  // ab 0.167 bei den Auszahlungen die höchste: 200 % und mehr (ex) vor 100 % (ee) vor „Erste Auszahlung“
+  const ms=[top('sn'),M.miss?null:top('sr'),top('sg'),top('ex')||top('ee')||top('ea'),top('ja')].filter(Boolean);
   const lab=e=>(K[e.k]||'').replace('{n}',fI.format(e.n||0));
   return ms.map(e=>`<button type="button" class="msmk" data-ms="${esc(e.id)}" data-msg="e">${esc(lab(e))}${nl.has(e.id)?`<span class="bfw bf-h${MS_FLASH.includes(e.id)?' fl':''} noprint">${bflyH(BF_H.h)}</span>`:''}</button>`).join('')}
 // Titel, Unterzeile und Wert einer Zeile im Verlauf
 function msVerlaufZ(e,cur){const U=MS_TXT.unter,R=MS_TXT.reihe;let t,w='',sub='';
-  if(msIsSer(e.k)||msIsMw(e.k)){t=U[e.k.replace(/^j(?=r|mw)/,'')]+(e.y?' '+e.y:'');w=fI.format(e.n);sub=msDate(e)}
+  // ab 0.167: Plus-Wochen auf einer Stufe ab 52 Wochen mit dem Titel „1 Jahr im Plus“, „1½ Jahre im Plus“ … (msPlusJahre), der Wert bleibt in Wochen
+  if(msIsSer(e.k)||msIsMw(e.k)){const J=msPlusJahre(e);t=(J?MS_TXT.jahre.im.replace('{z}',J.gross):U[e.k.replace(/^j(?=r|mw)/,'')])+(e.y?' '+e.y:'');w=fI.format(e.n);sub=msDate(e)}
   else if(msIsRek(e.k)){t=msTitle(e);w=fR.format(e.r);sub=e.a!=null?msMon(e.a,e.ac||cur):''}
   else if(MS_STU.includes(e.k)){t=R[e.k];w=fI.format(e.n)+(e.k==='sn'?' USD':e.k==='sr'?' %':'')}
   else if(e.k==='ea'){t=msTitle(e);w=e.a!=null?msMon(e.a,e.ac||cur):''}
-  else if(e.k==='ee'){t=msTitle(e);w='100 %';sub=e.a!=null?msMon(e.a,e.ac||cur):''}
+  else if(e.k==='ee'||e.k==='ex'){t=msTitle(e);w=e.k==='ex'?fI.format(e.n)+' %':'100 %';sub=e.a!=null?msMon(e.a,e.ac||cur):''}
   else if(e.k==='jr'){t=msTitle(e);w=e.st&&e.st.r!=null?fR.format(e.st.r):''}
   else t=msTitle(e);
   return {t,w,sub}}
@@ -4736,16 +4810,21 @@ let MS_CUR=null,MS_AMT=true,MS_JUMP=null,MS_TAB='',MS_L=[],MS_I=0,MS_Z=null;
 // „Schon gespendet“: ab 0.139 mit Datum (d.sg). Stände bis 0.138 kennen nur das Ende der Ruhe: Es gilt als „Schon gespendet“, wenn dieses Ende
 // 365 Tage (plus oder minus ein Tag) nach dem letzten Spenden-Fenster liegt (der Knopf setzt die Ruhe am Tag des Fensters auf 365 Tage).
 function donSg(d){if(d.sg)return d.sg;return d.until&&d.last&&Math.abs(fenDay(d.until)-fenDay(d.last)-365)<=1?d.last:null}
-// Regel 5 (GESTALTUNG Abschnitt 24): Die leise Zeile erscheint höchstens einmal im Monat (30 Tage). Sie fehlt 12 Monate (365 Tage) nach
-// „Schon gespendet“ und 14 Tage nach einem Spenden-Fenster.
-function msLeiseOk(d,now){const day=fenDay(now),ago=x=>x?day-fenDay(x):Infinity,sg=donSg(d);return ago(d.lz)>=30&&!(sg&&ago(sg)<365)&&ago(d.last)>=14}
+// Regel 5 (GESTALTUNG Abschnitt 24): Die leise Zeile erscheint höchstens alle 2 Monate (60 Tage; ab 0.167, Florians Regel; bis 0.166 einmal im
+// Monat, 30 Tage). Sie fehlt 12 Monate (365 Tage) nach „Schon gespendet“ und 14 Tage nach einem Spenden-Fenster (beides bleibt, Florians Antwort 4
+// zur Freigabe 0.167). Die Einladungen im Jahresrückblick und am Jahrestag zählen wie eine leise Zeile (sie setzen lz, wenn sie zu sehen waren).
+const LZ_TAGE=60;
+function msLeiseOk(d,now){const day=fenDay(now),ago=x=>x?day-fenDay(x):Infinity,sg=donSg(d);return ago(d.lz)>=LZ_TAGE&&!(sg&&ago(sg)<365)&&ago(d.last)>=14}
 // Zeile unter den Blättern (ab 0.142 je Blatt höchstens eine Einladung, die zum gezeigten Blatt gehört): Jahrestag die Frage nach dem Jahr (zählt
 // als Feedback-Frage: fb), bis 0.153 der Jahresrückblick die Zeile zum Mitfeiern, alle anderen die leise Zeile nach Regel 5. Ob Regel 5 die leise Zeile erlaubt, entscheidet msZeilen einmal beim Öffnen (sonst
 // fehlte sie ab dem zweiten Blatt, weil sie gerade gezeigt wurde). Rückgabe: zeile(e) = {t: Text, lz: leise Zeile, fb: Feedback-Frage} oder null;
 // ändert nichts (gemerkt wird erst, wenn das Blatt zu sehen ist: msPage). Bis 0.141 standen alle Zeilen des Fensters zugleich unter den Blättern.
-function msZeilen(L,d,now){const ok=msLeiseOk(d,now);
+// Ab 0.167: Die leise Zeile wählt das Tool einmal je Öffnen aus acht (wahlNeu, nie zweimal hintereinander dieselbe; lzk merkt msPage, wenn sie zu
+// sehen war). Der Jahrestag zeigt seine Einladung erst ab Tag FB_TAG (21) der Nutzung (Florians Regel ab 0.167), ungerade Jahrestage Einladung c,
+// gerade Einladung a; sie zählt als Feedback-Frage des Jahres (fb) und wie eine leise Zeile (lz). Davor zeigt der Jahrestag nur die Feier.
+function msZeilen(L,d,now){const ok=msLeiseOk(d,now),ein=donTag(d,now)>=FB_TAG,lk=ok?wahlNeu(Object.keys(MS_TXT.leise),d.lzk):null;
   // ab 0.154 ohne Jahresrückblick (er hat sein eigenes Fenster, jrShow); bis 0.153 seine Zeile (rueckDanke bzw. die leise Zeile im Gewinnjahr)
-  return {zeile:e=>e.k==='ja'?{t:MS_TXT.jahrestag,fb:true}:ok?{t:MS_TXT.leise,lz:true}:null}}
+  return {zeile:e=>e.k==='ja'?(ein?{t:MS_TXT.jahrestag[e.n%2?'einlC':'einlA'],fb:true,lz:true}:null):ok?{t:MS_TXT.leise[lk],lz:true,lzk:lk}:null}}
 // Ab 0.142 ohne eigene Lösung für die Lücke nach „Trading-“ vor „J“ (msJZug aus 0.141 zurückgebaut, Florians Entscheidung: Die Lücke kommt aus
 // der Schrift und darf bleiben).
 // Inhalt eines Blatts und des Bilds (außer Jahresrückblick), ab 0.142: oben klein die Kategorie, große Zahl, Zeile darunter, Betrag (nach
@@ -4757,14 +4836,39 @@ function msZeilen(L,d,now){const ok=msLeiseOk(d,now);
 // klein (betragK), dazu der Satz (satz). Jahrestag: groß die Zahl der Jahre.
 function msBlatt(e,amt,cur){const B=MS_TXT.blatt,U=MS_TXT.unter,yj=t=>t.replace('{j}',e.y||''),o={kat:'',gross:null,statt:null,unter:null,betrag:null,betragK:null,satz:null};
   const isY=!!e.y&&/^j/.test(e.k);
-  if(msIsSer(e.k)){o.kat=isY?yj(B.jserie):B.serie;o.gross=fI.format(e.n);o.unter=U[e.k.replace(/^j/,'')]}
+  // ab 0.167: Plus-Wochen auf einer Stufe ab 52 Wochen groß in Jahren, darunter „Plus-Wochen in Folge (52 Wochen)“ (msPlusJahre)
+  if(msIsSer(e.k)){o.kat=isY?yj(B.jserie):B.serie;const J=msPlusJahre(e);if(J){o.gross=J.gross;o.unter=MS_TXT.jahre.unter.replace('{n}',fI.format(e.n))}else{o.gross=fI.format(e.n);o.unter=U[e.k.replace(/^j/,'')]}}
   else if(msIsMw(e.k)){o.kat=isY?yj(B.jrekord):B.rekord;o.gross=fI.format(e.n);o.unter=U.mw}
   else if(MS_STU.includes(e.k)){o.kat=B.stufe;o.gross=fI.format(e.n)+(e.k==='sn'?' USD':e.k==='sr'?' %':'');o.unter=U[e.k]}
   else if(e.k==='ja'){o.kat=B.jahrestag;o.gross=fI.format(e.n);o.unter=U[e.n===1?'ja1':'ja']}
   else if(e.k==='ea'){o.kat=B.aus;if(amt&&e.a!=null){o.gross=msMon(e.a,e.ac||cur);o.unter=MS_TXT.titel.ea}else o.statt=MS_TXT.titel.ea}
-  else if(e.k==='ee'){o.kat=B.aus;o.gross='100 %';o.unter=U.ee;if(amt&&e.a!=null)o.betragK=msMon(e.a,e.ac||cur);o.satz=MS_TXT.einsatz}
+  else if(e.k==='ee'){o.kat=B.aus;o.gross='100 %';o.unter=U.ee;if(amt&&e.a!=null)o.betragK=msMon(e.a,e.ac||cur)}
+  else if(e.k==='ex'){o.kat=B.aus;o.gross=fI.format(e.n)+' %';o.unter=U.ee;if(amt&&e.a!=null)o.betragK=msMon(e.a,e.ac||cur)}
   else{o.kat=isY?yj(B.jrekord):B.rekord;if(e.r!=null)o.gross=fR.format(e.r);o.unter=MS_TXT.titel[isY?'a'+e.k.slice(1):e.k].replace(' {j}','');if(amt&&e.a!=null)o.betrag=msMon(e.a,e.ac||cur)}
+  // ab 0.167: Feier-Satz (msSatz), bis 0.166 nur bei 100 % (einsatz)
+  o.satz=msSatz(e);
   return o}
+/* Ab 0.167 (Florians Auftrag 0.167, Abschnitt 2.2): Feier-Satz auf dem Blatt (und im Bild, das wie das Blatt aussieht). Nur diese Blätter haben einen:
+   Stufe (Netto-Gewinn, Rendite, Gewinn-Trades: einer von drei, zufällig, nie zweimal hintereinander), erste Auszahlung, 100 % (einsatz), 200 % und mehr,
+   Plus-Wochen in Jahren, Jahrestag (ungerade: Satz a bzw. „Nachträglich …“, wenn er beim ersten Öffnen mehr als 3 Tage zurückliegt; gerade: Satz c).
+   Rekorde, Bestserien und Jahres-Rekorde haben keinen. Fest je Blatt: Was gewählt werden muss (Stufe, Satz a), wählt msSatzWahl beim ersten Öffnen
+   des Blatts (msPage) und merkt es sich (merkWahl, S.ui.ms.w, reist mit der Sicherung); msSatz liest es nur (Blatt und Bild, ändert nichts). */
+function msSatz(e){const F=MS_TXT.feier;
+  if(MS_STU.includes(e.k)){const k=merkGet('feier',e.id);return k&&F.stufe[k]||null}
+  if(e.k==='ea')return F.ea;
+  if(e.k==='ee')return MS_TXT.einsatz;
+  if(e.k==='ex')return F.ex.replace('{mal}',msMal(e.n/100));
+  if(e.k==='ja'){const J=MS_TXT.jahrestag;if(e.n%2){const k=merkGet('jahrestag',e.id);return k&&J[k]||null}
+    return e.n===1?J.c1:J.c.replace('{N}',e.n<=12?msWortG(e.n):fI.format(e.n))}
+  const P=msPlusJahre(e);if(P)return msJahreSatz(P.j);
+  return null}
+function msSatzWahl(e){if(!e)return;if(MS_STU.includes(e.k))merkWahl('feier',e.id,Object.keys(MS_TXT.feier.stufe));
+  else if(e.k==='ja'&&e.n%2&&!merkGet('jahrestag',e.id))merkWahl('jahrestag',e.id,[fenDay(FEN_NOW())-fenDay(e.from+'T12:00:00')>3?'aN':'a'],{nie:false})}
+// Zahlwort groß („Zwei“ … „Zwölf“; 1 = „Ein“)
+const msWortG=n=>{const w=MS_TXT.zahl.w[n];return w[0].toUpperCase()+w.slice(1)};
+// Satz zu Plus-Wochen in Jahren (j = 1, 1.5, 2 …): bis zwölf mit Zahlwort, ab 13 mit Ziffern
+function msJahreSatz(j){const F=MS_TXT.feier,g=Math.floor(j),h=j>g;if(g>12)return (h?F.jhZ:F.jgZ).replace('{n}',fI.format(g));
+  if(!h&&g===1)return F.j1;return (h?F.jh:F.jg).replace('{W}',msWortG(g))}
 // Ab 0.154 ohne den Jahresrückblick (eigenes Fenster jrShow); bis 0.153 hatte er hier ein Blatt mit Tabelle (Netto-Gewinn, Rendite, Trades, drei
 // Bestwerte, „Stand: letzter Trade am …“)
 function msSheetH(e,cur){const amt=MS_AMT;let h=`<div id="ms-bf" class="msbfl">${bflyH(96,true)}</div>`;
@@ -4790,13 +4894,14 @@ function msShow(L,o){if(!MS||!L.length)return;o=o||{};msbHome();const d=donSync(
 // Zeigt Blatt i: Inhalt, „4 von 6“, Pfeile (am Ende gesperrt), Punkte, Bild-Knopf für dieses Blatt, die Zeile dieses Blatts. Ab 0.142 merkt sich
 // das Tool hier, dass die leise Zeile (lz) oder die Jahrestag-Frage (fb) gezeigt wurde (Regel 5, GESTALTUNG Abschnitt 24).
 function msPage(i){const n=MS_L.length;if(!n||!MS)return;MS_I=Math.max(0,Math.min(n-1,i));const e=MS_L[MS_I];
-  if(FP_OPEN==='msb')closeFpanel();msbHome();msSheet();
+  // ab 0.167: der Feier-Satz des Blatts wird beim ersten Öffnen gewählt und gemerkt (msSatzWahl), danach steht er fest
+  if(FP_OPEN==='msb')closeFpanel();msbHome();msSatzWahl(e);msSheet();
   $('ms-pos').textContent=n>1?MS_TXT.pos.replace('{i}',MS_I+1).replace('{n}',n):'';
   const pv=$('ms-prev'),nx=$('ms-next');pv.hidden=nx.hidden=n<2;pv.disabled=MS_I===0;nx.disabled=MS_I===n-1;
   $('ms-dots').innerHTML=n>1&&n<8?MS_L.map((x,j)=>`<span${j===MS_I?' class="on"':''}></span>`).join(''):'';
   $('ms-img').innerHTML=msImgBtn(e.id);$('ms-amt').checked=MS_AMT;msGesehen(e);
   const z=MS_Z&&MS_Z.zeile(e);$('ms-lines').innerHTML=z?`<p class="msline">${msLinkH(/💚/.test(z.t)?z.t:'💚 '+z.t)}</p>`:'';
-  if(z&&(z.lz||z.fb)){const d=donGet(),iso=FEN_NOW().toISOString();if(z.lz&&!MS_Z.lz){d.lz=iso;MS_Z.lz=true}if(z.fb&&!MS_Z.fb){d.fb=iso;MS_Z.fb=true}save()}
+  if(z&&(z.lz||z.fb)){const d=donGet(),iso=FEN_NOW().toISOString();if(z.lz&&!MS_Z.lz){d.lz=iso;MS_Z.lz=true}if(z.lzk)d.lzk=z.lzk;if(z.fb&&!MS_Z.fb){d.fb=iso;MS_Z.fb=true}save()}
   const bx=$('ms-modal').querySelector('.box');if(bx)bx.scrollTop=0;msNavPos();msGlSync()}
 function msSheet(){const e=MS_L[MS_I];if(e)$('ms-body').innerHTML=msSheetH(e,MS.cur)}
 // Pfeile senkrecht in der Mitte der sichtbaren Fläche zwischen Kopf und fester Fußleiste (sticky, bleiben beim Scrollen stehen)
@@ -4848,7 +4953,7 @@ const MS_BILD={hoch:[1080,1350]};
 // msCardSpec beschreibt das Bild (für die Tests ohne Zeichenfläche), msPng zeichnet es.
 const MS_FN={at:'Bester-Trade',ad:'Bester-Handelstag',aw:'Beste-Woche',am:'Bester-Monat',jt:'Bester-Trade-{j}',jd:'Bester-Handelstag-{j}',jw:'Beste-Woche-{j}',
   sn:'Netto-Gewinn-{n}-USD',sr:'Rendite-{n}-Prozent',sg:'Gewinn-Trades-{n}',rg:'Gewinn-Trades-am-Stueck-{n}',rd:'Tage-im-Plus-{n}',rw:'Plus-Wochen-{n}',mw:'Gewinn-Trades-in-einer-Woche-{n}',
-  ja:'Jahrestag-{n}',ea:'Erste-Auszahlung',ee:'Ausgezahlt-wie-eingezahlt',jr:'Trading-Jahr-{j}',
+  ja:'Jahrestag-{n}',ea:'Erste-Auszahlung',ee:'Ausgezahlt-wie-eingezahlt',ex:'Ausgezahlt-{n}-Prozent',jr:'Trading-Jahr-{j}',
   jm:'Bester-Monat-{j}',jrg:'Gewinn-Trades-am-Stueck-{n}-{j}',jrd:'Tage-im-Plus-{n}-{j}',jrw:'Plus-Wochen-{n}-{j}',jmw:'Gewinn-Trades-in-einer-Woche-{n}-{j}'};
 const msFile=e=>`Trading-Bilanz_${MS_FN[e.k].replace('{n}',e.n||0).replace('{j}',e.y||'')}_${msToday()}.png`;
 // Ab 0.154 ohne den Jahresrückblick (eigene Bilder, jrBild); bis 0.153 quer 1200 × 675 mit drei Bestwerten (zeilen)
@@ -4929,27 +5034,28 @@ const jrCur=c=>c==='eur'?'€':'USD';
    mit Texten {t, s: mit Vorzeichen, none: Text statt Wert}. Die Plus-Regel (jrPlus) wirkt je Gruppe auf alles, was die Gruppe zeigt. */
 function jrModel(st,o){const X=MS_TXT.jr,K=X.k,Sx=X.s,O=X.ohne,cur=st.cur,amt=!!o.amt&&o.art!=='kurz',art=o.art||'fenster',C=jrCur(cur);
   const R=v=>({t:v==null?'–':fR.format(v),s:v!=null}),N=t=>({t,none:true}),T=t=>({t}),M2=v=>({t:msMon(v,cur),s:true}),kc=(k,c)=>k.replace('{c}',c||C);
-  const tile=(k,v,s)=>({k,v,s:(s||[]).filter(Boolean)}),G=[];
+  // ab 0.167: g = Begriff an der Beschriftung [Schlüssel in GL, Wort] (ohne Wort die ganze Beschriftung; nur im Fenster, nie im Bild)
+  const tile=(k,v,s,g)=>Object.assign({k,v,s:(s||[]).filter(Boolean)},g?{g}:null),G=[];
   const ext=(b,has,none,sub)=>b?tile(null,R(b.r),sub(b)):tile(null,has?T('–'):N(none),[]);
   const lbl=(t,k)=>Object.assign(t,{k});
   // Ergebnis
   {const hit=tile(K.hit,T(st.n?fP.format(st.win/st.n):'–'),[T(Sx.hit.replace('{w}',fI.format(st.win)).replace('{n}',`${fI.format(st.n)} ${st.n===1?'Trade':'Trades'}`))]);
    const tr=tile(K.trades,T(fI.format(st.n)),[T((st.tage===1?Sx.tage1:Sx.tage).replace('{n}',fI.format(st.tage)))]);
-   const wp=st.wPlus&&st.wPlus.of?tile(K.wPlus,T(fI.format(st.wPlus.n)),[T(Sx.wPlus.replace('{n}',`${fI.format(st.wPlus.of)} ${st.wPlus.of===1?'Woche':'Wochen'}`))]):tile(K.wPlus,N(O.w));
-   const r=[tile(K.rendite,R(st.r)),hit,tr];if(art==='kurz')r.push(wp);else if(amt)r.push(tile(kc(K.netto),{t:fN.format(st.net),s:true}));
+   const wp=st.wPlus&&st.wPlus.of?tile(K.wPlus,T(fI.format(st.wPlus.n)),[T(Sx.wPlus.replace('{n}',`${fI.format(st.wPlus.of)} ${st.wPlus.of===1?'Woche':'Wochen'}`))],['plusw']):tile(K.wPlus,N(O.w),null,['plusw']);
+   hit.g=['hit'];const r=[tile(K.rendite,R(st.r),null,['rendite']),hit,tr];if(art==='kurz')r.push(wp);else if(amt)r.push(tile(kc(K.netto),{t:fN.format(st.net),s:true},null,['netto']));
    G.push({id:'erg',h:X.gr.erg,reihen:[r]})}
   // Bestwerte und schwächste Werte: Datum, mit „Betrag zeigen“ der Betrag in einer eigenen kleinen Zeile (nie in der Kurzfassung)
   const dat={t:b=>T(fD(b.d)),d:b=>T(fD(b.d)),w:b=>T(Sx.woche.replace('{d}',fD(b.w))),m:b=>T(fM(b.m))};
-  const four=(B,ks)=>ks.map(x=>lbl(ext(B[x],st.has[x],O[x],b=>[dat[x](b),amt&&b.a!=null?M2(b.a):null]),{t:K.trade,d:K.tag,w:K.woche,m:K.monat}[x]));
+  const four=(B,ks)=>ks.map(x=>Object.assign(lbl(ext(B[x],st.has[x],O[x],b=>[dat[x](b),amt&&b.a!=null?M2(b.a):null]),{t:K.trade,d:K.tag,w:K.woche,m:K.monat}[x]),x==='d'?{g:['tag']}:null));
   G.push({id:'best',h:X.gr.best,reihen:[four(st.best,['t','d','w','m'])]});
   // Durchschnitt
   {const a=st.avg,nv=(v,has,none)=>v!=null?R(v):has?T('–'):N(none);
-   G.push({id:'avg',h:X.gr.avg,reihen:[[tile(K.pTrade,R(a.t)),tile(K.pTag,R(a.d)),tile(K.pWoche,nv(a.w,st.has.w,O.w)),tile(K.pMonat,nv(a.m,st.has.m,O.m))]]})}
+   G.push({id:'avg',h:X.gr.avg,gh:'avg',reihen:[[tile(K.pTrade,R(a.t)),tile(K.pTag,R(a.d),null,['tag','Handelstag']),tile(K.pWoche,nv(a.w,st.has.w,O.w)),tile(K.pMonat,nv(a.m,st.has.m,O.m))]]})}
   if(art!=='kurz'){
     // Beständigkeit: Wochen im Plus, Serien aus den Meilensteinen, meiste Gewinn-Trades in einer Woche, stärkster Wochentag
-    const S2=st.ser||{},ser=(k,z)=>z?tile(K[k],T(fI.format(z.n)),jrSpan(z).map(T)):tile(K[k],N(O[k]));
-    const wp=st.wPlus&&st.wPlus.of?tile(K.wPlus,T(fI.format(st.wPlus.n)),[T(Sx.wPlus.replace('{n}',`${fI.format(st.wPlus.of)} ${st.wPlus.of===1?'Woche':'Wochen'}`))]):tile(K.wPlus,N(O.w));
-    const mw=S2.mw?tile(K.mw,T(fI.format(S2.mw.n)),[T(Sx.mw.replace('{d}',fD(S2.mw.w)))]):tile(K.mw,N(O.mw));
+    const S2=st.ser||{},ser=(k,z)=>Object.assign(z?tile(K[k],T(fI.format(z.n)),jrSpan(z).map(T)):tile(K[k],N(O[k])),k==='rw'?{g:['plusw']}:null);
+    const wp=st.wPlus&&st.wPlus.of?tile(K.wPlus,T(fI.format(st.wPlus.n)),[T(Sx.wPlus.replace('{n}',`${fI.format(st.wPlus.of)} ${st.wPlus.of===1?'Woche':'Wochen'}`))],['plusw']):tile(K.wPlus,N(O.w),null,['plusw']);
+    const mw=S2.mw?tile(K.mw,T(fI.format(S2.mw.n)),[T(Sx.mw.replace('{d}',fD(S2.mw.w)))],['meiste']):tile(K.mw,N(O.mw),null,['meiste']);
     // der Durchschnitt des Wochentags steht in der kleinen Zeile hinter „Ø“; in dieser Gruppe hat sonst kein Wert ein Vorzeichen, die Plus-Regel ändert hier nichts
     const wd=st.wd?tile(K.wd,T(WDL[st.wd.i]),[T(Sx.wd.replace('{v}',fR.format(st.wd.v)))]):tile(K.wd,T('–'));
     G.push({id:'bst',h:X.gr.bst,reihen:[[wp,ser('rg',S2.rg),ser('rd',S2.rd)],[ser('rw',S2.rw),mw,wd]]});
@@ -4958,14 +5064,15 @@ function jrModel(st,o){const X=MS_TXT.jr,K=X.k,Sx=X.s,O=X.ohne,cur=st.cur,amt=!!
     // Ab 0.156 (Florians Auftrag): „Größter Gewinn-Trade“ bzw. „Größter Verlust-Trade“, „in Handelstagen“ klein unter dem Wert (nur bei einer
     // Zahl), im Fenster und im Bild „Alle Werte“. mo: Am Handy steht der Profit-Faktor nach den beiden (2 + 2 + 1); am PC und im Bild bleibt
     // die Reihenfolge.
-    const hs=x=>typeof x==='number'?[T(Sx.htg)]:[],mo=t=>Object.assign(t,{mo:1});
-    G.push({id:'vh',h:X.gr.vh,reihen:v?[[tile(K.sumW,R(v.sumW)),tile(K.sumL,R(v.sumL)),mo(tile(K.pf,v.pf==null?N(O.pf):T(Sx.pf.replace('{v}',fmtDec(v.pf,1)))))],[tile(K.htgW,htg(v.htgW),hs(v.htgW)),tile(K.htgL,htg(v.htgL),hs(v.htgL))]]
-      :[[tile(K.sumW,T('–')),tile(K.sumL,T('–')),mo(tile(K.pf,T('–')))],[tile(K.htgW,T('–')),tile(K.htgL,T('–'))]]})}
-  if(o.weak){const W=four(st.worst,['t','d','w','m']),dd=st.dd?tile(K.dd,R(st.dd.v),[st.dd.v<0&&st.dd.d?T(Sx.dd.replace('{d}',fD(st.dd.d))):null]):tile(K.dd,T('–'));
+    // ab 0.167: Begriffe an „Summe der Gewinne“, „Summe der Verluste“, „Profit-Faktor“ und an der kleinen Zeile „in Handelstagen“
+    const hs=x=>typeof x==='number'?[Object.assign(T(Sx.htg),{g:['htage']})]:[],mo=t=>Object.assign(t,{mo:1});
+    G.push({id:'vh',h:X.gr.vh,reihen:v?[[tile(K.sumW,R(v.sumW),null,['summe']),tile(K.sumL,R(v.sumL),null,['summe']),mo(tile(K.pf,v.pf==null?N(O.pf):T(Sx.pf.replace('{v}',fmtDec(v.pf,1))),null,['pfaktor']))],[tile(K.htgW,htg(v.htgW),hs(v.htgW)),tile(K.htgL,htg(v.htgL),hs(v.htgL))]]
+      :[[tile(K.sumW,T('–'),null,['summe']),tile(K.sumL,T('–'),null,['summe']),mo(tile(K.pf,T('–'),null,['pfaktor']))],[tile(K.htgW,T('–')),tile(K.htgL,T('–'))]]})}
+  if(o.weak){const W=four(st.worst,['t','d','w','m']),dd=st.dd?tile(K.dd,R(st.dd.v),[st.dd.v<0&&st.dd.d?T(Sx.dd.replace('{d}',fD(st.dd.d))):null],['dd']):tile(K.dd,T('–'),null,['dd']);
     const vs=st.vs?tile(K.vs,T(`${fI.format(st.vs.n)} ${st.vs.n===1?'Trade':'Trades'}`),jrSpan(st.vs).map(T)):tile(K.vs,N(O.vs));
     G.push({id:'weak',h:X.gr.weak,reihen:art==='kurz'?[[W[0],W[1],W[2],dd]]:[[W[0],W[1],W[2]],[W[3],dd,vs]]})}
   if(amt&&st.geld&&art!=='kurz'){const g=st.geld,c=jrCur(g.c);
-    G.push({id:'geld',h:X.gr.geld,reihen:[[tile(kc(K.ein,c),T(fN.format(g.ein))),tile(kc(K.aus,c),T(fN.format(g.aus))),tile(kc(K.einsatz,c),{t:fN.format(g.net),s:true},[T(Sx.einsatz)])]]})}
+    G.push({id:'geld',h:X.gr.geld,reihen:[[tile(kc(K.ein,c),T(fN.format(g.ein)),null,['ein']),tile(kc(K.aus,c),T(fN.format(g.aus)),null,['aus']),tile(kc(K.einsatz,c),{t:fN.format(g.net),s:true},[T(Sx.einsatz)],['einsatz'])]]})}
   if(art==='fenster'){const L=(st.ms||[]).filter(e=>e.k!=='sn'||amt).map(e=>(MS_TXT.marke[e.k]||'').replace('{n}',fI.format(e.n)));
     if(L.length)G.push({id:'ms',h:X.gr.ms,reihen:[],pl:L})}
   for(const g of G)jrPlus(g.reihen.flat().flatMap(t=>[t.v,...t.s]));
@@ -4985,8 +5092,8 @@ function jrBalkenH(st){const X=MS_TXT.jr,v=m=>st.miss?m.a:m.r,V=st.mon.map(m=>m.
 function jrS1H(){const X=MS_TXT.jr,st=JR.st,amt=jrAmt(),k=jrKopf(st,amt),u=jrUnvTxt(st),kt=jrKtoTxt(),sp=c=>`<span class="jrsp ${c}" aria-hidden="true"></span>`;
   return `<div class="jrs1"><div class="jrbf" id="jr-bf" aria-hidden="true">${bflyH(96,true)}<span class="jrteil jrfl-l"></span><span class="jrteil jrfl-r"></span><span class="jrteil jrkoerper"></span><span class="jrstaub" id="jr-staub"></span></div>${sp('a')}
     <h2 class="jrh" id="jr-t">${esc(X.titel.replace('{j}',JR.y))}</h2>${JR.nach?`<p class="jrauf">${esc(X.auftakt.replace('{j}',JR.y))}</p>`:''}${kt?`<p class="jrauf jrkto">${esc(kt)}</p>`:''}<div class="msgl"></div>${sp('b')}
-    <div class="jrzw${k.n!=null?' zwei':''}"><div class="jrz"><div class="jrgr">${esc(k.r)}</div><div class="jrkl">${esc(X.rendite)}</div></div>
-    ${k.n!=null?`<div class="jrz"><div class="jrnet">${esc(k.n)}</div><div class="jrkl">${esc(X.netto.replace('{c}',jrCur(st.cur)))}</div></div>`:''}</div>
+    <div class="jrzw${k.n!=null?' zwei':''}"><div class="jrz"><div class="jrgr">${esc(k.r)}</div><div class="jrkl">${gl('rendite',esc(X.rendite))}</div></div>
+    ${k.n!=null?`<div class="jrz"><div class="jrnet">${esc(k.n)}</div><div class="jrkl">${gl('netto',esc(X.netto.replace('{c}',jrCur(st.cur))))}</div></div>`:''}</div>
     ${st.miss?`<p class="small msmiss jrmiss">${msMissTxt(st.missAcc)}</p>`:''}${sp('c')}
     ${jrBalkenH(st)}${sp('d')}<div class="msgl jrtr"></div><p class="jrleit">${esc(JR.leit)}</p>${sp('e')}
     <div class="jrweiter"><button type="button" class="btn primary" data-jrgo="2">${esc(X.weiter)}</button></div>
@@ -5001,25 +5108,52 @@ const jrAlleHt=()=>S.ui.flt&&S.ui.flt.zeroDays===false?MS_TXT.jr.alleHt:'';
 // Kacheln einer Gruppe: Reihen wie im Modell (PC: Spaltenzahl je Reihe, --n); am Handy fließen alle Kacheln der Gruppe in zwei Spalten (jrFit)
 // Ab 0.160: g.hz = kleiner Zusatz neben der Überschrift (jrAlleHt); jrum = Gruppe, deren Beschriftungen am Handy auf zwei Zeilen umbrechen
 // dürfen („Beständigkeit“ und „Verhältnis“, Florians Entscheidung zu OFFEN „Aus 0.156“), damit die Kacheln auch bei 360 px zu zweit stehen
+// Ab 0.167: Text mit Begriff (g = [Schlüssel in GL, Wort]; ohne Wort ist der ganze Text der Begriff)
+function jrGl(t,g){const L=esc(t);if(!g)return L;if(!g[1])return gl(g[0],L);const W=esc(g[1]);return L.replace(W,gl(g[0],W))}
 function jrGrpH(g){if(g.pl)return `<div class="jrgrp"><h3>${esc(g.h)}</h3><div class="jrpl">${g.pl.map(t=>`<span class="msmk">${esc(t)}</span>`).join('')}</div></div>`;
-  const tH=(t,i)=>`<div class="jrk${i===0?' jrf':''}"${t.mo?` data-mo="${t.mo}"`:''}><span class="k">${esc(t.k)}</span><span class="v${t.v.none?' none':''}">${esc(t.v.t)}</span>${t.s.map(x=>`<span class="s">${esc(x.t)}</span>`).join('')}</div>`;
-  return `<div class="jrgrp"><h3>${esc(g.h)}${g.hz?`<span class="jrhz">${esc(g.hz)}</span>`:''}</h3><div class="jrbody${g.id==='bst'||g.id==='vh'?' jrum':''}">${g.reihen.map(r=>`<div class="jrreihe" style="--n:${r.length}">${r.map(tH).join('')}</div>`).join('')}</div></div>`}
-function jrS2H(){const X=MS_TXT.jr,st=JR.st,u=jrUnvTxt(st),G=jrModel(st,{amt:jrAmt(),weak:jrWeak(),art:'fenster'}),sg=jrSgOn(),kt=jrKtoTxt();
+  // ab 0.167: gestrichelte Begriffe an Beschriftungen, Überschrift „Durchschnitt“, „in Handelstagen“ und „mit allen Handelstagen“ (jrGl)
+  const tH=(t,i)=>`<div class="jrk${i===0?' jrf':''}"${t.mo?` data-mo="${t.mo}"`:''}><span class="k">${jrGl(t.k,t.g)}</span><span class="v${t.v.none?' none':''}">${esc(t.v.t)}</span>${t.s.map(x=>`<span class="s">${jrGl(x.t,x.g)}</span>`).join('')}</div>`;
+  return `<div class="jrgrp"><h3>${jrGl(g.h,g.gh&&[g.gh])}${g.hz?`<span class="jrhz">${gl('alleht',esc(g.hz))}</span>`:''}</h3><div class="jrbody${g.id==='bst'||g.id==='vh'?' jrum':''}">${g.reihen.map(r=>`<div class="jrreihe" style="--n:${r.length}">${r.map(tH).join('')}</div>`).join('')}</div></div>`}
+// Ab 0.167: Einleitung (JR.el: null = noch nicht gewählt, wird beim ersten Zeichnen von Seite 2 gewählt und gemerkt; false = dieser Rückblick hatte
+// sie schon bei einem früheren Öffnen; Text = in diesem Öffnen gezeigt), Neujahrswunsch und Kasten (jrKasten). JR.kz: der Kasten zeigt eine
+// Einladung (zählt wie eine leise Zeile, jrView).
+function jrS2H(){const X=MS_TXT.jr,st=JR.st,u=jrUnvTxt(st),G=jrModel(st,{amt:jrAmt(),weak:jrWeak(),art:'fenster'}),kt=jrKtoTxt();
   {const g=G.find(g=>g.id==='avg'),z=jrAlleHt();if(g&&z)g.hz=z}
-  const ein=sg?`<div class="jrein"><p>${herzH('💚 '+X.danke)}</p></div>`:`<div class="jrein"><p>${herzH('💚 '+(st.verlust?X.einladungV:X.einladung))}</p><button type="button" class="btn primary" data-jrgo="3">${esc(X.wert)}</button></div>`;
-  return `<div class="jrs2"><div class="jrkopf"><div class="jrkat">${esc(X.titel.replace('{j}',JR.y))}</div><h2 class="jrh" id="jr-t">${esc(X.zahlen)}</h2><div class="msgl"></div>${kt?`<p class="jrunv jrkto">${esc(kt)}</p>`:''}${u?`<p class="jrunv">${esc(u)}</p>`:''}</div>
-    ${G.map(jrGrpH).join('')}<div class="jrabs"><div class="msgl jrtr"></div><p class="jrwunsch">${esc(X.wunsch)}</p>${ein}</div></div>`}
+  if(JR.el===null)JR.el=jrEinl(JR.y,st);
+  const K=jrKasten(JR.y,st);JR.kz=!!K.lz;
+  const ein=`<div class="jrein"><p>${herzH('💚 '+K.t)}</p>${K.knopf?`<button type="button" class="btn primary" data-jrgo="3">${esc(X.wert)}</button>`:''}</div>`;
+  return `<div class="jrs2"><div class="jrkopf"><div class="jrkat">${esc(X.titel.replace('{j}',JR.y))}</div><h2 class="jrh" id="jr-t">${esc(X.zahlen)}</h2><div class="msgl"></div>${JR.el?`<p class="jreinl">${esc(JR.el)}</p>`:''}${kt?`<p class="jrunv jrkto">${esc(kt)}</p>`:''}${u?`<p class="jrunv">${esc(u)}</p>`:''}</div>
+    ${G.map(jrGrpH).join('')}<div class="jrabs"><div class="msgl jrtr"></div><p class="jrwunsch">${esc(X.wunsch[merkWahl('wunsch',JR.y,Object.keys(X.wunsch))])}</p>${ein}</div></div>`}
+// Einleitung auf Seite 2 (ab 0.167, Florians Auftrag 0.167, Abschnitt 6.3, und seine Antwort 13 zur Freigabe): wird beim ersten Öffnen mit Seite 2
+// gewählt und gemerkt (merkWahl, S.ui.ms.w) und steht danach nie wieder. Bis einschließlich 6. Jänner des Folgejahrs einer der beiden Sätze zu den
+// Raunächten (zufällig), später der Satz für ein Gewinn- bzw. Verlustjahr.
+function jrEinl(y,st){const X=MS_TXT.jr.einl,kand=msToday()<=(+y+1)+'-01-06'?['rauh1','rauh2']:[st.verlust?'verlust':'gewinn'];return X[merkWahl('einl',y,kand)]}
+/* Kasten auf Seite 2 (ab 0.167, Florians Auftrag 0.167, Abschnitt 6.5), vier Fälle. Gewinnjahr ohne Spende: eine Einladung, je Jahr einmal gewählt und
+   gemerkt, und „Wertschätzung teilen“; die erste Einladung überhaupt ist einmal je Person Florians Schmetterlings-Satz (S.ui.ms.sf = das Jahr; ist der
+   erste Rückblick ein Verlustjahr oder hat die Person schon gespendet, wartet er auf den nächsten passenden; er kommt in keinem anderen Jahr). Gewinnjahr
+   nach einer Spende (12 Monate nach „Schon gespendet“): Florians Dank. Verlustjahr ohne Spende: ein Dank ohne Knopf. Verlustjahr nach einer Spende: ein
+   Satz aus der Danke-Auswahl, je Jahr gewählt und gemerkt. Rückgabe {t: Text, knopf: „Wertschätzung teilen“, lz: zählt wie eine leise Zeile}.
+   Bis 0.166: Einladung (Gewinnjahr) bzw. Platzhalter (Verlustjahr) mit Knopf, nach einer Spende der Danke-Satz. */
+function jrKasten(y,st){const X=MS_TXT.jr,sg=jrSgOn();
+  if(st.verlust)return sg?{t:MS_TXT.danke[merkWahl('dankeV',y,Object.keys(MS_TXT.danke))]}:{t:X.dankeV};
+  if(sg)return {t:X.dankeG};
+  const ms=msSync();let t;
+  if(ms.sf===y||(ms.sf==null&&!merkGet('einladung',y))){if(ms.sf!==y){ms.sf=y;ms.v=(ms.v|0)+1;save()}t=X.schmetterling}
+  else t=X.einladung[merkWahl('einladung',y,Object.keys(X.einladung))];
+  return {t,knopf:true,lz:true}}
 // „Schon gespendet“ in den letzten 12 Monaten (365 Tage): dann steht im Kasten der Danke-Satz statt Einladung und Knopf (Florians Antwort 11)
 function jrSgOn(){const d=donGet(),sg=donSg(d);return !!sg&&fenDay(FEN_NOW())-fenDay(sg)<365}
 // ---- Ansicht „Wertschätzung teilen“: QR-Code, Adresse, Netzwerk-Hinweis und PayPal aus dem Reiter „Resonanz“ (eine Quelle)
+// Ab 0.167: „Ich habe schon gespendet“ (#don-schon) kommt wie QR-Code, Netzwerk-Hinweis und PayPal aus dem Reiter „Resonanz“ und steht direkt unter
+// PayPal (Florians Antwort 16 zur Freigabe 0.167); der Dank darunter (data-dank) zeigt nach dem Klick einen Satz aus der Danke-Auswahl (JR.dankT)
 function jrS3H(){const X=MS_TXT.jr,q=s=>{const e=document.querySelector(s);return e&&e.outerHTML?e.outerHTML.replace(/ id="don-[a-z]+"/,''):''},adr=($('don-addr').textContent||'').trim(),zur=`<button type="button" class="zlink jrzur" data-jrgo="2">${esc(X.zurueck)}</button>`;
   return `<div class="jrs3">${zur}<h2 class="jrh" id="jr-t">${herzH('💚 '+X.wert)}</h2><p>${esc(X.wDank)}</p>
     <div class="jrblk"><div class="small jrlab">${esc(X.wAdr)}</div><div class="jradr"><div class="jradrt"><div class="addr" id="jr-adr">${esc(adr)}</div>
       <div class="row" style="margin-top:8px"><button type="button" class="btn primary" id="jr-copy">${esc(X.kopieren)}</button><span id="jr-copymsg" class="small"></span></div></div>${q('#don-qr')}</div>
       ${q('#don-netz')}${q('#don-warn')}</div>
-    <div class="jrblk"><div class="small jrlab">${esc(X.paypal)}</div><p style="margin:6px 0 0">${q('#don-paypal')}</p></div>
-    <div class="jrblk"><p style="margin:0">${esc(X.sagen)}</p><p class="small" style="margin:8px 0 0"><button type="button" class="zlink" id="jr-schon">${esc(X.schon)}</button></p>
-      <p id="jr-danke" class="jrdanke"${JR.sgNow?'':' hidden'}>${herzH('💚 '+X.danke)}</p></div>
+    <div class="jrblk"><div class="small jrlab">${esc(X.paypal)}</div><p style="margin:6px 0 0">${q('#don-paypal')}</p>${q('#don-schon')}
+      <p class="jrdanke" data-dank${JR.dankT?'':' hidden'}>${JR.dankT?herzH('💚 '+JR.dankT):''}</p></div>
+    <div class="jrblk"><p style="margin:0">${esc(X.sagen)}</p></div>
     <p style="margin:16px 0 0">${zur}</p></div>`}
 // Öffnet den Rückblick des Jahres y (o.auto: von selbst, Regel 6; zählt als das Fenster dieses Tages, schließt nicht mit einem Klick daneben).
 // Gesehen (ms.jf) nur mit vollständigen Daten: Wer ihn vorher von Hand ansieht, bekommt ihn trotzdem von selbst, sobald alles da ist
@@ -5029,7 +5163,8 @@ function jrS3H(){const X=MS_TXT.jr,q=s=>{const e=document.querySelector(s);retur
 // (MS_TXT.jr.auftakt), nie im Bild. Er steht immer, auch von Hand geöffnet und Jahre später (Florians Antwort 1 zum Plan 0.156).
 function jrNach(y){const d=new Date(donGet().first);return isFinite(d)&&d.getFullYear()>+y}
 function jrShow(y,o){o=o||{};if(!MS)return null;const st=jrNow(String(y));if(!st.n)return null;
-  if(FP_OPEN)closeFpanel();JR={y:String(y),st,v:1,auto:!!o.auto,nach:jrNach(y),leit:jrLeit(String(y),st.verlust),lz:false,sgNow:false};JRP=null;
+  // ab 0.167: el (Einleitung, jrS2H), kz (Kasten mit Einladung), dankT (Dank nach „Ich habe schon gespendet“)
+  if(FP_OPEN)closeFpanel();JR={y:String(y),st,v:1,auto:!!o.auto,nach:jrNach(y),leit:jrLeit(String(y),st.verlust),lz:false,sgNow:false,dankT:null,kz:false,el:merkGet('einl',String(y))?false:null};JRP=null;
   const ms=msSync(),id='jr|'+JR.y;
   if(st.voll&&!ms.jf[id]){ms.jf[id]=1;ms.v=(ms.v|0)+1;save()}
   if(o.auto){const d=donSync();d.fe=FEN_NOW().toISOString();ms.v=(ms.v|0)+1;save()}
@@ -5052,8 +5187,9 @@ function jrView(v,keep){if(!JR)return;const X=MS_TXT.jr,bx=$('jr-modal').querySe
   bx.scrollTop=keep?top:0;
   jrAnpassen();
   if(v===2){
-    // Regel 5 (GESTALTUNG Abschnitt 24): Die Einladung zählt wie die leise Zeile, sobald Seite 2 mit ihr zu sehen war (einmal je Öffnen)
-    if(!JR.lz&&!jrSgOn()){JR.lz=true;donGet().lz=FEN_NOW().toISOString();save()}}
+    // Regel 5 (GESTALTUNG Abschnitt 24): Die Einladung zählt wie die leise Zeile, sobald Seite 2 mit ihr zu sehen war (einmal je Öffnen); ab 0.167 nur,
+    // wenn der Kasten eine Einladung zeigt (Gewinnjahr ohne Spende, JR.kz), nicht bei einem Dank
+    if(!JR.lz&&JR.kz){JR.lz=true;donGet().lz=FEN_NOW().toISOString();save()}}
   if(v===1&&keep)jrStill()}
 // Effekte beim Öffnen und nach einem Tipp auf den Schmetterling (Zeiten aus der Testseite): Balken wachsen nacheinander (je 0,45 s, 0,11 s Abstand),
 // nach 0,25 s drei Flügelschläge (je 0,62 s; während der Schläge ist das Bild in Flügel und Körper zerlegt), danach Schimmer (der Streif des großen
@@ -12906,7 +13042,8 @@ function printSummary(){
   $('s-print').innerHTML=h;
   document.body.classList.add('printsum');
   const off=()=>{document.body.classList.remove('printsum');window.removeEventListener('afterprint',off)};
-  window.addEventListener('afterprint',off);window.print();setTimeout(off,1500);maybeDonate('steuer');
+  // ab 0.167 mit dem Steuerjahr (Text des Fensters nach dem Steuer-Export)
+  window.addEventListener('afterprint',off);window.print();setTimeout(off,1500);maybeDonate('steuer',y);
 }
 
 // Ab 0.72 (Phase 4): Steuer-Excel („Excel für dieses Jahr“) als eigene Funktion. exportXlsx(null) baut weiter die Excel mit allen Daten,
@@ -12981,7 +13118,7 @@ function taxXlsx(y){
   if((cxOn&&C.n)||(DE&&(Object.keys(S.tag).length||S.cx.length)))sheets.push(shTg,shCx);
   if(shWb.rows.length>1)sheets.push(shWb);
   sheets.push(shKu);
-  const blob=buildXlsx(sheets,false);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Trading-Bilanz-${y}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);maybeDonate('steuer');
+  const blob=buildXlsx(sheets,false);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Trading-Bilanz-${y}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);maybeDonate('steuer',y);
 }
 
 /* ---------------- Steuertarif Österreich ---------------- */
@@ -14035,6 +14172,17 @@ ${ECB_CITE}`},
   fremd:{t:'Nicht mitgezählt',h:'Einzahlungen, die nicht dein Geld sind. Sie zählen oben nicht mit.'},
   echt:{t:'Rendite seit Start',h:'Netto-Gewinn seit Start geteilt durch Eingezahlt.\n<b>Warum ist die Rendite in der Auswertung höher?</b> Dort zählt eingezahltes Geld nur, solange es investiert ist. Hier wird der Gewinn mit allem verglichen, was du je eingezahlt hast, egal wie lange es schon arbeitet. Beispiel: 1.000 bringen 100 (10 %), danach zahlst du 9.000 dazu, die bringen nochmal 900 (10 %). In der Auswertung: 10 % + 10 % = 20 %. Hier: 1.000 von 10.000 = 10 %. Außerdem ist die Rendite der Auswertung bei „PF laut MT5“ vor Abzug der Performance Fee und folgt dem Filter, hier steht immer alles nach Fee.'}
 };
+// Ab 0.167 (Florians Auftrag 0.167, Abschnitt 6.7, Wortlaut aus seiner Antwort 2 zur Freigabe): neue Begriffe „Plus-Woche“ (Rückblick und Kachel der
+// Karte „Meilensteine“) und „mit allen Handelstagen“ (Rückblick). Dazu eine Einstellung für den Jahresrückblick statt einer Kopie (jr: weg = der Satz,
+// der dort nicht stimmt, dazu = was dort gilt; Florians Antwort 14 zur Freigabe 0.167). Im Rückblick hängt glOpen nie den Absatz zum Betrag an (amt).
+GL.plusw={t:'Plus-Woche',h:'Eine Woche mit einem Ergebnis über null, nach PF in USD. Auch eine angefangene Woche zählt, etwa die erste, wenn du mitten in der Woche begonnen hast. Die laufende Woche zählt erst, wenn die PF abgebucht ist. Eine Woche über Neujahr zählt im Jahr ihres Donnerstags.'};
+GL.alleht={t:'mit allen Handelstagen',h:'Im Rückblick zählt jeder Handelstag des Jahres mit, auch die ohne Trade. In der Auswertung schaltest du das mit „Tage ohne Trade mitzählen“ ein und aus, hier gilt es immer.'};
+GL.rendite.jr={weg:'Bei „PF laut MT5“ passen die beiden auch innerhalb einer Woche nicht zusammen: Die Rendite ist dann vor PF, der Netto-Gewinn nach der abgebuchten Fee.',dazu:'Im Rückblick zählt sie immer nach PF.'};
+GL.tag.jr={weg:'Ob Tage ohne Trade mitzählen, stellst du im Zeitraum-Menü unter „Zählweise“ ein.',dazu:'Im Rückblick zählen Tage ohne Trade immer mit.'};
+GL.avg.jr={weg:' Liegen Durchschnitt und Median nah beieinander, war das Ergebnis gleichmäßig.',dazu:''};
+GL.pfaktor.jr={weg:'Bei „Betrag“ gerechnet wie im MT5-Report, bei „Rendite“ aus den Renditen, deshalb weichen die beiden leicht voneinander ab.',dazu:'Im Rückblick aus den Renditen gerechnet.'};
+// Text eines Begriffs: Land (de), im Jahresrückblick die Einstellung jr, sonst bei „Betrag“ der Absatz zum Betrag (amt)
+function glText(x,jr){let h=S.ui.country==='DE'&&x.de?x.de:x.h;if(jr&&x.jr)h=h.replace(x.jr.weg,x.jr.dazu).replace(/\s+$/,'');return h+(!jr&&x.amt&&S.ui.unit==='amt'?'\n'+GL.betrag.h:'')}
 // Ab 0.52 (1, 2): (i) von „Andere Adressen“ und je Gruppe (Texte in ADDR_O, vorher als Absatz in der Tabelle). Der Satz „Nur zum Zuordnen …“ stand
 // bis 0.51 fett über der Tabelle.
 GL['k-tok']={t:'Token',h:'WUSD ist das Guthaben deiner Krypto-Karte. Das Tool zählt es fest wie USDC.\nDarunter stehen unbekannte Token, über die du beim Einlesen entschieden hast. „Zählt als USDC“ heißt: Das Tool rechnet sie wie USDC. Mit × nimmst du die Entscheidung zurück, mit „Wieder einschalten“ zählt ein ignorierter Token wieder.'};
@@ -14054,7 +14202,8 @@ function glOpen(el,pin){
   clearTimeout(GT);const x=GL[el.dataset.gl];if(!x)return;
   if(GP&&GP.el!==el)glClose();
   if(!GP){
-    const p=$('glpop'),h=(S.ui.country==='DE'&&x.de?x.de:x.h)+(x.amt&&S.ui.unit==='amt'?'\n'+GL.betrag.h:'');
+    // ab 0.167 über glText (im Jahresrückblick mit der Einstellung jr)
+    const p=$('glpop'),h=glText(x,!!(el.closest&&el.closest('#jr-modal')));
     $('glpop-t').textContent=x.t;$('glpop-h').innerHTML=h.split('\n').map(t=>/^<ul/.test(t)?t:`<p>${t}</p>`).join('');
     p.hidden=false;p.scrollTop=0;GP={el,pin,up:null};el.setAttribute('aria-expanded','true');
   }else if(pin)GP.pin=true;
@@ -15195,11 +15344,12 @@ function grafPng(){
 function grafPrep(){if(!GPNG){const L=GRAF_LAST;GPNG=grafPng();GPNG.then(b=>{if(GRAF_LAST===L)GPNG_B=b},()=>{GPNG=null})}return GPNG}
 // Ab 0.134: Nach dem Speichern oder Teilen eines Bildes zählt der Anlass „bild“ (maybeDonate). Beim Teilen erst, wenn das Teilen abgeschlossen
 // ist und die Person wieder im Tool ist (fenBack); bricht sie ab, zählt nichts.
-function grafSave(){const n=grafFileName();(GPNG_B?Promise.resolve(GPNG_B):grafPrep()).then(b=>{download(n,b,'image/png');maybeDonate('bild')},()=>toast('Das Bild ließ sich nicht erzeugen.'))}
+// Ab 0.167 kommen die Meldungen aus MS_TXT (bildFehler, teilenFehler), derselben Quelle wie bei den Meilensteinen (Florians Antwort 9 zur Freigabe 0.167)
+function grafSave(){const n=grafFileName();(GPNG_B?Promise.resolve(GPNG_B):grafPrep()).then(b=>{download(n,b,'image/png');maybeDonate('bild')},()=>toast(MS_TXT.bildFehler))}
 // Teilen: dieselbe PNG-Datei. Abbrechen ohne Meldung; geht Teilen nicht, speichert das Tool das Bild.
 function grafShare(){const n=grafFileName();
-  const go=b=>{const f=new File([b],n,{type:'image/png'});navigator.share({files:[f]}).then(()=>fenBack(()=>maybeDonate('bild')),e=>{if(e&&e.name==='AbortError')return;download(n,b,'image/png');toast('Teilen ging nicht, das Bild ist gespeichert.');maybeDonate('bild')})};
-  if(GPNG_B)go(GPNG_B);else grafPrep().then(go,()=>toast('Das Bild ließ sich nicht erzeugen.'))}
+  const go=b=>{const f=new File([b],n,{type:'image/png'});navigator.share({files:[f]}).then(()=>fenBack(()=>maybeDonate('bild')),e=>{if(e&&e.name==='AbortError')return;download(n,b,'image/png');toast(MS_TXT.teilenFehler);maybeDonate('bild')})};
+  if(GPNG_B)go(GPNG_B);else grafPrep().then(go,()=>toast(MS_TXT.bildFehler))}
 function renderTax(rows){
   // Ab 0.46 (2.7, 3.4): „Ohne Steuer“: nur der Hinweis und die Wahl, sonst nichts (die Rechnung im Hintergrund bleibt gleich)
   $('country').value=['DE','none'].includes(S.ui.country)?S.ui.country:'AT';const off=S.ui.country==='none';$('tax-off').hidden=!off;
@@ -15797,21 +15947,28 @@ $('btn-intro-steps').onclick=()=>introDone(true);
 $('btn-intro-skip').onclick=()=>introDone(false);
 // Ab 0.134: Knöpfe des Fensters nach einem Anlass (fenShow weiter unten). „Jetzt nicht“, × und Esc: bei einem Spenden-Fenster 3 Monate Ruhe.
 // Ab 0.136 (Florians Auftrag) auch im Feedback-Fenster: 3 Monate Ruhe vor dem Spenden-Fenster. „Feedback schreiben“ gibt keine Ruhe (nur die 14 Tage Abstand).
-function fenNo(){if(FEN_CUR&&(FEN_SP.includes(FEN_CUR.art)||FEN_CUR.art==='feedback'))donPause(91);fenClose()}
+// Ab 0.167: „Jetzt nicht“ im Spenden-Fenster 9 Monate (FEN_RUHE), im Feedback-Fenster weiter 3 Monate (Florians Antwort 4 zur Freigabe 0.167);
+// nach „Schon gespendet“ (fenDank) schließen ×, Esc und „Schließen“ ohne weitere Folge
+function fenNo(){if(FEN_CUR&&!FEN_CUR.dank)donPause(FEN_CUR.art==='feedback'?91:FEN_RUHE);fenClose()}
 $('btn-don-no').onclick=fenNo;$('don-x').onclick=fenNo;
-$('btn-don-ok').onclick=fenNo;
+$('btn-don-ok').onclick=fenClose;
 // Ab 0.139: „Schon gespendet“ merkt auch sein Datum (d.sg): Die leise Zeile im Feier-Fenster fehlt danach 12 Monate (Regel 5, msLeiseOk)
-$('btn-don-done').onclick=()=>{donGet().sg=FEN_NOW().toISOString();donPause(365);fenClose()};
+// ab 0.167 bleibt das Fenster offen und zeigt einen Dank (fenDank)
+$('btn-don-done').onclick=()=>{donSchon();fenDank()};
 $('btn-don-go').onclick=()=>{fenClose();S.ui.tab='support';save();render();window.scrollTo(0,0)};
 // „Feedback schreiben“: Reiter „Resonanz“, Karte „Anregungen, Fehler, Feedback“ aufklappen und hinscrollen
 $('btn-don-fb').onclick=()=>{fenClose();fbGo()};
-// „Link kopieren“ (Art Weitersagen): kopiert die Adresse des Tools (DL_URL)
-$('btn-don-link').onclick=async()=>{let ok=false;try{await navigator.clipboard.writeText(DL_URL);ok=true}catch(e){try{const t=document.createElement('textarea');t.value=DL_URL;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();ok=document.execCommand('copy');t.remove()}catch(e2){}}
-  fenNo();if(ok)toast('Link kopiert.')};
+// „Link kopieren“ (Art Weitersagen) ist ab 0.167 entfernt (Florians Antwort 8 zur Freigabe 0.167; der Text steht in TEXTE-FASSUNGEN.md)
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!e.defaultPrevented&&$('don-modal').classList.contains('on')){e.preventDefault();fenNo()}});
 // Ab 0.134: ein Weg für beide Adressen im Reiter „Resonanz“ (Spendenadresse und Mail-Adresse). Ist die Zwischenablage gesperrt, markiert das Tool die Adresse.
 async function addrCopy(el,out,okT){const a=el.textContent.trim();try{await navigator.clipboard.writeText(a);out.innerHTML=herzH(okT)}catch(e){const r=document.createRange();r.selectNodeContents(el);const sl=getSelection();sl.removeAllRanges();sl.addRange(r);out.innerHTML=OS==='mobile'?'Markiert. Tippe auf „Kopieren“.':`Markiert, jetzt mit ${OS==='mac'?'<kbd>⌘ Cmd</kbd>+<kbd>C</kbd>':'<kbd>Strg</kbd>+<kbd>C</kbd>'} kopieren.`}}
 $('btn-copyaddr').onclick=()=>addrCopy($('don-addr'),$('copymsg'),'Adresse kopiert. Danke! 💚');
+// Ab 0.167 (Florians Auftrag 0.167, Abschnitt 5): „Ich habe schon gespendet“ im Reiter „Resonanz“ und in „Wertschätzung teilen“ (derselbe Baustein,
+// data-schon): Datum und 12 Monate Ruhe (donSchon), darunter an Ort und Stelle ein Dank aus der Danke-Auswahl (dankeWahl, data-dank). Der Link bleibt;
+// einen bleibenden Hinweis „Du hast gespendet“ gibt es nicht (nach dem Neuladen ist der Dank weg). Bis 0.166 nur im Rückblick (#jr-schon).
+document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('[data-schon]');if(!b)return;e.preventDefault();donSchon();const t=dankeWahl();
+  const box=b.closest('.jrblk')||b.closest('.card'),p=box&&box.querySelector('[data-dank]');if(p){p.innerHTML=herzH('💚 '+t);p.hidden=false}
+  if(JR&&b.closest('#jr-modal')){JR.sgNow=true;JR.dankT=t}});
 document.querySelectorAll('[data-herz]').forEach(e=>{e.innerHTML=herzH(e.textContent)});
 // Ab 0.136: Link „Anregungen, Fehler, Feedback“ (Hinweis „Performance Fee“): Reiter „Resonanz“, Karte aufklappen und zeigen, wie „Feedback schreiben“
 function fbGo(){goTo('support','fb-card')}
@@ -15869,7 +16026,7 @@ $('calc-in').addEventListener('change',e=>{const t=e.target,c=S.ui.calc;
 $('calc-in').addEventListener('click',e=>{if(e.target.closest('#c-reset')){S.ui.calc.inv='';save();renderCalc()}});
 $('yr-tax').onchange=e=>{S.ui.yTax=e.target.value;save();render()};
 $('other').oninput=e=>{S.ui.other=e.target.value;save();render()};
-$('btn-print').onclick=()=>{window.print();maybeDonate('steuer')};   // ab 0.136 Steuer-Export (Knopf im Reiter „Steuer“)
+$('btn-print').onclick=()=>{window.print();maybeDonate('steuer',S.ui.yTax)};   // ab 0.136 Steuer-Export (Knopf im Reiter „Steuer“)
 $('btn-csvall').onclick=()=>{csv(window.__rows,'Trading-Buchungen-alle.csv');maybeDonate('export')};
 // Ab 0.50 Nachtrag 5: Steht schon etwas im Tool (Reports, Krypto, eigene Kurse, Wallets)? Dann fragt „Sicherung laden“ nach.
 const stateHasData=()=>!!(Object.keys(S.accounts).length||Object.keys(S.deals).length||S.cx.length||Object.keys(S.tag).length||Object.keys(S.wtx).length||Object.keys(S.wign||{}).length||(S.bxF||[]).length||Object.keys(S.addr).length||Object.keys(S.rown).length||S.wallets.some(w=>w!=='Meine Wallet'));
@@ -15942,17 +16099,19 @@ const KOMMT=[];
              gespeichert oder geteilt). Ab 0.136 ist der Steuer-Export (Zusammenfassung, Steuer-Excel, „Diese Seite drucken“ im Reiter „Steuer“) ein eigener
              Anlass 'steuer'; er zeigt die Einträge mit 'export' (und mit 'steuer', falls es einmal eigene gibt)
      art     Art der Knöpfe:
-             'spende'       „Zur Spende“ · „Jetzt nicht“ · „Schon gespendet“
+             'spende'       „Zur Spende“ · „Jetzt nicht“ · „Schon gespendet“ (ab 0.167 danach ein Dank und „Schließen“)
              'feedback'     „Feedback schreiben“ (öffnet den Reiter „Resonanz“ und klappt „Anregungen, Fehler, Feedback“ auf) · „Jetzt nicht“
-             'danke'        ein einzelner Knopf, sein Text steht im Eintrag als knopf:'…'
-             'weitersagen'  „Link kopieren“ (kopiert die Adresse des Tools) · „Jetzt nicht“
-     titel, text
+             (bis 0.166 dazu 'danke' mit einem einzelnen Knopf und 'weitersagen' mit „Link kopieren“, ab 0.167 entfernt)
+     titel, text, ab 0.167 textV (Text im Verlustjahr des exportierten Steuerjahrs, nur beim Steuer-Export)
    Gibt es zu einem Anlass mehrere Einträge derselben Gruppe, wählt das Tool zufällig, aber nie zweimal hintereinander denselben.
    Wann ein Fenster kommt, regeln die vier Zählregeln (GESTALTUNG Abschnitt 24), im Skript fenPick. */
+// Ab 0.167 (Florians Fassungen, Auftrag 0.167): eigenes Fenster nach dem Steuer-Export (text im Gewinnjahr, textV im Verlustjahr und ohne Trades im
+// Steuerjahr); Feedback-Fenster ohne Komma vor „oder“; kein Fenstertitel endet mit einem Punkt. Die Fenster nach Export, Sicherung und Bild (bis 0.166)
+// stehen in TEXTE-FASSUNGEN.md unter „nicht verwendet“.
 const FENSTER=[
-  {anlass:['export'],art:'spende',titel:'💚 Deine Zahlen sind fertig.',text:'Ich hoffe, sie machen dir Freude! Wenn dir das Tool geholfen hat, freue ich mich sehr über eine Wertschätzung.'},
-  {anlass:['sicherung','bild'],art:'spende',titel:'💚 Danke, dass du die Trading-Bilanz nutzt',text:'Wenn dir das Tool geholfen hat, freue ich mich sehr über eine Wertschätzung.'},
-  {anlass:['export','sicherung','bild'],art:'feedback',titel:'💚 Wie geht es dir mit der Trading-Bilanz?',text:'Fehlt dir etwas, hakt etwas, oder freust du dich einfach? Schreib mir.'}
+  {anlass:['steuer'],art:'spende',titel:'💚 Deine Zahlen sind fertig',text:'Ich hoffe, sie machen dir Freude! Möge der Rest genauso leicht von der Hand gehen. Wenn dir das Tool geholfen hat, ist eine Wertschätzung herzlich willkommen.',
+    textV:'Möge der Rest genauso leicht von der Hand gehen. Wenn dir das Tool geholfen hat, ist eine Wertschätzung herzlich willkommen.'},
+  {anlass:['export','sicherung','bild'],art:'feedback',titel:'💚 Wie geht es dir mit der Trading-Bilanz?',text:'Fehlt dir etwas, hakt etwas oder freust du dich einfach? Schreib mir.'}
 ];
 /* MS_TXT: alle Texte der Meilensteine (ab 0.139, Startfassungen): Karte „Meilensteine“, Feier-Fenster, Jahrestag, Jahresrückblick und das
    Bild „Rekord-Karte“. Jeder Text steht nur hier. Platzhalter: {n} = Zahl (Stufe oder Länge), {j} = Jahr, {k} = „Konto 12345678“ bzw.
@@ -15975,6 +16134,8 @@ const MS_TXT={
     rg:'{n} Gewinn-Trades am Stück',rd:'{n} Tage am Stück im Plus',rw:'{n} Plus-Wochen in Folge',mw:'{n} Gewinn-Trades in einer Woche',
     ja1:'1 Jahr seit deinem ersten Trade',ja:'{n} Jahre seit deinem ersten Trade',
     ea:'Deine erste Auszahlung',ee:'So viel ausgezahlt wie eingezahlt',jr:'Dein Trading-Jahr {j}',
+    // ab 0.167 (Florians Auftrag): 200 % und mehr; {Mal} = „Doppelt“, „Dreimal“ … „Zwölfmal“, ab 13 „13-mal“ (MS_TXT.zahl, msMal)
+    ex:'{Mal} so viel ausgezahlt wie eingezahlt',
     jm:'Dein bester Monat {j}',jrg:'{n} Gewinn-Trades am Stück',jrd:'{n} Tage am Stück im Plus',jrw:'{n} Plus-Wochen in Folge',jmw:'{n} Gewinn-Trades in einer Woche'},
   // Ab 0.142 (Startfassung, von Florian im Grundsatz bestätigt): ein Satz und eine kurze Liste
   // Ab 0.160 (Florians Wortlaut und seine Antwort 5 zur Freigabe): zuerst der Absatz zaehlt (wonach Karte und Rückblick zählen); die drei
@@ -15982,16 +16143,20 @@ const MS_TXT={
   // Titel.“, „Alle Werte nach PF (verteilt)“); „Stufen in USD.“ bleibt als Punkt; neu der Punkt zur Jahres-Ansicht (Florians Wortlaut)
   info:{zaehlt:'So zählen diese Karte und der Rückblick: Zeitraum und Konten wählst du in den Menüs rechts. Alle Werte sind immer nach PF, und die Durchschnitte beinhalten alle Handelstage, auch die ohne Trade. Von der Filterzeile oben übernehmen sie nur die Währung.',
     // Ab 0.161 (Florians Auftrag 0.161, Phase 5): ohne den Satz „Deine Rekorde, Serien und Stufen.“ (bis 0.160 nach dem Absatz zaehlt)
-    punkte:['Stufen in USD.','Eine Woche zählt erst nach der Abrechnung der PF.',
-    'Die ersten zwei Wochen sind dein Ausgangsstand. Sie stehen hier ohne Hinweis, sonst wäre am Anfang fast jeder Tag ein Rekord.',
+    // ab 0.167 (Florians Fassungen): erster und dritter Punkt neu (bis 0.166 „Stufen in USD.“ und „Die ersten zwei Wochen sind dein Ausgangsstand.
+    // Sie stehen hier ohne Hinweis, sonst wäre am Anfang fast jeder Tag ein Rekord.“)
+    punkte:['Die Stufen beim Netto-Gewinn zählen immer in USD, auch wenn du Euro gewählt hast.','Eine Woche zählt erst nach der Abrechnung der PF.',
+    'Was du in den ersten zwei Wochen erreichst, ist dein Ausgangsstand. Es steht hier ohne Feier, sonst wäre am Anfang fast jeder Tag ein Rekord.',
     'In der Jahres-Ansicht zählt eine Serie ab ihrem Beginn bis zum Jahresende, auch wenn sie im Vorjahr begann.','Auszahlungen kommen aus deinen Tag-Daten.',
     // ab 0.144 (Claude, von Florian bestätigt)
     'Wenn du ein Bild speicherst oder teilst, zeigt es nur den neuen Wert, ohne den vorigen Rekord. Den Betrag zeigt es nur mit „Betrag zeigen“.']},
-  leer:'Noch keine Meilensteine. Die ersten zwei Wochen setzen den Ausgangsstand, danach zählt jeder neue Höchstwert.',
-  ohneTB:'Bei {k} fehlt der Trading Benefit. Ohne ihn keine Rendite. Trag ihn im Reiter „Reports“ ein oder nimm das Konto rechts im Menü heraus.',
-  ohneInv:'Bei {k} ist die Investition unbekannt. Ohne sie keine Rendite. Sieh im Reiter „Reports“ nach oder nimm das Konto rechts im Menü heraus.',
+  // ab 0.167 (Florians Fassungen): leer, ohneTB, ohneInv und fz neu; bis 0.166 „Noch keine Meilensteine. …“, „Ohne ihn keine Rendite.“, „Ohne sie keine
+  // Rendite.“ und „Die Filterzeile oben wirkt hier nicht. Zeitraum und Konten wählst du rechts.“
+  leer:'Hier sammeln sich bald deine Meilensteine. Die ersten zwei Wochen setzen den Ausgangsstand, danach zählt jeder neue Höchstwert.',
+  ohneTB:'Bei {k} fehlt der Trading Benefit. Ohne ihn kann das Tool keine Rendite rechnen. Trag ihn im Reiter „Reports“ ein oder nimm das Konto rechts im Menü heraus.',
+  ohneInv:'Bei {k} ist die Investition unbekannt. Ohne sie kann das Tool keine Rendite rechnen. Sieh im Reiter „Reports“ nach oder nimm das Konto rechts im Menü heraus.',
   // fz ab 0.157 (Florians Wahl, wörtlich): Zeile oben in der Karte, wenn die Auswertung anders zählt als die Karte (msNote)
-  karte:{rek:'Rekorde',ser:'Serien',err:'Erreicht',verlauf:'Verlauf',jahr:'{t} {j}',fz:'Die Filterzeile oben wirkt hier nicht. Zeitraum und Konten wählst du rechts.'},
+  karte:{rek:'Rekorde',ser:'Serien',err:'Erreicht',verlauf:'Verlauf',jahr:'{t} {j}',fz:'Von der Filterzeile oben gilt hier nur die Währung. Zeitraum und Konten wählst du rechts.'},
   zeit:{gesamt:'Gesamt'},
   // Kategorie im Verlauf (ab 0.142)
   kat:{rek:'Rekord',ser:'Serie',stu:'Stufe',aus:'Auszahlung',ja:'Jahrestag',jr:'Rückblick'},
@@ -16006,7 +16171,12 @@ const MS_TXT={
     rg:'noch kein Gewinn-Trade',rd:'noch kein Tag im Plus',rw:'noch keine Plus-Woche',mw:'noch keine ganze Woche',mw2:'noch kein Gewinn-Trade'},
   kachel:{at:'Bester Trade',ad:'Bester Handelstag',aw:'Beste Woche',am:'Bester Monat',rg:'Gewinn-Trades am Stück',rd:'Tage am Stück im Plus',rw:'Plus-Wochen in Folge',mw:'Meiste Gewinn-Trades in einer Woche'},
   reihe:{sn:'Netto-Gewinn',sr:'Rendite',sg:'Gewinn-Trades',aus:'Auszahlungen',ja:'Jahrestage'},
-  marke:{sn:'{n} USD Netto-Gewinn',sr:'{n} % Rendite',sg:'{n} Gewinn-Trades',ea:'Erste Auszahlung',ee:'Ausgezahlt wie eingezahlt',ja:'{n}. Jahrestag'},
+  // ab 0.167 (Florians Auftrag): „100 % ausgezahlt“ (bis 0.166 „Ausgezahlt wie eingezahlt“), dazu „200 % ausgezahlt“ usw.; in „Erreicht“ und auf den Plaketten
+  marke:{sn:'{n} USD Netto-Gewinn',sr:'{n} % Rendite',sg:'{n} Gewinn-Trades',ea:'Erste Auszahlung',ee:'100 % ausgezahlt',ex:'{n} % ausgezahlt',ja:'{n}. Jahrestag'},
+  // ab 0.167: Plus-Wochen in Jahren (msPlusJahre): groß auf dem Blatt, im Verlauf mit „im Plus“, die Zeile darunter mit den Wochen
+  jahre:{eins:'1 Jahr',viele:'{n} Jahre',halb:'{n}½ Jahre',im:'{z} im Plus',unter:'Plus-Wochen in Folge ({n} Wochen)'},
+  // ab 0.167: Zahlwörter bis zwölf, danach Ziffern (Florians Auftrag; Freigabe zum Plan 0.167): mal = „zweimal“, malZ = „13-mal“, doppelt = 200 % im Titel
+  zahl:{w:['','ein','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf'],mal:'{w}mal',malZ:'{n}-mal',doppelt:'Doppelt'},
   blatt:{rekord:'Neuer Rekord',jrekord:'Rekord des Jahres {j}',serie:'Neue Bestserie',jserie:'Bestserie des Jahres {j}',stufe:'Neue Stufe',aus:'Auszahlung',jahrestag:'Jahrestag'},
   unter:{rg:'Gewinn-Trades am Stück',rd:'Tage am Stück im Plus',rw:'Plus-Wochen in Folge',mw:'Gewinn-Trades in einer Woche',sn:'Netto-Gewinn überschritten',sr:'Rendite überschritten',sg:'Gewinn-Trades erreicht',ee:'deines Einsatzes ausgezahlt',ja1:'Jahr seit deinem ersten Trade',ja:'Jahre seit deinem ersten Trade'},
   pos:'{i} von {n}',ariaPrev:'Vorheriger Meilenstein',ariaNext:'Nächster Meilenstein',ariaReiter:', neue Meilensteine',
@@ -16014,16 +16184,44 @@ const MS_TXT={
   alleLink:'Alle Meilensteine',
   ariaBf:'Neue Meilensteine ansehen',
   einsatz:'Was jetzt noch für dich arbeitet, ist reiner Gewinn.',
-  leise:'Wenn du deine Freude auch mit mir teilen willst: {hier entlang →}',
-  jahrestag:'Wie war dein Jahr mit der Trading-Bilanz? Ich freue mich über deine Worte oder eine Wertschätzung. {Hier entlang →}',
+  // Ab 0.167 (Florians Fassungen): acht leise Zeilen, zufällig, nie zweimal hintereinander dieselbe (wahlNeu, S.ui.don.lzk). Bis 0.166 eine:
+  // „Wenn du deine Freude auch mit mir teilen willst: {hier entlang →}“
+  leise:{mitfeiern:'Wenn du magst, {lass mich mitfeiern}.',echo:'Wenn du magst, {schick mir ein Echo}.',freude:'Wenn du magst, {teile deine Freude mit mir}.',
+    glueck:'Glück wird größer, wenn man es teilt. {Teil es mit mir}.',fliessen:'Was gut ist, darf fließen. {Lass etwas zurückfließen}, wenn du magst.',
+    rueckenwind:'Gib der Trading-Bilanz {Rückenwind}, wenn du magst.',mittragen:'Die Trading-Bilanz lebt von Menschen wie dir. {Trag sie mit}, wenn du magst.',
+    fliegt:'Die Trading-Bilanz fliegt weiter, wenn viele sie tragen. {Trag sie mit}.'},
+  // Ab 0.167 (Florians Fassungen): Jahrestag. Der 1., 3., 5. … bekommt Satz a und Einladung c, der 2., 4. … Satz c und Einladung a. a = Satz a,
+  // aN = Satz a, wenn der Jahrestag beim ersten Öffnen mehr als 3 Tage zurückliegt (fest je Blatt); c1 und c = Satz c ({N} = „Zwei“ … „Zwölf“, ab 13
+  // Ziffern; c1 kommt mit dieser Abfolge nicht vor, Florians Antwort 12 zur Freigabe 0.167). Die Einladung steht ab Tag 21 der Nutzung (FB_TAG).
+  // Bis 0.166 eine Zeile: „Wie war dein Jahr mit der Trading-Bilanz? Ich freue mich über deine Worte oder eine Wertschätzung. {Hier entlang →}“
+  jahrestag:{a:'Alles Gute zum Jahrestag! Schön, dass du deinen Weg gehst.',aN:'Nachträglich alles Gute zum Jahrestag! Schön, dass du deinen Weg gehst.',
+    c1:'Ein Jahr voller Trades, Zahlen und Momente. Das darf gefeiert werden.',c:'{N} Jahre voller Trades, Zahlen und Momente. Das darf gefeiert werden.',
+    einlC:'Wie geht es dir mit der Trading-Bilanz? Wenn du magst, {gib mir ein Echo}, mit ein paar Worten oder ganz still mit einer Wertschätzung.',
+    einlA:'Wie war dein Jahr mit der Trading-Bilanz? Wenn du magst, {teile es mit mir}, mit ein paar Worten oder ganz still mit einer Wertschätzung.'},
+  // Ab 0.167 (Florians Fassungen): Feier-Satz auf dem Blatt, an der Stelle des Satzes bei 100 % (einsatz). stufe: Netto-Gewinn, Rendite, Gewinn-Trades,
+  // zufällig, nie zweimal hintereinander, fest je Blatt (merkWahl); ea erste Auszahlung; ex 200 % und mehr ({mal} = „zweimal“ … „zwölfmal“, „13-mal“);
+  // Plus-Wochen in Jahren: j1 ein Jahr, jg ganze Jahre, jh halbe Jahre ({W} = „Zwei“ … „Zwölf“, „Ein“ bei 1½), ab 13 Jahren jgZ und jhZ mit Ziffern.
+  feier:{stufe:{bleibt:'Ein Schritt, der bleibt.',waechst:'Stufe um Stufe wächst, was du aufbaust.',weiter:'Wieder ein Stück weiter auf deinem Weg.'},
+    ea:'Das erste Geld ist zurück bei dir.',ex:'Dein Einsatz ist schon {mal} zu dir zurückgeflossen.',
+    j1:'Ein ganzes Jahr, Woche für Woche im Plus.',jg:'{W} ganze Jahre, Woche für Woche im Plus.',jh:'{W}einhalb Jahre, Woche für Woche im Plus.',
+    jgZ:'{n} ganze Jahre, Woche für Woche im Plus.',jhZ:'{n}½ Jahre, Woche für Woche im Plus.'},
+  // Ab 0.167 (Florians Fassungen): Danke-Auswahl für den Moment des Klicks auf „Schon gespendet“ (Steuer-Fenster, „Wertschätzung teilen“, Reiter
+  // „Resonanz“) und für den Kasten im Verlustjahr nach einer Spende; zufällig, nie zweimal hintereinander (dankeWahl). Bis 0.166 nur der erste.
+  danke:{fliesst:'Was du gegeben hast, fließt weiter, zu allen, die das Tool nutzen. Danke von Herzen.',mitgetragen:'Du hast die Trading-Bilanz mitgetragen. Danke von Herzen.',
+    geschenk:'Weil du gegeben hast, bleibt die Trading-Bilanz ein Geschenk für alle. Danke, dass du ein Teil davon bist.'},
   // Ab 0.154: Jahresrückblick. Leitsätze (leit, Florians Wahl aus dem Auftrag zu 0.154, art: beide, gewinn = nur Gewinnjahre, verlust = nur
   // Verlustjahre), Neujahrswunsch und Einladung aus der Testseite (Florian), Einladung im Verlustjahr (einladungV, Platzhalter von Claude Code),
   // Danke-Satz nach „Ich habe schon gespendet“ (Florians Wahl). Alles andere: Beschriftungen aus dem Auftrag und der Testseite.
   jr:{titel:'Dein Trading-Jahr {j}',rendite:'Rendite',netto:'Netto-Gewinn ({c})',monate:'Rendite je Monat',mb:['J','F','M','A','M','J','J','A','S','O','N','D'],
-    weiter:'Dein Jahr in Zahlen ›',auftakt:'Schön, dass du da bist. So sah dein Trading-Jahr {j} aus.',unvoll1:'Noch nicht vollständig: Daten von Konto {k} bis {d}.',unvollN:'Noch nicht vollständig: {n} Konten noch ohne Report bis Jahresende.',
+    // ab 0.167 (Florians Fassungen): unvoll1 und unvollN neu (bis 0.166 „Noch nicht vollständig: Daten von Konto {k} bis {d}.“ und „… {n} Konten noch
+    // ohne Report bis Jahresende.“)
+    weiter:'Dein Jahr in Zahlen ›',auftakt:'Schön, dass du da bist. So sah dein Trading-Jahr {j} aus.',unvoll1:'Noch nicht vollständig: Für Konto {k} reichen die Daten nur bis {d}.',unvollN:'Noch nicht vollständig: Für {n} Konten fehlt der Report bis Jahresende.',
     marke:'unvollständig',
     leit:{rund:{t:'Ein Jahr wird rund. Schau es dir in Ruhe noch einmal an.',art:'beide'},wuerdigen:{t:'Bevor das Neue beginnt, darf das Alte noch einmal gewürdigt werden.',art:'beide'},
-      feiere:{t:'Feiere das Alte, um gestärkt ins Neue zu gehen.',art:'gewinn'},weg:{t:'Auch dieses Jahr gehört zu deinem Weg. Schau es dir in Ruhe an.',art:'verlust'}},
+      feiere:{t:'Feiere das Alte, um gestärkt ins Neue zu gehen.',art:'gewinn'},weg:{t:'Auch dieses Jahr gehört zu deinem Weg. Schau es dir in Ruhe an.',art:'verlust'},
+      // ab 0.167 (Florians Fassungen) dazu: winter und schwer nur Verlustjahre, raum beide
+      winter:{t:'Im Winter wachsen die Wurzeln. Schau dir dein Jahr in Ruhe an.',art:'verlust'},schwer:{t:'Auch was schwer war, darf jetzt rund werden.',art:'verlust'},
+      raum:{t:'Das Alte darf rund werden, damit das Neue Raum bekommt.',art:'beide'}},
     zahlen:'Dein Jahr in Zahlen',
     gr:{erg:'Ergebnis',best:'Bestwerte',avg:'Durchschnitt',bst:'Beständigkeit',vh:'Verhältnis',weak:'Schwächste Werte',geld:'Geld des Jahres',ms:'Meilensteine des Jahres'},
     k:{rendite:'Rendite',hit:'Trefferquote',trades:'Trades',netto:'Netto-Gewinn ({c})',trade:'Trade',tag:'Handelstag',woche:'Woche',monat:'Monat',
@@ -16036,22 +16234,42 @@ const MS_TXT={
     s:{hit:'{w} von {n}',tage:'an {n} Tagen',tage1:'an 1 Tag',wPlus:'von {n}',mw:'in der Woche ab {d}',wd:'Ø {v} pro Handelstag',dd:'am {d}',woche:'ab {d}',pf:'{v} zu 1',htg:'in Handelstagen',einsatz:'eingezahlt minus ausgezahlt'},
     ohne:{t:'kein Trade',d:'kein Handelstag',w:'noch keine ganze Woche',m:'noch kein ganzer Monat',rg:'kein Gewinn-Trade',rd:'kein Tag im Plus',rw:'keine Plus-Woche',
       mw:'kein Gewinn-Trade',vs:'kein Verlust-Trade',pf:'kein Verlust',htg:'keiner'},
-    wunsch:'Möge das neue Jahr dich in Fülle und Liebe baden.',
-    einladung:'Mit der Fülle ist es wie mit der Liebe: Sie wird mehr, wenn man sie teilt.',
-    einladungV:'Auch in diesem Jahr hat dir die Trading-Bilanz hoffentlich Klarheit geschenkt. Wenn du etwas zurückgeben magst, freue ich mich.',
+    // Ab 0.167 (Florians Fassungen, Auftrag 0.167 Abschnitt 6): Einleitung auf Seite 2 (einl; nur beim ersten Öffnen mit Seite 2, nie im Bild; bis
+    // einschließlich 6. Jänner des Folgejahrs rauh1 oder rauh2, später gewinn bzw. verlust), Neujahrswunsch (wunsch, je Jahr gewählt und gemerkt),
+    // Kasten (einladung im Gewinnjahr ohne Spende, je Jahr gewählt; schmetterling einmal je Person; dankeG im Gewinnjahr nach einer Spende; dankeV im
+    // Verlustjahr ohne Spende; im Verlustjahr nach einer Spende ein Satz aus MS_TXT.danke). Bis 0.166 ein Wunsch, eine Einladung, im Verlustjahr der
+    // Platzhalter einladungV und der Danke-Satz danke (ab 0.167 in MS_TXT.danke); „Ich habe schon gespendet“ steht ab 0.167 nur im Reiter „Resonanz“
+    // (#don-schon) und kommt von dort in „Wertschätzung teilen“ (bis 0.166 schon).
+    einl:{rauh1:'Die Raunächte sind die Zeit zwischen den Jahren und zwischen den Welten. Zeit für Rückschau, Dank und leise Wünsche.',
+      rauh2:'Zwischen den Jahren wird es still. Eine Zeit zum Zurückschauen, Danken und Loslassen.',
+      gewinn:'Lasse das alte Jahr nochmal Revue passieren. Feiere deine Erfolge und Glücksmomente und starte gestärkt ins Neue.',
+      verlust:'Lasse das alte Jahr nochmal Revue passieren. Schau, was es dir gezeigt hat, und nimm mit, was dich stärkt.'},
+    wunsch:{fuelle:'Möge das neue Jahr dich in Fülle und Liebe baden.',wundervoll:'Ich wünsche dir ein wundervolles neues Jahr.',
+      leicht:'Möge dein neues Jahr leicht werden und reich an Momenten, die du feiern magst.'},
+    einladung:{fuelle:'Mit der Fülle ist es wie mit der Liebe: Sie wird mehr, wenn man sie teilt.',
+      begleitet:'Wenn dich die Trading-Bilanz in diesem Jahr gut begleitet und unterstützt hat, freue ich mich sehr über deine Wertschätzung.',
+      gewachsen:'So viel ist für dich gewachsen. Wenn du ein Stück davon weitergeben magst, freue ich mich sehr.',
+      geschenk:'Die Trading-Bilanz ist ein Geschenk an die Community. Sie wächst weiter, weil Menschen ihre Wertschätzung zeigen.',
+      wachsen:'Mit jeder Wertschätzung kann die Trading-Bilanz weiter wachsen, für dich und alle anderen in der Community.'},
+    schmetterling:'Wenn dir der Schmetterling so viel Freude gemacht hat wie mir beim Erstellen, teile gern etwas davon mit mir.',
+    dankeG:'Vielen Dank von Herzen für deine Unterstützung in diesem wundervollen Jahr. Auf ein neues, mindestens genauso großartiges.',
+    dankeV:'Danke, dass du auch in diesem Jahr dabei warst.',
     wert:'Wertschätzung teilen',zurueck:'← Zurück zum Rückblick',
-    wDank:'Danke, dass du die Trading-Bilanz nutzt. Wenn sie dir in diesem Jahr Freude gemacht oder geholfen hat und du etwas zurückgeben magst, freue ich mich sehr.',
+    // ab 0.167 (Florians Fassung): erster Satz von „Wertschätzung teilen“; bis 0.166 „… und du etwas zurückgeben magst, freue ich mich sehr.“
+    wDank:'Danke, dass du die Trading-Bilanz nutzt. Wenn sie dir in diesem Jahr Freude gemacht oder geholfen hat, kannst du hier etwas zurückgeben.',
     wAdr:'Wallet-Adresse (EVM), am liebsten USDC oder USDT',kopieren:'Adresse kopieren',paypal:'Lieber per PayPal?',
     sagen:'Und wenn gerade nichts übrig ist: Erzähle anderen in der Community davon. Auch das trägt uns alle.',
-    schon:'Ich habe schon gespendet',danke:'Was du gegeben hast, fließt weiter, zu allen, die das Tool nutzen. Danke von Herzen.',
     betrag:'Betrag zeigen',weak:'Schwächste Werte zeigen',betragK:'Beträge',weakK:'Schwächste Werte',bild:'Bild',bildS:'Bild speichern',alleHt:'mit allen Handelstagen',konten:'{n} von {N} Konten',kurz:'Kurzfassung',kurzK:'(ohne Beträge)',alle:'Alle Werte',
     speichern:'Speichern',teilen:'Teilen',ariaWeiter:'Weiter zu Seite 2',ariaZurueck:'Zurück zu Seite 1',ariaBild:'Bild',
     karte:'Rückblick',ansehen:'Rückblick ansehen ›',liste:'Jahresrückblicke',netto2:'{v} Netto-Gewinn',
     datei:{s1:'Trading-Jahr-{j}',kurz:'Trading-Jahr-{j}-Kurzfassung',alle:'Trading-Jahr-{j}-Alle-Werte'}},
-  sprungZeit:'Das Tool hat den Zeitraum auf „Gesamter Zeitraum“ gestellt, damit du die Stelle siehst.',
-  sprungKonten:'Das Tool hat alle Konten gewählt, damit du die Stelle siehst.',
-  sprungBeide:'Das Tool hat den Zeitraum auf „Gesamter Zeitraum“ gestellt und alle Konten gewählt, damit du die Stelle siehst.',
-  fuss:'Trading-Bilanz · trading-bilanz.github.io',fussKurz:'trading-bilanz.github.io',bildFehler:'Das Bild ließ sich nicht erzeugen.',teilenFehler:'Teilen ging nicht, das Bild ist gespeichert.'
+  // ab 0.167 (Florians Fassungen): Toasts nach einem Sprung und die Meldungen beim Bild neu; die Meldungen gelten ab 0.167 auch für die Grafiken der
+  // Auswertung (Florians Antwort 9 zur Freigabe 0.167). Bis 0.166 „Das Tool hat den Zeitraum auf „Gesamter Zeitraum“ gestellt …“ usw., „Das Bild ließ
+  // sich nicht erzeugen.“ und „Teilen ging nicht, das Bild ist gespeichert.“
+  sprungZeit:'Jetzt mit „Gesamter Zeitraum“, damit du die Stelle siehst.',
+  sprungKonten:'Jetzt mit allen Konten, damit du die Stelle siehst.',
+  sprungBeide:'Jetzt mit „Gesamter Zeitraum“ und allen Konten, damit du die Stelle siehst.',
+  fuss:'Trading-Bilanz · trading-bilanz.github.io',fussKurz:'trading-bilanz.github.io',bildFehler:'Das Bild ließ sich nicht erzeugen. Versuch es bitte noch einmal.',teilenFehler:'Teilen ging nicht. Das Bild ist gespeichert, du kannst es selbst teilen.'
 };
 // Aufschriften im Feier-Fenster aus MS_TXT
 $('ms-all').textContent=MS_TXT.alleLink;$('ms-amtl').textContent=MS_TXT.betrag;
@@ -16064,8 +16282,7 @@ $('jr-modal').addEventListener('click',e=>{const t=e.target;if(!t.closest||!JR)r
   if(t.closest('#jr-ar')){jrView(JR.v===1?2:1);return}
   if(t.closest('#jr-bf')){if(JR.v===1)jrPlay();return}
   if(t.closest('#jr-copy')){addrCopy($('jr-adr'),$('jr-copymsg'),'Adresse kopiert. Danke! 💚');return}
-  // wie „Schon gespendet“ im Spenden-Fenster: Datum (sg) und 12 Monate Ruhe; der Danke-Satz erscheint an Ort und Stelle
-  if(t.closest('#jr-schon')){const d=donGet();d.sg=FEN_NOW().toISOString();donPause(365);save();JR.sgNow=true;$('jr-danke').hidden=false;return}
+  // „Ich habe schon gespendet“ (data-schon): ab 0.167 ein Weg für den Reiter „Resonanz“ und „Wertschätzung teilen“ (Klick auf dem Dokument, unten)
   const im=t.closest('[data-jrim]');if(im){const [k,w]=im.dataset.jrim.split(':');closeFpanel();if(w==='share')jrImgShare(k);else jrImgSave(k);return}
   if(t.closest('#fb-jrb')){if(JR.v===1&&!CAN_SHARE_FILE){jrImgSave('s1');return}if(FP_OPEN==='jrb'){closeFpanel();return}openFpanel('jrb');jrPrep();return}});
 $('jr-modal').addEventListener('change',e=>{const t=e.target;if(!JR||(t.id!=='jr-amt'&&t.id!=='jr-weak'))return;
@@ -16112,8 +16329,11 @@ $('don-cmp').innerHTML=`Vergleiche die Adresse mit der Online-Version: <a class=
 /* ---------------- Fenster nach einem Anlass und Zählregeln (ab 0.134, GESTALTUNG Abschnitt 24) ----------------
    Anlässe: Export (Drucken, Excel, CSV), „Sicherung speichern“, Bild einer Grafik gespeichert oder geteilt. Jeder abgeschlossene Anlass zählt
    (maybeDonate → fenZaehl), auch wenn gerade kein Fenster kommen darf. 0,7 s später prüft fenTry, ob ein Fenster kommt:
-   1. Spenden-Fenster (Arten spende, danke, weitersagen): zusammen höchstens eines in 3 Monaten (91 Tage). „Jetzt nicht“ gibt 3 Monate Ruhe,
-      „Schon gespendet“ 12 Monate (365 Tage). Wie bisher erst ab dem zweiten Anlass, im Dezember und Jänner schon beim ersten.
+   1. Ab 0.167 (Florians Regel): Spenden-Fenster nur nach einem Steuer-Export, ab dem zweiten Tag mit einem Steuer-Export (ns = Zahl der Tage mit
+      Steuer-Export, nst = Tag des letzten; mehrere Exporte an einem Tag zählen einmal, Florians Antwort 5 zur Freigabe 0.167). Danach 9 Monate
+      Ruhe (274 Tage), auch nach „Jetzt nicht“; „Schon gespendet“ 12 Monate (365 Tage). Nach Excel, CSV, „Sicherung speichern“ und Bild kein
+      Spenden-Fenster. Bis 0.166: Spenden-Fenster (Arten spende, danke, weitersagen) nach jedem Anlass, zusammen höchstens eines in 3 Monaten,
+      ab dem zweiten Anlass, im Dezember und Jänner schon beim ersten; die Arten danke und weitersagen sind ab 0.167 entfernt.
    2. Feedback-Fenster: einmal nach drei Wochen (ab Tag 21), danach höchstens einmal im Jahr (365 Tage), mit mindestens 14 Tagen Abstand zu einem
       anderen Fenster (in beide Richtungen). Sind beide fällig, kommt das Feedback-Fenster.
    3. (Feiern: spätere Runde, hier nichts gebaut.)
@@ -16128,57 +16348,84 @@ $('don-cmp').innerHTML=`Vergleiche die Adresse mit der Online-Version: <a class=
    Spenden-Fenster, until = bis dahin kein Spenden-Fenster, fb = letztes Feedback-Fenster, le = zuletzt gezeigter Eintrag (Kennzahl aus Titel und Text).
    Ab 0.139 (Meilensteine, Regeln 5 und 6): lz = letztes Feier-Fenster mit der leisen Zeile, fe = letztes von selbst geöffnetes Feier-Fenster
    (Jahrestag, Jahresrückblick), sg = „Schon gespendet“. Der Jahrestag stellt die Feedback-Frage und setzt fb.
+   Ab 0.167: lzk = zuletzt gezeigte leise Zeile (Schlüssel, nie zweimal hintereinander dieselbe), dk = zuletzt gezeigter Danke-Satz, ns und nst (Regel 1).
    Mehrere Tabs: Vor jeder Prüfung liest donSync den Zähler frisch aus dem Speicher, so kommt auch über zwei Tabs nur ein Fenster am Tag. */
-const FEN_SP=['spende','danke','weitersagen'];
+// Ab 0.167 nur noch die Art spende (bis 0.166 dazu danke und weitersagen)
+const FEN_SP=['spende'];
+// Ab 0.167 (Florians Regel 1): 9 Monate Ruhe nach einem Spenden-Fenster und nach „Jetzt nicht“, in Tagen wie bisher (3 Monate = 91 Tage); bis 0.166 91
+const FEN_RUHE=274;
 let FEN_NOW=()=>new Date(),FEN_RND=()=>Math.random();   // in den Tests gestellt (Uhr, Zufall)
 let FEN_T=null,FEN_NACH=null,FEN_CUR=null,FEN_FROM=null;
 const fenDay=d=>{d=new Date(d);return Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5)};
 const fenPlus=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 const fenHash=e=>{let h=0;for(const c of String(e.titel)+'\n'+String(e.text))h=(h*31+c.codePointAt(0))>>>0;return h};
+// Ab 0.167 (Eine Wurzel): Tag der Nutzung (Tag 0 = erste Nutzung in diesem Browser) und der Tag, ab dem das Tool um Rückmeldung bittet (Feedback-
+// Fenster, Regel 2; Einladung am Jahrestag, Florians Regel ab 0.167). Bis 0.166 rechnete fenPick den Tag selbst.
+const FB_TAG=21;
+function donTag(d,now){return fenDay(now)-fenDay(d.first)}
 function donGet(){const d=S.ui.don||(S.ui.don={n:0,last:null});if(!d.first)d.first=FEN_NOW().toISOString();return d}
 // Zähler mit dem Stand im Browser-Speicher abgleichen (ein anderer Tab kann inzwischen gezählt oder ein Fenster gezeigt haben): je Wert der neuere
 function donSync(){const d=donGet();if(BOOT_BAD)return d;let o=null;try{const j=JSON.parse(localStorage.getItem(KEY)||'null');o=j&&j.ui&&j.ui.don}catch(e){}
   if(!o||typeof o!=='object')return d;const t=x=>x?+new Date(x)||0:0;
   if(Math.max(t(o.last),t(o.fb))>Math.max(t(d.last),t(d.fb))&&o.le!=null)d.le=o.le;
-  for(const k of ['last','fb','until','lz','fe','sg'])if(t(o[k])>t(d[k]))d[k]=o[k];
-  if((o.n|0)>(d.n|0))d.n=o.n|0;if(o.first&&t(o.first)&&t(o.first)<t(d.first))d.first=o.first;return d}
+  for(const k of ['last','fb','until','lz','fe','sg','nst'])if(t(o[k])>t(d[k]))d[k]=o[k];
+  if((o.n|0)>(d.n|0))d.n=o.n|0;if((o.ns|0)>(d.ns|0))d.ns=o.ns|0;if(o.first&&t(o.first)&&t(o.first)<t(d.first))d.first=o.first;return d}
+// Ab 0.167: ein Weg für „Schon gespendet“ (Spenden-Fenster, „Wertschätzung teilen“ im Jahresrückblick, ab 0.167 auch der Reiter „Resonanz“):
+// Datum (sg) und 12 Monate Ruhe (365 Tage). Bis 0.166 an jeder Stelle eigen.
+function donSchon(){const d=donGet();d.sg=FEN_NOW().toISOString();donPause(365);save()}
 // Ab 0.136: Ruhe wird nie kürzer (Florians Freigabe): Liegt schon ein späteres Ende vor (z. B. 12 Monate nach „Schon gespendet“), bleibt es
 function donPause(days){const d=donGet(),u=fenPlus(FEN_NOW(),days);if(!(d.until&&new Date(d.until)>u))d.until=u.toISOString();save()}
 // Welcher Eintrag aus FENSTER käme jetzt? Reine Entscheidung nach den Zählregeln, ändert nichts. null = kein Fenster.
 function fenPick(d,now,anlass){
-  const day=fenDay(now),t=day-fenDay(d.first),ago=x=>x?day-fenDay(x):Infinity,st=anlass==='steuer',AN=st?['steuer','export']:[anlass];
+  const day=fenDay(now),t=donTag(d,now),ago=x=>x?day-fenDay(x):Infinity,st=anlass==='steuer',AN=st?['steuer','export']:[anlass];
   // Regel 4: keines in der ersten Woche. Ab 0.136 (Florians Auftrag) Ausnahme: Steuer-Export, nur für das Spenden-Fenster (das Feedback-Fenster braucht ohnehin Tag 21)
   if(t<7&&!st)return null;
   if(ago(d.last)===0||ago(d.fb)===0||ago(d.fe)===0)return null;       // Regel 4: nie zwei Fenster am selben Tag (ab 0.139 zählt auch ein von selbst geöffnetes Feier-Fenster, Regel 6)
+  // ab 0.167 über den Baustein wahlNeu (nie zweimal hintereinander derselbe Eintrag, Kennzahl fenHash); bis 0.166 stand die Wahl hier
   const pick=arts=>{const L=FENSTER.filter(e=>arts.includes(e.art)&&(e.anlass||[]).some(a=>AN.includes(a)));if(!L.length)return null;
-    const M=L.filter(e=>fenHash(e)!==d.le),P=L.length>1&&M.length?M:L;return P[Math.min(P.length-1,Math.floor(FEN_RND()*P.length))]};
-  // Regel 2: Feedback-Fenster, hat Vorrang
-  if(t>=21&&ago(d.fb)>=365&&ago(d.last)>=14){const e=pick(['feedback']);if(e)return e}
-  // Regel 1: Spenden-Fenster. Stände bis 0.133 ohne until: 91 Tage nach dem letzten Fenster
-  const m=now.getMonth(),until=d.until?fenDay(d.until):d.last?fenDay(d.last)+91:-Infinity;
-  // Ab 0.139, Regel 5: Nach einem Feier-Fenster mit der leisen Zeile (d.lz) kommt 14 Tage kein Spenden-Fenster.
-  // Ab 0.141 (Florians Regel, Ergänzung zu Regel 5): Die Sperre gilt nicht für das Spenden-Fenster nach einem Steuer-Export.
-  if(((d.n|0)>=2||m===11||m===0)&&day>=until&&ago(d.fb)>=14&&(anlass==='steuer'||ago(d.lz)>=14))return pick(FEN_SP);
+    return wahlNeu(L,d.le,FEN_RND,fenHash)};
+  // Regel 2: Feedback-Fenster ab Tag FB_TAG (21) der Nutzung, hat Vorrang
+  if(t>=FB_TAG&&ago(d.fb)>=365&&ago(d.last)>=14){const e=pick(['feedback']);if(e)return e}
+  // Regel 1 (ab 0.167, Florians Regel): Spenden-Fenster nur nach einem Steuer-Export, ab dem zweiten Tag mit Steuer-Export, danach FEN_RUHE Tage
+  // Ruhe. Stände bis 0.133 ohne until: FEN_RUHE Tage nach dem letzten Fenster. Bis 0.166 ab dem zweiten Anlass (d.n), im Dezember und Jänner ab
+  // dem ersten, und 14 Tage nach einem Feier-Fenster mit der leisen Zeile keines (Regel 5, außer nach einem Steuer-Export, Ergänzung 0.141);
+  // beides ist ab 0.167 weg (Florians Antwort 4 zur Freigabe 0.167: wirkte nicht mehr).
+  const until=d.until?fenDay(d.until):d.last?fenDay(d.last)+FEN_RUHE:-Infinity;
+  if(st&&(d.ns|0)>=2&&day>=until&&ago(d.fb)>=14)return pick(FEN_SP);
   return null}
 // Keines während einer Eingabe: nicht, solange ein anderes Fenster (auch „＋ Daten“, „Noch offen“, Rückfrage, Begrüßung) offen ist oder der Cursor in einem Eingabefeld steht
 function fenFrei(){if(document.querySelector('.modal.on'))return false;const a=document.activeElement;
   return !(a&&a.matches&&(a.matches('textarea,select,[contenteditable=""],[contenteditable="true"]')||(a.matches('input')&&!/^(button|submit|reset|checkbox|radio|file|range|color|image)$/i.test(a.type||''))))}
-function fenZaehl(){const d=donSync();d.n=(d.n|0)+1;save()}
-function maybeDonate(anlass){fenZaehl();clearTimeout(FEN_T);FEN_T=setTimeout(()=>fenTry(anlass||'export'),700)}
-// frei: darf jetzt ein Fenster kommen (im Tool fenFrei(), in den Tests gestellt). Rückgabe: der gezeigte Eintrag oder null.
-function fenTry(anlass,frei){
+// Ab 0.167: ein Steuer-Export zählt je Tag einmal (ns, nst; Regel 1). jahr = Steuerjahr des Exports (für den Text des Fensters, fenShow)
+function fenZaehl(anlass){const d=donSync(),now=FEN_NOW();d.n=(d.n|0)+1;if(anlass==='steuer'&&(!d.nst||fenDay(d.nst)!==fenDay(now))){d.ns=(d.ns|0)+1;d.nst=now.toISOString()}save()}
+function maybeDonate(anlass,jahr){fenZaehl(anlass);clearTimeout(FEN_T);FEN_T=setTimeout(()=>fenTry(anlass||'export',undefined,jahr),700)}
+// frei: darf jetzt ein Fenster kommen (im Tool fenFrei(), in den Tests gestellt). jahr: Steuerjahr eines Steuer-Exports (ab 0.167). Rückgabe: der
+// gezeigte Eintrag oder null.
+function fenTry(anlass,frei,jahr){
   // Ab 0.139: Bild aus dem Feier-Fenster: Das Fenster nach dem Anlass kommt erst, wenn das Feier-Fenster zu ist (msClosed), wie beim Vollbild
   // Ab 0.154 ebenso aus dem Jahresrückblick (jrClosed)
   if(GFS||(MODAL&&(MODAL.id==='ms-modal'||MODAL.id==='jr-modal'))){FEN_NACH=anlass;return null}
   if(BOOT_BAD||!(frei===undefined?fenFrei():frei))return null;
   const d=donSync(),now=FEN_NOW(),e=fenPick(d,now,anlass);if(!e)return null;
-  const iso=now.toISOString();if(e.art==='feedback')d.fb=iso;else{d.last=iso;d.until=fenPlus(now,91).toISOString()}
-  d.le=fenHash(e);save();fenShow(e);return e}
+  const iso=now.toISOString();if(e.art==='feedback')d.fb=iso;else{d.last=iso;d.until=fenPlus(now,FEN_RUHE).toISOString()}
+  d.le=fenHash(e);save();fenShow(e,jahr);return e}
 // Ab 0.136: Titel und Text über herzH (💚 als gezeichnetes Herz)
-function fenShow(e){FEN_CUR=e;FEN_FROM=document.activeElement;$('don-t').innerHTML=herzH(e.titel);$('don-p').innerHTML=herzH(e.text);
-  const A=e.art,vis={'btn-don-go':A==='spende','btn-don-done':A==='spende','btn-don-fb':A==='feedback','btn-don-link':A==='weitersagen','btn-don-ok':A==='danke','btn-don-no':A!=='danke'};
-  for(const k in vis)$(k).hidden=!vis[k];if(A==='danke')$('btn-don-ok').textContent=e.knopf||'Schließen';
+// Ab 0.167: Hat der Eintrag einen Text für ein Verlustjahr (textV, Fenster nach dem Steuer-Export), entscheidet das exportierte Steuerjahr nach der
+// Wurzel „Verlustjahr“ des Rückblicks (jahrVerlust, Konten der Karte „Meilensteine“, Florians Antwort 6 zur Freigabe 0.167): Gewinnjahr text,
+// Verlustjahr und ein Jahr ohne Trades textV. „Schließen“ (btn-don-ok) steht nur nach „Schon gespendet“ (fenDank).
+function fenShow(e,jahr){FEN_CUR=Object.assign({},e,{dank:false});FEN_FROM=document.activeElement;$('don-t').innerHTML=herzH(e.titel);
+  $('don-p').innerHTML=herzH(e.textV&&jahrVerlust(jahr)!==false?e.textV:e.text);
+  const A=e.art,vis={'btn-don-go':A==='spende','btn-don-done':A==='spende','btn-don-fb':A==='feedback','btn-don-ok':false,'btn-don-no':true};
+  for(const k in vis)$(k).hidden=!vis[k];
   modalOn($('don-modal'),true);$('don-x').focus({preventScroll:true})}
+// Ab 0.167 (Florians Auftrag 0.167, Antwort 7A zur Freigabe): Nach „Schon gespendet“ bleibt das Fenster offen. Der Titel bleibt, der Text wird ein
+// Dank aus der Danke-Auswahl (dankeWahl), es bleibt nur „Schließen“ (blau); ×, Esc und „Schließen“ schließen ohne weitere Folge.
+// Bis 0.166 schloss das Fenster sofort.
+function fenDank(){if(!FEN_CUR)return;FEN_CUR.dank=true;$('don-p').innerHTML=herzH(dankeWahl());
+  for(const k of ['btn-don-go','btn-don-done','btn-don-fb','btn-don-no'])$(k).hidden=true;$('btn-don-ok').hidden=false;$('btn-don-ok').focus({preventScroll:true})}
+// Ab 0.167: Danke-Auswahl für den Moment des Klicks auf „Schon gespendet“ (Steuer-Fenster, „Wertschätzung teilen“, Reiter „Resonanz“), eine Quelle
+// (MS_TXT.danke), zufällig, nie zweimal hintereinander derselbe (S.ui.don.dk)
+function dankeWahl(){const d=donGet(),k=wahlNeu(Object.keys(MS_TXT.danke),d.dk);d.dk=k;save();return MS_TXT.danke[k]}
 function fenClose(){if(!FEN_CUR&&!$('don-modal').classList.contains('on'))return;modalOn($('don-modal'),false);FEN_CUR=null;const f=FEN_FROM;FEN_FROM=null;if(f&&f.focus&&document.contains(f))f.focus({preventScroll:true})}
 // Nach dem Teilen: erst weiter, wenn die Person wieder im Tool ist (Seite sichtbar und im Vordergrund, oder sie tippt wieder ins Tool)
 function fenBack(fn){const ok=()=>document.visibilityState!=='hidden'&&(!document.hasFocus||document.hasFocus());if(ok()){fn();return}
