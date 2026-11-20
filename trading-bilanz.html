@@ -4518,7 +4518,15 @@ function jrLeit(y,verlust){return MS_TXT.jr.leit[merkWahl('leit',y,jrLeitKand(ve
 // Vorzeichen}); negativ ist ein Text mit Minus vorne, positiv einer ohne Minus mit einer Ziffer über 0 (0,00 % bleibt ohne Zeichen).
 function jrPlus(L){const S2=L.filter(x=>x&&x.s);if(!S2.some(x=>/^-/.test(x.t)))return L;for(const x of S2)if(!/^[-+]/.test(x.t)&&/[1-9]/.test(x.t))x.t='+'+x.t;return L}
 // Liste für die Anzeige: neueste zuerst (Datum, bei gleichem Tag in der Reihenfolge der Rechnung)
-function msSort(list){return list.map((e,i)=>[e,i]).sort((a,b)=>a[0].d<b[0].d?1:a[0].d>b[0].d?-1:a[1]-b[1]).map(x=>x[0])}
+// Neueste zuerst; am selben Tag in der Reihenfolge, in der msCalc sie findet. Ab 0.169 (Florians Antwort 3 zu Bericht 0.167 und Antwort 2 zur
+// Freigabe 0.169): Zwei Stufen derselben Art (msArt; 100 % zählt mit 200 % und mehr; Stufen, Auszahlungen und Serien) am selben Tag: die
+// höhere oben (msStufeN)
+const msStufeN=e=>e.k==='ee'?100:e.n!=null&&(MS_STU.includes(e.k)||e.k==='ex'||msIsSer(e.k))?e.n:null;
+// Schlüssel: Tag (neueste zuerst), dann Platz (Stufen einer Art an einem Tag stehen zusammen am Platz der zuerst gefundenen), dann Stufe
+// (höhere zuerst), dann Reihenfolge in der Liste. Ein fester Schlüssel statt eines Vergleichs nur zwischen Stufen, damit die Sortierung eindeutig ist.
+function msSort(list){const g0=new Map(),gk=e=>e.d+'|'+msArt(e);list.forEach((e,i)=>{if(msStufeN(e)!=null&&!g0.has(gk(e)))g0.set(gk(e),i)});
+  return list.map((e,i)=>{const n=msStufeN(e);return {e,i,g:n!=null?g0.get(gk(e)):i,n:n!=null?n:0}})
+    .sort((a,b)=>a.e.d!==b.e.d?(a.e.d<b.e.d?1:-1):a.g!==b.g?a.g-b.g:a.n!==b.n?b.n-a.n:a.i-b.i).map(x=>x.e)}
 /* Stand der Meilensteine: S.ui.ms (Browser-Speicher, reist mit der Sicherung). Gespeichert wird nur, was gesehen, ausgeblendet und gezählt ist:
      off  Konten, die nicht zählen (ein neues Konto zählt von selbst mit)
      m    ab 0.141: Marke je Konto {t: neueste bekannte Buchung, rd: Report-Datum}
@@ -4664,8 +4672,12 @@ function msPrev(e){const p=e.prev;if(!p)return '';
   return MS_TXT.vorher.replace('{w}',w)}
 // Text mit Link: Der Teil in {…} wird der Link in den Reiter „Resonanz“
 const msLinkH=t=>herzH(t).replace(/\{([^}]*)\}/,'<a href="#resonanz" data-msres>$1</a>');
-function msMissTxt(L){const nf=L.filter(a=>INV[a]==='nofac'),ot=L.filter(a=>INV[a]!=='nofac'),kt=X=>`${X.length===1?'Konto':'den Konten'} ${and2(X)}`;
-  return [nf.length?MS_TXT.ohneTB.replace('{k}',kt(nf)):'',ot.length?MS_TXT.ohneInv.replace('{k}',kt(ot)):''].filter(Boolean).map(esc).join(' ')}
+// Ab 0.169: „Konto 90000201“ bzw. „den Konten … und …“ und der Satz zum fehlenden Trading Benefit, eine Quelle für die Karte „Meilensteine“
+// (msMissTxt) und den Hinweis über der Auswertung (#tb-note)
+const kontenTxt=X=>`${X.length===1?'Konto':'den Konten'} ${and2(X)}`;
+const tbFehltTxt=L=>MS_TXT.ohneTB.replace('{k}',kontenTxt(L));
+function msMissTxt(L){const nf=L.filter(a=>INV[a]==='nofac'),ot=L.filter(a=>INV[a]!=='nofac');
+  return [nf.length?tbFehltTxt(nf)+' '+MS_TXT.ohneTBKarte:'',ot.length?MS_TXT.ohneInv.replace('{k}',kontenTxt(ot)):''].filter(Boolean).map(esc).join(' ')}
 // ---- Bild-Knopf: wie bei den Grafiken. Kann das Gerät Dateien teilen, ein kleines Menü mit „Speichern“ und „Teilen“, sonst „Bild speichern“.
 // Ab 0.161 (Florians Auftrag 0.161, Phase 5): ohne Teilen „Bild“ (vorgelesen „Bild speichern“), ▾ nur, wenn ein Menü aufgeht; bis 0.160 „Bild speichern“
 const msImgBtn=id=>`<span class="fdd msbd"><button type="button" class="btn msib" data-msimg="${esc(id)}"${CAN_SHARE_FILE?' aria-expanded="false" aria-controls="fp-msb">Bild ▾':' aria-label="Bild speichern">Bild'}</button></span>`;
@@ -14415,7 +14427,8 @@ function renderStats(rows){
   $('stats-guard').innerHTML=unklarH(false); // ab 0.115: Hinweis „noch unklar“ in der eben bestimmten Währung (guard() lief vorher)
   $('cur-note').innerHTML=CUR_MISS&&S.ui.flt.cur!=='usd'?`<div class="msg info">Beträge in USD, weil für Euro Kurse fehlen. <button type="button" class="btn" data-rl="cur-rlm" style="padding:3px 10px;margin-left:4px">Kurse laden</button></div><div id="cur-rlm"></div>`:'';
   // Ab 0.58 (4): Hinweis, solange bei einem gewählten Konto der Trading Benefit fehlt, mit dem Sprung zu „Deine Konten“
-  {const L=sel.filter(a=>INV[a]==='nofac');$('tb-note').innerHTML=L.length?`<div class="msg info">Bei ${L.length===1?'Konto':'den Konten'} ${and2(L)} fehlt der Trading Benefit. Ohne ihn keine Rendite. <button type="button" class="btn" data-tbgo style="padding:3px 10px;margin-left:4px">Zu „Deine Konten“</button></div>`:''}
+  // Ab 0.169 der Satz aus tbFehltTxt (wie die Karte „Meilensteine“); bis 0.168 „… Ohne ihn keine Rendite.“ fest hier
+  {const L=sel.filter(a=>INV[a]==='nofac');$('tb-note').innerHTML=L.length?`<div class="msg info">${esc(tbFehltTxt(L))} <button type="button" class="btn" data-tbgo style="padding:3px 10px;margin-left:4px">Zu „Deine Konten“</button></div>`:''}
   // Ab 0.139: Meilensteine in der Währung der Auswertung (render hat mit der gewählten gerechnet; fehlen Kurse, hier in USD)
   if(MS&&MS.cur!==CUR_EFF&&CUR_EFF==='usd'){MS=msNow(rows,'usd');MS_NL=msNeu(MS)}
   msRender();msBfOv();
@@ -16089,7 +16102,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.168',VDATE='20.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.169',VDATE='20.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -16153,7 +16166,10 @@ const MS_TXT={
   // ab 0.167 (Florians Fassungen): leer, ohneTB, ohneInv und fz neu; bis 0.166 „Noch keine Meilensteine. …“, „Ohne ihn keine Rendite.“, „Ohne sie keine
   // Rendite.“ und „Die Filterzeile oben wirkt hier nicht. Zeitraum und Konten wählst du rechts.“
   leer:'Hier sammeln sich bald deine Meilensteine. Die ersten zwei Wochen setzen den Ausgangsstand, danach zählt jeder neue Höchstwert.',
-  ohneTB:'Bei {k} fehlt der Trading Benefit. Ohne ihn kann das Tool keine Rendite rechnen. Trag ihn im Reiter „Reports“ ein oder nimm das Konto rechts im Menü heraus.',
+  // ab 0.169 (Florians Antwort 2 zu Bericht 0.167): ohneTB gilt für die Karte und den Hinweis über der Auswertung (tbFehltTxt); die Karte hängt
+  // ohneTBKarte an. Bis 0.168 stand der dritte Satz in ohneTB und der Hinweis über der Auswertung hatte „Ohne ihn keine Rendite.“ fest im Code.
+  ohneTB:'Bei {k} fehlt der Trading Benefit. Ohne ihn kann das Tool keine Rendite rechnen.',
+  ohneTBKarte:'Trag ihn im Reiter „Reports“ ein oder nimm das Konto rechts im Menü heraus.',
   ohneInv:'Bei {k} ist die Investition unbekannt. Ohne sie kann das Tool keine Rendite rechnen. Sieh im Reiter „Reports“ nach oder nimm das Konto rechts im Menü heraus.',
   // fz ab 0.157 (Florians Wahl, wörtlich): Zeile oben in der Karte, wenn die Auswertung anders zählt als die Karte (msNote)
   karte:{rek:'Rekorde',ser:'Serien',err:'Erreicht',verlauf:'Verlauf',jahr:'{t} {j}',fz:'Von der Filterzeile oben gilt hier nur die Währung. Zeitraum und Konten wählst du rechts.'},
@@ -16251,7 +16267,8 @@ const MS_TXT={
       gewachsen:'So viel ist für dich gewachsen. Wenn du ein Stück davon weitergeben magst, freue ich mich sehr.',
       geschenk:'Die Trading-Bilanz ist ein Geschenk an die Community. Sie wächst weiter, weil Menschen ihre Wertschätzung zeigen.',
       wachsen:'Mit jeder Wertschätzung kann die Trading-Bilanz weiter wachsen, für dich und alle anderen in der Community.'},
-    schmetterling:'Wenn dir der Schmetterling so viel Freude gemacht hat wie mir beim Erstellen, teile gern etwas davon mit mir.',
+    // ab 0.169 (Florians Fassung); bis 0.168 „Wenn dir der Schmetterling so viel Freude gemacht hat wie mir beim Erstellen, teile gern etwas davon mit mir.“
+    schmetterling:'Wenn dir der Schmetterling genauso viel Freude gemacht hat wie mir beim Erstellen, teile gern etwas davon mit mir.',
     dankeG:'Vielen Dank von Herzen für deine Unterstützung in diesem wundervollen Jahr. Auf ein neues, mindestens genauso großartiges.',
     dankeV:'Danke, dass du auch in diesem Jahr dabei warst.',
     wert:'Wertschätzung teilen',zurueck:'← Zurück zum Rückblick',
