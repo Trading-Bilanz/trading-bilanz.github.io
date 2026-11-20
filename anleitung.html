@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'sha256-uvgta/Fen9eNu1UzMjP1nmdHzZq3bgEFb62ErqAOBD4='; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'sha256-ekR1L2kUreU31dOAl6CIA7Abfs4srxwDGYUPDq544OI='; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anleitung zur Trading-Bilanz</title>
 <!-- Ab 0.90: Favicon, apple-touch-icon und Logo aus icons/ (img-src 'self' erlaubt Bilder vom eigenen Server), Angaben für die Link-Vorschau wie im Tool -->
@@ -22,12 +22,14 @@
 <!--
   Anleitung mit Bildern zur Trading-Bilanz. Farben wie im Tool (trading-bilanz.html, :root), hell und dunkel nach Systemeinstellung.
   Ab 0.70 in drei Stufen gegliedert (Auswertung, Dein echtes Geld, Krypto-Steuer): Inhalt nach Stufen (#inhalt), je Stufe ein Kopf (div.stufe, #stufe-1 … 3)
-  mit den Reitern als Kästchen, Abschnitte (section, h3.st) 1 bis 15. Die Sprungmarken bleiben, das Tool verlinkt darauf (#mt5-verbinden,
-  #report-speichern, #tag-daten, #reiter-wallet, #noch-offen, #boerse-datei, #von-hand, ab 0.76 #tausch, #anderes-tool).
+  mit den Reitern als Kästchen, Abschnitte (section, h3.st) 1 bis 15, ab 0.168 dazu „Deine Auswertung“ (#auswertung) ohne Nummer nach Abschnitt 6.
+  Die Sprungmarken bleiben, das Tool verlinkt darauf (#mt5-verbinden, #report-speichern, #tag-daten, #reiter-wallet, #noch-offen, #boerse-datei,
+  #von-hand, ab 0.76 #tausch, #anderes-tool, ab 0.168 #dfx).
   Nur die Schritt-Listen (MetaTrader 5, Tag, „Jeden Monat“) stehen wortgleich im Tool, zwischen <!- -Q:quelle- -> und <!- -/Q- ->, je Gerät
   <!- -Q:os:win|mac|handy- ->; tools/tests/anleitung.js prüft das. <!- -Z- -> … <!- -/Z- -> darin sind Zusätze der Anleitung. Alles andere steht in eigenen Worten.
   Gerätewahl: Teile mit Klasse os-win, os-mac, os-mob gelten nur für dieses Gerät. Das kleine Skript unten setzt html[data-os] (Erkennung wie detectOS()
-  im Tool, nicht gespeichert), baut die stehende Leiste und das Zuklappen der Karten. Ohne Skript zeigt die Seite die Windows-Fassung, ohne Leiste.
+  im Tool, nicht gespeichert), baut die stehende Leiste und das Zuklappen der Karten (ab 0.168 wie im Tool: „▾“ links, ein Klick auf den ganzen Kopf).
+  Ohne Skript zeigt die Seite die Windows-Fassung, ohne Leiste und ohne Zuklappen.
   Das Skript ist über seinen Hash in der Content-Security-Policy erlaubt (tools/anleitung-csp.js schreibt ihn neu). Es speichert nichts und lädt nichts.
   Bilder: tool-* macht tools/anleitung-bilder.js, die anderen tools/anleitung-fremd.js aus Florians Aufnahmen (grüne Rahmen und Kreise #10A846).
 -->
@@ -97,12 +99,18 @@ h4{font-size:16px;margin:18px 0 6px}
 .rsub{color:var(--ink2);margin:2px 0 6px}
 h3.st{font-size:21px;line-height:1.3;margin:16px 0 8px;display:flex;align-items:flex-start;gap:8px}
 h3.st>span{flex:1}
-/* Zuklappen (Skript): ▼ im Kopf jeder Karte, zugeklappt nur der Titel */
-h3.st button.zu{flex:none;margin-left:auto;border:0;background:none;color:var(--ink2);font:inherit;font-size:16px;line-height:1;width:32px;height:32px;border-radius:6px;cursor:pointer}
-h3.st button.zu:hover{background:var(--sub-bg)}
+/* Zuklappen (Skript). Ab 0.168 (Florians Regel, GESTALTUNG Abschnitt 7) wie die Karten im Tool (.card.fold): „▾“ links vor dem Titel, der ganze
+   Kopf ist ein Knopf (aria-expanded, Enter und Leertaste), zugeklappt ist der Pfeil gedreht und die Karte flacher (9 px innen, 10 px Abstand
+   zwischen zugeklappten Karten). Bis 0.167 „▼“ rechts als eigener Knopf. Ohne Skript bleibt der Titel ohne Pfeil. Die Seite merkt sich nichts. */
+h3.st>button.kopf{all:unset;box-sizing:border-box;display:flex;align-items:flex-start;gap:8px;width:100%;cursor:pointer;border-radius:6px;-webkit-tap-highlight-color:transparent}
+h3.st>button.kopf::before{content:'▾';display:inline-block;width:20px;flex:none;text-align:center;color:var(--muted);transition:transform .15s}
+h3.st>button.kopf>span{flex:1;min-width:0}
+h3.st>button.kopf:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 section.zu>:not(h3.st){display:none}
-section.zu h3.st button.zu{transform:rotate(-90deg)}
-section.zu{padding-bottom:6px}
+section.zu>h3.st>button.kopf::before{transform:rotate(-90deg)}
+section.zu{padding-top:9px;padding-bottom:9px;margin-top:10px;margin-bottom:10px}
+section.zu>h3.st{margin:0}
+@media (prefers-reduced-motion:reduce){h3.st>button.kopf::before{transition:none}}
 /* Kasten am Ende einer Stufe: „Hier kannst du aufhören“ */
 .stop{background:var(--ok-soft);border:1px solid var(--line);border-left:4px solid var(--mark);border-radius:var(--radius);padding:10px 18px 12px;margin:16px 0}
 .stop h4{margin:4px 0 6px}
@@ -163,6 +171,8 @@ footer p{margin:0 0 6px}
   ol.steps,ol.list{padding-left:20px}
   .stufe h2{font-size:23px}
   .leiste .li{gap:8px}
+  h3.st>button.kopf{gap:6px}
+  h3.st>button.kopf::before{width:14px}
 }
 </style>
 <script>
@@ -173,13 +183,15 @@ H.setAttribute('data-os',os());H.classList.add('js');
 document.addEventListener('DOMContentLoaded',function(){
   var bar=document.getElementById('leiste'),sel=document.getElementById('geraet'),ti=document.getElementById('lt'),S=[].slice.call(document.querySelectorAll('main section'));
   bar.hidden=false;sel.value=H.getAttribute('data-os');sel.addEventListener('change',function(){H.setAttribute('data-os',sel.value);titel()});
-  function setz(s,zu){s.classList.toggle('zu',zu);var b=s.querySelector('h3.st>button.zu');b.setAttribute('aria-expanded',zu?'false':'true');b.setAttribute('aria-label',zu?'Abschnitt aufklappen':'Abschnitt zuklappen')}
-  S.forEach(function(s){var h=s.querySelector('h3.st'),b=document.createElement('button');b.type='button';b.className='zu';b.textContent='▼';h.appendChild(b);setz(s,false);
+  function setz(s,zu){s.classList.toggle('zu',zu);s.querySelector('h3.st>button.kopf').setAttribute('aria-expanded',zu?'false':'true')}
+  S.forEach(function(s){var h=s.querySelector('h3.st'),t=h.querySelector('span'),b=document.createElement('button');b.type='button';b.className='kopf';b.appendChild(t);h.appendChild(b);setz(s,false);
     b.addEventListener('click',function(){setz(s,!s.classList.contains('zu'));titel()})});
-  function auf(id){var t=id&&document.getElementById(decodeURIComponent(id));var s=t&&t.closest('section');if(s&&s.classList.contains('zu'))setz(s,false)}
+  function auf(id){var t=id&&document.getElementById(decodeURIComponent(id));if(!t)return;var s=t.closest('section'),neu=false;if(s&&s.classList.contains('zu')){setz(s,false);neu=true}
+    for(var d=t.closest('details');d;d=d.parentElement&&d.parentElement.closest('details'))if(!d.open){d.open=true;neu=true}
+    if(neu)setTimeout(function(){t.scrollIntoView()},0)}
   document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href^="#"]');if(a)auf(a.getAttribute('href').slice(1))},true);
   window.addEventListener('hashchange',function(){auf(location.hash.slice(1))});auf(location.hash.slice(1));
-  function titel(){var y=bar.getBoundingClientRect().bottom+80,t='Anleitung zur Trading-Bilanz';S.forEach(function(s){if(s.getBoundingClientRect().top<=y)t=s.querySelector('h3.st>span').textContent});ti.textContent=t}
+  function titel(){var y=bar.getBoundingClientRect().bottom+80,t='Anleitung zur Trading-Bilanz';S.forEach(function(s){if(s.getBoundingClientRect().top<=y)t=s.querySelector('h3.st span').textContent});ti.textContent=t}
   var q=0;window.addEventListener('scroll',function(){if(!q){q=1;requestAnimationFrame(function(){q=0;titel()})}},{passive:true});window.addEventListener('resize',titel);titel();
 });
 })();
@@ -207,6 +219,7 @@ document.addEventListener('DOMContentLoaded',function(){
           <li><a href="#reports-laden">4. Reports ins Tool laden</a></li>
           <li><a href="#trading-benefit">5. Deine Konten</a></li>
           <li><a href="#kurse">6. Wechselkurse laden</a></li>
+          <li><a href="#auswertung">Deine Auswertung</a></li>
         </ul></li>
       <li><a class="grp" href="#stufe-2">Stufe 2: Dein echtes Geld</a>
         <ul>
@@ -240,8 +253,17 @@ document.addEventListener('DOMContentLoaded',function(){
       <p class="small"><b>Was du brauchst:</b> deine Kaufbelege oder die Datei deiner Börse, bei einer Krypto-Karte die Karten-App, und am Ende den Kontostand jeder Wallet-App. Adressen brauchst du nicht.</p></li>
   </ol>
   <p>Beim ersten Öffnen begrüßt dich das Tool und sagt kurz, was es kann. Im grauen Kästchen „Wo zahlst du Steuern?“ wählst du <b>„Österreich“</b>, <b>„Deutschland“</b> oder <b>„Ohne Steuer“</b>. Das kannst du später im Reiter „Steuer“ ändern. Mit einem der beiden Knöpfe unten geht es los. Hast du ein Land gewählt, zeigt dir das Tool beim ersten Öffnen des Reiters „Steuer“ einen wichtigen Hinweis.</p>
+  <p>Oben neben dem Titel steht der Knopf <b>„Erste Schritte“</b>. Er zeigt dir alle Schritte der Reihe nach. <span class="os-win os-mac">Ein Klick auf einen Schritt bringt dich an die richtige Stelle im Tool.</span><span class="os-mob">Tippst du auf einen Schritt, bringt dich das Tool an die richtige Stelle.</span></p>
+  <div class="hilfe">
+    <p><b>Leg dir ein Lesezeichen an</b></p>
+    <p>Dann findest du das Tool immer schnell.</p>
+    <p class="os-win">Drücke <kbd>Strg</kbd>+<kbd>D</kbd>. Für einen Link auf dem Desktop ziehst du das Symbol links neben der Adresse auf den Desktop.</p>
+    <p class="os-mac">Drücke <kbd>⌘ Cmd</kbd>+<kbd>D</kbd>.</p>
+    <p class="os-mob">Öffne das Menü deines Browsers und wähle <b>„Zum Startbildschirm hinzufügen“</b>. Am iPhone in Safari tippst du auf <b>„Teilen“</b>, dann auf <b>„Zum Home-Bildschirm“</b>.</p>
+    <p class="small">Nutzt du die heruntergeladene Datei: Lege die Datei an einen festen Ort, bevor du anfängst, und öffne sie immer von dort. In Firefox gehören deine Daten zu Ort und Name der Datei.</p>
+  </div>
   <h4 class="os-win os-mac">Dateien ziehst du einfach ins Tool</h4>
-  <p class="os-win os-mac">Am Computer ziehst du jede Datei ins Tool, egal welcher Reiter gerade offen ist. Das Tool erkennt, was es ist, und legt sie an den richtigen Ort.</p>
+  <p class="os-win os-mac">Am Computer ziehst du jede Datei ins Tool, egal welcher Reiter gerade offen ist. Das Tool erkennt, was es ist, und legt sie an den richtigen Ort. Auch eine Sicherung kannst du ins Tool ziehen. Das Tool fragt vorher nach, weil eine Sicherung alles im Tool ersetzt.</p>
   <h4 class="os-mob">Dateien wählst du mit einem Tippen</h4>
   <p class="os-mob">Am Handy tippst du auf ein Feld, das mit „Hier tippen, um …“ beginnt, und wählst die Datei aus. Bei jedem Schritt steht, wo dieses Feld ist.</p>
   <div class="hilfe">
@@ -249,8 +271,8 @@ document.addEventListener('DOMContentLoaded',function(){
     <ul>
       <li><b>(i)</b> an jeder Karte erklärt, was die Karte zeigt.</li>
       <li>Gestrichelt unterstrichene Begriffe: Ein Klick zeigt eine Erklärung, sie bleibt offen.</li>
-      <li><b>▼</b> klappt eine Karte zu, das Tool merkt sich das.</li>
-      <li>Nach jeder Änderung kommt unten kurz eine Meldung mit <b>„Rückgängig“</b>.</li>
+      <li>Ein Klick auf den Titel einer Karte klappt sie zu oder auf. Das Tool merkt sich das. Brauchst du eine Karte nie, lass sie einfach zu. In der Auswertung klappt <b>„Alle zuklappen“</b> im Menü <b>„Inhalt“</b> alle Karten auf einmal zu.</li>
+      <li>Nach vielen Änderungen, etwa beim Zuordnen oder Übernehmen, kommt unten kurz eine Meldung mit <b>„Rückgängig“</b>.</li>
       <li>Ein gelbes „!“ an einem Reiter heißt: Dort wartet etwas auf dich.</li>
       <li>„Anleitung mit Bildern&nbsp;↗“ in den Fenstern führt direkt zur passenden Stelle dieser Anleitung.</li>
     </ul>
@@ -260,7 +282,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <div class="stufe" id="stufe-1">
   <h2>Stufe 1: Auswertung</h2>
-  <p class="reiter">Reiter <span class="rt" id="reiter-reports">Reports</span> <span class="rt" id="reiter-kurse">Kurse</span></p>
+  <p class="reiter">Reiter <span class="rt" id="reiter-reports">Reports</span> <span class="rt" id="reiter-kurse">Kurse</span> <span class="rt">Auswertung</span></p>
   <p class="rsub">Du verbindest MetaTrader 5 mit deinen Konten, lädst die Reports ins Tool und wählst den Trading Benefit. Danach steht deine Auswertung.</p>
 </div>
 
@@ -306,12 +328,16 @@ document.addEventListener('DOMContentLoaded',function(){
   <p class="os-win os-mac">Öffne die <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">Trading-Bilanz</a> und ziehe alle gespeicherten Reports auf einmal ins Tool. Das Tool zeigt sie im Reiter „Reports“.</p>
   <p class="os-mob">Öffne die <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">Trading-Bilanz</a>, tippe im Reiter <b>„Reports“</b> auf das Feld <b>„Hier tippen, um eine Report-Datei auszuwählen“</b> und wähle die Dateien aus. Du kannst alle auf einmal wählen.</p>
   <p class="small">Gemeint ist die HTML-Datei aus MetaTrader 5 (sie endet auf <code>.html</code>), nicht ein Report als PDF oder Excel.</p>
+  <details class="how">
+    <summary>Buchungsarten</summary>
+    <p>Erscheint im Reiter „Reports“ die Karte „Buchungsarten“, enthält dein Report Buchungen, die keine Trades sind und die das Tool noch nicht kennt. Wähle bei jeder, was sie bedeutet. Das Tool merkt es sich. Solange eine Buchung keine Bedeutung hat, zeigt das Tool keine Auswertung und keine Steuer. Weißt du es nicht, schau beim Beispiel-Datum im MT5-Report nach, frag den Support oder wähle <b>„Noch unklar“</b>. Dann rechnet das Tool weiter, lässt diese Buchung aber weg und zeigt oben in Auswertung und Steuer einen Hinweis.</p>
+  </details>
 </section>
 
 <section id="trading-benefit">
   <h3 class="st"><span>5. Deine Konten</span></h3>
   <p>Nach dem Laden stehen deine Konten in der Karte „Deine Konten“. Wähle bei jedem Konto den Trading Benefit, meist <b>„×12“</b> oder <b>„×24“</b>. Hast du einen anderen, wähle <b>„andere Zahl …“</b> und gib ihn ein. Mit <b>„für alle ▾“</b> im Spaltenkopf setzt du ihn für mehrere Konten auf einmal. Solange er fehlt, steht dort „fehlt“.</p>
-  <figure><a href="anleitung/tool-trading-benefit.webp"><img src="anleitung/tool-trading-benefit.webp" width="787" height="341" alt="Karte Deine Konten mit drei Beispielkonten in den Spalten Konto, Name, Investition und Trading Benefit: Gold Alpha mit ×24, Gold Beta mit ×12, beim dritten Konto steht fehlt. Die Spalte Trading Benefit ist grün eingerahmt" loading="lazy"></a>
+  <figure><a href="anleitung/tool-trading-benefit.webp"><img src="anleitung/tool-trading-benefit.webp" width="787" height="336" alt="Karte Deine Konten mit drei Beispielkonten in den Spalten Konto, Name, Investition und Trading Benefit: Gold Alpha mit ×24, Gold Beta mit ×12, beim dritten Konto steht fehlt. Die Spalte Trading Benefit ist grün eingerahmt" loading="lazy"></a>
     <figcaption>Beispielkonten mit erfundenen Daten. Beim dritten Konto fehlt der Trading Benefit noch.</figcaption></figure>
   <p>In der Spalte „Name“ kannst du jedem Konto einen individuellen Namen geben, um es in der Auswertung leicht zu erkennen.</p>
   <p>Der Trading Benefit heißt bei Tag auch „Amplifier“. Tag vervielfacht damit dein eingezahltes Geld im MT5: Bei ×24 stehen 100 USD als 2.400 USD da. Tag vervielfacht Gewinne und Performance Fee nicht.</p>
@@ -323,7 +349,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <h3 class="st"><span>6. Wechselkurse laden</span></h3>
   <p>Für Beträge in Euro und für die Steuer braucht das Tool den Wechselkurs jedes Tages, an dem du eine Buchung hast. Es nimmt den Referenzkurs der Europäischen Zentralbank (EZB). In USD funktioniert die Auswertung auch ohne.</p>
   <p>Die meisten Tage sind schon im Tool eingebaut. Fehlen die neuesten, lädt das Tool sie von selbst aus dem Internet, sobald du es öffnest, neue Reports lädst oder Tag-Daten einfügst. Du kannst sie auch im Reiter <b>„Kurse“</b> mit <b>„Kurse laden“</b> holen.</p>
-  <figure class="k"><a href="anleitung/tool-kurse.webp"><img src="anleitung/tool-kurse.webp" width="788" height="198" alt="Reiter Kurse, oberer Teil der Karte Wechselkurse: grün Alles vorhanden, grüne Kreise 1 beim Knopf Kurse laden, 2 beim gesetzten Häkchen Fehlende Kurse automatisch laden" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-kurse.webp"><img src="anleitung/tool-kurse.webp" width="788" height="193" alt="Reiter Kurse, oberer Teil der Karte Wechselkurse: grün Alles vorhanden, grüne Kreise 1 beim Knopf Kurse laden, 2 beim gesetzten Häkchen Fehlende Kurse automatisch laden" loading="lazy"></a>
     <figcaption>Beispiel: Oben steht grün „Alles vorhanden“. Dann ist hier nichts zu tun.</figcaption></figure>
   <ol class="kreise">
     <li><b>„Kurse laden“</b> holt fehlende Kurse sofort.</li>
@@ -332,11 +358,34 @@ document.addEventListener('DOMContentLoaded',function(){
   <p><b>Ohne Internet:</b> Soll das Tool gar nicht ins Internet gehen, lade die Datei selbst von der <a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/eurofxref-graph-usd.en.html" target="_blank" rel="noopener">Seite der EZB&nbsp;↗</a> herunter<span class="os-win os-mac"> und ziehe sie ins Tool</span><span class="os-mob">, tippe im Reiter <b>„Kurse“</b> unter „Ohne Internet“ auf das Feld <b>„Hier tippen, um eine EZB-Datei auszuwählen“</b> und wähle sie aus</span>. Bei jedem Abruf, auch beim Herunterladen der Datei, sieht die EZB deine IP-Adresse.</p>
 </section>
 
+<section id="auswertung">
+  <h3 class="st"><span>Deine Auswertung</span></h3>
+  <p>Im Reiter <b>„Auswertung“</b> siehst du deine Ergebnisse in Karten. Hier bekommst du einen Überblick, was wo steht. Was ein Wert genau bedeutet, erklären dir im Tool das <b>(i)</b> an jeder Karte und die gestrichelt unterstrichenen Begriffe.</p>
+  <p>Ganz oben steht die Karte „Überblick“ mit deinen wichtigsten Zahlen.</p>
+  <figure class="k"><a href="anleitung/tool-kacheln.webp"><img src="anleitung/tool-kacheln.webp" width="1008" height="399" alt="Reiter Auswertung, Karte Überblick mit zehn Kacheln in Paaren: Netto-Gewinn und Rendite, Ø pro Handelstag und Ø pro Woche, Beste und Schlechteste Woche, Bester und Schlechtester Trade, Trefferquote und Max. Drawdown, darunter die Leiste Diese Woche" loading="lazy"></a>
+    <figcaption>Beispiel aus echten Daten, die Beträge sind geändert.</figcaption></figure>
+  <h4>Die Filterzeile</h4>
+  <p>Unter den Reitern steht die Filterzeile. Sie bleibt beim Scrollen stehen.</p>
+  <ul class="list">
+    <li><b>„Zeitraum“:</b> Wähle <b>„Gesamter Zeitraum“</b>, ein Jahr, <b>„Dieser Monat“</b>, <b>„Letzte 3 Monate“</b> oder <b>„Individuell“</b>. Unter „Zählweise“ stellst du ein, ob Tage ohne Trade in den Durchschnitten mitzählen und ob die laufende Woche wegbleibt.</li>
+    <li><b>„Konten“:</b> Hier wählst du, welche Konten zählen. Mit <b>„nur dieses“</b> siehst du ein einzelnes Konto. Den Knopf gibt es ab zwei Konten.</li>
+    <li><b>„USD“</b> bzw. <b>„EUR“</b> zeigt die Beträge wie im MT5-Report oder in Euro zum EZB-Kurs des Tages. Prozente bleiben gleich.</li>
+    <li><b>„Inhalt“:</b> Hier springst du zu jeder Karte. Die Karte, bei der du gerade bist, ist hervorgehoben. <b>„Alle aufklappen“</b> und <b>„Alle zuklappen“</b> öffnen oder schließen alle Karten.</li>
+    <li><b>„PF verteilt“:</b> Jeder Trade trägt seinen Anteil der Performance Fee. Du siehst, was dir von jedem Trade bleibt. In der laufenden Woche ist die Fee noch nicht abgebucht. Bis dahin rechnet das Tool sie mit dem Anteil der letzten Abrechnung aus.</li>
+    <li><b>„PF laut MT5“:</b> Die Fee steht dort, wo Tag sie abbucht, am Samstag, wie im MT5-Report. Die Trades zeigen ihr Ergebnis vor der Fee.</li>
+  </ul>
+  <p>Die Steuer rechnet immer mit den Werten laut MT5, also nach dem Tag der Abbuchung.</p>
+  <h4>Karten zuklappen</h4>
+  <p>Ein Klick auf den Titel einer Karte klappt sie zu oder auf. Das Tool merkt sich das.</p>
+  <h4>Grafiken</h4>
+  <p>In der Karte „Grafiken“ zeigt <b>„Vollbild“</b> die Grafik über den ganzen Bildschirm. Mit <b>„Bild“</b> speicherst oder teilst du sie als Bild.</p>
+  <h4>Meilensteine</h4>
+  <p>Die Karte „Meilensteine“ sammelt deine Rekorde, Serien und Stufen. Zeitraum und Konten wählst du rechts in der Karte, von der Filterzeile oben übernimmt sie nur die Währung, und sie rechnet immer nach PF. Ab und zu erscheint an einem Wert, neben „Überblick“ oder am Reiter „Auswertung“ ein besonderes Symbol. Du wirst es erkennen. Ein Klick darauf zeigt dir, was du erreicht hast.</p>
+</section>
+
 <div class="stop" id="ende-stufe-1">
   <h4>Hier kannst du aufhören</h4>
   <p>Geschafft: Deine Auswertung steht. Willst du nur deine Ergebnisse sehen, kannst du hier aufhören. In Stufe 2 kommt die Karte „Dein echtes Geld“ dazu.</p>
-  <figure class="k"><a href="anleitung/tool-kacheln.webp"><img src="anleitung/tool-kacheln.webp" width="1008" height="343" alt="Reiter Auswertung, Karte Überblick mit zehn Kacheln in Paaren: Netto-Gewinn und Rendite, Ø pro Handelstag und Ø pro Woche, Beste und Schlechteste Woche, Bester und Schlechtester Trade, Trefferquote und Max. Drawdown" loading="lazy"></a>
-    <figcaption>Beispiel aus echten Daten, die Beträge sind geändert.</figcaption></figure>
   <p class="up"><a href="#top">↑ Inhalt</a></p>
 </div>
 
@@ -357,8 +406,8 @@ document.addEventListener('DOMContentLoaded',function(){
   <h3 class="st"><span>7. Tag-Daten einfügen</span></h3>
   <p>Die Tag-Daten sind keine Datei. Du kopierst sie aus dem Tag-Portal und fügst sie ein. Dafür öffnest du ein Fenster im Tool.</p>
   <p>Öffne den Reiter <b>„Wallet“</b>. Beim ersten Mal kommt das Fenster „Was du hier machst“. Klicke dort auf <b>„Mit den Tag-Daten anfangen“</b>.</p>
-  <p>Dann öffnet sich das Fenster „Daten“ mit dem Feld „Hier einfügen“. Später findest du es im Reiter „Wallet“ oben unter <b>„＋ Daten“</b> bei <b>„Tag-Daten“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-tag-einfuegen.webp"><img src="anleitung/tool-tag-einfuegen.webp" width="788" height="434" alt="Fenster Daten mit der Kachel Tag-Daten, dem Knopf So kopierst du die Daten aus Tag und dem grün eingerahmten Feld Hier einfügen" loading="lazy"></a></figure>
+  <p>Dann öffnet sich das Fenster „＋ Daten“ mit dem Feld „Hier einfügen“. Später findest du es im Reiter „Wallet“ oben unter <b>„＋ Daten“</b> bei <b>„Tag-Daten“</b>.</p>
+  <figure class="k"><a href="anleitung/tool-tag-einfuegen.webp"><img src="anleitung/tool-tag-einfuegen.webp" width="788" height="431" alt="Fenster ＋ Daten mit der Kachel Tag-Daten, dem Knopf So kopierst du die Daten aus Tag und dem grün eingerahmten Feld Hier einfügen" loading="lazy"></a></figure>
   <p>Öffne das Tag-Portal in einem zweiten Browser-Tab und gehe so vor:</p>
   <!--Q:os:tagGuide('win')|tagGuide('mac')|tagGuide('mobile')--><ol class="steps">
     <li>Klicke im Tag-Portal links auf <b>„Tag Wallet“</b>.</li>
@@ -385,7 +434,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="stop" id="ende-stufe-2">
   <h4>Hier kannst du aufhören</h4>
   <p>Jetzt zeigt die Auswertung auch „Dein echtes Geld“. Zahlst du nicht mit USDC oder USDT ein oder aus oder brauchst du die Krypto-Steuer nicht, kannst du hier aufhören. Die rote Zahl bei „Noch offen“ betrifft nur die Krypto-Steuer.</p>
-  <figure class="k"><a href="anleitung/tool-echtes-geld.webp"><img src="anleitung/tool-echtes-geld.webp" width="788" height="307" alt="Karte Dein echtes Geld: Eingezahlt 1.250,00 USD, Ausgezahlt 150,00 USD, Netto-Einsatz 1.100,00 USD, Netto-Gewinn seit Start und Rendite seit Start" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-echtes-geld.webp"><img src="anleitung/tool-echtes-geld.webp" width="788" height="300" alt="Karte Dein echtes Geld: Eingezahlt 1.250,00 USD, Ausgezahlt 150,00 USD, Netto-Einsatz 1.100,00 USD, Netto-Gewinn seit Start und Rendite seit Start" loading="lazy"></a>
     <figcaption>Reiter „Auswertung“, Karte „Dein echtes Geld“. Beispiel mit erfundenen Daten.</figcaption></figure>
   <h4 id="anderes-tool">Schon ein anderes Krypto-Tool?</h4>
   <p><b>Rechnest du deine Kryptos schon mit einem anderen Tool</b>, z. B. Blockpit? Dann hör hier auf, bleib bei deinem Tool und schalte die Krypto-Steuer in diesem Tool aus. Sonst zählen deine USDC und USDT doppelt. Das Tool rechnet dann nur den CFD-Teil der Steuer.</p>
@@ -413,7 +462,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <figure class="k"><a href="anleitung/tool-oz-leiste.webp"><img src="anleitung/tool-oz-leiste.webp" width="820" height="42" alt="Leiste oben im Reiter Wallet: Gesamter Zeitraum, ＋ Daten, Adressen und grün eingerahmt Noch offen mit einer roten 4" loading="lazy"></a>
     <figcaption>Im Beispiel sind es 4 Fragen: drei Einzahlungen und eine Auszahlung bei Tag.</figcaption></figure>
   <p>Klicke auf <b>„Noch offen“</b>. Ein Fenster zeigt dir die Fragen eine nach der anderen, die älteste zuerst. Das Tool nennt sie „Punkte“.</p>
-  <figure class="k"><a href="anleitung/tool-oz-kopf.webp"><img src="anleitung/tool-oz-kopf.webp" width="588" height="110" alt="Kopf eines Punktes: roter Punkt, Fehlt für die Steuer, 01.07.2026, 08:12, darunter groß Einzahlung bei Tag, 500,00 USDC: Woher kamen die Coins? und grau, was das Tool ohne Antwort rechnet" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-oz-kopf.webp"><img src="anleitung/tool-oz-kopf.webp" width="588" height="109" alt="Kopf eines Punktes: roter Punkt, Fehlt für die Steuer, 01.07.2026, 08:12, darunter groß Einzahlung bei Tag, 500,00 USDC: Woher kamen die Coins? und grau, was das Tool ohne Antwort rechnet" loading="lazy"></a></figure>
   <p><b>So liest du einen Punkt:</b> Oben klein stehen die Farbe und das Datum. Darunter groß die Frage. Grau darunter steht, was das Tool macht, solange du nicht antwortest.</p>
   <p><b>Die Farbe sagt, wie wichtig ein Punkt ist:</b></p>
   <ul class="list">
@@ -431,7 +480,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <section id="boerse-datei">
   <h3 class="st"><span>9. Börsen-Datei laden</span></h3>
-  <p>Hast du deine Coins bei einer Börse gekauft, übernimmt das Tool Käufe, Verkäufe und Auszahlungen aus einer Datei der Börse. <b>Bisher liest das Tool nur Dateien von Bitvavo.</b> Hast du bei einer anderen Börse gekauft, zum Beispiel bei Kraken, trage den Kauf <a href="#von-hand">von Hand ein</a>.</p>
+  <p>Hast du deine Coins bei einer Börse gekauft, übernimmt das Tool Käufe, Verkäufe und Auszahlungen aus einer Datei der Börse. <b>Das Tool liest Dateien von Bitvavo und DFX.swiss.</b> Hast du bei einer anderen Börse gekauft, zum Beispiel bei Kraken, trage den Kauf <a href="#von-hand">von Hand ein</a>.</p>
   <p>Die Datei bekommst du bei Bitvavo nur im Browser am Computer, nicht in der App.</p>
   <details class="how">
     <summary>So bekommst du die Datei bei Bitvavo</summary>
@@ -450,12 +499,28 @@ document.addEventListener('DOMContentLoaded',function(){
     </ol>
     <p class="small"><b>„Aktuelles Jahr (CSV)“</b> (engl. <i>Current year (CSV)</i>) geht auch. Mit der vollständigen Datei hat das Tool aber alle Käufe, auch die aus früheren Jahren.</p>
   </details>
-  <p class="os-win os-mac"><b>Ziehe die Datei ins Tool.</b> Das Tool öffnet das Fenster „Daten“ und zeigt eine Vorschau.</p>
+  <details class="how" id="dfx">
+    <summary>So bekommst du die Datei bei DFX.swiss</summary>
+    <p class="small">Die Bilder zeigen DFX.swiss auf Deutsch.</p>
+    <ol class="steps">
+      <li>Öffne app.dfx.swiss und melde dich an. Das geht am Computer und am Handy.</li>
+      <li>Öffne oben rechts das Menü. Im Bild steht dort ein ×, weil das Menü schon offen ist.</li>
+    </ol>
+    <figure><a href="anleitung/dfx-transaktionen.webp"><img src="anleitung/dfx-transaktionen.webp" width="1600" height="469" alt="DFX.swiss, Seite Transaktionen mit offenem Menü rechts: grün eingerahmt mit Kreisen 1 der Menüpunkt Transaktionen, 2 der Knopf CSV-Export, 3 darunter der Knopf CoinTracking" loading="lazy"></a></figure>
+    <ol class="kreise">
+      <li>Wähle im Menü <b>„Transaktionen“</b>.</li>
+      <li>Wähle <b>„CSV-Export“</b>.</li>
+      <li>Wähle darunter <b>„CoinTracking“</b>. Nimm nicht den oberen Knopf „CoinTracking“, sondern den unter „CSV-Export“.</li>
+    </ol>
+    <p class="small">Der Name der Datei endet auf „coin-tracking.csv“. Sie landet meist in deinem Ordner für Downloads.</p>
+    <p>Lies die Datei ein wie unten beschrieben. Das Tool zeigt eine Vorschau mit deinen Käufen und Verkäufen. Es fragt, welche Wallet du mit DFX.swiss nutzt, und merkt sich deine Wahl. Beim Kauf überweist du Geld an DFX.swiss, und die Coins kommen in diese Wallet. Beim Verkauf schickst du Coins aus dieser Wallet an DFX.swiss, und das Geld kommt auf dein Bankkonto. Darum zählt das Tool Käufe und Verkäufe bei dieser Wallet und legt für DFX.swiss keine eigene Wallet an. Den Kompakt-Export und den Chain-Report lehnt das Tool mit einem Hinweis ab.</p>
+  </details>
+  <p class="os-win os-mac"><b>Ziehe die Datei ins Tool.</b> Das Tool öffnet das Fenster „＋ Daten“ und zeigt eine Vorschau.</p>
   <p class="os-mob">Öffne im Reiter „Wallet“ oben <b>„＋ Daten“</b>, wähle <b>„Börsen“</b>, tippe auf das Feld <b>„Hier tippen, um eine Börsen-Datei (.csv) auszuwählen“</b> und wähle die Datei aus. Das Tool zeigt eine Vorschau.</p>
   <figure class="k"><a href="anleitung/tool-boerse-vorschau.webp"><img src="anleitung/tool-boerse-vorschau.webp" width="788" height="429" alt="Vorschau der Datei Full history.csv: grün eingerahmt die Frage Welche Wallet ist die Börse? mit + Neue Wallet und dem Namen Bitvavo, darunter Käufe und Verkäufe mit einem Kauf über 1.000,50 USDC für 920,46 Euro, neu" loading="lazy"></a></figure>
   <p><b>Welche Wallet ist die Börse?</b> Beim ersten Mal legt das Tool eine neue Wallet an und schlägt den Namen „Bitvavo“ vor. Lass das so.</p>
   <p>Darunter steht, was das Tool übernimmt. „neu“ heißt: Das ist noch nicht im Tool.</p>
-  <figure class="k"><a href="anleitung/tool-boerse-wallet.webp"><img src="anleitung/tool-boerse-wallet.webp" width="736" height="284" alt="Überträge und Einzahlungen: zwei Auszahlungen über je 500,00 USDC am 30.06.26 an Meine Wallet, darunter die Frage 2 Auszahlungen gingen an 0x7a3f…7a3f. Welche Wallet ist das? mit der grün eingerahmten Wahl Meine Wallet" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-boerse-wallet.webp"><img src="anleitung/tool-boerse-wallet.webp" width="736" height="283" alt="Überträge und Einzahlungen: zwei Auszahlungen über je 500,00 USDC am 30.06.26 an Meine Wallet, darunter die Frage 2 Auszahlungen gingen an 0x7a3f…7a3f. Welche Wallet ist das? mit der grün eingerahmten Wahl Meine Wallet" loading="lazy"></a></figure>
   <p><b>Welche Wallet ist das?</b> Hier fragt das Tool, wohin du die Coins von der Börse geschickt hast. Im Beispiel gingen beide Auszahlungen in Annas eigene Wallet: Wähle <b>„Meine Wallet“</b>.</p>
   <p>Ohne Wahl wird jede dieser Auszahlungen ein roter Punkt in „Noch offen“. Den kannst du auch später beantworten.</p>
   <figure class="k"><a href="anleitung/tool-boerse-meldung.webp"><img src="anleitung/tool-boerse-meldung.webp" width="736" height="63" alt="Grüne Meldung: 1 neuer Eintrag, 2 Überträge neu. Dadurch steht 1 neuer Punkt in Noch offen: ein Rest bei Bitvavo. Zu 2 Tag-Zeilen gibt es jetzt einen Vorschlag" loading="lazy"></a></figure>
@@ -480,7 +545,7 @@ document.addEventListener('DOMContentLoaded',function(){
   </ol>
   <h4>Beispiel: Kauf bei Kraken</h4>
   <p>Anna hat am 30.06. bei Kraken 252 USDC für 230,00 € gekauft. Klicke in der 2. Kategorie auf <b>„Kauf“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-kauf.webp"><img src="anleitung/tool-kauf.webp" width="640" height="646" alt="Formular Neuer Eintrag: Kauf (mit Euro) am 30.06.2026 um 10:05:00, Wallet Kraken, Coin USDC, Menge 252, Wert 230,00 Euro" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-kauf.webp"><img src="anleitung/tool-kauf.webp" width="640" height="686" alt="Formular Neuer Eintrag: Kauf (mit Euro) am 30.06.2026 um 10:05:00, Wallet Kraken, Coin USDC, Menge 252, Wert 230,00 Euro" loading="lazy"></a>
     <figcaption>Beispiel mit erfundenen Daten.</figcaption></figure>
   <ul class="list">
     <li>Trage Datum und Uhrzeit aus deiner Kaufbestätigung ein.</li>
@@ -491,12 +556,15 @@ document.addEventListener('DOMContentLoaded',function(){
   <p>Klicke auf <b>„Speichern“</b>, oder auf <b>„Speichern und nächster“</b>, wenn noch ein Eintrag kommt.</p>
   <h4>Beispiel: Übertrag von Kraken in deine Wallet</h4>
   <p>Danach hat Anna die 252 USDC von Kraken in ihre Wallet geschickt, angekommen sind 250 USDC. Klicke in der 3. Kategorie auf <b>„Übertrag“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-uebertrag.webp"><img src="anleitung/tool-uebertrag.webp" width="640" height="584" alt="Formular Neuer Eintrag: Übertrag an eine eigene Wallet am 30.06.2026 um 10:30:00 von Kraken nach Meine Wallet, grün eingerahmt Menge 252 und Menge angekommen 250" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-uebertrag.webp"><img src="anleitung/tool-uebertrag.webp" width="640" height="600" alt="Formular Neuer Eintrag: Übertrag an eine eigene Wallet am 30.06.2026 um 10:30:00 von Kraken nach Meine Wallet, grün eingerahmt Menge 252 und Menge angekommen 250" loading="lazy"></a>
     <figcaption>Abgebucht 252, angekommen 250: Das Tool rechnet 2 USDC als Gebühr.</figcaption></figure>
   <p>Wähle bei <b>„von Wallet“</b> Kraken und bei <b>„nach Wallet“</b> deine Wallet. Bei <b>„Menge“</b> trägst du ein, was abgebucht wurde, bei <b>„Menge angekommen“</b>, was in deiner Wallet ankam. Das Tool rechnet den Unterschied als Gebühr.</p>
+  <h4>Bezahlung erhalten</h4>
+  <p>Hast du Coins als Bezahlung für eine Arbeit oder Leistung bekommen, wähle <b>„Bezahlung erhalten“</b>. Öffne dafür <b>„＋ Daten“</b>, wähle <b>„Von Hand“</b>, klicke in der 5. Kategorie auf <b>„Neuer Eintrag“</b> und wähle bei <b>„Was?“</b> unter „Coins kamen dazu“ <b>„Bezahlung erhalten“</b>.</p>
+  <p>Einen Wert trägst du nicht ein: Das Tool nimmt den Wert am Tag des Eingangs als Einkaufswert. Die Bezahlung selbst versteuerst du gesondert. Das Tool rechnet nur, was danach mit den Coins passiert.</p>
   <h4>Deiner Wallet einen Namen geben</h4>
   <p>Im Beispiel heißt Annas Wallet „Meine Wallet“. Das Tool legt diesen Namen am Anfang selbst an. Du kannst ihn ändern: Klicke im Reiter „Wallet“ oben auf <b>„Adressen“</b> und in der Zeile deiner Wallet auf <b>„✎“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-wallets.webp"><img src="anleitung/tool-wallets.webp" width="788" height="684" alt="Fenster Adressen, Karte Deine Wallets: die Zeile Meine Wallet ist zum Bearbeiten offen, grüne Kreise 1 beim Feld Name mit Meine Wallet, 2 beim Knopf Speichern, darunter Bitvavo und Kraken als Börse" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-wallets.webp"><img src="anleitung/tool-wallets.webp" width="788" height="724" alt="Fenster Adressen, Karte Deine Wallets: die Zeile Meine Wallet ist zum Bearbeiten offen, grüne Kreise 1 beim Feld Name mit Meine Wallet, 2 beim Knopf Speichern, darunter Bitvavo und Kraken als Börse" loading="lazy"></a></figure>
   <ol class="kreise">
     <li>Gib den neuen Namen ein, zum Beispiel den Namen deiner Wallet-App.</li>
     <li>Klicke auf <b>„Speichern“</b>.</li>
@@ -519,7 +587,7 @@ document.addEventListener('DOMContentLoaded',function(){
   </div>
   <h4>Die Aufladung</h4>
   <p>Öffne im Reiter „Wallet“ oben <b>„＋ Daten“</b>, wähle <b>„Von Hand“</b> und klicke in der 4. Kategorie auf <b>„Aufladung“</b>. Es öffnet sich das Formular für einen Übertrag.</p>
-  <figure class="k"><a href="anleitung/tool-karte-aufladung.webp"><img src="anleitung/tool-karte-aufladung.webp" width="640" height="584" alt="Formular Neuer Eintrag: Übertrag an eine eigene Wallet am 20.08.2026, grüne Kreise 1 bei von Wallet Meine Wallet, 2 bei nach Wallet Meine Karte, 3 bei Menge 100, 4 bei Menge angekommen 99" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-karte-aufladung.webp"><img src="anleitung/tool-karte-aufladung.webp" width="640" height="600" alt="Formular Neuer Eintrag: Übertrag an eine eigene Wallet am 20.08.2026, grüne Kreise 1 bei von Wallet Meine Wallet, 2 bei nach Wallet Meine Karte, 3 bei Menge 100, 4 bei Menge angekommen 99" loading="lazy"></a></figure>
   <ol class="kreise">
     <li>Wähle bei <b>„von Wallet“</b> die Wallet, aus der du aufgeladen hast.</li>
     <li>Bei <b>„nach Wallet“</b> wählst du beim ersten Mal <b>„+ Neue Karte …“</b>, tippst „Meine Karte“ und klickst auf <b>„OK“</b>. Hast du schon eine Karte, steht sie dort schon.</li>
@@ -553,7 +621,7 @@ document.addEventListener('DOMContentLoaded',function(){
     <p>Das ist kein Verkauf. Deine USDC übernehmen den Einkaufswert der ETH, die du dafür hergegeben hast.</p>
     <p><b>Mit der Börsen-Datei</b></p>
     <p>Hast du die ETH bei derselben Börse gekauft, fragt die Vorschau: „Woher kamen die 0,003 ETH, die du am 25.08. getauscht hast?“ Wähle deinen Kauf, dann rechnet das Tool den Einkaufswert selbst. Kamen die Coins anders dazu oder weißt du es nicht, wähle die zweite Möglichkeit. Dann nimmt das Tool einen Ersatzwert (siehe unten).</p>
-    <figure class="k"><a href="anleitung/tool-tausch-vorschau.webp"><img src="anleitung/tool-tausch-vorschau.webp" width="736" height="277" alt="Vorschau der Börsen-Datei, Teil Tausch: 5,73 USDC aus ETH getauscht, grüne Kreise 1 bei der Frage Woher kamen die 0,003 ETH mit den zwei Möglichkeiten, 2 beim Kurs laut Bitvavo" loading="lazy"></a></figure>
+    <figure class="k"><a href="anleitung/tool-tausch-vorschau.webp"><img src="anleitung/tool-tausch-vorschau.webp" width="736" height="341" alt="Vorschau der Börsen-Datei, Teil Tausch: 5,73 USDC aus ETH getauscht, grüne Kreise 1 bei der Frage Woher kamen die 0,003 ETH mit den zwei Möglichkeiten, 2 beim Kurs laut Bitvavo" loading="lazy"></a></figure>
     <ol class="kreise">
       <li>Die Frage und die zwei Möglichkeiten.</li>
       <li>Der Kurs laut Bitvavo.</li>
@@ -562,7 +630,7 @@ document.addEventListener('DOMContentLoaded',function(){
     <p><b>Von Hand</b></p>
     <p>Öffne <b>„＋ Daten“</b>, wähle <b>„Von Hand“</b>, klicke in der 5. Kategorie auf <b>„Neuer Eintrag“</b> und wähle bei <b>„Was?“</b> <b>„Aus anderem Coin getauscht“</b>.</p>
     <p>Trage Datum und Uhrzeit ein, wähle die Wallet / Börse und den Coin, den du bekommen hast.</p>
-    <figure class="k"><a href="anleitung/tool-tausch-formular.webp"><img src="anleitung/tool-tausch-formular.webp" width="640" height="535" alt="Formular Eintrag bearbeiten: Aus anderem Coin getauscht am 26.08.2026 bei Kraken, grüne Kreise 1 bei Menge 19,05, 2 bei Menge hergegeben 0,01, 3 bei der Rechenhilfe mit 0,015 für 30,00 Euro, 4 beim Häkchen Weiß ich nicht ohne Haken" loading="lazy"></a></figure>
+    <figure class="k"><a href="anleitung/tool-tausch-formular.webp"><img src="anleitung/tool-tausch-formular.webp" width="640" height="531" alt="Formular Eintrag bearbeiten: Aus anderem Coin getauscht am 26.08.2026 bei Kraken, grüne Kreise 1 bei Menge 19,05, 2 bei Menge hergegeben 0,01, 3 bei der Rechenhilfe mit 0,015 für 30,00 Euro, 4 beim Häkchen Weiß ich nicht ohne Haken" loading="lazy"></a></figure>
     <ol class="kreise">
       <li><b>Menge:</b> die USDC, die du bekommen hast, nach der Gebühr.</li>
       <li><b>Menge hergegeben:</b> die ETH, die weggegangen sind.</li>
@@ -599,7 +667,7 @@ document.addEventListener('DOMContentLoaded',function(){
     <p><b>In anderen Coin getauscht (z. B. USDC → ETH)</b></p>
     <p>Öffne <b>„＋ Daten“</b>, wähle <b>„Von Hand“</b>, klicke in der 5. Kategorie auf <b>„Neuer Eintrag“</b> und wähle bei <b>„Was?“</b> <b>„In anderen Coin getauscht“</b>.</p>
     <p>Im Beispiel tauscht Anna am 27.08. bei Kraken 10 USDC in ETH. Trage Datum und Uhrzeit ein, wähle die Wallet / Börse und den Coin, den du hergegeben hast.</p>
-    <figure class="k"><a href="anleitung/tool-tausch-in-de.webp"><img src="anleitung/tool-tausch-in-de.webp" width="640" height="419" alt="Formular Neuer Eintrag in Deutschland: In anderen Coin getauscht am 27.08.2026, bei Kraken, grüne Kreise 1 bei Menge 10, 2 bei in ETH, 3 beim leeren Feld Wert der erhaltenen Coins mit leer = Tageswert" loading="lazy"></a></figure>
+    <figure class="k"><a href="anleitung/tool-tausch-in-de.webp"><img src="anleitung/tool-tausch-in-de.webp" width="640" height="415" alt="Formular Neuer Eintrag in Deutschland: In anderen Coin getauscht am 27.08.2026, bei Kraken, grüne Kreise 1 bei Menge 10, 2 bei in ETH, 3 beim leeren Feld Wert der erhaltenen Coins mit leer = Tageswert" loading="lazy"></a></figure>
     <ol class="kreise">
       <li><b>Menge:</b> die USDC, die weggegangen sind, mit Gebühr.</li>
       <li><b>in:</b> der Coin, den du bekommen hast.</li>
@@ -609,7 +677,7 @@ document.addEventListener('DOMContentLoaded',function(){
   </details>
   <h4>Die Karte „Andere Coins“</h4>
   <p>Im Reiter „Wallet“ steht zwischen „Bestand jetzt“ und „Alle Vorgänge“ die Karte „Andere Coins“. Sie zeigt jeden Tausch mit einem anderen Coin und den Wert, der dabei wandert. Hast du in einen anderen Coin getauscht, ist das sein Einkaufswert. Du brauchst ihn, wenn du den Coin später verkaufst.</p>
-  <figure class="k"><a href="anleitung/tool-andere-coins.webp"><img src="anleitung/tool-andere-coins.webp" width="788" height="355" alt="Karte Andere Coins mit zwei Zeilen: Kraken, 0,01 ETH zu 19,05 USDC, Ersatzwert 16,33 Euro, Status offen; Bitvavo, 0,003 ETH zu 5,73 USDC, Einkaufswert 5,00 Euro aus der Börsen-Datei, Status fertig" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-andere-coins.webp"><img src="anleitung/tool-andere-coins.webp" width="788" height="392" alt="Karte Andere Coins mit zwei Zeilen: Kraken, 0,01 ETH zu 19,05 USDC, Ersatzwert 16,33 Euro, Status offen; Bitvavo, 0,003 ETH zu 5,73 USDC, Einkaufswert 5,00 Euro aus der Börsen-Datei, Status fertig" loading="lazy"></a></figure>
   <p>Mit <b>„✎“</b> bearbeitest du einen Eintrag, <b>„In der Liste zeigen“</b> (am Handy manchmal <b>„In Liste zeigen“</b>) springt zu „Alle Vorgänge“.</p>
   <p><b>Was der Status sagt:</b></p>
   <ul class="list">
@@ -633,7 +701,7 @@ document.addEventListener('DOMContentLoaded',function(){
     </ul>
   </div>
   <h4>Der Vorschlag</h4>
-  <figure class="k"><a href="anleitung/tool-oz-a.webp"><img src="anleitung/tool-oz-a.webp" width="588" height="504" alt="Oberer Teil einer gelben Karte in Noch offen mit grünen Kreisen: 1 Farbe und Datum, 2 die Frage Woher kamen die Coins?, 3 der Vorschlag mit Übernehmen und Nein, 4 Rundherum" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-oz-a.webp"><img src="anleitung/tool-oz-a.webp" width="588" height="503" alt="Oberer Teil einer gelben Karte in Noch offen mit grünen Kreisen: 1 Farbe und Datum, 2 die Frage Woher kamen die Coins?, 3 der Vorschlag mit Übernehmen und Nein, 4 Rundherum" loading="lazy"></a></figure>
   <ol class="kreise">
     <li>Farbe und Datum: Gelb heißt, das Tool hat einen Vorschlag.</li>
     <li>Die Frage, um die es geht.</li>
@@ -641,7 +709,7 @@ document.addEventListener('DOMContentLoaded',function(){
     <li>„Rundherum“ zeigt, was sich in deinen Wallets kurz davor und danach bewegt hat. Ein Klick auf eine Zeile springt zu diesem Vorgang in der Liste „Alle Vorgänge“. Mit <b>„← Zurück zu „Noch offen““</b> oben in der Liste kommst du zurück.</li>
   </ol>
   <h4>Selbst wählen</h4>
-  <figure class="k"><a href="anleitung/tool-oz-b.webp"><img src="anleitung/tool-oz-b.webp" width="588" height="216" alt="Unterer Teil derselben Karte mit grünen Kreisen: 1 der Knopf In der Liste zeigen, 2 die Auswahl Woher kamen die Coins? mit Übernehmen, 3 betrifft ca." loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-oz-b.webp"><img src="anleitung/tool-oz-b.webp" width="588" height="215" alt="Unterer Teil derselben Karte mit grünen Kreisen: 1 der Knopf In der Liste zeigen, 2 die Auswahl Woher kamen die Coins? mit Übernehmen, 3 betrifft ca." loading="lazy"></a></figure>
   <ol class="kreise">
     <li><b>„In der Liste zeigen“</b> springt zu diesem Vorgang in der Liste „Alle Vorgänge“.</li>
     <li>Hier antwortest du selbst: Wähle die Wallet, aus der die Coins kamen, und klicke auf <b>„Übernehmen“</b>.</li>
@@ -652,11 +720,11 @@ document.addEventListener('DOMContentLoaded',function(){
   <h4>Viele Vorschläge auf einmal</h4>
   <figure class="k"><a href="anleitung/tool-oz-alle-oben.webp"><img src="anleitung/tool-oz-alle-oben.webp" width="640" height="95" alt="Fenster Noch offen: direkt unter dem Titel der grün eingerahmte Knopf Alle Vorschläge ansehen und übernehmen (3)" loading="lazy"></a></figure>
   <p>Direkt unter dem Titel von „Noch offen“ steht dann <b>„Alle Vorschläge ansehen und übernehmen“</b>. Den Knopf gibt es nur, wenn das Tool sich sicher ist. Vorschläge über einen Dienst oder mit mehreren Möglichkeiten entscheidest du einzeln.</p>
-  <figure class="k"><a href="anleitung/tool-oz-alle.webp"><img src="anleitung/tool-oz-alle.webp" width="640" height="540" alt="Fenster Alle Vorschläge ansehen und übernehmen (3): drei Vorschläge mit Häkchen, je mit Warum, unten die Knöpfe Übernehmen (3) und Abbrechen" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-oz-alle.webp"><img src="anleitung/tool-oz-alle.webp" width="640" height="602" alt="Fenster Alle Vorschläge ansehen und übernehmen (3): drei Vorschläge mit Häkchen, je mit Warum, unten die Knöpfe Übernehmen (3) und Abbrechen" loading="lazy"></a></figure>
   <p>Das Fenster zeigt jeden Vorschlag mit einem Häkchen. Nimm das Häkchen weg, wo ein Vorschlag nicht stimmt, und klicke auf <b>„Übernehmen“</b>.</p>
   <h4>Ein Vorschlag kommt dazu</h4>
   <p>Danach steht oben <b>„Alle Vorschläge ansehen und übernehmen (1)“</b>. Das Tool fragt, ob die 150 USDC vom 17.08. in „Meine Wallet“ gingen, denn ohne sie fehlen dort am 20.08. 100 USDC für die Aufladung. Das stimmt, also klicke auf <b>„Übernehmen“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-oz-fehlt.webp"><img src="anleitung/tool-oz-fehlt.webp" width="588" height="405" alt="Gelbe Karte in Noch offen: Gingen die 150,00 USDC deiner Auszahlung von Tag vom 17.08. nach Meine Wallet? Sonst fehlen dort am 20.08. 100,00 USDC für die Aufladung. Darunter Vorschlag, Warum mit der Auszahlung und der Aufladung, grün eingerahmt Übernehmen und Nein" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-oz-fehlt.webp"><img src="anleitung/tool-oz-fehlt.webp" width="588" height="426" alt="Gelbe Karte in Noch offen: Gingen die 150,00 USDC deiner Auszahlung von Tag vom 17.08. nach Meine Wallet? Sonst fehlen dort am 20.08. 100,00 USDC für die Aufladung. Darunter Vorschlag, Warum mit der Auszahlung und der Aufladung, grün eingerahmt Übernehmen und Nein" loading="lazy"></a>
     <figcaption>Das Tool sieht, dass in „Meine Wallet“ später Geld fehlt, und dass die Auszahlung von Tag drei Tage vorher das erklären kann.</figcaption></figure>
   <p>So fragt das Tool, wenn das Geld höchstens 90 Tage nach der Auszahlung fehlt. Reicht eine Auszahlung allein nicht, schlägt es bis zu drei zusammen vor. Jede davon beantwortest du einzeln.</p>
   <h4>So lassen</h4>
@@ -673,9 +741,9 @@ document.addEventListener('DOMContentLoaded',function(){
 <section id="kontostand">
   <h3 class="st"><span>14. Zum Schluss: der Kontostand</span></h3>
   <p>Klicke im Reiter „Wallet“ in der Karte „Bestand jetzt“ auf <b>„Kontostände prüfen“</b>. Den gleichen Weg gibt es in <b>„＋ Daten“</b> bei <b>„Von Hand“</b> in der letzten Kategorie (<b>„Zum Bestand“</b>).</p>
-  <figure class="k"><a href="anleitung/tool-kontostand.webp"><img src="anleitung/tool-kontostand.webp" width="640" height="458" alt="Fenster Kontostände prüfen: Bitvavo 0,50 USDC, Kraken leer, Meine Karte 66,90 USDC und Meine Wallet 50,00 USDC laut deinen Einträgen, grün eingerahmt Stand in deiner App, bei Unterschied je ein Haken" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-kontostand.webp"><img src="anleitung/tool-kontostand.webp" width="640" height="500" alt="Fenster Kontostände prüfen: Bitvavo 0,50 USDC, Kraken leer, Meine Karte 66,90 USDC und Meine Wallet 50,00 USDC laut deinen Einträgen, grün eingerahmt Stand in deiner App, bei Unterschied je ein Haken" loading="lazy"></a></figure>
   <p>Trage bei jeder Wallet ein, was deine App zeigt, bei Anna 50,00 USDC in „Meine Wallet“ und 66,90 USDC auf der Karte. Passt es zu deinen Einträgen, steht bei „Unterschied“ ein ✓. Fehlt etwas, kommt ein gelber Punkt in „Noch offen“.</p>
-  <figure class="k"><a href="anleitung/tool-wallet-fertig.webp"><img src="anleitung/tool-wallet-fertig.webp" width="820" height="500" alt="Reiter Wallet oben: Noch offen ohne Zahl, darunter die Karte Bestand jetzt mit Bitvavo 0,50 USDC, Meine Karte 66,90 USDC und Meine Wallet 50,00 USDC mit Haken beim Abgleich" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-wallet-fertig.webp"><img src="anleitung/tool-wallet-fertig.webp" width="820" height="511" alt="Reiter Wallet oben: Noch offen ohne Zahl, darunter die Karte Bestand jetzt mit Bitvavo 0,50 USDC, Meine Karte 66,90 USDC und Meine Wallet 50,00 USDC mit Haken beim Abgleich" loading="lazy"></a>
     <figcaption>Die 0,50 USDC Rest liegen noch bei Bitvavo.</figcaption></figure>
   <p>Danach steht bei „Noch offen“ keine Zahl mehr, und „Bestand jetzt“ zeigt, was in jeder Wallet liegt und was es gekostet hat.</p>
 </section>
@@ -683,8 +751,8 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="stop" id="ende-stufe-3">
   <h4>Fertig</h4>
   <p>Fertig: Im Reiter „Steuer“ stehen jetzt auch deine Krypto-Werte.</p>
-  <figure class="k"><a href="anleitung/tool-steuer-krypto.webp"><img src="anleitung/tool-steuer-krypto.webp" width="1008" height="319" alt="Karte Kryptowährungen 2026 mit Gewinnen und Verlusten aus Verkäufen, Saldo und den Kennzahlen 174 und 176" loading="lazy"></a>
-    <figcaption>Reiter „Steuer“, Karte zur Krypto-Steuer. Beispiel mit erfundenen Daten.</figcaption></figure>
+  <figure class="k"><a href="anleitung/tool-steuer-krypto.webp"><img src="anleitung/tool-steuer-krypto.webp" width="1008" height="619" alt="Reiter Steuer, Karte Jahresabrechnung 2026 (Österreich): oben der CFD-Teil mit Saldo CFD und Kennzahl 857, darunter Kryptowährungen mit Überschüssen und Verlusten, den Kennzahlen 174 und 176 und dem Saldo Krypto" loading="lazy"></a>
+    <figcaption>Reiter „Steuer“, Karte „Jahresabrechnung“. Beispiel mit erfundenen Daten.</figcaption></figure>
   <p class="up"><a href="#top">↑ Inhalt</a></p>
 </div>
 
@@ -700,12 +768,13 @@ document.addEventListener('DOMContentLoaded',function(){
   <h4 id="handy">Am Handy weitermachen</h4>
   <p>Speichere am PC im Reiter <b>„Sicherung“</b> eine Sicherung. Bring die Datei aufs Handy, z. B. über deine Cloud, per Mail an dich selbst oder per Telegram an „Gespeicherte Nachrichten“, und speichere sie dort. Tippe dann am Handy im Reiter <b>„Sicherung“</b> auf <b>„Sicherung laden“</b>. Das ersetzt alles, was am Handy im Tool steht. Schick die Datei nur an dich selbst.</p>
   <p>Online-Version und heruntergeladene Datei sehen nicht dieselben Daten. Auch zwischen ihnen nimmst du deine Daten mit einer Sicherung mit.</p>
-  <p class="more">Später kommen in diese Anleitung: Wallet-Dateien, Steuer und Auswertung.</p>
+  <p class="os-win os-mac">Am Computer kannst du eine Sicherung auch einfach ins Tool ziehen. Das Tool fragt vorher nach.</p>
+  <p class="more">Später kommen in diese Anleitung: Wallet-Dateien, Steuer und mehr zur Auswertung.</p>
 </section>
 </main>
 
 <footer>
-  <p>Trading-Bilanz · Anleitung, Stand 12.11.2026 · Keine Steuer- oder Finanzberatung.</p>
+  <p>Trading-Bilanz · Anleitung, Stand 20.11.2026 · Keine Steuer- oder Finanzberatung.</p>
   <p><b>Nur das Original:</b> Nutze die Trading-Bilanz nur von <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, zum Beispiel mit einer anderen Spendenadresse.</p>
   <p><b>Datenschutz:</b> Diese Seite speichert nichts und lädt nur ihre eigenen Bilder. Beim Aufruf speichert GitHub deine IP-Adresse aus Sicherheitsgründen (<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub&nbsp;↗</a>).</p>
   <p><a href="https://weltenwandel.at/impressum.html" target="_blank" rel="noopener">Impressum&nbsp;↗</a> · <a href="mailto:florian@weltenwandel.at">florian@weltenwandel.at</a> · <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">Zur Trading-Bilanz</a></p>
