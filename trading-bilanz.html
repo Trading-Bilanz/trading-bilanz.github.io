@@ -3115,13 +3115,20 @@ function guideHTML(k,flow){
 const TAG_WHY='Oben auf der Seite stehen deine Summen bei Tag (Deposits, Withdrawals), unten die Anzahl der Einträge. Damit prüft das Tool, ob alles angekommen ist.';
 function tagGuide(os){
   const cp=os==='mobile'?'Drücke lange auf die Seite, wähle <b>„Alles auswählen“</b>, dann <b>„Kopieren“</b>. Tippe ins Feld <b>„Hier einfügen“</b>, drücke lange und wähle <b>„Einfügen“</b>.':os==='mac'?'Klicke auf die Seite und drücke <kbd>⌘ Cmd</kbd>+<kbd>A</kbd>, dann <kbd>⌘ Cmd</kbd>+<kbd>C</kbd>. Klicke ins Feld <b>„Hier einfügen“</b> und drücke <kbd>⌘ Cmd</kbd>+<kbd>V</kbd>.':'Klicke auf die Seite und drücke <kbd>Strg</kbd>+<kbd>A</kbd>, dann <kbd>Strg</kbd>+<kbd>C</kbd>. Klicke ins Feld <b>„Hier einfügen“</b> und drücke <kbd>Strg</kbd>+<kbd>V</kbd>.';
+  // Ab 0.173 (Florians Auftrag): eigene Fassung fürs Handy. Dort öffnet sich das Menü des Tag-Portals über die drei Striche rechts oben, die
+  // „Banking Zone“ steht weiter unten auf der Seite, und man tippt statt zu klicken. Die Felder heißen wie am Computer. Windows und Mac
+  // bleiben Wort für Wort wie bis 0.172. Wortgleich in der Anleitung (Abschnitt 7), je Gerät.
+  const mob=os==='mobile',Kl=mob?'Tippe':'Klicke',kl=mob?'tippe':'klicke';
+  const s1=mob?'Tippe im Tag-Portal rechts oben auf die drei Striche und dann auf <b>„Tag Wallet“</b>.':'Klicke im Tag-Portal links auf <b>„Tag Wallet“</b>.';
+  const s2=mob?'Scrolle hinunter zur „Banking Zone“, tippe dort auf <b>„Transaction History“</b>':'Öffne links in der „Banking Zone“ <b>„Transaction History“</b>';
+  const s5=mob?'Tippe in der „Banking Zone“ auf <b>„Withdrawals“</b> und dann auf':'Öffne links in der „Banking Zone“ <b>„Withdrawals“</b> und klicke auf';
   return `<ol class="steps">
-  <li>Klicke im Tag-Portal links auf <b>„Tag Wallet“</b>.</li>
-  <li><b>Einzahlungen:</b> Öffne links in der „Banking Zone“ <b>„Transaction History“</b> und wähle bei <b>„From“</b> ein Datum vor deiner ersten Einzahlung.</li>
-  <li>Klicke auf <b>„More Filters“</b>, wähle bei <b>„Method“</b> <b>„${gl('psp','PSP')}“</b> und klicke auf <b>„Submit“</b>. Wähle bei <b>„Show“</b> die größte Zahl.</li>
-  <li>Kopiere die ganze Seite und füge sie ins Feld <b>„Hier einfügen“</b> ein. Klicke dann auf <b>„Übernehmen“</b>. <button type="button" class="zlink" data-gtwhy aria-expanded="false" aria-controls="gt-why-${os}">Wozu?</button>
+  <li>${s1}</li>
+  <li><b>Einzahlungen:</b> ${s2} und wähle bei <b>„From“</b> ein Datum vor deiner ersten Einzahlung.</li>
+  <li>${Kl} auf <b>„More Filters“</b>, wähle bei <b>„Method“</b> <b>„${gl('psp','PSP')}“</b> und ${kl} auf <b>„Submit“</b>. Wähle bei <b>„Show“</b> die größte Zahl.</li>
+  <li>Kopiere die ganze Seite und füge sie ins Feld <b>„Hier einfügen“</b> ein. ${Kl} dann auf <b>„Übernehmen“</b>. <button type="button" class="zlink" data-gtwhy aria-expanded="false" aria-controls="gt-why-${os}">Wozu?</button>
     <p class="small" id="gt-why-${os}" hidden style="margin:2px 0 4px">${TAG_WHY}</p><div class="small">${cp}</div></li>
-  <li><b>Auszahlungen:</b> Öffne links in der „Banking Zone“ <b>„Withdrawals“</b> und klicke auf <b>„Display Processed Withdrawals“</b> (danach steht dort „Hide Processed Withdrawals“). Wähle bei <b>„Show“</b> die größte Zahl, kopiere die ganze Seite und füge sie ins Feld <b>„Hier einfügen“</b> ein. Klicke dann auf <b>„Übernehmen“</b>.</li>
+  <li><b>Auszahlungen:</b> ${s5} <b>„Display Processed Withdrawals“</b> (danach steht dort „Hide Processed Withdrawals“). Wähle bei <b>„Show“</b> die größte Zahl, kopiere die ganze Seite und füge sie ins Feld <b>„Hier einfügen“</b> ein. ${Kl} dann auf <b>„Übernehmen“</b>.</li>
   <li>Du kannst jederzeit wieder alles einfügen. Das Tool erkennt, was schon da ist.</li>
 </ol>`;
 }
@@ -16104,7 +16111,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.172',VDATE='21.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.173',VDATE='21.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -16569,6 +16576,12 @@ function stepState(){
     ok(has&&!!u.lastBackup&&(!u.lastLoad||u.lastBackup>=u.lastLoad))];
 }
 // Inhalt von „Erste Schritte“. Die Schritte sind Knöpfe, die in den passenden Reiter springen. Ab 0.65 verweist die Begrüßung nur noch hierher.
+// Ab 0.173 (Florians Auftrag): Schritte „Jeden Monat“ je Gerät. Am Handy wählt man die Reports über das Feld im Reiter „Reports“, statt sie zu
+// ziehen (Schritt 2). Eine Quelle für das Fenster „Erste Schritte“ und die Anleitung (Abschnitt 15, wortgleich je Gerät).
+function monatHTML(os){
+  const s2=os==='mobile'?'Tippe im Reiter <b>„Reports“</b> auf das Feld <b>„Hier tippen, um eine Report-Datei auszuwählen“</b> und wähle alle Reports aus.':'Ziehe alle Reports in den Reiter <b>„Reports“</b>.';
+  return `<ol class="steps"><li>Speichere in MetaTrader 5 für jedes Konto den Report neu.</li><li>${s2} Das Tool erkennt, was schon da ist.</li><li>Füge die neuen Tag-Daten ein und sieh in <b>„Noch offen“</b> nach.</li><li>Speichere eine Sicherung.</li></ol>`;
+}
 function stepsHTML(){
   const st=stepState();
   const li=(t,i)=>{const s=st[i],d=`<span class="dot ${s}"${s==='ok'?' role="img" aria-label="erledigt"':' aria-hidden="true"'}>${s==='ok'?'✓':i+1}</span>`;
@@ -16580,7 +16593,7 @@ function stepsHTML(){
   return `<p class="ganl"><a class="btn" href="https://trading-bilanz.github.io/anleitung.html" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗<span class="offl"> (braucht Internet)</span></a></p>
   <p><span class="onl">Tipp: Speichere dir das Tool als Lesezeichen, dann findest du es immer schnell.</span><span class="offl">${STEPS_ORT}</span></p>
   <ol class="chk">${STEPS.map(li).join('')}</ol>
-  <div class="chkm"><p><b>Jeden Monat (empfohlen)</b></p><ol class="steps"><li>Speichere in MetaTrader 5 für jedes Konto den Report neu.</li><li>Ziehe alle Reports in den Reiter <b>„Reports“</b>. Das Tool erkennt, was schon da ist.</li><li>Füge die neuen Tag-Daten ein und sieh in <b>„Noch offen“</b> nach.</li><li>Speichere eine Sicherung.</li></ol>
+  <div class="chkm"><p><b>Jeden Monat (empfohlen)</b></p>${monatHTML(OS)}
   <p><b>Gut zu wissen:</b> ${GTK}<span class="onl"> Du kannst das Tool auch herunterladen und ohne Internet nutzen.</span></p>
   <div class="row onl"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>`;
 }
