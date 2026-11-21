@@ -16104,7 +16104,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.170',VDATE='21.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.171',VDATE='21.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -16550,6 +16550,10 @@ const GTK='Deine Daten liegen nur in diesem Browser. Online-Version und herunter
 // Ab 0.170 (Florians Auftrag und Antwort 2 zur Freigabe): kein Browser mit Namen, sondern „manche Browser“. DATEI_ORT (bis 0.169 DATEI_FF, der Satz
 // zu Firefox) steht im Fenster nach dem Herunterladen und wortgleich im Kasten „Leg dir ein Lesezeichen an“ der Anleitung (node-Test anleitung prüft das).
 const DATEI_ORT='Manche Browser merken sich deine Daten nur für genau diese Datei an genau diesem Ort. Verschiebst du sie oder gibst ihr einen anderen Namen, startet das Tool leer. Deine Daten sind nicht weg: Am alten Ort mit dem alten Namen sind sie wieder da. Willst du die Datei trotzdem verschieben oder umbenennen, speichere vorher eine Sicherung und lade sie danach.';
+// Ab 0.171 (Florians Auftrag 0.171, Antwort 2 zum Plan: Fassung A): Satz zu neuen Versionen, im Fenster nach dem Herunterladen und wortgleich in
+// Abschnitt 15 der Anleitung („Neue Version der Datei“, nach deren eigenem Satz zum Herunterladen); der node-Test anleitung prüft das. Bis 0.170 ohne
+// „Deine Daten bleiben dabei erhalten.“ (das stand nur in der Anleitung).
+const DATEI_NEU='Bei einer neuen Version ersetzt du die alte Datei: gleicher Ort, gleicher Name. Heißt die neue Datei zum Beispiel „trading-bilanz (1).html“, gib ihr den alten Namen. Deine Daten bleiben dabei erhalten.';
 const STEPS_ORT='Tipp: Lege die Datei an einen festen Ort, bevor du anfängst, und öffne sie immer von dort. Manche Browser finden deine Daten sonst nicht mehr.';
 document.querySelectorAll('[data-orig]').forEach(e=>{e.innerHTML=ORIG_HTML});
 document.querySelectorAll('[data-gtk]').forEach(e=>{e.textContent=GTK});
@@ -17050,8 +17054,9 @@ function offShow(ok,err){const has=hasData();
   $('off-t').textContent=ok?'Datei gespeichert':'Herunterladen hat nicht geklappt';
   // Ab 0.168 (Florians Antwort 4 zum Plan): Satz zu neuen Versionen (der Browser speichert eine neue Version oft als „trading-bilanz (1).html“).
   // Ab 0.170 (Florians Auftrag, Antworten 2 und 3 zur Freigabe): vier Absätze: Ort und Öffnen; DATEI_ORT („Manche Browser …“, bis 0.169 der Satz zu
-  // Firefox); neue Version; nur mit Daten „Hast du hier schon Daten? …“ direkt über dem Knopf „Sicherung speichern“ (bis 0.169 im ersten Absatz).
-  $('off-body').innerHTML=ok?`<p>Die Datei „trading-bilanz.html“ liegt meist im Ordner „Downloads“. Lege sie am besten an einen Ort, wo du sie leicht wiederfindest. Öffne sie per Doppelklick, sie läuft im Browser ohne Internet. Öffne sie danach immer von diesem Ort.</p><p>${DATEI_ORT}</p><p>Bei einer neuen Version ersetzt du die alte Datei: gleicher Ort, gleicher Name. Heißt die neue Datei zum Beispiel „trading-bilanz (1).html“, gib ihr den alten Namen.</p>${has?'<p>Hast du hier schon Daten? Speichere eine Sicherung und lade sie in der heruntergeladenen Datei im Reiter „Sicherung“.</p>':''}`+
+  // Firefox); neue Version (ab 0.171 DATEI_NEU); nur mit Daten „Hast du hier schon Daten? …“ direkt über dem Knopf „Sicherung speichern“ (bis 0.169
+  // im ersten Absatz).
+  $('off-body').innerHTML=ok?`<p>Die Datei „trading-bilanz.html“ liegt meist im Ordner „Downloads“. Lege sie am besten an einen Ort, wo du sie leicht wiederfindest. Öffne sie per Doppelklick, sie läuft im Browser ohne Internet. Öffne sie danach immer von diesem Ort.</p><p>${DATEI_ORT}</p><p>${DATEI_NEU}</p>${has?'<p>Hast du hier schon Daten? Speichere eine Sicherung und lade sie in der heruntergeladenen Datei im Reiter „Sicherung“.</p>':''}`+
     (has?'<div class="row"><button type="button" class="btn primary" id="off-bk">Sicherung speichern</button></div><div id="off-msg"></div>':'')
     :`<p>Das Herunterladen hat nicht geklappt (${esc(err)}). Prüfe die Internetverbindung und versuche es noch einmal.</p>`;
   openModal('off-modal');
