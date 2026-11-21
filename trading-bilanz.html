@@ -103,7 +103,9 @@ h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em}
 html:not(.online) .onl{display:none!important}
 /* Ab 0.68 (Florians Regel): kein „Herunterladen“ im Kopf, „Erste Schritte“ steht auch online am Handy neben dem Titel. Herunterladen nur im Reiter „Sicherung“ und im Kästchen der Begrüßung */
 #intro-dl{margin:14px 0}
-/* Begrüßung online: Den Satz „Dort kannst du sie auch herunterladen …“ sagt schon der Kasten #intro-dl darüber */
+/* Satz „Dort kannst du sie auch herunterladen …“ (span.odl in ORIG_HTML): Bis 0.78 stand ORIG_HTML auch in der Begrüßung, dort fiel der Satz online
+   weg (html.online #intro-modal .odl{display:none}), weil der Kasten #intro-dl dasselbe sagt. Ab 0.79 steht ORIG_HTML nicht mehr in der Begrüßung,
+   die Regel ist seither weg. Der Satz steht online und in der Datei (ab 0.170 so festgehalten, Florians Antwort 1 zur Freigabe 0.170). */
 /* Ab 0.77 (Teil 1): Begrüßung. Zeile nur in der heruntergeladenen Datei (.offl); Kästchen zur Steuer hebt sich ab, ohne Signalfarbe;
    der gewählte Knopf ist gefüllt und hat ✓; „Ohne Einführung starten“ lässt „Erste Schritte“ dreimal sanft aufleuchten (box-shadow, nichts verschiebt sich) */
 html.online .offl{display:none}
@@ -1238,9 +1240,7 @@ button.chki:hover,button.chki:focus-visible{border-color:var(--accent)}
 .chki .chkp{flex:none;align-self:center;color:var(--muted);font-size:22px;line-height:1;margin-left:4px}
 /* Ab 0.168 (Florians Regel, GESTALTUNG Abschnitt 6): „Anleitung mit Bildern ↗“ als blauer Knopf ganz oben (a.btn), darunter der Satz zum Wiederfinden */
 #steps-body .ganl{margin:2px 0 8px}
-/* Ab 0.168: „Klicke“ nur mit Maus, sonst „Tippe“ (dieselbe Abfrage wie .dhint und .bkzieh) */
-.mklick{display:none}
-@media (hover:hover) and (pointer:fine){.mklick{display:inline}.mtipp{display:none}}
+/* 0.168 bis 0.169: Satz „Klicke“ (mit Maus) bzw. „Tippe“ über der Liste (.mklick, .mtipp). Ab 0.170 entfallen (Florians Auftrag), das CSS mit ihm */
 .chkm{font-size:var(--fs-s);color:var(--ink2)}
 .chkm ol.steps{margin:2px 0 10px}
 .chkm p{margin:4px 0}
@@ -11769,7 +11769,9 @@ function cxTaxToggle(){return cxTaxSet(S.ui.cxIncl===false)}
 // Ab 0.131 (Florians Auftrag): beim Land „Ohne Steuer“ der Satz mit den Knöpfen „Österreich“ und „Deutschland“ (WI_LAND). Einschalten ohne Rückfrage, mit Toast.
 const WI_LAND='Du arbeitest ohne Steuer. Wähle dein Land, dann rechnet das Tool auch die Krypto-Steuer:';
 function wiLandSet(v){if(!['AT','DE'].includes(v))return;S.ui.country=v;S.ui.cxIncl=true;save();render();wiCxFill();toast(`Land: ${v==='AT'?'Österreich':'Deutschland'}. Krypto-Steuer ist an.`)}
-function wiCxFill(){$('wi-cx').innerHTML=S.ui.country==='none'?`<p>${WI_LAND}</p><div class="row"><button type="button" class="btn" data-wiland="AT">Österreich</button><button type="button" class="btn" data-wiland="DE">Deutschland</button></div>`:S.ui.cxIncl===false?'<p>Die Krypto-Steuer ist aus.</p><div class="row"><button type="button" class="btn" data-tdcx>Krypto-Steuer einschalten</button></div>':'<p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#anderes-tool" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p><p><b>Rechnest du deine Kryptos schon mit einem anderen Tool</b>, z. B. Blockpit? Dann bleib dort und schalte die Krypto-Steuer hier aus. Sonst zählen deine USDC und USDT doppelt. Das Tool rechnet dann nur den CFD-Teil der Steuer.</p><p>Wichtig für das andere Tool: Eine Einzahlung bei Tag zählt als Verkauf deiner USDC oder USDT, eine Auszahlung von Tag als Kauf. So rechnet dieses Tool. Markiere sie im anderen Tool genauso und kläre das mit deiner Steuerberatung.</p><div class="row"><button type="button" class="btn" data-tdcx>Krypto-Steuer hier ausschalten</button></div>'}
+// Ab 0.170 (Florians Auftrag) ohne den Link „Anleitung mit Bildern ↗“ (#anderes-tool) über dem Abschnitt zum anderen Krypto-Tool: Der Knopf
+// „Krypto-Steuer hier ausschalten“ steht im selben Fenster, der Link führte nur zur Anleitung für ihn. Der Link oben im Fenster (#reiter-wallet) bleibt.
+function wiCxFill(){$('wi-cx').innerHTML=S.ui.country==='none'?`<p>${WI_LAND}</p><div class="row"><button type="button" class="btn" data-wiland="AT">Österreich</button><button type="button" class="btn" data-wiland="DE">Deutschland</button></div>`:S.ui.cxIncl===false?'<p>Die Krypto-Steuer ist aus.</p><div class="row"><button type="button" class="btn" data-tdcx>Krypto-Steuer einschalten</button></div>':'<p><b>Rechnest du deine Kryptos schon mit einem anderen Tool</b>, z. B. Blockpit? Dann bleib dort und schalte die Krypto-Steuer hier aus. Sonst zählen deine USDC und USDT doppelt. Das Tool rechnet dann nur den CFD-Teil der Steuer.</p><p>Wichtig für das andere Tool: Eine Einzahlung bei Tag zählt als Verkauf deiner USDC oder USDT, eine Auszahlung von Tag als Kauf. So rechnet dieses Tool. Markiere sie im anderen Tool genauso und kläre das mit deiner Steuerberatung.</p><div class="row"><button type="button" class="btn" data-tdcx>Krypto-Steuer hier ausschalten</button></div>'}
 $('wi-cx').addEventListener('click',e=>{const l=e.target.closest('[data-wiland]');if(l){wiLandSet(l.dataset.wiland);return}const b=e.target.closest('[data-tdcx]');if(b)cxTaxToggle(b)});
 // Ab 0.74 (2.4): „Aus anderem Coin getauscht“ in Österreich mit Ersatzwert, noch nicht bestätigt
 const cxSwOpen=c=>c.kind==='tauschein'&&!!c.est&&!c.eOk&&cxLand()!=='DE';
@@ -16102,7 +16104,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.169',VDATE='20.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.170',VDATE='21.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -16538,14 +16540,17 @@ function wlHcAll(){if(!WL_HC_ON)return;for(const c of WL_HC){c.classList.remove(
 HC_BAR.addEventListener&&HC_BAR.addEventListener('change',()=>HC_CARDS.forEach(c=>hcAlign(c)));
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{FB_KEY='';HB_KEY='';if(S.ui.tab==='stats'){fitFbar();hbFit();updateNavH();layoutTiles();hcAll();fitHL()}});
 /* ---------------- Erste Schritte, Nächster Schritt, Fenster ---------------- */
-// Texte zum Original und zu den getrennten Speichern, einmal hier (Begrüßung, Resonanz, Erste Schritte, Sicherung)
+// Texte zum Original und zu den getrennten Speichern, einmal hier. ORIG_HTML steht ab 0.79 nur im Reiter Resonanz (data-orig), bis 0.78 auch in der
+// Begrüßung; GTK (data-gtk) im Reiter Sicherung und in „Erste Schritte“ (dort direkt im Text). Ab 0.170 berichtigt (Florians Antwort 1 zur Freigabe).
 const ORIG_HTML='Das Original der Trading-Bilanz läuft nur unter genau dieser Adresse: <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>.<span class="odl"> Dort kannst du sie auch herunterladen und ohne Internet nutzen.</span> Kopien aus anderen Quellen können verändert sein, zum Beispiel mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.';
 const GTK='Deine Daten liegen nur in diesem Browser. Online-Version und heruntergeladene Datei sehen nicht dieselben Daten. Mit einer Sicherung nimmst du sie mit.';
-// Ab 0.168 (Florians Auftrag): Satz zum Wiederfinden der heruntergeladenen Datei („Erste Schritte“) und der Satz zu Firefox (auch im Fenster nach dem
-// Herunterladen). Gemessen in 0.168: In Chromium teilen sich alle lokalen Dateien einen Speicher; in Firefox (mit seiner Vorgabe für Dateien) gehören
-// die Daten zu Ort und Name der Datei, umbenannt oder verschoben startet das Tool leer, zurück am alten Ort sind die Daten wieder da.
-const DATEI_FF='In Firefox gehören deine Daten zu Ort und Name der Datei.';
-const STEPS_ORT='Tipp: Lege die Datei an einen festen Ort, bevor du anfängst, und öffne sie immer von dort. '+DATEI_FF;
+// Ab 0.168 (Florians Auftrag): Satz zum Wiederfinden der heruntergeladenen Datei („Erste Schritte“). Gemessen in 0.168: In Chromium teilen sich alle
+// lokalen Dateien einen Speicher; in Firefox (mit seiner Vorgabe für Dateien) gehören die Daten zu Ort und Name der Datei, umbenannt oder verschoben
+// startet das Tool leer, zurück am alten Ort sind die Daten wieder da. Andere Browser sind nicht geprüft.
+// Ab 0.170 (Florians Auftrag und Antwort 2 zur Freigabe): kein Browser mit Namen, sondern „manche Browser“. DATEI_ORT (bis 0.169 DATEI_FF, der Satz
+// zu Firefox) steht im Fenster nach dem Herunterladen und wortgleich im Kasten „Leg dir ein Lesezeichen an“ der Anleitung (node-Test anleitung prüft das).
+const DATEI_ORT='Manche Browser merken sich deine Daten nur für genau diese Datei an genau diesem Ort. Verschiebst du sie oder gibst ihr einen anderen Namen, startet das Tool leer. Deine Daten sind nicht weg: Am alten Ort mit dem alten Namen sind sie wieder da. Willst du die Datei trotzdem verschieben oder umbenennen, speichere vorher eine Sicherung und lade sie danach.';
+const STEPS_ORT='Tipp: Lege die Datei an einen festen Ort, bevor du anfängst, und öffne sie immer von dort. Manche Browser finden deine Daten sonst nicht mehr.';
 document.querySelectorAll('[data-orig]').forEach(e=>{e.innerHTML=ORIG_HTML});
 document.querySelectorAll('[data-gtk]').forEach(e=>{e.textContent=GTK});
 // Ab 0.63: „Genieße die Auswertung“ vor Wallet, damit man zuerst die Zahlen sieht
@@ -16565,11 +16570,11 @@ function stepsHTML(){
   const li=(t,i)=>{const s=st[i],d=`<span class="dot ${s}"${s==='ok'?' role="img" aria-label="erledigt"':' aria-hidden="true"'}>${s==='ok'?'✓':i+1}</span>`;
     return `<li><button type="button" class="chki" data-step="${i+1}">${d}<span class="chkt">${t}</span><span class="chkp" aria-hidden="true">›</span></button></li>`};
   // Ab 0.64: „Anleitung mit Bildern“ als Erstes. Ab 0.168 (Florians Regel, GESTALTUNG Abschnitt 6): blauer Knopf, „(braucht Internet)“ nur in der
-  // heruntergeladenen Datei (.offl), darunter der Satz zum Wiederfinden (online .onl, in der Datei .offl) und der Satz über der Liste („Klicke“ mit Maus, sonst „Tippe“)
+  // heruntergeladenen Datei (.offl), darunter der Satz zum Wiederfinden (online .onl, in der Datei .offl).
+  // Ab 0.170 (Florians Auftrag) ohne die Sätze „Für die Reports brauchst du einen Computer …“ und „Klicke/Tippe auf einen Schritt …“; dass man für
+  // die Reports einen Computer braucht, sagen Schritt 1 („einmalig, am Computer“) und das Fenster „MT5 verbinden“.
   return `<p class="ganl"><a class="btn" href="https://trading-bilanz.github.io/anleitung.html" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗<span class="offl"> (braucht Internet)</span></a></p>
   <p><span class="onl">Tipp: Speichere dir das Tool als Lesezeichen, dann findest du es immer schnell.</span><span class="offl">${STEPS_ORT}</span></p>
-  <p>Für die Reports brauchst du einen Computer mit MetaTrader 5. Alles andere geht auch am Handy.</p>
-  <p><span class="mklick">Klicke</span><span class="mtipp">Tippe</span> auf einen Schritt, dann bringt dich das Tool an die richtige Stelle.</p>
   <ol class="chk">${STEPS.map(li).join('')}</ol>
   <div class="chkm"><p><b>Jeden Monat (empfohlen)</b></p><ol class="steps"><li>Speichere in MetaTrader 5 für jedes Konto den Report neu.</li><li>Ziehe alle Reports in den Reiter <b>„Reports“</b>. Das Tool erkennt, was schon da ist.</li><li>Füge die neuen Tag-Daten ein und sieh in <b>„Noch offen“</b> nach.</li><li>Speichere eine Sicherung.</li></ol>
   <p><b>Gut zu wissen:</b> ${GTK}<span class="onl"> Du kannst das Tool auch herunterladen und ohne Internet nutzen.</span></p>
@@ -17043,8 +17048,10 @@ async function offlineDL(){try{const r=await fetch(location.href.split('#')[0],{
   catch(e){offShow(false,e.message)}}
 function offShow(ok,err){const has=hasData();
   $('off-t').textContent=ok?'Datei gespeichert':'Herunterladen hat nicht geklappt';
-  // Ab 0.168 (Florians Antwort 4 zum Plan): Satz zu Firefox und zu neuen Versionen (der Browser speichert eine neue Version oft als „trading-bilanz (1).html“)
-  $('off-body').innerHTML=ok?`<p>Die Datei „trading-bilanz.html“ liegt meist im Ordner „Downloads“. Lege sie am besten an einen Ort, wo du sie leicht wiederfindest. Öffne sie per Doppelklick, sie läuft im Browser ohne Internet. Öffne sie danach immer von diesem Ort. ${DATEI_FF}${has?' Hast du hier schon Daten? Speichere eine Sicherung und lade sie in der heruntergeladenen Datei im Reiter „Sicherung“.':''}</p><p>Bei einer neuen Version ersetzt du die alte Datei: gleicher Ort, gleicher Name. Heißt die neue Datei zum Beispiel „trading-bilanz (1).html“, gib ihr den alten Namen.</p>`+
+  // Ab 0.168 (Florians Antwort 4 zum Plan): Satz zu neuen Versionen (der Browser speichert eine neue Version oft als „trading-bilanz (1).html“).
+  // Ab 0.170 (Florians Auftrag, Antworten 2 und 3 zur Freigabe): vier Absätze: Ort und Öffnen; DATEI_ORT („Manche Browser …“, bis 0.169 der Satz zu
+  // Firefox); neue Version; nur mit Daten „Hast du hier schon Daten? …“ direkt über dem Knopf „Sicherung speichern“ (bis 0.169 im ersten Absatz).
+  $('off-body').innerHTML=ok?`<p>Die Datei „trading-bilanz.html“ liegt meist im Ordner „Downloads“. Lege sie am besten an einen Ort, wo du sie leicht wiederfindest. Öffne sie per Doppelklick, sie läuft im Browser ohne Internet. Öffne sie danach immer von diesem Ort.</p><p>${DATEI_ORT}</p><p>Bei einer neuen Version ersetzt du die alte Datei: gleicher Ort, gleicher Name. Heißt die neue Datei zum Beispiel „trading-bilanz (1).html“, gib ihr den alten Namen.</p>${has?'<p>Hast du hier schon Daten? Speichere eine Sicherung und lade sie in der heruntergeladenen Datei im Reiter „Sicherung“.</p>':''}`+
     (has?'<div class="row"><button type="button" class="btn primary" id="off-bk">Sicherung speichern</button></div><div id="off-msg"></div>':'')
     :`<p>Das Herunterladen hat nicht geklappt (${esc(err)}). Prüfe die Internetverbindung und versuche es noch einmal.</p>`;
   openModal('off-modal');
