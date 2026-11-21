@@ -27,8 +27,9 @@
   mitnehmen“ (#sichern, darin #handy und #neue-version), „Annas Beispiel“ (#anna) und „Schon ein anderes Krypto-Tool?“ (#anderes-tool). Außerhalb der
   Karten stehen nur die Köpfe der Stufen und die grünen Kästen (div.stop, höchstens zwei Sätze, kein Bild). Am Ende von Abschnitt 5, 7 und 9 bis 14
   die Zeile „Annas Stand im Tool“ (p.stand).
-  Die Sprungmarken bleiben, das Tool verlinkt darauf (#mt5-verbinden, #report-speichern, #tag-daten, #reiter-wallet, #noch-offen, #boerse-datei,
-  #von-hand, ab 0.76 #tausch, ab 0.168 #dfx). #anderes-tool (ab 0.76) verlinkt das Tool ab 0.170 nicht mehr (Florians Auftrag), die Sprungmarke bleibt.
+  Die Sprungmarken bleiben, das Tool verlinkt darauf (#mt5-verbinden, #report-speichern, #tag-daten, #reiter-wallet, #boerse-datei,
+  #von-hand, ab 0.76 #tausch, ab 0.168 #dfx, ab 0.174 #abarbeiten). #anderes-tool (ab 0.76) verlinkt das Tool ab 0.170 nicht mehr (Florians Auftrag), die Sprungmarke bleibt.
+  #noch-offen verlinkt das Tool ab 0.174 nicht mehr: Das (i) „Noch offen“ zeigt auf #abarbeiten, dort stehen die Farben (Florians Auftrag 0.174). Die Sprungmarke bleibt.
   Nur die Schritt-Listen (MetaTrader 5, Tag, „Jeden Monat“) stehen wortgleich im Tool, zwischen <!- -Q:quelle- -> und <!- -/Q- ->, je Gerät
   <!- -Q:os:win|mac|handy- ->; tools/tests/anleitung.js prüft das. <!- -Z- -> … <!- -/Z- -> darin sind Zusätze der Anleitung. Alles andere steht in eigenen Worten.
   Gerätewahl: Teile mit Klasse os-win, os-mac, os-mob gelten nur für dieses Gerät. Das kleine Skript unten setzt html[data-os] (Erkennung wie detectOS()
@@ -454,7 +455,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <p>Sie bleibt beim Scrollen stehen und gilt für die Karten darunter.</p>
   <ul class="list">
     <li><b>„Zeitraum“:</b> Wähle <b>„Gesamter Zeitraum“</b>, ein Jahr, <b>„Dieser Monat“</b>, <b>„Letzte 3 Monate“</b> oder <b>„Individuell“</b>.</li>
-    <li><b>„Konten“:</b> Hier wählst du, welche Konten zählen. Mit <b>„nur dieses“</b> siehst du ein einzelnes Konto.</li>
+    <li><b>„Konten“</b> (ab zwei Konten): Hier wählst du, welche Konten zählen. Mit <b>„nur dieses“</b> siehst du ein einzelnes Konto.</li>
     <li><b>„PF verteilt“</b> oder <b>„PF laut MT5“</b>: PF ist die Performance Fee, Tag bucht sie jeden Samstag vom Wochengewinn ab. Bei „PF verteilt“ trägt jeder Trade seinen Anteil der Fee, und du siehst, was dir von jedem Trade bleibt. Bei „PF laut MT5“ steht die Fee dort, wo Tag sie abbucht, und die Trades zeigen ihr Ergebnis vor der Fee. Auf die Steuer hat der Schalter keinen Einfluss.</li>
     <li><b>„USD“</b> oder <b>„EUR“</b>: Beträge wie im MT5-Report oder in Euro zum EZB-Kurs des Tages. Prozente bleiben gleich.</li>
     <li><b>„Inhalt“</b> springt zu jeder Karte.</li>
@@ -538,7 +539,7 @@ document.addEventListener('DOMContentLoaded',function(){
     <li>Du kannst jederzeit wieder alles einfügen. Das Tool erkennt, was schon da ist.</li>
   </ol><!--/Q-->
   <p class="small"><b>PSP</b> ist ein Filter bei Tag: Er zeigt nur Einzahlungen von außen, nicht die Überträge zwischen der Tag Wallet und deinen Trading-Konten.</p>
-  <p><b>Per Bank ein- oder ausgezahlt?</b> Steht bei deinen Einzahlungen die Methode „Bank“, sagt die Vorschau: „Methode ‚Bank‘ erkannt. Das Tool behandelt sie als Ein- oder Auszahlung per Bank. Stimmt das?“ Darunter stehen die Knöpfe <b>„Ja, per Bank“</b> und <b>„Nein, mit Krypto“</b>. Per Bank heißt: keine Krypto-Steuer, keine Wallet, die Zahlung zählt für „Dein echtes Geld“. Bei einer Auszahlung per Bank wählst du unter „Woher und wohin?“ <b>„Bank“</b>.</p>
+  <p><b>Per Bank ein- oder ausgezahlt?</b> Steht bei einer Einzahlung eine andere Methode als Krypto, fragt die Vorschau, zum Beispiel: „Methode ‚Bank‘ erkannt. Das Tool behandelt sie als Ein- oder Auszahlung per Bank. Stimmt das?“ Darunter wählst du <b>„Ja, per Bank“</b> oder <b>„Nein, mit Krypto“</b>. Per Bank heißt: keine Krypto-Steuer, keine Wallet, die Zahlung zählt für „Dein echtes Geld“. Bei einer Auszahlung per Bank wählst du unter „Woher und wohin?“ <b>„Bank“</b>.</p>
   <p class="small"><b>Gut zu wissen:</b> Zahlst du bei Tag USDC ein, tauscht Tag sie sofort in USD. Steuerlich ist das ein Verkauf. Bei einer Auszahlung in USDC ist es umgekehrt ein Kauf. Das Tool rechnet mit USDC und USDT.</p>
   <p>Danach zeigt der Reiter „Auswertung“ die Karte „Dein echtes Geld“.</p>
   <figure class="k"><a href="anleitung/tool-echtes-geld.webp"><img src="anleitung/tool-echtes-geld.webp" width="788" height="300" alt="Karte Dein echtes Geld mit Annas Zahlen: Eingezahlt 1.250,00 USD, Ausgezahlt 150,00 USD, Netto-Einsatz 1.100,00 USD, Netto-Gewinn seit Start 354,91 USD und Rendite seit Start 28,4 %" loading="lazy"></a>
@@ -807,6 +808,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <figure class="k"><a href="anleitung/tool-oz-alle-oben.webp"><img src="anleitung/tool-oz-alle-oben.webp" width="640" height="96" alt="Fenster Noch offen, Punkt 3 von 6: direkt unter dem Titel der grün eingerahmte Knopf Alle Vorschläge ansehen und übernehmen (3)" loading="lazy"></a></figure>
   <p>Direkt unter dem Titel von „Noch offen“ steht dann <b>„Alle Vorschläge ansehen und übernehmen“</b>. Den Knopf gibt es nur, wenn das Tool sich sicher ist. Vorschläge über einen Dienst oder mit mehreren Möglichkeiten entscheidest du einzeln.</p>
   <figure class="k"><a href="anleitung/tool-oz-alle.webp"><img src="anleitung/tool-oz-alle.webp" width="640" height="540" alt="Fenster Alle Vorschläge ansehen und übernehmen (3): drei Vorschläge mit Häkchen, je mit Warum, unten die Knöpfe Übernehmen (3) und Abbrechen" loading="lazy"></a></figure>
+  <p>Anna prüft die drei Vorschläge und klickt auf <b>„Übernehmen (3)“</b>.</p>
   <h4>Ein Vorschlag kommt dazu</h4>
   <p>Danach steht oben <b>„Alle Vorschläge ansehen und übernehmen (1)“</b>. Das Tool fragt, ob die 150 USDC vom 17.08. in „Meine Wallet“ gingen, denn ohne sie fehlen dort am 20.08. 100 USDC für die Aufladung. Das stimmt, also klickt Anna auf <b>„Übernehmen“</b>.</p>
   <figure class="k"><a href="anleitung/tool-oz-fehlt.webp"><img src="anleitung/tool-oz-fehlt.webp" width="588" height="405" alt="Gelbe Karte in Noch offen: Gingen die 150,00 USDC deiner Auszahlung von Tag vom 17.08. nach Meine Wallet? Sonst fehlen dort am 20.08. 100,00 USDC für die Aufladung. Darunter Vorschlag, Warum mit der Auszahlung und der Aufladung, grün eingerahmt Übernehmen und Nein" loading="lazy"></a></figure>
