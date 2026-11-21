@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'sha256-ekR1L2kUreU31dOAl6CIA7Abfs4srxwDGYUPDq544OI='; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'sha256-ufhi0R7qi/xSm3kmxbPOba8AhtN37YvNkRTr8IKYzKo='; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anleitung zur Trading-Bilanz</title>
 <!-- Ab 0.90: Favicon, apple-touch-icon und Logo aus icons/ (img-src 'self' erlaubt Bilder vom eigenen Server), Angaben für die Link-Vorschau wie im Tool -->
@@ -24,11 +24,13 @@
   Ab 0.70 in drei Stufen gegliedert (Auswertung, Dein echtes Geld, Krypto-Steuer): Inhalt nach Stufen (#inhalt), je Stufe ein Kopf (div.stufe, #stufe-1 … 3)
   mit den Reitern als Kästchen, Abschnitte (section, h3.st) 1 bis 15, ab 0.168 dazu „Deine Auswertung“ (#auswertung) ohne Nummer nach Abschnitt 6.
   Die Sprungmarken bleiben, das Tool verlinkt darauf (#mt5-verbinden, #report-speichern, #tag-daten, #reiter-wallet, #noch-offen, #boerse-datei,
-  #von-hand, ab 0.76 #tausch, #anderes-tool, ab 0.168 #dfx).
+  #von-hand, ab 0.76 #tausch, ab 0.168 #dfx). #anderes-tool (ab 0.76) verlinkt das Tool ab 0.170 nicht mehr (Florians Auftrag), die Sprungmarke bleibt.
   Nur die Schritt-Listen (MetaTrader 5, Tag, „Jeden Monat“) stehen wortgleich im Tool, zwischen <!- -Q:quelle- -> und <!- -/Q- ->, je Gerät
   <!- -Q:os:win|mac|handy- ->; tools/tests/anleitung.js prüft das. <!- -Z- -> … <!- -/Z- -> darin sind Zusätze der Anleitung. Alles andere steht in eigenen Worten.
   Gerätewahl: Teile mit Klasse os-win, os-mac, os-mob gelten nur für dieses Gerät. Das kleine Skript unten setzt html[data-os] (Erkennung wie detectOS()
   im Tool, nicht gespeichert), baut die stehende Leiste und das Zuklappen der Karten (ab 0.168 wie im Tool: „▾“ links, ein Klick auf den ganzen Kopf).
+  Ab 0.170 (Florians Regel, GESTALTUNG Abschnitt 7): rechts in der Leiste der Knopf „Inhalt ▾“ (bis 560 px Breite das Listen-Symbol) mit einem Menü
+  wie das Menü „Inhalt“ der Auswertung. Seine Einträge baut das Skript aus dem Inhaltsverzeichnis oben (nav#inhalt), damit beide nie auseinanderlaufen.
   Ohne Skript zeigt die Seite die Windows-Fassung, ohne Leiste und ohne Zuklappen.
   Das Skript ist über seinen Hash in der Content-Security-Policy erlaubt (tools/anleitung-csp.js schreibt ihn neu). Es speichert nichts und lädt nichts.
   Bilder: tool-* macht tools/anleitung-bilder.js, die anderen tools/anleitung-fremd.js aus Florians Aufnahmen (grüne Rahmen und Kreise #10A846).
@@ -65,13 +67,43 @@ header h1{display:flex;align-items:center;gap:10px}
 a{color:var(--accent)}
 a:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
 .tool{display:inline-block;margin:4px 0 0;font-weight:600}
-/* Ab 0.70: stehende Leiste oben (nur mit Skript). Ab 0.76: links die Gerätewahl, in der Mitte der Titel des Abschnitts im Blick, rechts „↑ Inhalt“ */
+/* Ab 0.70: stehende Leiste oben (nur mit Skript). Ab 0.76: links die Gerätewahl, in der Mitte der Titel des Abschnitts im Blick, rechts „↑ Inhalt“.
+   Ab 0.170 (Florians Regel, GESTALTUNG Abschnitt 7): rechts der Knopf „Inhalt ▾“ mit Menü statt des Links „↑ Inhalt“ (bis 0.169 a.lup);
+   der Titel in der Mitte nennt auch den Kopf einer Stufe („Stufe 1: Auswertung“), bis 0.169 stand dort noch der Abschnitt davor. */
 .leiste{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .leiste[hidden]{display:none}
 .leiste .li{max-width:860px;margin:0 auto;padding:0 16px;height:46px;display:flex;align-items:center;gap:12px}
-.leiste a.lup{flex:none;white-space:nowrap;font-size:var(--fs-s);font-weight:600;text-decoration:none;padding:6px 0}
 .leiste .lt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;color:var(--ink);text-align:center}
 .leiste select{flex:none;font:inherit;font-size:var(--fs-s);color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:5px 6px;min-height:34px}
+/* Ab 0.170: Knopf „Inhalt ▾“ wie der Knopf „Inhalt“ in der Filterzeile der Auswertung (.fsel im Tool: Rand --line, beim Darüberfahren und offen
+   --accent, „Inhalt“ halbfett, „▾“ grau), so hoch wie die Gerätewahl. Bis 560 px Breite (Handy-Form der Anleitung) nur das Listen-Symbol aus dem
+   Tool (FB_TOC), vorgelesen „Inhalt“. Das Menü darunter rechtsbündig, so breit wie nötig (Einträge in fett vorgemessen, ::after), höchstens bis
+   8 px vor den Fensterrand und so hoch wie der Platz (lage() im Skript, wie popPlace im Tool), innen scrollbar. × rechts in der ersten Zeile
+   (Florians Regel aus GESTALTUNG Abschnitt 2 für die Menüs des Tools), Gruppen mit dünnen Linien: „1. Bevor du anfängst“, je Stufe die Stufe
+   (halbfett, Sprung zu ihrem Kopf) mit ihren Abschnitten, „15. Wie es weitergeht“. Unten „Alle aufklappen“ links und „Alle zuklappen“ rechts
+   wie im Tool. „Du bist hier“: fett, Strich links --accent, Fläche --accent-soft, vorgelesen als aktuelle Stelle (aria-current). */
+.lmw{position:relative;flex:none;display:flex}
+.lmb{display:flex;align-items:center;gap:6px;min-height:34px;font:inherit;font-size:15px;line-height:1.3;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer}
+.lmb:hover,.lmb[aria-expanded=true]{border-color:var(--accent)}
+.lmb .lmt{font-weight:600;white-space:nowrap}
+.lmb .lmc{color:var(--muted)}
+.lmb .lmi{display:none;flex:none}
+@media (max-width:560px){.lmb .lmt,.lmb .lmc{display:none}.lmb .lmi{display:block}.lmb{padding:4px 8px}}
+.lm{position:absolute;top:calc(100% + 4px);right:0;z-index:6;box-sizing:border-box;width:max-content;min-width:200px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 10px 28px rgba(0,0,0,.18);padding:10px 16px 14px;overflow:auto;overscroll-behavior:contain;font-size:15px;line-height:1.4;text-align:left}
+.lm[hidden]{display:none}
+.lm .lmx{position:absolute;top:6px;right:8px;width:28px;height:28px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--muted);font:20px/1 system-ui,sans-serif;cursor:pointer}
+.lm .lmx:hover,.lm .lmx:focus-visible{background:var(--bg);color:var(--ink)}
+.lmg+.lmg{border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+.lm a.lme{display:block;margin:0 -16px;padding:6px 16px;color:var(--ink);text-decoration:none}
+.lm a.lme.grp{font-weight:600}
+.lm a.lme::after{content:attr(data-t);display:block;height:0;overflow:hidden;visibility:hidden;font-weight:700}
+.lm a.lme:hover,.lm a.lme:focus-visible{color:var(--accent)}
+.lm a.lme:focus-visible{outline-offset:-2px}
+.lm a.lme[aria-current]{font-weight:700;background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+.lm a.lme.lm1{padding-right:40px}
+.lma{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;border-top:1px solid var(--line);margin-top:6px;padding-top:10px}
+.lmk{font:inherit;font-size:var(--fs-s);line-height:1.4;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:3px 12px;min-height:32px;cursor:pointer}
+.lmk:hover{border-color:var(--accent)}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 /* Gerätewahl: ohne Skript (kein data-os) gilt Windows */
 html:not([data-os]) :is(.os-mac,.os-mob):not(.os-win),
@@ -182,17 +214,54 @@ function os(){try{var u=navigator.userAgentData;if(u){if(u.mobile)return 'mob';v
 H.setAttribute('data-os',os());H.classList.add('js');
 document.addEventListener('DOMContentLoaded',function(){
   var bar=document.getElementById('leiste'),sel=document.getElementById('geraet'),ti=document.getElementById('lt'),S=[].slice.call(document.querySelectorAll('main section'));
-  bar.hidden=false;sel.value=H.getAttribute('data-os');sel.addEventListener('change',function(){H.setAttribute('data-os',sel.value);titel()});
+  // Ab 0.170: Stellen für den Titel der Leiste und „Du bist hier“ im Menü: alle Abschnitte und die Köpfe der Stufen (div.stufe), in der Reihenfolge der Seite
+  var ST=[].slice.call(document.querySelectorAll('main section,main div.stufe')),mb=document.getElementById('lmb'),mn=document.getElementById('lm'),mw=mn.parentNode;
+  bar.hidden=false;sel.value=H.getAttribute('data-os');sel.addEventListener('change',function(){H.setAttribute('data-os',sel.value);stelle()});
   function setz(s,zu){s.classList.toggle('zu',zu);s.querySelector('h3.st>button.kopf').setAttribute('aria-expanded',zu?'false':'true')}
   S.forEach(function(s){var h=s.querySelector('h3.st'),t=h.querySelector('span'),b=document.createElement('button');b.type='button';b.className='kopf';b.appendChild(t);h.appendChild(b);setz(s,false);
-    b.addEventListener('click',function(){setz(s,!s.classList.contains('zu'));titel()})});
+    b.addEventListener('click',function(){setz(s,!s.classList.contains('zu'));stelle()})});
   function auf(id){var t=id&&document.getElementById(decodeURIComponent(id));if(!t)return;var s=t.closest('section'),neu=false;if(s&&s.classList.contains('zu')){setz(s,false);neu=true}
     for(var d=t.closest('details');d;d=d.parentElement&&d.parentElement.closest('details'))if(!d.open){d.open=true;neu=true}
     if(neu)setTimeout(function(){t.scrollIntoView()},0)}
   document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href^="#"]');if(a)auf(a.getAttribute('href').slice(1))},true);
   window.addEventListener('hashchange',function(){auf(location.hash.slice(1))});auf(location.hash.slice(1));
-  function titel(){var y=bar.getBoundingClientRect().bottom+80,t='Anleitung zur Trading-Bilanz';S.forEach(function(s){if(s.getBoundingClientRect().top<=y)t=s.querySelector('h3.st span').textContent});ti.textContent=t}
-  var q=0;window.addEventListener('scroll',function(){if(!q){q=1;requestAnimationFrame(function(){q=0;titel()})}},{passive:true});window.addEventListener('resize',titel);titel();
+  // Ab 0.170 (Florians Regel, GESTALTUNG Abschnitt 7; Antworten 5 und 6 zur Freigabe): Menü „Inhalt“. Die Einträge kommen aus dem Inhaltsverzeichnis
+  // oben (nav#inhalt): je Gruppe dort (li der obersten Ebene) ein Block mit allen ihren Links, die Stufe selbst halbfett (a.grp). Darüber das ×.
+  var L=[];
+  [].slice.call(document.querySelectorAll('#inhalt>ul.tocg>li')).forEach(function(li){var g=document.createElement('div');g.className='lmg';
+    [].slice.call(li.querySelectorAll('a[href^="#"]')).forEach(function(a){var e=document.createElement('a'),t=a.textContent;e.href=a.getAttribute('href');e.textContent=t;e.setAttribute('data-t',t);
+      e.className='lme'+(a.classList.contains('grp')?' grp':'');g.appendChild(e);L.push(e)});mn.appendChild(g)});
+  var x=document.createElement('button');x.type='button';x.className='lmx';x.setAttribute('aria-label','Menü schließen');x.textContent='×';mn.insertBefore(x,mn.firstChild);if(L[0])L[0].classList.add('lm1');
+  var K=document.createElement('div');K.className='lma';
+  [['auf','Alle aufklappen'],['zu','Alle zuklappen']].forEach(function(k){var b=document.createElement('button');b.type='button';b.className='lmk';b.setAttribute('data-alle',k[0]);b.textContent=k[1];K.appendChild(b)});mn.appendChild(K);
+  // Wo bin ich: die letzte Stelle (Abschnitt oder Kopf einer Stufe), deren Oberkante höchstens 20 px unter der Leiste liegt; ganz oben keine.
+  // 20 px, weil ein Sprung die Überschrift 14 px unter die Leiste legt (scroll-padding-top 60 px, Leiste 46 px). Bis 0.169 waren es 80 px; dann
+  // galt nach „Alle zuklappen“ der nächste zugeklappte Abschnitt (etwa 60 px tiefer) schon als aktuell.
+  // Ist die Seite ganz unten (der letzte Abschnitt kommt nie bis unter die Leiste), gilt die letzte Stelle, die im Fenster beginnt.
+  // Eine Rechnung für den Titel der Leiste und „Du bist hier“ im Menü.
+  function hier(){var y=bar.getBoundingClientRect().bottom+20,h=null,E=document.documentElement;
+    if(scrollY>0&&scrollY+innerHeight>=E.scrollHeight-2)y=innerHeight-1;ST.forEach(function(s){if(s.getBoundingClientRect().top<=y)h=s});return h}
+  function stelle(){var h=hier(),t=h&&(h.tagName==='SECTION'?h.querySelector('h3.st span'):h.querySelector('h2'));ti.textContent=t?t.textContent:'Anleitung zur Trading-Bilanz';
+    L.forEach(function(e){if(h&&e.getAttribute('href')==='#'+h.id)e.setAttribute('aria-current','location');else e.removeAttribute('aria-current')})}
+  // Lage wie popPlace im Tool: unter dem Knopf, rechtsbündig, höchstens bis 8 px vor den Fensterrand und so hoch wie der Platz darunter.
+  // Bekommt das Menü eine Scrollleiste, die Platz braucht (PC), wird es um deren Breite breiter.
+  function lage(){mn.style.maxHeight='';mn.style.maxWidth='';mn.style.width='';var r=mb.getBoundingClientRect();
+    mn.style.maxWidth=Math.max(160,Math.floor(r.right-8))+'px';mn.style.maxHeight=Math.max(120,Math.floor(innerHeight-r.bottom-12))+'px';
+    var sb=mn.offsetWidth-mn.clientWidth-2;if(sb>0&&mn.scrollHeight>mn.clientHeight)mn.style.width=Math.min(mn.offsetWidth+sb,Math.floor(r.right-8))+'px'}
+  function zeig(on,fokus){mn.hidden=!on;mb.setAttribute('aria-expanded',on?'true':'false');if(on){lage();mn.scrollTop=0;stelle()}else if(fokus)mb.focus()}
+  mb.addEventListener('click',function(){zeig(mn.hidden)});
+  x.addEventListener('click',function(){zeig(false,true)});
+  // Klick auf einen Eintrag: Der Sprung läuft wie jeder Link (auf() klappt die Karte auf), das Menü geht zu.
+  // „Alle aufklappen“ und „Alle zuklappen“: Die Stelle, an der du bist, bleibt dort, wo sie war (Florians Antwort 6). Die Seite merkt sich nichts.
+  mn.addEventListener('click',function(e){if(e.target.closest('a.lme')){zeig(false);return}
+    var k=e.target.closest('[data-alle]');if(!k)return;var h=hier(),t0=h&&h.getBoundingClientRect().top,zu=k.getAttribute('data-alle')==='zu';
+    S.forEach(function(s){setz(s,zu)});if(h)window.scrollBy(0,h.getBoundingClientRect().top-t0);zeig(false,e.detail===0);stelle()});
+  // Schließen: Klick daneben, Esc (Fokus zurück auf den Knopf) oder der Fokus geht mit Tab aus dem Menü
+  document.addEventListener('click',function(e){if(!mn.hidden&&!mw.contains(e.target))zeig(false)});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!mn.hidden){e.preventDefault();zeig(false,true)}});
+  mw.addEventListener('focusout',function(e){if(!mn.hidden&&e.relatedTarget&&!mw.contains(e.relatedTarget))zeig(false)});
+  var q=0;window.addEventListener('scroll',function(){if(!q){q=1;requestAnimationFrame(function(){q=0;stelle()})}},{passive:true});
+  window.addEventListener('resize',function(){if(!mn.hidden)lage();stelle()});stelle();
 });
 })();
 </script>
@@ -201,7 +270,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="leiste" id="leiste" hidden><div class="li">
   <label><span class="vh">Gerät</span><select id="geraet" aria-label="Gerät"><option value="win">Windows</option><option value="mac">Mac</option><option value="mob">Handy</option></select></label>
   <span class="lt" id="lt" aria-live="off"></span>
-  <a class="lup" href="#top">↑ Inhalt</a>
+  <div class="lmw"><button type="button" class="lmb" id="lmb" aria-expanded="false" aria-controls="lm" aria-label="Inhalt" title="Zu einem Abschnitt springen"><span class="lmt">Inhalt</span><span class="lmc" aria-hidden="true">▾</span><svg class="lmi" viewBox="0 0 16 16" width="17" height="17" aria-hidden="true"><circle cx="2.6" cy="3.5" r="1.4" fill="currentColor"/><circle cx="2.6" cy="8" r="1.4" fill="currentColor"/><circle cx="2.6" cy="12.5" r="1.4" fill="currentColor"/><path d="M6.5 3.5H14.5M6.5 8H14.5M6.5 12.5H14.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button><nav class="lm" id="lm" aria-label="Menü Inhalt" hidden></nav></div>
 </div></div>
 <div class="wrap" id="top">
 <header>
@@ -249,7 +318,7 @@ document.addEventListener('DOMContentLoaded',function(){
       <p class="small"><b>Was du brauchst:</b> einmal einen Computer mit MetaTrader 5 und den Zugang zum Tag-Portal (Kontonummer, Investor-Passwort).</p></li>
     <li><p><b>Stufe 2: Dein echtes Geld.</b> Du fügst die Tag-Daten ein und siehst, was du wirklich eingezahlt und ausgezahlt hast.</p>
       <p class="small"><b>Was du brauchst:</b> den Zugang zum Tag-Portal.</p></li>
-    <li><p><b>Stufe 3: Krypto-Steuer.</b> Nur wenn du mit USDC oder USDT ein- oder auszahlst und deine Kryptos nicht schon mit einem <a href="#anderes-tool">anderen Tool</a> rechnest. Du trägst ein, woher die Coins kamen und wohin sie gingen.</p>
+    <li><p><b>Stufe 3: Krypto-Steuer.</b> Nur wenn du mit USDC oder USDT ein- oder auszahlst und deine Kryptos nicht schon mit einem anderen Tool rechnest. Du trägst ein, woher die Coins kamen und wohin sie gingen.</p>
       <p class="small"><b>Was du brauchst:</b> deine Kaufbelege oder die Datei deiner Börse, bei einer Krypto-Karte die Karten-App, und am Ende den Kontostand jeder Wallet-App. Adressen brauchst du nicht.</p></li>
   </ol>
   <p>Beim ersten Öffnen begrüßt dich das Tool und sagt kurz, was es kann. Im grauen Kästchen „Wo zahlst du Steuern?“ wählst du <b>„Österreich“</b>, <b>„Deutschland“</b> oder <b>„Ohne Steuer“</b>. Das kannst du später im Reiter „Steuer“ ändern. Mit einem der beiden Knöpfe unten geht es los. Hast du ein Land gewählt, zeigt dir das Tool beim ersten Öffnen des Reiters „Steuer“ einen wichtigen Hinweis.</p>
@@ -260,7 +329,7 @@ document.addEventListener('DOMContentLoaded',function(){
     <p class="os-win">Drücke <kbd>Strg</kbd>+<kbd>D</kbd>. Für einen Link auf dem Desktop ziehst du das Symbol links neben der Adresse auf den Desktop.</p>
     <p class="os-mac">Drücke <kbd>⌘ Cmd</kbd>+<kbd>D</kbd>.</p>
     <p class="os-mob">Öffne das Menü deines Browsers und wähle <b>„Zum Startbildschirm hinzufügen“</b>. Am iPhone in Safari tippst du auf <b>„Teilen“</b>, dann auf <b>„Zum Home-Bildschirm“</b>.</p>
-    <p class="small">Nutzt du die heruntergeladene Datei: Lege die Datei an einen festen Ort, bevor du anfängst, und öffne sie immer von dort. In Firefox gehören deine Daten zu Ort und Name der Datei.</p>
+    <p class="small">Nutzt du die heruntergeladene Datei: Lege die Datei an einen festen Ort, bevor du anfängst, und öffne sie immer von dort. Manche Browser merken sich deine Daten nur für genau diese Datei an genau diesem Ort. Verschiebst du sie oder gibst ihr einen anderen Namen, startet das Tool leer. Deine Daten sind nicht weg: Am alten Ort mit dem alten Namen sind sie wieder da. Willst du die Datei trotzdem verschieben oder umbenennen, speichere vorher eine Sicherung und lade sie danach.</p>
   </div>
   <h4 class="os-win os-mac">Dateien ziehst du einfach ins Tool</h4>
   <p class="os-win os-mac">Am Computer ziehst du jede Datei ins Tool, egal welcher Reiter gerade offen ist. Das Tool erkennt, was es ist, und legt sie an den richtigen Ort. Auch eine Sicherung kannst du ins Tool ziehen. Das Tool fragt vorher nach, weil eine Sicherung alles im Tool ersetzt.</p>
@@ -362,7 +431,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <h3 class="st"><span>Deine Auswertung</span></h3>
   <p>Im Reiter <b>„Auswertung“</b> siehst du deine Ergebnisse in Karten. Hier bekommst du einen Überblick, was wo steht. Was ein Wert genau bedeutet, erklären dir im Tool das <b>(i)</b> an jeder Karte und die gestrichelt unterstrichenen Begriffe.</p>
   <p>Ganz oben steht die Karte „Überblick“ mit deinen wichtigsten Zahlen.</p>
-  <figure class="k"><a href="anleitung/tool-kacheln.webp"><img src="anleitung/tool-kacheln.webp" width="1008" height="399" alt="Reiter Auswertung, Karte Überblick mit zehn Kacheln in Paaren: Netto-Gewinn und Rendite, Ø pro Handelstag und Ø pro Woche, Beste und Schlechteste Woche, Bester und Schlechtester Trade, Trefferquote und Max. Drawdown, darunter die Leiste Diese Woche" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-kacheln.webp"><img src="anleitung/tool-kacheln.webp" width="1008" height="402" alt="Reiter Auswertung, Karte Überblick mit zehn Kacheln in Paaren: Netto-Gewinn und Rendite, Ø pro Handelstag und Ø pro Woche, Beste und Schlechteste Woche, Bester und Schlechtester Trade, Trefferquote und Max. Drawdown, darunter die Leiste Diese Woche" loading="lazy"></a>
     <figcaption>Beispiel aus echten Daten, die Beträge sind geändert.</figcaption></figure>
   <h4>Die Filterzeile</h4>
   <p>Unter den Reitern steht die Filterzeile. Sie bleibt beim Scrollen stehen.</p>
@@ -407,7 +476,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <p>Die Tag-Daten sind keine Datei. Du kopierst sie aus dem Tag-Portal und fügst sie ein. Dafür öffnest du ein Fenster im Tool.</p>
   <p>Öffne den Reiter <b>„Wallet“</b>. Beim ersten Mal kommt das Fenster „Was du hier machst“. Klicke dort auf <b>„Mit den Tag-Daten anfangen“</b>.</p>
   <p>Dann öffnet sich das Fenster „＋ Daten“ mit dem Feld „Hier einfügen“. Später findest du es im Reiter „Wallet“ oben unter <b>„＋ Daten“</b> bei <b>„Tag-Daten“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-tag-einfuegen.webp"><img src="anleitung/tool-tag-einfuegen.webp" width="788" height="431" alt="Fenster ＋ Daten mit der Kachel Tag-Daten, dem Knopf So kopierst du die Daten aus Tag und dem grün eingerahmten Feld Hier einfügen" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-tag-einfuegen.webp"><img src="anleitung/tool-tag-einfuegen.webp" width="788" height="433" alt="Fenster ＋ Daten mit der Kachel Tag-Daten, dem Knopf So kopierst du die Daten aus Tag und dem grün eingerahmten Feld Hier einfügen" loading="lazy"></a></figure>
   <p>Öffne das Tag-Portal in einem zweiten Browser-Tab und gehe so vor:</p>
   <!--Q:os:tagGuide('win')|tagGuide('mac')|tagGuide('mobile')--><ol class="steps">
     <li>Klicke im Tag-Portal links auf <b>„Tag Wallet“</b>.</li>
@@ -443,7 +512,7 @@ document.addEventListener('DOMContentLoaded',function(){
     <li>Klicke auf <b>„Krypto-Steuer hier ausschalten“</b>.</li>
     <li>Klicke bei der Rückfrage auf <b>„Ausschalten“</b>.</li>
   </ol>
-  <figure class="k"><a href="anleitung/tool-krypto-aus.webp"><img src="anleitung/tool-krypto-aus.webp" width="640" height="276" alt="Fenster Was du hier machst, Teil zum anderen Krypto-Tool: Text und darunter der grün eingerahmte Knopf Krypto-Steuer hier ausschalten" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-krypto-aus.webp"><img src="anleitung/tool-krypto-aus.webp" width="640" height="236" alt="Fenster Was du hier machst, Teil zum anderen Krypto-Tool: Text und darunter der grün eingerahmte Knopf Krypto-Steuer hier ausschalten" loading="lazy"></a></figure>
   <p>Danach zeigt „Noch offen“ keine roten Punkte mehr, nur noch Punkte zu deinen Beständen.</p>
   <p><b>Wichtig für dein anderes Tool:</b> Eine Einzahlung bei Tag zählt als Verkauf deiner USDC oder USDT, eine Auszahlung von Tag als Kauf (siehe <a href="#tag-daten">Abschnitt 7</a>, „Gut zu wissen“). So rechnet dieses Tool. Markiere sie in deinem Tool genauso und kläre das mit deiner Steuerberatung.</p>
   <p class="small">Den Schalter gibt es auch unten im Fenster „Noch offen“ und im Reiter „Steuer“ (Häkchen „Krypto in diese Abrechnung aufnehmen“). Einschalten kannst du die Krypto-Steuer jederzeit wieder.</p>
@@ -462,7 +531,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <figure class="k"><a href="anleitung/tool-oz-leiste.webp"><img src="anleitung/tool-oz-leiste.webp" width="820" height="42" alt="Leiste oben im Reiter Wallet: Gesamter Zeitraum, ＋ Daten, Adressen und grün eingerahmt Noch offen mit einer roten 4" loading="lazy"></a>
     <figcaption>Im Beispiel sind es 4 Fragen: drei Einzahlungen und eine Auszahlung bei Tag.</figcaption></figure>
   <p>Klicke auf <b>„Noch offen“</b>. Ein Fenster zeigt dir die Fragen eine nach der anderen, die älteste zuerst. Das Tool nennt sie „Punkte“.</p>
-  <figure class="k"><a href="anleitung/tool-oz-kopf.webp"><img src="anleitung/tool-oz-kopf.webp" width="588" height="109" alt="Kopf eines Punktes: roter Punkt, Fehlt für die Steuer, 01.07.2026, 08:12, darunter groß Einzahlung bei Tag, 500,00 USDC: Woher kamen die Coins? und grau, was das Tool ohne Antwort rechnet" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-oz-kopf.webp"><img src="anleitung/tool-oz-kopf.webp" width="588" height="110" alt="Kopf eines Punktes: roter Punkt, Fehlt für die Steuer, 01.07.2026, 08:12, darunter groß Einzahlung bei Tag, 500,00 USDC: Woher kamen die Coins? und grau, was das Tool ohne Antwort rechnet" loading="lazy"></a></figure>
   <p><b>So liest du einen Punkt:</b> Oben klein stehen die Farbe und das Datum. Darunter groß die Frage. Grau darunter steht, was das Tool macht, solange du nicht antwortest.</p>
   <p><b>Die Farbe sagt, wie wichtig ein Punkt ist:</b></p>
   <ul class="list">
@@ -520,7 +589,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <figure class="k"><a href="anleitung/tool-boerse-vorschau.webp"><img src="anleitung/tool-boerse-vorschau.webp" width="788" height="429" alt="Vorschau der Datei Full history.csv: grün eingerahmt die Frage Welche Wallet ist die Börse? mit + Neue Wallet und dem Namen Bitvavo, darunter Käufe und Verkäufe mit einem Kauf über 1.000,50 USDC für 920,46 Euro, neu" loading="lazy"></a></figure>
   <p><b>Welche Wallet ist die Börse?</b> Beim ersten Mal legt das Tool eine neue Wallet an und schlägt den Namen „Bitvavo“ vor. Lass das so.</p>
   <p>Darunter steht, was das Tool übernimmt. „neu“ heißt: Das ist noch nicht im Tool.</p>
-  <figure class="k"><a href="anleitung/tool-boerse-wallet.webp"><img src="anleitung/tool-boerse-wallet.webp" width="736" height="283" alt="Überträge und Einzahlungen: zwei Auszahlungen über je 500,00 USDC am 30.06.26 an Meine Wallet, darunter die Frage 2 Auszahlungen gingen an 0x7a3f…7a3f. Welche Wallet ist das? mit der grün eingerahmten Wahl Meine Wallet" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-boerse-wallet.webp"><img src="anleitung/tool-boerse-wallet.webp" width="736" height="282" alt="Überträge und Einzahlungen: zwei Auszahlungen über je 500,00 USDC am 30.06.26 an Meine Wallet, darunter die Frage 2 Auszahlungen gingen an 0x7a3f…7a3f. Welche Wallet ist das? mit der grün eingerahmten Wahl Meine Wallet" loading="lazy"></a></figure>
   <p><b>Welche Wallet ist das?</b> Hier fragt das Tool, wohin du die Coins von der Börse geschickt hast. Im Beispiel gingen beide Auszahlungen in Annas eigene Wallet: Wähle <b>„Meine Wallet“</b>.</p>
   <p>Ohne Wahl wird jede dieser Auszahlungen ein roter Punkt in „Noch offen“. Den kannst du auch später beantworten.</p>
   <figure class="k"><a href="anleitung/tool-boerse-meldung.webp"><img src="anleitung/tool-boerse-meldung.webp" width="736" height="63" alt="Grüne Meldung: 1 neuer Eintrag, 2 Überträge neu. Dadurch steht 1 neuer Punkt in Noch offen: ein Rest bei Bitvavo. Zu 2 Tag-Zeilen gibt es jetzt einen Vorschlag" loading="lazy"></a></figure>
@@ -545,7 +614,7 @@ document.addEventListener('DOMContentLoaded',function(){
   </ol>
   <h4>Beispiel: Kauf bei Kraken</h4>
   <p>Anna hat am 30.06. bei Kraken 252 USDC für 230,00 € gekauft. Klicke in der 2. Kategorie auf <b>„Kauf“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-kauf.webp"><img src="anleitung/tool-kauf.webp" width="640" height="686" alt="Formular Neuer Eintrag: Kauf (mit Euro) am 30.06.2026 um 10:05:00, Wallet Kraken, Coin USDC, Menge 252, Wert 230,00 Euro" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-kauf.webp"><img src="anleitung/tool-kauf.webp" width="640" height="644" alt="Formular Neuer Eintrag: Kauf (mit Euro) am 30.06.2026 um 10:05:00, Wallet Kraken, Coin USDC, Menge 252, Wert 230,00 Euro" loading="lazy"></a>
     <figcaption>Beispiel mit erfundenen Daten.</figcaption></figure>
   <ul class="list">
     <li>Trage Datum und Uhrzeit aus deiner Kaufbestätigung ein.</li>
@@ -556,7 +625,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <p>Klicke auf <b>„Speichern“</b>, oder auf <b>„Speichern und nächster“</b>, wenn noch ein Eintrag kommt.</p>
   <h4>Beispiel: Übertrag von Kraken in deine Wallet</h4>
   <p>Danach hat Anna die 252 USDC von Kraken in ihre Wallet geschickt, angekommen sind 250 USDC. Klicke in der 3. Kategorie auf <b>„Übertrag“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-uebertrag.webp"><img src="anleitung/tool-uebertrag.webp" width="640" height="600" alt="Formular Neuer Eintrag: Übertrag an eine eigene Wallet am 30.06.2026 um 10:30:00 von Kraken nach Meine Wallet, grün eingerahmt Menge 252 und Menge angekommen 250" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-uebertrag.webp"><img src="anleitung/tool-uebertrag.webp" width="640" height="580" alt="Formular Neuer Eintrag: Übertrag an eine eigene Wallet am 30.06.2026 um 10:30:00 von Kraken nach Meine Wallet, grün eingerahmt Menge 252 und Menge angekommen 250" loading="lazy"></a>
     <figcaption>Abgebucht 252, angekommen 250: Das Tool rechnet 2 USDC als Gebühr.</figcaption></figure>
   <p>Wähle bei <b>„von Wallet“</b> Kraken und bei <b>„nach Wallet“</b> deine Wallet. Bei <b>„Menge“</b> trägst du ein, was abgebucht wurde, bei <b>„Menge angekommen“</b>, was in deiner Wallet ankam. Das Tool rechnet den Unterschied als Gebühr.</p>
   <h4>Bezahlung erhalten</h4>
@@ -564,7 +633,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <p>Einen Wert trägst du nicht ein: Das Tool nimmt den Wert am Tag des Eingangs als Einkaufswert. Die Bezahlung selbst versteuerst du gesondert. Das Tool rechnet nur, was danach mit den Coins passiert.</p>
   <h4>Deiner Wallet einen Namen geben</h4>
   <p>Im Beispiel heißt Annas Wallet „Meine Wallet“. Das Tool legt diesen Namen am Anfang selbst an. Du kannst ihn ändern: Klicke im Reiter „Wallet“ oben auf <b>„Adressen“</b> und in der Zeile deiner Wallet auf <b>„✎“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-wallets.webp"><img src="anleitung/tool-wallets.webp" width="788" height="724" alt="Fenster Adressen, Karte Deine Wallets: die Zeile Meine Wallet ist zum Bearbeiten offen, grüne Kreise 1 beim Feld Name mit Meine Wallet, 2 beim Knopf Speichern, darunter Bitvavo und Kraken als Börse" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-wallets.webp"><img src="anleitung/tool-wallets.webp" width="788" height="684" alt="Fenster Adressen, Karte Deine Wallets: die Zeile Meine Wallet ist zum Bearbeiten offen, grüne Kreise 1 beim Feld Name mit Meine Wallet, 2 beim Knopf Speichern, darunter Bitvavo und Kraken als Börse" loading="lazy"></a></figure>
   <ol class="kreise">
     <li>Gib den neuen Namen ein, zum Beispiel den Namen deiner Wallet-App.</li>
     <li>Klicke auf <b>„Speichern“</b>.</li>
@@ -587,7 +656,7 @@ document.addEventListener('DOMContentLoaded',function(){
   </div>
   <h4>Die Aufladung</h4>
   <p>Öffne im Reiter „Wallet“ oben <b>„＋ Daten“</b>, wähle <b>„Von Hand“</b> und klicke in der 4. Kategorie auf <b>„Aufladung“</b>. Es öffnet sich das Formular für einen Übertrag.</p>
-  <figure class="k"><a href="anleitung/tool-karte-aufladung.webp"><img src="anleitung/tool-karte-aufladung.webp" width="640" height="600" alt="Formular Neuer Eintrag: Übertrag an eine eigene Wallet am 20.08.2026, grüne Kreise 1 bei von Wallet Meine Wallet, 2 bei nach Wallet Meine Karte, 3 bei Menge 100, 4 bei Menge angekommen 99" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-karte-aufladung.webp"><img src="anleitung/tool-karte-aufladung.webp" width="640" height="580" alt="Formular Neuer Eintrag: Übertrag an eine eigene Wallet am 20.08.2026, grüne Kreise 1 bei von Wallet Meine Wallet, 2 bei nach Wallet Meine Karte, 3 bei Menge 100, 4 bei Menge angekommen 99" loading="lazy"></a></figure>
   <ol class="kreise">
     <li>Wähle bei <b>„von Wallet“</b> die Wallet, aus der du aufgeladen hast.</li>
     <li>Bei <b>„nach Wallet“</b> wählst du beim ersten Mal <b>„+ Neue Karte …“</b>, tippst „Meine Karte“ und klickst auf <b>„OK“</b>. Hast du schon eine Karte, steht sie dort schon.</li>
@@ -621,7 +690,7 @@ document.addEventListener('DOMContentLoaded',function(){
     <p>Das ist kein Verkauf. Deine USDC übernehmen den Einkaufswert der ETH, die du dafür hergegeben hast.</p>
     <p><b>Mit der Börsen-Datei</b></p>
     <p>Hast du die ETH bei derselben Börse gekauft, fragt die Vorschau: „Woher kamen die 0,003 ETH, die du am 25.08. getauscht hast?“ Wähle deinen Kauf, dann rechnet das Tool den Einkaufswert selbst. Kamen die Coins anders dazu oder weißt du es nicht, wähle die zweite Möglichkeit. Dann nimmt das Tool einen Ersatzwert (siehe unten).</p>
-    <figure class="k"><a href="anleitung/tool-tausch-vorschau.webp"><img src="anleitung/tool-tausch-vorschau.webp" width="736" height="341" alt="Vorschau der Börsen-Datei, Teil Tausch: 5,73 USDC aus ETH getauscht, grüne Kreise 1 bei der Frage Woher kamen die 0,003 ETH mit den zwei Möglichkeiten, 2 beim Kurs laut Bitvavo" loading="lazy"></a></figure>
+    <figure class="k"><a href="anleitung/tool-tausch-vorschau.webp"><img src="anleitung/tool-tausch-vorschau.webp" width="736" height="277" alt="Vorschau der Börsen-Datei, Teil Tausch: 5,73 USDC aus ETH getauscht, grüne Kreise 1 bei der Frage Woher kamen die 0,003 ETH mit den zwei Möglichkeiten, 2 beim Kurs laut Bitvavo" loading="lazy"></a></figure>
     <ol class="kreise">
       <li>Die Frage und die zwei Möglichkeiten.</li>
       <li>Der Kurs laut Bitvavo.</li>
@@ -677,7 +746,7 @@ document.addEventListener('DOMContentLoaded',function(){
   </details>
   <h4>Die Karte „Andere Coins“</h4>
   <p>Im Reiter „Wallet“ steht zwischen „Bestand jetzt“ und „Alle Vorgänge“ die Karte „Andere Coins“. Sie zeigt jeden Tausch mit einem anderen Coin und den Wert, der dabei wandert. Hast du in einen anderen Coin getauscht, ist das sein Einkaufswert. Du brauchst ihn, wenn du den Coin später verkaufst.</p>
-  <figure class="k"><a href="anleitung/tool-andere-coins.webp"><img src="anleitung/tool-andere-coins.webp" width="788" height="392" alt="Karte Andere Coins mit zwei Zeilen: Kraken, 0,01 ETH zu 19,05 USDC, Ersatzwert 16,33 Euro, Status offen; Bitvavo, 0,003 ETH zu 5,73 USDC, Einkaufswert 5,00 Euro aus der Börsen-Datei, Status fertig" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-andere-coins.webp"><img src="anleitung/tool-andere-coins.webp" width="788" height="350" alt="Karte Andere Coins mit zwei Zeilen: Kraken, 0,01 ETH zu 19,05 USDC, Ersatzwert 16,33 Euro, Status offen; Bitvavo, 0,003 ETH zu 5,73 USDC, Einkaufswert 5,00 Euro aus der Börsen-Datei, Status fertig" loading="lazy"></a></figure>
   <p>Mit <b>„✎“</b> bearbeitest du einen Eintrag, <b>„In der Liste zeigen“</b> (am Handy manchmal <b>„In Liste zeigen“</b>) springt zu „Alle Vorgänge“.</p>
   <p><b>Was der Status sagt:</b></p>
   <ul class="list">
@@ -701,7 +770,7 @@ document.addEventListener('DOMContentLoaded',function(){
     </ul>
   </div>
   <h4>Der Vorschlag</h4>
-  <figure class="k"><a href="anleitung/tool-oz-a.webp"><img src="anleitung/tool-oz-a.webp" width="588" height="503" alt="Oberer Teil einer gelben Karte in Noch offen mit grünen Kreisen: 1 Farbe und Datum, 2 die Frage Woher kamen die Coins?, 3 der Vorschlag mit Übernehmen und Nein, 4 Rundherum" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-oz-a.webp"><img src="anleitung/tool-oz-a.webp" width="588" height="504" alt="Oberer Teil einer gelben Karte in Noch offen mit grünen Kreisen: 1 Farbe und Datum, 2 die Frage Woher kamen die Coins?, 3 der Vorschlag mit Übernehmen und Nein, 4 Rundherum" loading="lazy"></a></figure>
   <ol class="kreise">
     <li>Farbe und Datum: Gelb heißt, das Tool hat einen Vorschlag.</li>
     <li>Die Frage, um die es geht.</li>
@@ -709,7 +778,7 @@ document.addEventListener('DOMContentLoaded',function(){
     <li>„Rundherum“ zeigt, was sich in deinen Wallets kurz davor und danach bewegt hat. Ein Klick auf eine Zeile springt zu diesem Vorgang in der Liste „Alle Vorgänge“. Mit <b>„← Zurück zu „Noch offen““</b> oben in der Liste kommst du zurück.</li>
   </ol>
   <h4>Selbst wählen</h4>
-  <figure class="k"><a href="anleitung/tool-oz-b.webp"><img src="anleitung/tool-oz-b.webp" width="588" height="215" alt="Unterer Teil derselben Karte mit grünen Kreisen: 1 der Knopf In der Liste zeigen, 2 die Auswahl Woher kamen die Coins? mit Übernehmen, 3 betrifft ca." loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-oz-b.webp"><img src="anleitung/tool-oz-b.webp" width="588" height="214" alt="Unterer Teil derselben Karte mit grünen Kreisen: 1 der Knopf In der Liste zeigen, 2 die Auswahl Woher kamen die Coins? mit Übernehmen, 3 betrifft ca." loading="lazy"></a></figure>
   <ol class="kreise">
     <li><b>„In der Liste zeigen“</b> springt zu diesem Vorgang in der Liste „Alle Vorgänge“.</li>
     <li>Hier antwortest du selbst: Wähle die Wallet, aus der die Coins kamen, und klicke auf <b>„Übernehmen“</b>.</li>
@@ -720,11 +789,11 @@ document.addEventListener('DOMContentLoaded',function(){
   <h4>Viele Vorschläge auf einmal</h4>
   <figure class="k"><a href="anleitung/tool-oz-alle-oben.webp"><img src="anleitung/tool-oz-alle-oben.webp" width="640" height="95" alt="Fenster Noch offen: direkt unter dem Titel der grün eingerahmte Knopf Alle Vorschläge ansehen und übernehmen (3)" loading="lazy"></a></figure>
   <p>Direkt unter dem Titel von „Noch offen“ steht dann <b>„Alle Vorschläge ansehen und übernehmen“</b>. Den Knopf gibt es nur, wenn das Tool sich sicher ist. Vorschläge über einen Dienst oder mit mehreren Möglichkeiten entscheidest du einzeln.</p>
-  <figure class="k"><a href="anleitung/tool-oz-alle.webp"><img src="anleitung/tool-oz-alle.webp" width="640" height="602" alt="Fenster Alle Vorschläge ansehen und übernehmen (3): drei Vorschläge mit Häkchen, je mit Warum, unten die Knöpfe Übernehmen (3) und Abbrechen" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-oz-alle.webp"><img src="anleitung/tool-oz-alle.webp" width="640" height="540" alt="Fenster Alle Vorschläge ansehen und übernehmen (3): drei Vorschläge mit Häkchen, je mit Warum, unten die Knöpfe Übernehmen (3) und Abbrechen" loading="lazy"></a></figure>
   <p>Das Fenster zeigt jeden Vorschlag mit einem Häkchen. Nimm das Häkchen weg, wo ein Vorschlag nicht stimmt, und klicke auf <b>„Übernehmen“</b>.</p>
   <h4>Ein Vorschlag kommt dazu</h4>
   <p>Danach steht oben <b>„Alle Vorschläge ansehen und übernehmen (1)“</b>. Das Tool fragt, ob die 150 USDC vom 17.08. in „Meine Wallet“ gingen, denn ohne sie fehlen dort am 20.08. 100 USDC für die Aufladung. Das stimmt, also klicke auf <b>„Übernehmen“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-oz-fehlt.webp"><img src="anleitung/tool-oz-fehlt.webp" width="588" height="426" alt="Gelbe Karte in Noch offen: Gingen die 150,00 USDC deiner Auszahlung von Tag vom 17.08. nach Meine Wallet? Sonst fehlen dort am 20.08. 100,00 USDC für die Aufladung. Darunter Vorschlag, Warum mit der Auszahlung und der Aufladung, grün eingerahmt Übernehmen und Nein" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-oz-fehlt.webp"><img src="anleitung/tool-oz-fehlt.webp" width="588" height="406" alt="Gelbe Karte in Noch offen: Gingen die 150,00 USDC deiner Auszahlung von Tag vom 17.08. nach Meine Wallet? Sonst fehlen dort am 20.08. 100,00 USDC für die Aufladung. Darunter Vorschlag, Warum mit der Auszahlung und der Aufladung, grün eingerahmt Übernehmen und Nein" loading="lazy"></a>
     <figcaption>Das Tool sieht, dass in „Meine Wallet“ später Geld fehlt, und dass die Auszahlung von Tag drei Tage vorher das erklären kann.</figcaption></figure>
   <p>So fragt das Tool, wenn das Geld höchstens 90 Tage nach der Auszahlung fehlt. Reicht eine Auszahlung allein nicht, schlägt es bis zu drei zusammen vor. Jede davon beantwortest du einzeln.</p>
   <h4>So lassen</h4>
@@ -743,7 +812,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <p>Klicke im Reiter „Wallet“ in der Karte „Bestand jetzt“ auf <b>„Kontostände prüfen“</b>. Den gleichen Weg gibt es in <b>„＋ Daten“</b> bei <b>„Von Hand“</b> in der letzten Kategorie (<b>„Zum Bestand“</b>).</p>
   <figure class="k"><a href="anleitung/tool-kontostand.webp"><img src="anleitung/tool-kontostand.webp" width="640" height="500" alt="Fenster Kontostände prüfen: Bitvavo 0,50 USDC, Kraken leer, Meine Karte 66,90 USDC und Meine Wallet 50,00 USDC laut deinen Einträgen, grün eingerahmt Stand in deiner App, bei Unterschied je ein Haken" loading="lazy"></a></figure>
   <p>Trage bei jeder Wallet ein, was deine App zeigt, bei Anna 50,00 USDC in „Meine Wallet“ und 66,90 USDC auf der Karte. Passt es zu deinen Einträgen, steht bei „Unterschied“ ein ✓. Fehlt etwas, kommt ein gelber Punkt in „Noch offen“.</p>
-  <figure class="k"><a href="anleitung/tool-wallet-fertig.webp"><img src="anleitung/tool-wallet-fertig.webp" width="820" height="511" alt="Reiter Wallet oben: Noch offen ohne Zahl, darunter die Karte Bestand jetzt mit Bitvavo 0,50 USDC, Meine Karte 66,90 USDC und Meine Wallet 50,00 USDC mit Haken beim Abgleich" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-wallet-fertig.webp"><img src="anleitung/tool-wallet-fertig.webp" width="820" height="491" alt="Reiter Wallet oben: Noch offen ohne Zahl, darunter die Karte Bestand jetzt mit Bitvavo 0,50 USDC, Meine Karte 66,90 USDC und Meine Wallet 50,00 USDC mit Haken beim Abgleich" loading="lazy"></a>
     <figcaption>Die 0,50 USDC Rest liegen noch bei Bitvavo.</figcaption></figure>
   <p>Danach steht bei „Noch offen“ keine Zahl mehr, und „Bestand jetzt“ zeigt, was in jeder Wallet liegt und was es gekostet hat.</p>
 </section>
@@ -751,7 +820,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="stop" id="ende-stufe-3">
   <h4>Fertig</h4>
   <p>Fertig: Im Reiter „Steuer“ stehen jetzt auch deine Krypto-Werte.</p>
-  <figure class="k"><a href="anleitung/tool-steuer-krypto.webp"><img src="anleitung/tool-steuer-krypto.webp" width="1008" height="619" alt="Reiter Steuer, Karte Jahresabrechnung 2026 (Österreich): oben der CFD-Teil mit Saldo CFD und Kennzahl 857, darunter Kryptowährungen mit Überschüssen und Verlusten, den Kennzahlen 174 und 176 und dem Saldo Krypto" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-steuer-krypto.webp"><img src="anleitung/tool-steuer-krypto.webp" width="1008" height="618" alt="Reiter Steuer, Karte Jahresabrechnung 2026 (Österreich): oben der CFD-Teil mit Saldo CFD und Kennzahl 857, darunter Kryptowährungen mit Überschüssen und Verlusten, den Kennzahlen 174 und 176 und dem Saldo Krypto" loading="lazy"></a>
     <figcaption>Reiter „Steuer“, Karte „Jahresabrechnung“. Beispiel mit erfundenen Daten.</figcaption></figure>
   <p class="up"><a href="#top">↑ Inhalt</a></p>
 </div>
@@ -769,12 +838,14 @@ document.addEventListener('DOMContentLoaded',function(){
   <p>Speichere am PC im Reiter <b>„Sicherung“</b> eine Sicherung. Bring die Datei aufs Handy, z. B. über deine Cloud, per Mail an dich selbst oder per Telegram an „Gespeicherte Nachrichten“, und speichere sie dort. Tippe dann am Handy im Reiter <b>„Sicherung“</b> auf <b>„Sicherung laden“</b>. Das ersetzt alles, was am Handy im Tool steht. Schick die Datei nur an dich selbst.</p>
   <p>Online-Version und heruntergeladene Datei sehen nicht dieselben Daten. Auch zwischen ihnen nimmst du deine Daten mit einer Sicherung mit.</p>
   <p class="os-win os-mac">Am Computer kannst du eine Sicherung auch einfach ins Tool ziehen. Das Tool fragt vorher nach.</p>
+  <h4 id="neue-version">Neue Version der Datei</h4>
+  <p>Nutzt du die heruntergeladene Datei, lädst du eine neue Version online im Reiter <b>„Sicherung“</b> mit <b>„Für offline herunterladen“</b> herunter. Ersetze damit die alte Datei: gleicher Ort, gleicher Name. Heißt die neue Datei zum Beispiel „trading-bilanz (1).html“, gib ihr den alten Namen. Deine Daten bleiben dabei erhalten.</p>
   <p class="more">Später kommen in diese Anleitung: Wallet-Dateien, Steuer und mehr zur Auswertung.</p>
 </section>
 </main>
 
 <footer>
-  <p>Trading-Bilanz · Anleitung, Stand 20.11.2026 · Keine Steuer- oder Finanzberatung.</p>
+  <p>Trading-Bilanz · Anleitung, Stand 21.11.2026 · Keine Steuer- oder Finanzberatung.</p>
   <p><b>Nur das Original:</b> Nutze die Trading-Bilanz nur von <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, zum Beispiel mit einer anderen Spendenadresse.</p>
   <p><b>Datenschutz:</b> Diese Seite speichert nichts und lädt nur ihre eigenen Bilder. Beim Aufruf speichert GitHub deine IP-Adresse aus Sicherheitsgründen (<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub&nbsp;↗</a>).</p>
   <p><a href="https://weltenwandel.at/impressum.html" target="_blank" rel="noopener">Impressum&nbsp;↗</a> · <a href="mailto:florian@weltenwandel.at">florian@weltenwandel.at</a> · <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">Zur Trading-Bilanz</a></p>
