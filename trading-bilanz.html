@@ -16265,7 +16265,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.177',VDATE='22.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.178',VDATE='22.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -16462,7 +16462,8 @@ const RES_TXT={
   krypto:'In Krypto',kryptoS:'Am liebsten USDC oder USDT, gern aber auch jeder andere Coin.',
   // Ab 0.176 (Florians Auftrag 0.176) ist adr HTML: „EVM“ wieder fett wie bis 0.174
   adr:'Wallet-Adresse (<strong>EVM</strong>)',qr:'QR-Code der Wallet-Adresse',kopieren:'Adresse kopieren',kopiert:'Adresse kopiert. Danke! 💚',
-  netz:'Funktioniert auf allen <strong>EVM-Netzwerken</strong>, z. B. Ethereum, Base, BNB Smart Chain, Arbitrum und Polygon.',
+  // Ab 0.178 (Florians Auftrag zu Bericht 0.177, Fund 2): „EVM-Netzwerken“ bricht nicht am Bindestrich um (span.nw wie „Netto-Gewinn“, Zeichen gleich)
+  netz:'Funktioniert auf allen <strong><span class="nw">EVM-Netzwerken</span></strong>, z. B. Ethereum, Base, BNB Smart Chain, Arbitrum und Polygon.',
   // Ab 0.177 (Florians Auftrag 0.177) ist warn HTML: nur „nicht“ fett (bis 0.176 der ganze Satz fett, als Text)
   warn:'Bitte <strong>nicht</strong> über TRON (TRC20), Solana oder Bitcoin senden.',mehr:'Mehr dazu',
   warnMehr:'Diese Netzwerke haben andere Adressen, die Spende käme nicht an. Wenn du von einer Börse aus sendest, wähle als Netzwerk z. B. „Ethereum (ERC20)“, „Base“, „BNB Smart Chain (BEP20)“, „Arbitrum One“ oder „Polygon“.',
