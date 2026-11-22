@@ -1639,24 +1639,53 @@ button.zlink.jrzur{color:var(--accent);padding:0}
 #tabs .tsym .tsb{fill:var(--accent)}#tabs .tsym .tsl{fill:none;stroke:var(--tab-line);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 #tabs .bft{display:inline-flex;padding:10px 8px;margin:-10px -8px;cursor:pointer;line-height:0}
 #don-modal .btn[hidden]{display:none}
-/* Ab 0.134: Karte „Anregungen, Fehler, Feedback“ im Reiter „Resonanz“: Mail-Knopf, Adresse als Text, „Adresse kopieren“ (ab 0.175 eine Kachel) */
-.fbrow{gap:10px 12px;margin-top:10px}.fbaddr{font-family:ui-monospace,Consolas,monospace;font-size:14px;overflow-wrap:anywhere}
+/* Ab 0.134: Karte „Anregungen, Fehler, Feedback“ im Reiter „Resonanz“: Mail-Knopf, Adresse als Text, „Adresse kopieren“ (ab 0.175 eine Kachel).
+   Ab 0.176 (Florians Auftrag 0.176, Phase 2): flache Karte in voller Breite unter der goldenen Karte, leise wie bis 0.175 (.rsk.lt: nur Rahmen,
+   kleinerer Titel, helle Knöpfe). Am PC Titel und Satz, darunter in einer Zeile „E-Mail schreiben“, die Adresse, „Adresse kopieren“ und „Fehler
+   gefunden? So hilfst du mir“ (ein Knopf im Aussehen eines Links wie „Mehr dazu“, ohne Pfeil, Florians Antwort 5 zur Freigabe; bis 0.175 ein details).
+   Der aufgeklappte Teil (#fb-fehler) steht darunter in voller Breite. Passt die Zeile nicht (am PC unter etwa 860 px Fensterbreite), rutscht nur
+   „Fehler gefunden? …“ in eine eigene Zeile darunter; „E-Mail schreiben“, Adresse und „Adresse kopieren“ bleiben zusammen (.fbgrp). Bis 560 px
+   alles untereinander. Bis 0.175: .fbrow mit Adresse und „Adresse kopieren“ unter dem Mail-Knopf. */
+.fbaddr{font-family:ui-monospace,Consolas,monospace;font-size:14px;overflow-wrap:anywhere}
+.rsfb{margin:0 0 16px}
+.rsk.rsfb>p{margin-bottom:0}
+.fbzeile{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;margin-top:12px}
+.fbgrp,.fbkop{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;min-width:0}
+#fb-fehler{margin-top:12px}
+#fb-fehler>p{margin:8px 0 0}
+#fb-fehler>p:first-child{margin-top:0}
+@media(max-width:560px){.fbzeile,.fbgrp{flex-direction:column;align-items:flex-start}}
 /* Ab 0.175 (Florians Auftrag 0.175): Reiter „Resonanz“ neu. Brief schmal und mittig (Textspalte 490 px: etwa 70 Zeichen je Zeile am PC mit
    Selawik, der Prüfschrift für Segoe UI unter Windows; bei 540 px waren es 78. Am Handy die volle Breite), Unterschrift unter einer feinen Linie (am Handy der Knopf unter dem Namen), Zeile mit der Fülle ohne Karte, Kacheln für die
    Spenden (am PC „In Krypto“ breiter links, „Per PayPal“ rechts), darunter mittig „Ich habe schon gespendet“, zwei leisere Kacheln (.lt: ohne
    Kartenhintergrund, nur Rahmen, kleinerer Titel, helle Knöpfe), ganz unten der Hinweis zum Original als leiser Hinweis ohne Kasten.
    Bis 700 px stehen die Kacheln untereinander, Krypto zuerst. Im Jahresrückblick („Wertschätzung teilen“) dieselben Kacheln (Regeln mit .jrs3 beim Jahresrückblick). */
-.rsb{max-width:490px;margin:0 auto}
+/* Ab 0.176 (Florians Auftrag 0.176, Phase 2, und seine Antworten 1 und 2 zur Freigabe): Brief-Karte in voller Breite (Variante A), Textspalte 41em
+   (615 px bei 15 px Schrift; bis 0.175 490 px), mindestens so breit wie die Überschrift der goldenen Karte (18 px fett in einer Zeile: Selawik 602 px,
+   Inter 615 px). Etwa 88 bis 90 Zeichen je Zeile mit Selawik. Am Handy die volle Breite. */
+.rsb{max-width:41em;margin:0 auto}
 .rsbrief h2{margin-bottom:10px}
 .rssig{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:18px;padding-top:14px}
 .rsname{font-weight:600}
-.rsfuelle{max-width:46em;margin:24px auto;text-align:center;font-weight:700;font-size:17px;text-wrap:balance}
-/* Jede Kachel so hoch wie ihr Inhalt (align-items:start): gestreckt stünde neben „In Krypto“ eine leere PayPal-Kachel und neben der aufgeklappten
-   Feedback-Kachel eine leere „Weitererzählen“ (gesehen in 0.175) */
+/* Ab 0.176 (Florians Auftrag 0.176, Phase 1): goldene Karte für alle Wege zu geben, unter dem Brief. Sie ersetzt die freie Zeile mit der Fülle
+   (.rsfuelle, bis 0.175) und die Kacheln nebeneinander. Fläche --gold-soft, Rand --tab-line, Überschrift in --gold-ink, fett, mittig, 18 px wie die
+   Kartentitel (Florians Antwort 2 zur Freigabe 0.176). Darin am PC links „In Krypto“ (3/5), rechts übereinander „Per PayPal“ und „Weitererzählen“,
+   unten mittig „Ich habe schon gespendet“. Links und rechts enden unten bündig: Die Zeile ist so hoch wie die höhere Seite, die rechten Kacheln teilen
+   sich die übrige Höhe, ihr Knopf steht unten in der Kachel (Florians Antwort 3). Bis 700 px untereinander: Überschrift, „In Krypto“, „Per PayPal“,
+   „Weitererzählen“, „Ich habe schon gespendet“. Die Kacheln haben die Fläche der Karten (hell weiß, dunkel --card). */
+.rsgold{background:var(--gold-soft);border:1px solid var(--tab-line);border-radius:var(--radius);padding:22px 24px 20px;margin:0 0 16px}
+.rsgold>h2{color:var(--gold-ink);font-size:18px;font-weight:700;text-align:center;margin:0 0 18px;text-wrap:balance}
+.rsgg{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:16px}
+.rsgr{display:flex;flex-direction:column;gap:16px;min-width:0}
+.rsgr>.rsk{flex:1 1 auto;display:flex;flex-direction:column}
+.rsgr>.rsk>.rsknopf{margin-top:auto;padding-top:12px}
+.rsgold .rsschon{margin:18px 0 0}
+@media(max-width:700px){.rsgold{padding:16px 14px}.rsgold>h2{margin-bottom:14px}.rsgg{grid-template-columns:minmax(0,1fr);gap:12px}.rsgr{gap:12px}}
+/* Kacheln untereinander im Jahresrückblick („Wertschätzung teilen“, .rsspende, Regeln mit .jrs3 beim Jahresrückblick); ab 0.176 nur noch dort.
+   Jede Kachel so hoch wie ihr Inhalt (align-items:start). Bis 0.175 auch im Reiter (dort „In Krypto“ und „Per PayPal“ nebeneinander, .rsleise für
+   die zwei leisen Kacheln nebeneinander, .dc für #don-sagen). */
 .rsgrid{display:grid;gap:16px;margin:0 0 16px;align-items:start}
-.rsspende{grid-template-columns:minmax(0,3fr) minmax(0,2fr);margin-bottom:0}
-.rsleise{grid-template-columns:repeat(2,minmax(0,1fr))}
-.dc{display:contents}
+.rsspende{grid-template-columns:minmax(0,1fr);margin-bottom:0}
 .rsk{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;min-width:0}
 .rsk h3{font-size:18px;margin:0 0 6px}
 .rsk>p{margin:0 0 10px}.rsk>p:last-child{margin-bottom:0}
@@ -1669,6 +1698,13 @@ button.zlink.jrzur{color:var(--accent);padding:0}
 .rslab{margin-bottom:4px}
 .rskop{margin-top:8px}
 #don-cmp{margin:8px 0 0}
+/* Ab 0.176 (Florians Auftrag 0.176, Phase 3): Adresse in zwei gleichen Hälften (DON_ADR_H), sonst kein Umbruch in der Adresse */
+.addr.rsaddr{word-break:normal;overflow-wrap:normal}
+/* Ab 0.176 (Florians Auftrag 0.176, Phase 3): am Handy (bis 560 px) zuerst „Wallet-Adresse (EVM)“, die Adresse und „Adresse kopieren“, dann der
+   QR-Code klein (140 px, linksbündig), dann der Satz zu den Netzwerken und die Warnzeile; auch in „Wertschätzung teilen“. Am PC bleibt der QR-Code
+   links neben der Adresse (bis 0.175 am Handy über der Adresse, 190 px, im Fenster 130 px). Zwischen 701 und 934 px Fensterbreite ist „In Krypto“
+   dafür zu schmal, dort steht er wie bis 0.175 über der Adresse (gemessen in 0.176; bis 0.175 von 701 bis 884 px, die goldene Karte nimmt Platz). */
+@media(max-width:560px){.rsadr{flex-direction:column;gap:14px}.rsadr>.rsadrt{flex:none;width:100%}.rsadr>.qr{order:2}.rsadr>.qr,.jrs3 .rsadr>.qr{width:140px;height:140px;padding:8px}}
 .rsk>p.rsnetz{margin:0}
 .rswarn{border-left:3px solid var(--sig-y);padding:2px 0 2px 10px;margin-top:10px;font-size:var(--fs-s)}
 .rswarn p{margin:6px 0 0}
@@ -1682,7 +1718,6 @@ details.rsauf ul{margin:6px 0 0;padding-left:20px}
 /* Heller Link-Knopf („Mehr von mir“, „E-Mail schreiben“): wie die grauen Knöpfe (button.btn), nicht blau */
 a.btn.lt{background:var(--card);border-color:var(--line);color:var(--ink)}
 a.btn.lt:hover,a.btn.lt:focus-visible{background:var(--card);border-color:var(--accent)}
-@media(max-width:700px){.rsspende,.rsleise{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:560px){.rssig{flex-direction:column;align-items:flex-start}}
 /* Lange Adressen in Links brechen um, statt die Seite seitlich scrollen zu lassen */
 a.url{overflow-wrap:anywhere}
@@ -2278,40 +2313,46 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
 <section id="s-support">
   <!-- Ab 0.175 (Florians Auftrag 0.175): kurzer Brief mit Unterschrift, die Zeile mit der Fülle, die Wege der Resonanz als Kacheln, ganz unten der Hinweis
        zum Original. Der Spenden-Teil („In Krypto“, „Per PayPal“, „Ich habe schon gespendet“, „Weitererzählen“) ist ein Baustein mit einer Quelle
-       (donBauH, Texte in RES_TXT); er steht hier in #don-bau und #don-sagen und im Jahresrückblick in „Wertschätzung teilen“. Bis 0.174 eine Karte mit
+       (donBauH, Texte in RES_TXT); er steht hier in #don-bau (ab 0.176 in der goldenen Karte, bis 0.175 dazu #don-sagen) und im Jahresrückblick in
+       „Wertschätzung teilen“. Bis 0.174 eine Karte mit
        Text, Adresse, gelbem Kasten, PayPal und „Mehr von mir“, dazu die Karte „Anregungen, Fehler, Feedback“ zum Zuklappen. -->
   <div class="card rsbrief">
     <div class="rsb">
       <h2 data-herz>💚 Danke, dass du die Trading-Bilanz nutzt</h2>
       <p>Ich habe dieses Tool mit viel Sorgfalt, Zeit und Liebe für die Community gebaut und schenke es dir. Ohne Abo, ohne Werbung, ohne Anmeldung. Deine Zahlen bleiben auf deinem Gerät, und niemand außer dir sieht sie.</p>
-      <p>Du lädst deine Reports, und plötzlich siehst du alles: deinen Netto-Gewinn, deine Rendite, jedes Konto auf einen Blick. Und manchmal sagt dir das Tool: Das war gerade der beste Trade deiner Geschichte. Das alles wollte ich dir schenken. Wenn es angekommen ist, freue ich mich sehr über deine Wertschätzung.</p>
+      <p>Du lädst deine Reports, und plötzlich siehst du alles: deinen <span class="nw">Netto-Gewinn</span>, deine Rendite, jedes Konto auf einen Blick. Und manchmal sagt dir das Tool: Das war gerade der beste Trade deiner Geschichte. Das alles wollte ich dir schenken. Wenn es angekommen ist, freue ich mich sehr über deine Wertschätzung.</p>
       <p>Was zu mir fließt, schenkt mir Zeit: für das Tool und für meine Familie. Bei uns dürfen Kinder selbst wählen, wie und wo sie lernen und spielen. Und dafür braucht es einen Vater, der da sein kann.</p>
       <div class="rssig"><div><div class="rsname">Florian</div><div class="small">Autor, Körpertherapeut, Bewusstseinsforscher</div></div><a class="btn lt" href="https://weltenwandel.at" target="_blank" rel="noopener">Mehr von mir&nbsp;↗</a></div>
     </div>
   </div>
-  <p class="rsfuelle">Mit der Fülle ist es wie mit der Liebe: Sie wird mehr, wenn man sie teilt.</p>
-  <div id="don-bau"></div>
-  <!-- Ab 0.175: zwei leisere Kacheln (nur Rahmen, helle Knöpfe). „Weitererzählen“ kommt aus dem Baustein (#don-sagen). Die Kachel
-       „Anregungen, Fehler, Feedback“ ersetzt die Karte bis 0.174 und behält ihre Kennung (fb-card, Sprung aus fbGo). -->
-  <div class="rsgrid rsleise">
-    <div id="don-sagen" class="dc"></div>
-    <!-- Der Mail-Knopf bekommt seine Adresse vom Skript (fbMail). -->
-    <div class="rsk lt" id="fb-card">
-      <h3>Anregungen, Fehler, Feedback</h3>
-      <p>Ich freue mich über jede Rückmeldung und lese alles selbst.</p>
-      <p class="rsknopf"><a class="btn lt" id="btn-fbmail" href="mailto:florian@weltenwandel.at">E-Mail schreiben</a></p>
-      <div class="row fbrow"><span class="fbaddr" id="fb-addr">florian@weltenwandel.at</span><button type="button" class="btn" id="btn-fbcopy">Adresse kopieren</button><span id="fbcopymsg" class="small"></span></div>
-      <details class="rsauf" id="fb-fehler"><summary>Fehler gefunden? So hilfst du mir</summary>
-        <p>Ich bin kein Programmierer. Ich habe das Tool gemeinsam mit einer KI gebaut und selbst getestet. Allerdings nur mit den Daten, die ich selbst hatte oder mir rekonstruieren und ausdenken konnte. Deine Konten, Wallets und Wege können anders aussehen.</p>
-        <p><b>Fehler gefunden?</b> Schreib mir bitte möglichst genau, was du getan hast, bevor das Problem aufgetreten ist. Am besten Schritt für Schritt. Ein Screenshot hilft oft sehr. Beträge darfst du gern unkenntlich machen.</p>
-        <details class="rsauf"><summary>So machst du einen Screenshot</summary>
-          <ul>
-            <li><b>Windows:</b> Win + Shift + S, Bereich wählen, in der Mail mit Strg + V einfügen</li>
-            <li><b>Mac:</b> Cmd + Ctrl + Shift + 4, Bereich wählen, in der Mail mit Cmd + V einfügen</li>
-            <li><b>Android:</b> Ein/Aus und Leiser gleichzeitig. Das Bild landet in deiner Galerie. In der Mail über das Büroklammer-Symbol anhängen.</li>
-            <li><b>iPhone:</b> Seitentaste und Lauter gleichzeitig (mit Home-Taste: Home und Seitentaste). Das Bild landet in deinen Fotos. In der Mail über das Bild-Symbol über der Tastatur einfügen.</li>
-          </ul>
-        </details>
+  <!-- Ab 0.176 (Florians Auftrag 0.176, Phase 1): goldene Karte für alle Wege zu geben. Die Überschrift war bis 0.175 eine freie Zeile (.rsfuelle);
+       die Kacheln „In Krypto“, „Per PayPal“, „Weitererzählen“ und „Ich habe schon gespendet“ kommen aus dem Baustein (donBauH) in #don-bau. -->
+  <div class="rsgold" id="don-gold">
+    <h2>Mit der Fülle ist es wie mit der Liebe: Sie wird mehr, wenn man sie teilt.</h2>
+    <div id="don-bau"></div>
+  </div>
+  <!-- Ab 0.175: leise Kachel „Anregungen, Fehler, Feedback“ (nur Rahmen, helle Knöpfe); sie ersetzt die Karte bis 0.174 und behält ihre Kennung
+       (fb-card, Sprung aus fbGo). Ab 0.176 (Florians Auftrag 0.176, Phase 2) eine flache Karte in voller Breite unter der goldenen Karte: Titel und
+       Satz, darunter eine Zeile mit „E-Mail schreiben“, Adresse, „Adresse kopieren“ und „Fehler gefunden? So hilfst du mir“, der aufgeklappte Teil
+       darunter in voller Breite. Bis 0.175 stand daneben „Weitererzählen“ (#don-sagen) und „Fehler gefunden? …“ war ein details. -->
+  <!-- Der Mail-Knopf bekommt seine Adresse vom Skript (fbMail). -->
+  <div class="rsk lt rsfb" id="fb-card">
+    <h3>Anregungen, Fehler, Feedback</h3>
+    <p>Ich freue mich über jede Rückmeldung und lese alles selbst.</p>
+    <div class="fbzeile">
+      <div class="fbgrp"><a class="btn lt" id="btn-fbmail" href="mailto:florian@weltenwandel.at">E-Mail schreiben</a><span class="fbaddr" id="fb-addr">florian@weltenwandel.at</span><span class="fbkop"><button type="button" class="btn" id="btn-fbcopy">Adresse kopieren</button><span id="fbcopymsg" class="small"></span></span></div>
+      <button type="button" class="zlink" id="fb-fehler-k" data-rsmehr aria-expanded="false" aria-controls="fb-fehler">Fehler gefunden? So hilfst du mir</button>
+    </div>
+    <div id="fb-fehler" hidden>
+      <p>Ich bin kein Programmierer. Ich habe das Tool gemeinsam mit einer KI gebaut und selbst getestet. Allerdings nur mit den Daten, die ich selbst hatte oder mir rekonstruieren und ausdenken konnte. Deine Konten, Wallets und Wege können anders aussehen.</p>
+      <p><b>Fehler gefunden?</b> Schreib mir bitte möglichst genau, was du getan hast, bevor das Problem aufgetreten ist. Am besten Schritt für Schritt. Ein Screenshot hilft oft sehr. Beträge darfst du gern unkenntlich machen.</p>
+      <details class="rsauf"><summary>So machst du einen Screenshot</summary>
+        <ul>
+          <li><b>Windows:</b> Win + Shift + S, Bereich wählen, in der Mail mit Strg + V einfügen</li>
+          <li><b>Mac:</b> Cmd + Ctrl + Shift + 4, Bereich wählen, in der Mail mit Cmd + V einfügen</li>
+          <li><b>Android:</b> Ein/Aus und Leiser gleichzeitig. Das Bild landet in deiner Galerie. In der Mail über das Büroklammer-Symbol anhängen.</li>
+          <li><b>iPhone:</b> Seitentaste und Lauter gleichzeitig (mit Home-Taste: Home und Seitentaste). Das Bild landet in deinen Fotos. In der Mail über das Bild-Symbol über der Tastatur einfügen.</li>
+        </ul>
       </details>
     </div>
   </div>
@@ -5229,9 +5270,10 @@ function jrSgOn(){const d=donGet(),sg=donSg(d);return !!sg&&fenDay(FEN_NOW())-fe
 // Ab 0.175 (Florians Auftrag 0.175, Phase 2): derselbe Baustein wie im Reiter (donBauH mit o.jr): „In Krypto“ und „Per PayPal“ untereinander (im
 // Fenster zu schmal für nebeneinander, CSS .jrs3), darunter mittig „Ich habe schon gespendet“, dann „Weitererzählen“. Bis 0.174 drei Blöcke mit Linien
 // (.jrblk), kopiert aus dem HTML des Reiters (outerHTML), mit „Wallet-Adresse (EVM), am liebsten USDC oder USDT“ und „Lieber per PayPal?“.
+// Ab 0.176 (Florians Antwort 4 zur Freigabe 0.176): ohne goldene Karte, Anordnung wie in 0.175; donBauH({jr:true}) gibt das HTML fertig angeordnet zurück.
 function jrS3H(){const X=MS_TXT.jr,B=donBauH({jr:true}),zur=`<button type="button" class="zlink jrzur" data-jrgo="2">${esc(X.zurueck)}</button>`;
   return `<div class="jrs3">${zur}<h2 class="jrh" id="jr-t">${herzH('💚 '+X.wert)}</h2><p>${esc(X.wDank)}</p>
-    ${B.spende}${B.sagen}
+    ${B}
     <p style="margin:16px 0 0">${zur}</p></div>`}
 // Öffnet den Rückblick des Jahres y (o.auto: von selbst, Regel 6; zählt als das Fenster dieses Tages, schließt nicht mit einem Klick daneben).
 // Gesehen (ms.jf) nur mit vollständigen Daten: Wer ihn vorher von Hand ansieht, bekommt ihn trotzdem von selbst, sobald alles da ist
@@ -16055,7 +16097,9 @@ document.querySelectorAll('[data-herz]').forEach(e=>{e.innerHTML=herzH(e.textCon
 // Ab 0.136: Link „Anregungen, Fehler, Feedback“ (Hinweis „Performance Fee“): Reiter „Resonanz“, Karte aufklappen und zeigen, wie „Feedback schreiben“.
 // Ab 0.175 ist die Karte eine Kachel (fb-card, nichts zum Aufklappen): „Feedback schreiben“ zeigt sie, der Link im Hinweis „Performance Fee“
 // (fbGo(true)) klappt dazu „Fehler gefunden? So hilfst du mir“ auf, weil dort der Screenshot erklärt ist (Plan 0.175).
-function fbGo(fehler){goTo('support',fehler?'fb-fehler':'fb-card')}
+// Ab 0.176 ist „Fehler gefunden? So hilfst du mir“ ein Knopf im Aussehen eines Links (#fb-fehler-k, wie „Mehr dazu“): fbGo(true) klappt den Teil
+// darunter auf (rsAuf) und setzt die Zeile mit dem Knopf unter die Reiter (bis 0.175 ein details, goTo öffnete es).
+function fbGo(fehler){if(fehler)rsAuf($('fb-fehler-k'),true);goTo('support',fehler?'fb-fehler-k':'fb-card')}
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('[data-fbgo]');if(!a)return;e.preventDefault();fbGo(true)});
 $('btn-fbcopy').onclick=()=>addrCopy($('fb-addr'),$('fbcopymsg'),'Adresse kopiert.');
 $('btn-xlsxyear').onclick=()=>taxXlsx(S.ui.yTax);   // ab 0.72 eigene Steuer-Excel
@@ -16173,7 +16217,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.175',VDATE='22.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.176',VDATE='22.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -16362,16 +16406,18 @@ const MS_TXT={
   fuss:'Trading-Bilanz · trading-bilanz.github.io',fussKurz:'trading-bilanz.github.io',bildFehler:'Das Bild ließ sich nicht erzeugen. Versuch es bitte noch einmal.',teilenFehler:'Teilen ging nicht. Das Bild ist gespeichert, du kannst es selbst teilen.'
 };
 // Ab 0.175 (Florians Auftrag 0.175): Texte des Bausteins „Spenden“ (donBauH) im Reiter „Resonanz“ und in „Wertschätzung teilen“ des Jahresrückblicks,
-// eine Quelle. netz ist HTML (mit <strong>), alle anderen sind Text. Bis 0.174 standen sie im HTML des Reiters, im Rückblick in MS_TXT.jr (wAdr,
+// eine Quelle. netz und ab 0.176 adr sind HTML (mit <strong>), alle anderen sind Text. Bis 0.174 standen sie im HTML des Reiters, im Rückblick in MS_TXT.jr (wAdr,
 // kopieren, paypal, sagen; wAdr dort „Wallet-Adresse (EVM), am liebsten USDC oder USDT“, paypal „Lieber per PayPal?“).
 const RES_TXT={
   krypto:'In Krypto',kryptoS:'Am liebsten USDC oder USDT, gern aber auch jeder andere Coin.',
-  adr:'Wallet-Adresse (EVM)',qr:'QR-Code der Wallet-Adresse',kopieren:'Adresse kopieren',kopiert:'Adresse kopiert. Danke! 💚',
+  // Ab 0.176 (Florians Auftrag 0.176) ist adr HTML: „EVM“ wieder fett wie bis 0.174
+  adr:'Wallet-Adresse (<strong>EVM</strong>)',qr:'QR-Code der Wallet-Adresse',kopieren:'Adresse kopieren',kopiert:'Adresse kopiert. Danke! 💚',
   netz:'Funktioniert auf allen <strong>EVM-Netzwerken</strong>, z. B. Ethereum, Base, BNB Smart Chain, Arbitrum und Polygon.',
   warn:'Bitte nicht über TRON (TRC20), Solana oder Bitcoin senden.',mehr:'Mehr dazu',
   warnMehr:'Diese Netzwerke haben andere Adressen, die Spende käme nicht an. Wenn du von einer Börse aus sendest, wähle als Netzwerk z. B. „Ethereum (ERC20)“, „Base“, „BNB Smart Chain (BEP20)“, „Arbitrum One“ oder „Polygon“.',
   paypal:'Per PayPal',paypalK:'Mit PayPal spenden',schon:'Ich habe schon gespendet',
-  sagenT:'Weitererzählen',sagen:'Wenn gerade nichts übrig ist: Erzähle anderen in der Community davon. Auch das trägt uns alle.',
+  // Ab 0.176 (Florians Auftrag 0.176) ohne „Wenn gerade nichts übrig ist:“ davor
+  sagenT:'Weitererzählen',sagen:'Erzähle anderen in der Community davon. Auch das trägt uns alle.',
   // „Link kopieren“ kopiert DL_URL (ohne Dateinamen); Bestätigung als Toast (Wortlaut Claude Code, von Florian gewählt, Freigabe 0.175)
   link:'Link kopieren',linkOk:'Link kopiert. Danke fürs Weitererzählen. 💚',linkNo:'Kopieren ging nicht. Die Adresse ist trading-bilanz.github.io'
 };
@@ -16425,30 +16471,45 @@ function fbBody(){return [`Trading-Bilanz ${VERSION} vom ${VDATE}`,`Browser: ${f
 function fbMail(){return `mailto:${FB_MAIL}?subject=${encodeURIComponent(`Trading-Bilanz ${VERSION}: Rückmeldung`)}&body=${encodeURIComponent(fbBody())}`}
 // Die Adresse der Mail entsteht beim Klick (Breite und hell/dunkel von jetzt)
 $('btn-fbmail').addEventListener('click',()=>{$('btn-fbmail').href=fbMail()});$('btn-fbmail').href=fbMail();
-/* Ab 0.175 (Florians Auftrag 0.175, Phase 2): Baustein „Spenden“ mit einer Quelle, genutzt im Reiter „Resonanz“ (#don-bau und #don-sagen) und im
-   Jahresrückblick in „Wertschätzung teilen“ (jrS3H). Texte in RES_TXT, Adresse, QR-Code und PayPal hier. Rückgabe {spende: Kacheln „In Krypto“ und
-   „Per PayPal“ mit „Ich habe schon gespendet“ darunter, sagen: Kachel „Weitererzählen“}. o.jr: im Fenster des Rückblicks (eigene Kennungen jr-…,
+/* Ab 0.175 (Florians Auftrag 0.175, Phase 2): Baustein „Spenden“ mit einer Quelle, genutzt im Reiter „Resonanz“ (#don-bau) und im
+   Jahresrückblick in „Wertschätzung teilen“ (jrS3H). Texte in RES_TXT, Adresse, QR-Code und PayPal hier. Ab 0.176 (Florians Auftrag 0.176) gibt er
+   HTML zurück, je nach Ort angeordnet: im Reiter für die goldene Karte (.rsgg: links „In Krypto“, rechts übereinander „Per PayPal“ und
+   „Weitererzählen“, darunter „Ich habe schon gespendet“), im Fenster wie in 0.175 untereinander („In Krypto“, „Per PayPal“, „Ich habe schon
+   gespendet“, „Weitererzählen“; Florians Antwort 4 zur Freigabe 0.176: ohne goldene Karte). „Weitererzählen“ ist ab 0.176 eine Kachel wie die
+   anderen (bis 0.175 leise, .lt). Bis 0.175 Rückgabe {spende, sagen}. o.jr: im Fenster des Rückblicks (eigene Kennungen jr-…,
    kein Satz zum Vergleichen, der Dank nach dem Klick kommt aus JR.dankT). Im Reiter behalten die Teile ihre Kennungen aus 0.174 (don-addr,
    btn-copyaddr, copymsg, don-qr, don-paypal, don-schon, don-netz, don-warn, don-cmp); Browser-Fälle und Tests wählen sie darüber.
    Bis 0.174 stand der Teil fest im HTML des Reiters, „Wertschätzung teilen“ kopierte Stücke davon (outerHTML). */
 const DON_ADR='0xa05d81c8a5c966fdb5cce33d6871108870b32f6e',DON_PP='https://www.paypal.com/donate?hosted_button_id=KHXGUFJ6FVVRN',
   DON_QR='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 33 33"><path stroke="#000" d="M2 2.5h7m3 0h2m4 0h1m1 0h3m1 0h7m-29 1h1m5 0h1m3 0h1m2 0h1m1 0h1m4 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h4m3 0h1m3 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m1 0h4m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m5 0h1m4 0h2m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h2m2 0h2m1 0h4m1 0h1m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m2 0h1m1 0h1m1 0h1m2 0h1m-20 1h1m1 0h5m4 0h3m1 0h4m3 0h5m-27 1h1m2 0h2m4 0h1m1 0h2m1 0h1m4 0h6m3 0h1m-29 1h1m3 0h1m1 0h2m3 0h3m1 0h1m1 0h2m1 0h2m1 0h2m2 0h1m-25 1h3m1 0h2m3 0h1m2 0h1m4 0h1m1 0h3m-25 1h2m1 0h2m1 0h1m1 0h1m1 0h2m1 0h2m1 0h2m2 0h2m1 0h1m1 0h3m-28 1h1m1 0h1m5 0h1m2 0h2m5 0h2m2 0h1m1 0h2m1 0h2m-28 1h6m1 0h2m1 0h5m5 0h5m-26 1h1m1 0h1m1 0h1m4 0h2m1 0h1m2 0h1m2 0h2m4 0h2m1 0h1m-28 1h1m1 0h7m1 0h2m1 0h1m2 0h3m2 0h1m4 0h3m-29 1h4m1 0h1m1 0h4m1 0h1m1 0h1m4 0h2m1 0h4m2 0h1m-29 1h1m1 0h2m1 0h2m2 0h1m2 0h4m1 0h1m6 0h1m-25 1h1m2 0h2m3 0h3m4 0h1m2 0h1m1 0h3m4 0h1m-28 1h1m2 0h1m1 0h4m3 0h7m1 0h8m-20 1h1m1 0h2m5 0h1m2 0h1m3 0h1m1 0h1m1 0h1m-29 1h7m7 0h3m1 0h3m1 0h1m1 0h1m2 0h1m-28 1h1m5 0h1m1 0h1m2 0h2m1 0h2m2 0h3m3 0h1m2 0h2m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h2m3 0h4m1 0h9m-29 1h1m1 0h3m1 0h1m1 0h2m2 0h1m7 0h2m1 0h1m3 0h2m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h3m1 0h1m2 0h1m1 0h2m1 0h1m-28 1h1m5 0h1m2 0h2m2 0h1m1 0h1m4 0h1m2 0h1m1 0h1m1 0h1m-28 1h7m1 0h4m1 0h7m1 0h2m1 0h1m1 0h1"/></svg>';
+// Ab 0.176 (Florians Auftrag 0.176, Phase 3): Die Adresse bricht, wenn sie nicht in eine Zeile passt, genau in der Mitte um (21 + 21 Zeichen), nie
+// irgendwo: zwei Hälften ohne Umbruch (.nw), dazwischen <wbr>. Kopieren (textContent) und Markieren liefern die ganze Adresse ohne Leerzeichen.
+const DON_ADR_H=`<span class="nw">${DON_ADR.slice(0,21)}</span><wbr><span class="nw">${DON_ADR.slice(21)}</span>`;
+// Ab 0.176 (Florians Auftrag 0.176, Phase 3): „z. B.“ bricht nicht zwischen „z.“ und „B.“ um (Element mit white-space:nowrap, die Zeichen bleiben
+// gleich). Nur im Baustein „Spenden“ (Satz zu den Netzwerken, Text hinter „Mehr dazu“); die übrigen Stellen im Tool stehen in OFFEN.md. h ist HTML.
+const zbNw=h=>h.replace(/z\. B\./g,'<span class="nw">z. B.</span>');
 function donBauH(o){o=o||{};const X=RES_TXT,j=!!o.jr,id=(r,w)=>j?(w?` id="${w}"`:''):` id="${r}"`,mid=j?'jr-warnm':'don-warnm',dk=j&&JR&&JR.dankT;
-  const spende=`<div class="rsgrid rsspende"><div class="rsk rskr"><h3>${esc(X.krypto)}</h3><p class="small rsunter">${esc(X.kryptoS)}</p>
+  const krypto=`<div class="rsk rskr"><h3>${esc(X.krypto)}</h3><p class="small rsunter">${esc(X.kryptoS)}</p>
     <div class="rsadr"><div class="qr"${id('don-qr')} role="img" aria-label="${esc(X.qr)}" title="${esc(X.qr)}">${DON_QR}</div>
-      <div class="rsadrt"><div class="small rslab">${esc(X.adr)}</div><div class="addr"${id('don-addr','jr-adr')}>${DON_ADR}</div>
+      <div class="rsadrt"><div class="small rslab">${X.adr}</div><div class="addr rsaddr"${id('don-addr','jr-adr')}>${DON_ADR_H}</div>
         <div class="row rskop"><button type="button" class="btn primary"${id('btn-copyaddr','jr-copy')}>${esc(X.kopieren)}</button><span${id('copymsg','jr-copymsg')} class="small"></span></div>
         ${j?'':'<p class="small offl" id="don-cmp"></p>'}</div></div>
-    <p class="small rsnetz"${id('don-netz')}>${X.netz}</p>
-    <div class="rswarn"${id('don-warn')}><b>${esc(X.warn)}</b> <button type="button" class="zlink" data-rsmehr aria-expanded="false" aria-controls="${mid}">${esc(X.mehr)}</button><p id="${mid}" hidden>${esc(X.warnMehr)}</p></div></div>
-  <div class="rsk rspp"><h3>${esc(X.paypal)}</h3><p class="rsknopf"><a class="btn primary"${id('don-paypal')} href="${DON_PP}" target="_blank" rel="noopener">${esc(X.paypalK)}&nbsp;↗</a></p></div></div>
-  <div class="rsschon"><p${id('don-schon')}><button type="button" class="zlink" data-schon>${esc(X.schon)}</button></p><p class="jrdanke" data-dank${dk?'':' hidden'}>${dk?herzH('💚 '+dk):''}</p></div>`;
-  const sagen=`<div class="rsk lt rssagen"><h3>${esc(X.sagenT)}</h3><p>${esc(X.sagen)}</p><p class="rsknopf"><button type="button" class="btn" data-rslink>${esc(X.link)}</button></p></div>`;
-  return {spende,sagen}}
-{const B=donBauH();$('don-bau').innerHTML=B.spende;$('don-sagen').innerHTML=B.sagen}
+    <p class="small rsnetz"${id('don-netz')}>${zbNw(X.netz)}</p>
+    <div class="rswarn"${id('don-warn')}><b>${esc(X.warn)}</b> <button type="button" class="zlink" data-rsmehr aria-expanded="false" aria-controls="${mid}">${esc(X.mehr)}</button><p id="${mid}" hidden>${zbNw(esc(X.warnMehr))}</p></div></div>`;
+  const paypal=`<div class="rsk rspp"><h3>${esc(X.paypal)}</h3><p class="rsknopf"><a class="btn primary"${id('don-paypal')} href="${DON_PP}" target="_blank" rel="noopener">${esc(X.paypalK)}&nbsp;↗</a></p></div>`;
+  const schon=`<div class="rsschon"><p${id('don-schon')}><button type="button" class="zlink" data-schon>${esc(X.schon)}</button></p><p class="jrdanke" data-dank${dk?'':' hidden'}>${dk?herzH('💚 '+dk):''}</p></div>`;
+  const sagen=`<div class="rsk rssagen"><h3>${esc(X.sagenT)}</h3><p>${esc(X.sagen)}</p><p class="rsknopf"><button type="button" class="btn" data-rslink>${esc(X.link)}</button></p></div>`;
+  return j?`<div class="rsgrid rsspende">${krypto}
+  ${paypal}</div>
+  ${schon}${sagen}`:`<div class="rsgg">${krypto}
+  <div class="rsgr">${paypal}${sagen}</div></div>
+  ${schon}`}
+$('don-bau').innerHTML=donBauH();
 $('btn-copyaddr').onclick=()=>addrCopy($('don-addr'),$('copymsg'),RES_TXT.kopiert);
-// „Mehr dazu“ unter der Warnung (Reiter und Rückblick): klappt den Rest an Ort und Stelle auf und zu
-document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('[data-rsmehr]');if(!b)return;e.preventDefault();const x=$(b.getAttribute('aria-controls'));if(!x)return;x.hidden=!x.hidden;b.setAttribute('aria-expanded',String(!x.hidden))});
+// „Mehr dazu“ unter der Warnung (Reiter und Rückblick): klappt den Rest an Ort und Stelle auf und zu. Ab 0.176 ebenso „Fehler gefunden? So hilfst
+// du mir“ in der Karte „Anregungen, Fehler, Feedback“ (Florians Antwort 5 zur Freigabe 0.176). rsAuf(Knopf, auf) setzt den Zustand (auch für fbGo).
+function rsAuf(b,auf){const x=b&&$(b.getAttribute('aria-controls'));if(!x)return;x.hidden=!auf;b.setAttribute('aria-expanded',String(!!auf))}
+document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.target.closest('[data-rsmehr]');if(!b)return;e.preventDefault();const x=$(b.getAttribute('aria-controls'));if(!x)return;rsAuf(b,x.hidden)});
 // „Link kopieren“ (Kachel „Weitererzählen“): kopiert die Adresse des Tools ohne Dateinamen (DL_URL), Bestätigung als Toast
 document.addEventListener('click',async e=>{const b=e.target&&e.target.closest&&e.target.closest('[data-rslink]');if(!b)return;e.preventDefault();
   try{await navigator.clipboard.writeText(DL_URL);toast(RES_TXT.linkOk)}catch(x){toast(RES_TXT.linkNo)}});
