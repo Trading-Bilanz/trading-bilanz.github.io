@@ -314,8 +314,8 @@ tr.sum td b,tr.gesamt td b,.tdbk tr.tdcur td b,.tdrund li.tdcur>.tdar b{font-wei
 .ov .tiles{margin:8px 0 2px}
 .ov .tile{background:var(--bg);border:0;border-radius:8px}
 /* Ab 0.100: Leiste „Diese Woche“ unter den Kacheln, volle Breite, wie eine Kachel, etwas weniger Innenabstand, kleinere Werte, keine Farbe.
-   PC: eine Zeile (links Titel und Stand, rechts Betrag und Rendite). Mit 2 Kachelspalten (.c2, gesetzt von layoutTiles): Titel und Stand
-   über beiden Spalten, die Werte darunter bündig mit den Kachelspalten (Innenabstand und Spaltenabstand setzt layoutTiles). */
+   PC: eine Zeile (links Titel und Stand, rechts Betrag und Rendite). Ab 0.179 nur bei 5 Kachelspalten, neben ihr „Investition jetzt“ im selben
+   Aussehen (ovxZeichnen); sonst beide als Kacheln. */
 .cwbar{display:flex;align-items:center;justify-content:space-between;gap:6px 24px;background:var(--bg);border-radius:8px;padding:10px 16px;margin:10px 0 2px}
 .cwbar[hidden]{display:none}
 /* Ab 0.100: Grafik im Vollbild: eine Fläche über allem (Fullscreen-API, sonst feste Fläche), Titel und Zeitraum oben, die Grafik füllt den Rest */
@@ -342,10 +342,9 @@ html.gfso,html.gfso body{overflow:hidden}
 .cwbar .cwv{display:flex;gap:28px;flex:none}
 .cwbar .k{font-size:var(--fs-s);color:var(--ink2)}
 .cwbar .v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.cwbar.c2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));row-gap:6px}
-.cwbar.c2 .cwt{grid-column:1/-1}
-.cwbar.c2 .cwv{display:contents}
-.cwbar.c2 .cwv>div{min-width:0}
+/* Ab 0.179: Leisten „Diese Woche“ und „Investition jetzt“ stehen in Reihe 3 des Rasters der Kacheln (nur bei 5 Spalten, sonst Kacheln); Abstand über das
+   Raster, Höhe gleich. Bis 0.178 eine eigene Leiste unter den Kacheln, mit 2 Spalten zweizeilig (.c2). */
+.tiles>.cwbar{margin:0;min-width:0}
 th .sm,td .sm{display:block;font-weight:400;font-size:var(--fs-xxs);color:var(--muted)}
 td.acc{white-space:normal;min-width:7em}
 /* Ab 0.113 (Florians Auftrag): Kontoname in „Pro Konto“ und „Netto pro Konto und Monat“ in fester Breite, so breit wie bis 0.112 in USD
@@ -1363,7 +1362,11 @@ button.msv{cursor:pointer}button.msv:focus-visible{outline:2px solid var(--accen
 /* Ab 0.167: Kachel mit Begriff (msValH, „Plus-Wochen in Folge“): Knopf über der ganzen Fläche, Wert und Datum lassen den Klick durch, der Begriff liegt darüber */
 .msvb{cursor:pointer}.msvbtn{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;border-radius:0;background:none;cursor:pointer}
 .msvbtn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}.msvb>.v,.msvb>.s{pointer-events:none}.msvb>.k{position:relative;z-index:1}
+/* Ab 0.179: Datum als Link in der Kachel liegt über dem Knopf der Fläche (wie der Begriff im Titel) */
+.msvb>.s>a.jl{pointer-events:auto;position:relative;z-index:1}
 @media (hover:hover) and (pointer:fine){button.msv:hover>.k{text-decoration:underline}}
+/* Ab 0.179: Kacheln mit Datum-Link (msvj) unterstreichen beim Darüberfahren den Titel wie die Knopf-Kacheln, nicht über dem Datum */
+@media (hover:hover) and (pointer:fine){.msvj>.msvbtn:hover~.k{text-decoration:underline}}
 .msmks{display:flex;flex-wrap:wrap;gap:8px}
 .msmk{position:relative;display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:var(--fs-s);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;padding:4px 12px;border-radius:999px;border:1.5px solid var(--tab-line);background:var(--gold-soft);color:var(--ink);margin:0;line-height:1.4}
 /* ab 0.143: kleines Abzeichen (16 px) frei über der rechten oberen Ecke der Marke (bis 0.142 in der Marke, sie wurde breiter) */
@@ -1787,6 +1790,8 @@ details.more .hint{margin-top:6px}
 #s-stats .sthd>h2.hbm{flex-wrap:nowrap!important;white-space:nowrap!important}
 #s-stats .sthd>h2.hbm>*{flex-shrink:0!important;white-space:nowrap!important}
 .h2btn>svg{display:block}
+/* Ab 0.179: Bild-Symbol im Überblick so hoch wie die Knöpfe mit Text in derselben Stufe (Knopfschrift 13 px: 30 px) */
+#fb-ovb>svg{margin:1.5px 0}#fb-ovb{vertical-align:middle}
 .hbts{display:none}
 @media screen{
   #s-stats.hbt .card.fold>.sthd>h2{font-size:16px}
@@ -2155,10 +2160,10 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <div id="tb-note" class="noprint"></div>
     <!-- ⓘ am Kartentitel (button.ib) und Begriffe (span.gl) öffnen Popups, Texte im Wörterbuch GL im Skript -->
     <div class="card fold ov stk" data-fold="st-ov" id="st-ov">
-      <div class="sthd"><h2 class="hx">Überblick <button type="button" class="ib" data-gl="k-ov" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Überblick">i</button><span class="noprint" id="ms-bf-ov"></span><span class="fdd wdd udd noprint" id="fdd-u1"><button type="button" class="btn h2btn" id="fb-u1" aria-expanded="false" aria-controls="fp-u1">Rendite ▾</button><div class="fpan" id="fp-u1" role="dialog" aria-label="Rendite oder Betrag"></div></span></h2></div>
+      <div class="sthd"><h2 class="hx">Überblick <button type="button" class="ib" data-gl="k-ov" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Überblick">i</button><span class="noprint" id="ms-bf-ov"></span><span class="fdd wdd udd noprint" id="fdd-u1"><button type="button" class="btn h2btn" id="fb-u1" aria-expanded="false" aria-controls="fp-u1">Rendite ▾</button><div class="fpan" id="fp-u1" role="dialog" aria-label="Rendite oder Betrag"></div></span><span class="fdd wdd udd noprint" id="fdd-ovb"><button type="button" class="btn h2btn" id="fb-ovb" aria-expanded="false" aria-controls="fp-ovb">Bild ▾</button><div class="fpan" id="fp-ovb" role="dialog" aria-label="Bild des Überblicks"></div></span></h2></div>
       <div class="tiles" id="tiles"></div>
-      <!-- Ab 0.100: Leiste „Diese Woche“ (renderStats), sichtbar in der Woche des neuesten Trades, wenn sie die heutige ist -->
-      <div class="cwbar" id="cwbar" hidden></div>
+      <!-- Ab 0.100: Leiste „Diese Woche“ (renderStats). Ab 0.179 entstehen „Diese Woche“ (#cwbar) und „Investition jetzt“ (#invbar) als letzte
+           Kinder von #tiles (ovxZeichnen): bei 5 Kachelspalten als Leisten in Reihe 3, sonst als Kacheln -->
     </div>
     <!-- Ab 0.146: Reihenfolge der Karten (Florians Auftrag, ersetzt die vom 08.11.2026): Überblick · Grafiken · Hochs und Tiefs · Meilensteine ·
          Durchschnitt · Pro Woche · Pro Monat · Pro Konto · Netto pro Konto und Monat · Dein echtes Geld · Was wäre wenn. Nichts hängt an der Lage:
@@ -2940,30 +2945,41 @@ const CATS={einzahlung:'Einzahlung von Kapital',kapitalabzug:'Kapitalabzug',gewi
 const MAP_NUM=/\d+(?:[.,]\d+)*/g;
 function mapLabel(x){return String(x.cmt||x.type||'').trim().replace(MAP_NUM,'…')}
 function mapKey(x){return mapLabel(x).toLowerCase()}
-// Ab 0.80 (1): Reinvest bei Tag. Der Knopf „Reinvest“ bucht in derselben Sekunde zwei balance-Zeilen: „Adjust-…“ (negativ, der abgeschöpfte Gewinn)
+// Ab 0.80 (1): Reinvest bei Tag. Der Knopf „Reinvest“ bucht zwei balance-Zeilen: „Adjust-…“ (negativ, der abgeschöpfte Gewinn)
 // und „Upgrade-…“ (positiv, derselbe Betrag × Trading Benefit). Das „-“ im Kommentar ist kein Vorzeichen, der Betrag kommt aus Profit.
 // Passt Upgrade ≈ |Adjust| × Trading Benefit des Kontos (± 0,01 USD), gilt ohne Frage: Adjust = Gewinnauszahlung, Upgrade = Einzahlung von Kapital.
 // Das geht vor eigenen Zuordnungen. Passt der Faktor nicht oder fehlt der Trading Benefit, ordnet das Tool nichts zu (die Zeilen gehen über S.map,
 // ohne Zuordnung „bitte wählen“), und bad trägt den Hinweis für die Karte „Buchungsarten“ (ab 0.81 immer mit den Zahlen). Ein Adjust ohne Upgrade
 // (oder umgekehrt): kein Paar, kein Hinweis.
+// Ab 0.179 (Florians Entscheidung vom 22.11.2026, bis 0.178 nur in derselben Sekunde): Ein Paar ist dasselbe Konto, ein negatives „Adjust…“ und
+// ein positives „Upgrade…“, höchstens 5 Minuten auseinander (RV_FENSTER, auch über Mitternacht), egal welches zuerst kommt. Jede Buchung gehört
+// zu höchstens einem Paar. Reihenfolge (Florians Antwort 1 zur Freigabe 0.179): zuerst die Paare mit passendem Faktor, darunter das zeitlich
+// nächste; danach unter den übrigen Buchungen das zeitlich nächste Paar für den Hinweis. Bei gleichem Abstand gilt die Reihenfolge im Report
+// (erst das Adjust, dann das Upgrade), so bleiben Paare in derselben Sekunde genau wie bis 0.178.
 // RV = Zwischenspeicher, gilt für dieses S.deals und bis zum nächsten save() bzw. render().
 let RV=null,RV_D=null;
-const RV_AD=/^adjust(?![a-z])/i,RV_UP=/^upgrade(?![a-z])/i;
+const RV_AD=/^adjust(?![a-z])/i,RV_UP=/^upgrade(?![a-z])/i,RV_FENSTER=300;
+// Zeitpunkt einer MT5-Buchung („2026.10.05 18:30:12“) in Sekunden, ohne Zeitzone (nur für Abstände)
+function rvSek(t){const m=String(t||'').match(/^(\d{4})[.-](\d\d)[.-](\d\d)[ T](\d\d):(\d\d)(?::(\d\d))?/);return m?Date.UTC(+m[1],m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0))/1000:NaN}
 function rvScan(){
   if(RV&&RV_D===S.deals)return RV;
   const ok={},bad={},by={};
   for(const [k,x] of Object.entries(S.deals)){if(!x||x.type!=='balance')continue;const c=String(x.cmt||'').trim(),ad=RV_AD.test(c)&&x.prof<0,up=RV_UP.test(c)&&x.prof>0;if(!ad&&!up)continue;
-    const g=x.a+'|'+x.t;(by[g]||(by[g]={a:x.a,ad:[],up:[]}))[ad?'ad':'up'].push(k)}
+    const s=rvSek(x.t);if(!isFinite(s))continue;(by[x.a]||(by[x.a]={ad:[],up:[]}))[ad?'ad':'up'].push({k,s,i:0})}
   const n2=v=>fN.format(Math.abs(v)),q=v=>String(Math.round(v*100)/100).replace('.',',');
-  for(const G of Object.values(by)){
+  for(const [a,G] of Object.entries(by)){
     if(!G.ad.length||!G.up.length)continue;
-    const f=(S.accounts[G.a]||{}).factor,used=new Set();
-    if(f>0)for(const ka of G.ad){const xa=S.deals[ka],ku=G.up.find(u=>!used.has(u)&&Math.abs(S.deals[u].prof+xa.prof*f)<=0.0100001);if(ku){used.add(ku);ok[ka]='gewinnauszahlung';ok[ku]='einzahlung'}}
-    const ra=G.ad.filter(k=>!ok[k]),ru=G.up.filter(k=>!ok[k]);
-    for(let i=0;i<Math.min(ra.length,ru.length);i++){const xa=S.deals[ra[i]],xu=S.deals[ru[i]];
+    G.ad.forEach((o,i)=>o.i=i);G.up.forEach((o,i)=>o.i=i);
+    const f=(S.accounts[a]||{}).factor,used=new Set();
+    // Alle möglichen Paare im Fenster, das zeitlich nächste zuerst (bei gleichem Abstand: Reihenfolge im Report)
+    const P=[];for(const x of G.ad)for(const u of G.up){const d=Math.abs(u.s-x.s);if(d<=RV_FENSTER)P.push({x,u,d})}
+    P.sort((p,r)=>p.d-r.d||p.x.i-r.x.i||p.u.i-r.u.i);
+    const frei=p=>!used.has(p.x.k)&&!used.has(p.u.k),nimm=p=>{used.add(p.x.k);used.add(p.u.k)};
+    if(f>0)for(const p of P){if(!frei(p)||Math.abs(S.deals[p.u.k].prof+S.deals[p.x.k].prof*f)>0.0100001)continue;nimm(p);ok[p.x.k]='gewinnauszahlung';ok[p.u.k]='einzahlung'}
+    for(const p of P){if(!frei(p))continue;nimm(p);const xa=S.deals[p.x.k],xu=S.deals[p.u.k];
       // Ab 0.81 (1): auch ohne Trading Benefit mit den Zahlen, damit man den Faktor gleich sieht
       const h=`Upgrade ${n2(xu.prof)} ÷ Adjust ${n2(xa.prof)} = ${q(xu.prof/-xa.prof)}, `+(f>0?`eingestellt ist ${facT(f)}.`:'Trading Benefit für dieses Konto fehlt.');
-      bad[ra[i]]=h;bad[ru[i]]=h}
+      bad[p.x.k]=h;bad[p.u.k]=h}
   }
   RV={ok,bad};RV_D=S.deals;return RV;
 }
@@ -3004,6 +3020,8 @@ for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','t
   const c=S.ui.calc=Object.assign({},blank().ui.calc,S.ui.calc&&typeof S.ui.calc==='object'?S.ui.calc:{});for(const k of ['inv','dur','own','tax'])c[k]=c[k]==null?'':String(c[k]);if(c.unit!=='w')c.unit='m';if(c.invCur!=='eur')c.invCur='usd';c.reinv=c.reinv===true;c.taxOn=c.taxOn===true;
   // ab Version 0.23: Schalter Rendite/Betrag für Kacheln und „Hochs und Tiefs“
   if(S.ui.unit!=='amt')S.ui.unit='pct';
+  // ab 0.179: „Betrag zeigen“ im Bild des Überblicks, beim ersten Mal an (ein gespeichertes „aus“ bleibt)
+  if(typeof S.ui.ovb!=='boolean')S.ui.ovb=true;
   // ab Version 0.31: eigene Kurse getrennt (S.rown), „abgedeckt bis“ je Quelle (S.rcov), Häkchen automatisch laden / nur verwendete zeigen
   // ab Version 0.38: ein Zeitraum für die ganze Wallet-Seite (wFlt, beim ersten Mal der bisherige der Tabelle tagFlt aus 0.36/0.37), Kartenfilter (cf), andere private
   // Veräußerungsgewinne für die Freigrenze Deutschland (deOther, Text wie eingegeben)
@@ -4088,7 +4106,10 @@ function htWkJahr(k,tg){const e=addDays(k,6);for(const y of new Set([k.slice(0,4
 const tgSet=rows=>new Set(rows.filter(isTrade).map(r=>r.d));
 // Ab 0.160 (Florians Antwort 3 zu Bericht 0.159): der letzte gezählte Handelstag im Fenster win (tage = Tage mit Trade). Für die Kopfzeile im
 // Excel mit allen Daten „Handelstage vom … bis …“: nie ein Samstag oder Sonntag ohne Trade. Bis 0.159 stand dort das Ende des Fensters.
-function htLetzter(win,tage){const l=htListe(win.s,win.e,null,tage);return l.length?l[l.length-1]:win.e}
+// Ab 0.179: erster und letzter gezählter Handelstag eines Fensters (htSpanne), für die Kopfzeile im Excel mit allen Daten und das Bild des Überblicks.
+// Ohne Handelstag im Fenster Anfang und Ende des Fensters (wie bis 0.178 htLetzter).
+function htSpanne(win,tage){const l=htListe(win.s,win.e,null,tage);return l.length?{s:l[0],e:l[l.length-1]}:{s:win.s,e:win.e}}
+function htLetzter(win,tage){return htSpanne(win,tage).e}
 // Letzter Tag mit Trade in den Zeilen rows ('' ohne Trade), für cntWin
 function lastTradeDay(rows){let l='';for(const r of rows)if(isTrade(r)&&r.d>l)l=r.d;return l}
 function cntWin(first,from,to,dataEnd,lastT,tg){if(!first)return null;const de=lastT&&lastT<dataEnd?addDays(dataEnd,-1):dataEnd;return {s:from&&from>first?from:first,e:to&&to<de?to:de,tg:tg||null}}
@@ -4866,12 +4887,17 @@ function msOhne(M,k,y){const O=MS_TXT.ohne,yb=k==='am'?(M.mGanz||{}):M.yb[k]||{}
 // Ab 0.167 (Florians Auftrag 0.167, Abschnitt 6.7, und seine Antwort 15 zur Freigabe): Die Beschriftung „Plus-Wochen in Folge“ ist der Begriff
 // „Plus-Woche“. Ein Begriff darf nicht in einem Knopf liegen: Diese Kachel ist deshalb ein Kasten (.msvb) mit einem Knopf über der ganzen Fläche
 // (.msvbtn, öffnet das Blatt wie bisher), der Begriff liegt darüber. Aussehen wie die anderen Kacheln.
+// Ab 0.179 (Florians Auftrag 0.179, Phase 2b): Hat der Eintrag ein Sprungziel (e.j), ist das Datum ein Link (a.jl, data-msj) mit demselben Sprung wie das
+// Datum im Feier-Fenster (msJump). Ein Link darf nicht in einem Knopf liegen: Die Kachel ist dann ein Kasten (.msvb) mit dem Knopf über der ganzen
+// Fläche (öffnet das Blatt), Datum und Begriff liegen darüber. Mit der Tastatur sind Kachel und Datum je ein eigener Halt. Ohne Sprungziel (z. B.
+// „Bester Monat“) bleibt die Kachel ein Knopf und das Datum Text. Keine größere Tippfläche (Florians Antwort 8 zur Freigabe 0.179).
 function msValH(M,k,g,y,nl){const e=y?(M.val.Y[y]||{})[k]:M.val.G[k],T=k==='rw'?gl('plusw',esc(MS_TXT.kachel[k])):esc(MS_TXT.kachel[k]);
   if(!e)return `<div class="msv"><span class="k">${T}</span><span class="v none">${esc(msOhne(M,k,y))}</span></div>`;
   const bf=nl.has(e.id)?`<span class="bfw bf-k${MS_FLASH.includes(e.id)?' fl':''} noprint">${bflyH(BF_H.k)}</span>`:'';
-  if(k==='rw'){const w=e.r!=null?fR.format(e.r):fI.format(e.n),d=msDate(e,true),m=e.mehr?msMehr(e):'';
-    return `<div class="msv msvb${bf?' hasbf':''}"><button type="button" class="msvbtn" data-ms="${esc(e.id)}" data-msg="${g}" aria-label="${esc([MS_TXT.kachel[k],w,d,m].filter(Boolean).join(' '))}"></button><span class="k">${T}</span><span class="v">${esc(w)}${bf}</span><span class="s">${esc(d)}</span>${m?`<span class="s">${esc(m)}</span>`:''}</div>`}
-  return `<button type="button" class="msv${bf?' hasbf':''}" data-ms="${esc(e.id)}" data-msg="${g}"><span class="k">${T}</span><span class="v">${esc(e.r!=null?fR.format(e.r):fI.format(e.n))}${bf}</span><span class="s">${esc(msDate(e,true))}</span>${e.mehr?`<span class="s">${esc(msMehr(e))}</span>`:''}</button>`}
+  const w=e.r!=null?fR.format(e.r):fI.format(e.n),d=msDate(e,true),m=e.mehr?msMehr(e):'';
+  if(k==='rw'||e.j){const dH=e.j?`<a href="#" class="jl" data-msj="${esc(e.id)}">${esc(d)}</a>`:esc(d);
+    return `<div class="msv msvb${k!=='rw'?' msvj':''}${bf?' hasbf':''}"><button type="button" class="msvbtn" data-ms="${esc(e.id)}" data-msg="${g}" aria-label="${esc([MS_TXT.kachel[k],w,d,m].filter(Boolean).join(' '))}"></button><span class="k">${T}</span><span class="v">${esc(w)}${bf}</span><span class="s">${dH}</span>${m?`<span class="s">${esc(m)}</span>`:''}</div>`}
+  return `<button type="button" class="msv${bf?' hasbf':''}" data-ms="${esc(e.id)}" data-msg="${g}"><span class="k">${T}</span><span class="v">${esc(w)}${bf}</span><span class="s">${esc(d)}</span>${m?`<span class="s">${esc(m)}</span>`:''}</button>`}
 // „Erreicht“: je Art die höchste Stufe (bei einem Jahr die höchste in diesem Jahr); Auszahlungen: „Ausgezahlt wie eingezahlt“ vor „Erste Auszahlung“
 function msErrH(M,L,nl){const K=MS_TXT.marke,top=k=>L.filter(e=>e.k===k).sort((a,b)=>(b.n||0)-(a.n||0)||(a.d<b.d?1:-1))[0];
   // ab 0.167 bei den Auszahlungen die höchste: 200 % und mehr (ex) vor 100 % (ee) vor „Erste Auszahlung“
@@ -4889,8 +4915,10 @@ function msVerlaufZ(e,cur){const U=MS_TXT.unter,R=MS_TXT.reihe;let t,w='',sub=''
   else if(e.k==='jr'){t=msTitle(e);w=e.st&&e.st.r!=null?fR.format(e.st.r):''}
   else t=msTitle(e);
   return {t,w,sub}}
+// Ab 0.179 (Florians Auftrag 0.179, Phase 2b): Mit Sprungziel (e.j) ist das Datum ein Link (a.jl, data-msj, msJump), auch „läuft noch“ (Sprung zum
+// Anfang, Florians Antwort 6 zur Freigabe 0.179). Titel und Zeile öffnen weiter das Feier-Fenster.
 function msEntryH(e,cur){const z=msVerlaufZ(e,cur),dt=e.lauf?MS_TXT.lauf:e.k==='jr'?e.y:e.dk==='m'?fM(e.m):fD(e.d);
-  return `<div class="mse${e.lauf?' lauf':''}" data-ms="${esc(e.id)}" data-msg="v"><span class="msed">${esc(dt)}</span><span class="msek">${esc(msKat(e))}</span><span class="mset"><button type="button" class="zlink msn">${esc(z.t)}</button>${z.sub?`<span class="small">${esc(z.sub)}</span>`:''}</span><span class="msew">${esc(z.w)}</span></div>`}
+  return `<div class="mse${e.lauf?' lauf':''}" data-ms="${esc(e.id)}" data-msg="v"><span class="msed">${e.j?`<a href="#" class="jl" data-msj="${esc(e.id)}">${esc(dt)}</a>`:esc(dt)}</span><span class="msek">${esc(msKat(e))}</span><span class="mset"><button type="button" class="zlink msn">${esc(z.t)}</button>${z.sub?`<span class="small">${esc(z.sub)}</span>`:''}</span><span class="msew">${esc(z.w)}</span></div>`}
 // Jahre im Zeitraum-Menü: nur Jahre mit Trades der gezählten Konten, absteigend; ein Jahr, das es nicht mehr gibt, wird wieder „Gesamt“
 const msYearOk=M=>{if(MS_Y&&!(M.ys||[]).includes(MS_Y))MS_Y='';return MS_Y};
 /* Ab 0.157 (Florians Auftrag): Zeile ganz oben im Inhalt der Karte „Meilensteine“, über „Rekorde“, klein und grau: „Die Filterzeile oben wirkt
@@ -5071,11 +5099,22 @@ function msOpenNew(id){if(MS_NL.length)msShow(MS_NL,{start:id||MS_NL[0].id})}
 function msPulse(){const h=document.querySelector('#tabs [data-t="support"] svg.heart');if(!h||!h.classList||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   h.classList.remove('hp');void h.getBoundingClientRect();h.classList.add('hp')}
 // Nach dem Schließen (closeModal): angesehen oder ausgeblendet, Herz, danach ein wartendes Fenster nach einem Anlass (Bild geteilt) nachholen
-function msClosed(){const c=MS_CUR;MS_CUR=null;msbHome();if(!c)return;MSP=null;MS_L=[];
+// Ab 0.179 (Florians Punkt 11 zur Freigabe 0.179): Das Neuzeichnen (render, Sprung, Herz) läuft erst, nachdem der Browser das geschlossene Fenster
+// gezeichnet hat (nachBild). Bis 0.178 lief render() für das ganze Tool im Klick, das Fenster blieb so lange stehen (gemessen mit 10 Konten etwa
+// 250 ms in der Cloud, bei Florian in Vivaldi über 1 s). danach = was nach dem Neuzeichnen kommt (Fokus, closeModal).
+function msClosed(danach){const c=MS_CUR;MS_CUR=null;msbHome();if(!c){if(danach)danach();return}MSP=null;MS_L=[];
   const j=MS_JUMP;MS_JUMP=null;
-  if(j&&j.res){if(j.gold)donGold();else{S.ui.tab='support';save();render();tabTop()}}else if(j&&j.all)goTo('stats','st-ms');else{render();if(j&&j.e)msJump(j.e)}
-  msPulse();
-  if(FEN_NACH){const a=FEN_NACH;FEN_NACH=null;clearTimeout(FEN_T);FEN_T=setTimeout(()=>fenTry(a),700)}}
+  nachBild(()=>{
+    if(j&&j.res){if(j.gold)donGold();else{S.ui.tab='support';save();render();tabTop()}}else if(j&&j.all)goTo('stats','st-ms');else{render();if(j&&j.e)msJump(j.e)}
+    msPulse();
+    if(FEN_NACH){const a=FEN_NACH;FEN_NACH=null;clearTimeout(FEN_T);FEN_T=setTimeout(()=>fenTry(a),700)}
+    if(danach)danach()})}
+// Ab 0.179: Arbeit nach dem Schließen eines Fensters erst nach dem nächsten gezeichneten Bild (requestAnimationFrame, dann ein eigener Schritt), damit das
+// Fenster sofort verschwindet. Die Liste läuft genau einmal; der zweite Zeitgeber holt sie nach, falls der Browser kein Bild zeichnet (Tab im Hintergrund).
+// nachBildJetzt führt sie sofort aus (die node-Tests haben keine Zeitgeber).
+let NACH_BILD=[];
+function nachBild(fn){NACH_BILD.push(fn);if(NACH_BILD.length>1)return;requestAnimationFrame(()=>setTimeout(nachBildJetzt,0));setTimeout(nachBildJetzt,250)}
+function nachBildJetzt(){const L=NACH_BILD;NACH_BILD=[];for(const f of L)f()}
 // Sprung über das Datum nach „Pro Woche“. Liegt das Ziel außerhalb von Zeitraum oder Konten des Filters, stellt das Tool nur um, was nötig
 // ist (Zeitraum auf „Gesamter Zeitraum“, Konten auf alle), springt hin und sagt es in einem Toast. Liegt es im Filter, bleibt alles.
 function msJumpNeed(e,rows){const [k,key]=e.j,f=S.ui.flt,d=k==='t'?dOf(key.split('|')[0]):key,to=k==='w'?addDays(key,6):d;
@@ -5441,11 +5480,13 @@ function jrFit(){const b=$('jr-body');if(!b||!JR||JR.v!==2)return;const eng=matc
     if(um)K.forEach((k,i)=>{if(!k.classList.contains('jrr'))return;const p=kOf(K[i-1]),q=kOf(k),h=Math.max(p.offsetHeight,q.offsetHeight);p.style.minHeight=q.style.minHeight=h+'px'})}}
 // Nach dem Schließen: Effekte aus, Herz im Reiter „Resonanz“, danach ein wartendes Fenster nach einem Anlass (Bild); ab 0.158 ohne den Sprung
 // „Alle Meilensteine“
+// Ab 0.179 (Florians Punkt 11 zur Freigabe 0.179): Neuzeichnen erst nach dem nächsten Bild (nachBild), wie beim Feier-Fenster
 function jrClosed(){JR_T.forEach(clearTimeout);JR_T=[];if(FP_OPEN==='jrb')closeFpanel();const bx=$('jr-modal').querySelector('.box');bx.classList.remove('jrspielt','jrschlaegt');
   JR=null;JRP=null;
-  render();
-  msPulse();
-  if(FEN_NACH){const a=FEN_NACH;FEN_NACH=null;clearTimeout(FEN_T);FEN_T=setTimeout(()=>fenTry(a),700)}}
+  nachBild(()=>{
+    render();
+    msPulse();
+    if(FEN_NACH){const a=FEN_NACH;FEN_NACH=null;clearTimeout(FEN_T);FEN_T=setTimeout(()=>fenTry(a),700)}})}
 // ---- Bilder des Jahresrückblicks (ab 0.154): immer hell, ohne Bewegung, Farben fest im Bild, Fußzeile mit dem Toolnamen wie bei den Meilensteinen;
 // nie Hinweise auf fehlende Daten, kein „Letzter Trade am …“, keine Kontonamen. Was das Fenster zeigt („Betrag zeigen“, „Schwächste Werte
 // zeigen“), kommt ins Bild. Arten: s1 = Seite 1 (1080 × 1350, mit Morgenlicht, Leitsatz; Netto-Gewinn nur mit „Betrag zeigen“), kurz =
@@ -5461,7 +5502,18 @@ function jrBildSpec(k,st,o){const X=MS_TXT.jr,y=String(o.y);
 // Lage der Bilder „Kurzfassung“ und „Alle Werte“ (Maße der Vorlagen bei Maßstab s = 1): Kopf (Schmetterling, Kategorie, Titel, goldene Linie),
 // je Gruppe die Überschrift und die Reihen (Linie, Beschriftung, Wert, kleine Zeilen, Linie). Kurzfassung: s so groß wie möglich (höchstens 1,25),
 // der Inhalt steht mittig zwischen Kartenrand oben und Fußzeile. Rückgabe {H, s, y0}.
-function jrLayout(sp){const m=s=>{let h=96*s+40*s+60*s+27*s;for(const g of sp.gruppen){h+=51*s+15*s;for(const r of g.reihen){const n=Math.max(0,...r.map(t=>t.s.length));h+=33*s+49*s+(n?33*s+(n-1)*28*s+18*s:26*s)}}return h};
+// Ab 0.179 (Florians Auftrag 0.179, Phase 4): Das Bild des Überblicks (art 'ov') nutzt dieselbe Zeichnung der Reihen (Baustein mit Einstellung jrMass):
+// Abstände und Schriftgrößen der Reihen je Art, für „Kurzfassung“ und „Alle Werte“ unverändert (Maßstab s). 'ov' nach Florians Vorlage
+// (Eingang/Vorlage-Bild-Ueberblick-*.png): Beschriftung 26, Wert 52, kleine Zeilen 24 px, Reihen 186 bzw. 222 px; eine Reihe mit einem Wert über
+// die ganze Breite mit größerem Wert (64 px, Reihe 200 px; Florians Antworten 4 und 5 zur Freigabe 0.179); Text links 2 px, rechts 28 px nach der Linie.
+function jrMass(sp,s){if(sp.art==='ov')return {lab:50,val:63,sm1:41,smN:n=>n*36,endS:32,endN:33,padL:2,gap:28,pk:26,pv:52,pn:24,ps:24,gr:{val:75,sm1:43,pv:64}};
+  return {lab:33*s,val:49*s,sm1:33*s,smN:n=>n*28*s,endS:18*s,endN:26*s,padL:0,gap:24,pk:22*s,pv:44*s,pn:24*s,ps:21*s,gr:null}}
+// Höhe einer Reihe (Linie oben bis Linie unten)
+function jrRh(r,M){const n=Math.max(0,...r.map(t=>t.s.length)),g=M.gr&&r.length===1&&r[0].gross?M.gr:null;return M.lab+(g?g.val:M.val)+(n?(g?g.sm1:M.sm1)+M.smN(n-1)+M.endS:M.endN)}
+function jrLayout(sp){const m=s=>{const M=jrMass(sp,s);let h=96*s+40*s+60*s+27*s;for(const g of sp.gruppen){h+=51*s+15*s;for(const r of g.reihen)h+=jrRh(r,M)}return h};
+  // Überblick: Kopf bis zur ersten Linie 251 px (Titel, Zeitraum, goldene Linie), unter der letzten Linie 182 px (goldene Linie, Fußzeile); mindestens
+  // 1350 px hoch, sonst steht der Inhalt mittig
+  if(sp.art==='ov'){const M=jrMass(sp,1);let h=251+182;for(const r of sp.gruppen[0].reihen)h+=jrRh(r,M);const H=Math.max(1350,Math.round(36+h));return {s:1,y0:Math.round(36+(H-36-h)/2),H}}
   if(sp.art==='alle'){const h=m(1),y0=36+70;return {s:1,y0,H:Math.round(y0+h+70+110+36)}}
   const top=36,bot=sp.H-84-28,av=bot-top,s=Math.max(0.85,Math.min(1.25,(av-160)/m(1))),h=m(s);return {s,y0:Math.round(top+(av-h)/2),H:sp.H}}
 function jrPng(sp){const W=sp.W,ff=getComputedStyle(document.body).fontFamily||'sans-serif',C=JR_C,L=sp.art==='s1'?null:jrLayout(sp),H=L?L.H:sp.H;
@@ -5497,20 +5549,30 @@ function jrPng(sp){const W=sp.W,ff=getComputedStyle(document.body).fontFamily||'
         y+=200+40;sp.mb.forEach((b,i)=>txt(b,x0+i*(cw+gap)+cw/2,y,26,400,C.ink2,0,'center'));y+=42;txt(sp.monL,W/2,y,26,400,C.ink2,0,'center');
         y+=46;line(W/2-70,y-3,140,C.gold,5);
         lines.forEach((l,i)=>{y+=i?52:62;txt(l,W/2,y,38,600,C.ink,W-200,'center')})}
-      else{const s=L.s,x0=94,Wc=W-188;let y=L.y0;
+      else{const s=L.s,x0=94,Wc=W-188,M=jrMass(sp,s);let y=L.y0;
         // Einheitliche Schriftgrößen im ganzen Bild: Beschriftungen, Werte, Texte statt Wert und kleine Zeilen je so groß, dass der längste Text seiner
-        // Art in seine Spalte passt (sonst stünden in einer Reihe verschiedene Größen)
+        // Art in seine Spalte passt (sonst stünden in einer Reihe verschiedene Größen). Ab 0.179 die Werte einer Reihe mit einem Wert über die ganze
+        // Breite (gross, nur im Bild des Überblicks) für sich.
         const fitPx=(t,px,wt,mw)=>{let p=px;for(;p>12;p-=1){font(p,wt);if(c.measureText(t).width<=mw)break}return p};
-        let pk=22*s,pv=44*s,pn=24*s,ps=21*s;
-        for(const g of sp.gruppen)for(const r of g.reihen){const cw=Wc/r.length;r.forEach((t,i)=>{const mw=cw-(i?24:0)-12;pk=fitPx(t.k,pk,400,mw);if(t.v.none)pn=fitPx(t.v.t,pn,400,mw);else pv=fitPx(t.v.t,pv,700,mw);for(const z of t.s)ps=fitPx(z.t,ps,400,mw)})}
+        let pk=M.pk,pv=M.pv,pn=M.pn,ps=M.ps,pg=M.gr?M.gr.pv:0;
+        for(const g of sp.gruppen)for(const r of g.reihen){const cw=Wc/r.length;r.forEach((t,i)=>{const mw=cw-(i?M.gap:M.padL)-12;pk=fitPx(t.k,pk,400,mw);if(t.v.none)pn=fitPx(t.v.t,pn,400,mw);else if(t.gross&&M.gr)pg=fitPx(t.v.t,pg,700,mw);else pv=fitPx(t.v.t,pv,700,mw);for(const z of t.s)ps=fitPx(z.t,ps,400,mw)})}
+        // Reihen mit Linien: oben eine Linie, je Wert Beschriftung, Wert und kleine Zeilen, senkrechte Linie zwischen den Werten, unten eine Linie
+        const reihe=r=>{const n=r.length,cw=Wc/n,ns=Math.max(0,...r.map(t=>t.s.length)),top=y,rh=jrRh(r,M),g=M.gr&&n===1&&r[0].gross?M.gr:null;
+          r.forEach((t,i)=>{const x=x0+i*cw+(i?M.gap:M.padL),mw=cw-(i?M.gap:M.padL)-12;let yy=top+M.lab;txt(t.k,x,yy,pk,400,C.ink2,mw);yy+=g?g.val:M.val;
+            if(t.v.none)txt(t.v.t,x,yy,pn,400,C.muted,mw);else txt(t.v.t,x,yy,g?pg:pv,700,C.ink,mw);
+            t.s.forEach((z,j)=>{yy+=j?M.smN(1):g?g.sm1:M.sm1;txt(z.t,x,yy,ps,400,C.ink2,mw)});if(i)line(x0+i*cw,top,2,C.line,rh)});
+          y=top+rh;line(x0,y,Wc,C.line,2)};
+        if(sp.art==='ov'){
+          // Kopf des Überblicks (Florians Vorlage): Titel in Gold, normale Schreibweise, fett; darunter Zeitraum und PF-Stellung; goldene Linie 120 × 4
+          y+=115;txt(sp.titel,W/2,y,56,700,C.goldInk,Wc,'center');y+=54;txt(sp.unter,W/2,y,26,400,C.muted,Wc,'center');y+=38;line(W/2-60,y,120,C.gold,4);
+          y+=44;line(x0,y,Wc,C.line,2);for(const r of sp.gruppen[0].reihen)reihe(r);
+          // goldene Linie über der Fußzeile, so groß wie unter dem Kopf
+          line(W/2-60,y+36,120,C.gold,4)}
+        else{
         c.drawImage(img,(W-BW(96*s))/2,y,BW(96*s),96*s);y+=96*s+40*s;txt(sp.kat.toUpperCase(),W/2,y,28*s,700,C.goldInk,Wc,'center',.06);
         y+=60*s;txt(sp.titel,W/2,y,48*s,700,C.ink,Wc,'center');y+=27*s;line(W/2-60,y,120,C.gold,4);
         for(const g of sp.gruppen){y+=51*s;txt(g.h.toUpperCase(),x0,y,22*s,700,C.goldInk,Wc,'left',.06);y+=15*s;line(x0,y,Wc,C.line,2);
-          for(const r of g.reihen){const n=r.length,cw=Wc/n,ns=Math.max(0,...r.map(t=>t.s.length)),top=y,rh=33*s+49*s+(ns?33*s+(ns-1)*28*s+18*s:26*s);
-            r.forEach((t,i)=>{const x=x0+i*cw+(i?24:0),mw=cw-(i?24:0)-12;let yy=top+33*s;txt(t.k,x,yy,pk,400,C.ink2,mw);yy+=49*s;
-              if(t.v.none)txt(t.v.t,x,yy,pn,400,C.muted,mw);else txt(t.v.t,x,yy,pv,700,C.ink,mw);
-              t.s.forEach((z,j)=>{yy+=j?28*s:33*s;txt(z.t,x,yy,ps,400,C.ink2,mw)});if(i)line(x0+i*cw,top,2,C.line,rh)});
-            y=top+rh;line(x0,y,Wc,C.line,2)}}}
+          for(const r of g.reihen)reihe(r)}}}
       // Fußzeile wie bei den Meilensteinen: mittig unten 28 px, passt sie nicht in eine Zeile, nur die Adresse
       font(28,400);c.textAlign='center';c.fillStyle=C.muted;const f=c.measureText(sp.fuss).width<=W-2*96?sp.fuss:MS_TXT.fussKurz;c.fillText(f,W/2,H-84);
       cv.toBlob(b=>b?ok(b):bad(new Error('toBlob')),'image/png')}catch(x){bad(x)}};
@@ -5529,6 +5591,46 @@ function jrImgSave(k){if(!JR)return;const n=jrFile(k);return jrBlob(k).then(b=>{
 function jrImgShare(k){if(!JR)return;const n=jrFile(k),go=b=>{const f=new File([b],n,{type:'image/png'});
     return navigator.share({files:[f]}).then(()=>fenBack(()=>maybeDonate('bild')),x=>{if(x&&x.name==='AbortError')return;download(n,b,'image/png');toast(MS_TXT.teilenFehler);maybeDonate('bild')})};
   const P=JRP;if(P&&P.b[k])return go(P.b[k]);return jrBlob(k).then(go,()=>toast(MS_TXT.bildFehler))}
+
+// ---- Bild des Überblicks (ab 0.179, Florians Auftrag 0.179, Phase 4, und seine Antworten 4 und 5 zur Freigabe). Zeigt, was der Überblick zeigt, mit
+// denselben Werten aus denselben Daten (OV_B aus renderStats, „Diese Woche“ und „Investition“ aus OV_X), rechnet nichts neu, folgt der Filterzeile
+// (Zeitraum, Konten, PF, Währung) und „Rendite ▾“. Immer hell, Farben fest (JR_C), 1080 breit, Höhe nach Inhalt, mindestens 1350 px; gezeichnet von
+// jrPng mit der Art 'ov' (dieselbe Zeichnung der Reihen wie „Kurzfassung“ und „Alle Werte“). Kopf: „Überblick“ in Gold, darunter Zeitraum (erster bis
+// letzter gezählter Handelstag, htSpanne, Jahr zweistellig) und PF-Stellung; keine Kontenzahl, keine Kontonamen, keine Hinweise.
+// Mit Betrag: Netto-Gewinn | Rendite, Ø pro Handelstag | Ø pro Woche, Beste | Schlechteste Woche, Bester | Schlechtester Trade, Trefferquote | Max.
+// Drawdown, Diese Woche | Investition. Ohne Betrag: alle Beträge weg, immer Rendite: Rendite | Diese Woche, dann die vier Paare. Fehlt die Investition,
+// bleibt sie draußen (Florians Antwort 5). Ein Wert allein in seiner Reihe steht über die ganze Breite mit größerem Wert (gross; Florians Antwort 4).
+const OV_TXT={titel:'Überblick',nach:'nach Performance Fee',vor:'vor Performance Fee',auf:'auf die Investition',inv:'Investition',am:'am {d}',ab:'ab {d}',
+  betrag:'Betrag zeigen',speichern:'Speichern',teilen:'Teilen',datei:'Ueberblick'};
+// Zeitraum mit zweistelligem Jahr: „06.07. - 20.11.26“, über zwei Jahre „15.12.25 - 23.01.26“, ein Tag „20.11.26“
+function ovZeit(z){if(!z)return '';if(z.s===z.e)return dS(z.s);return (z.s.slice(0,4)===z.e.slice(0,4)?dm(z.s):dS(z.s))+' - '+dS(z.e)}
+function ovBildSpec(B,X,o){if(!B||!X)return null;const T=OV_TXT,amt=!!o.amt,am=d=>T.am.replace('{d}',d),ab=d=>T.ab.replace('{d}',d);
+  const Z=(k,v,s)=>({k,v:{t:v||'–'},s:(s||[]).filter(Boolean).map(t=>({t}))});
+  // Durchschnitt: mit Betrag groß der Wert nach „Rendite ▾“, klein der andere und die Basis; fehlt die Investition, der Betrag (wie die Kachel); ohne
+  // Betrag die Rendite
+  const avg=(k,z)=>{if(!z.base)return Z(k,'–',[z.ohne]);if(!amt)return Z(k,z.r,[z.base]);if(B.miss)return Z(k,z.a,[z.base]);const [g,kl]=B.pct?[z.r,z.a]:[z.a,z.r];return Z(k,g,[kl,z.base])};
+  // Woche und Trade: der Wert der gewählten Einheit mit seinem Datum, wie die Kachel; ohne Wert kein Datum
+  const ext=(k,x)=>{if(x.ohne)return Z(k,'–',[x.ohne]);const w=!amt||B.pct?x.r:x.a;return w?Z(k,w.t,[w.d]):Z(k,'–',[])};
+  const ren=Z('Rendite',B.rendite,B.rendite?[T.auf]:[]);
+  const dw=X.dw?(d=>{const a=ab(dS(d.W));if(!d.t)return Z('Diese Woche','–',[a+' · '+d.st]);if(!amt)return Z('Diese Woche',d.rT,[a]);const [g,kl]=B.pct?[d.rT,d.aT]:[d.aT,d.rT];return Z('Diese Woche',g,[kl,a])})(X.dw):null;
+  const inv=amt&&X.inv.v!=null?Z(T.inv,fCur(X.inv.v),[am(dS(X.inv.d))]):null;
+  const mitte=[[avg('Ø pro Handelstag',B.tag),avg('Ø pro Woche',B.woche)],[ext('Beste Woche',B.bw),ext('Schlechteste Woche',B.sw)],[ext('Bester Trade',B.bt),ext('Schlechtester Trade',B.st)],
+    [Z('Trefferquote',B.tq.v,[B.tq.s]),Z('Max. Drawdown',B.dd.v,B.dd.d?[am(B.dd.d)]:[])]];
+  const reihen=(amt?[[Z(B.netto.k,B.netto.a,[]),ren],...mitte,[dw,inv]]:[[ren,dw],...mitte]).map(r=>r.filter(Boolean)).filter(r=>r.length);
+  for(const r of reihen)if(r.length===1)r[0].gross=true;
+  const sp={art:'ov',W:1080,H:1350,titel:T.titel,unter:[ovZeit(B.zeit),B.ex?T.nach:T.vor].filter(Boolean).join(' · '),gruppen:[{h:null,reihen}],fuss:MS_TXT.fuss};
+  sp.H=jrLayout(sp).H;return sp}
+// „Betrag zeigen“ (S.ui.ovb): eigene Einstellung, beim ersten Mal an, gemerkt, reist mit der Sicherung
+const ovAmt=()=>S.ui.ovb!==false;
+const ovFile=()=>`Trading-Bilanz_${OV_TXT.datei}_${msToday()}.png`;
+// Bild vorbereiten (beim Öffnen des Menüs und nach dem Häkchen), damit „Teilen“ in der Nutzergeste bleibt; OVP = {key, p, b}
+let OVP=null;
+function ovPrep(){const sp=ovBildSpec(OV_B,OV_X,{amt:ovAmt()});if(!sp)return Promise.reject(new Error('kein Überblick'));const key=JSON.stringify(sp);
+  if(OVP&&OVP.key===key)return OVP.p;const P={key,b:null};P.p=jrPng(sp);P.p.then(b=>{P.b=b},()=>{if(OVP===P)OVP=null});OVP=P;return P.p}
+function ovImgSave(){const n=ovFile();ovPrep().then(b=>{download(n,b,'image/png');maybeDonate('bild')},()=>toast(MS_TXT.bildFehler))}
+function ovImgShare(){const n=ovFile(),go=b=>{const f=new File([b],n,{type:'image/png'});
+    return navigator.share({files:[f]}).then(()=>fenBack(()=>maybeDonate('bild')),x=>{if(x&&x.name==='AbortError')return;download(n,b,'image/png');toast(MS_TXT.teilenFehler);maybeDonate('bild')})};
+  const p=ovPrep();if(OVP&&OVP.b)return go(OVP.b);return p.then(go,()=>toast(MS_TXT.bildFehler))}
 
 /* ---------------- Tag Wallet und Krypto ---------------- */
 /*TAG-LESER-START*/
@@ -13005,9 +13107,10 @@ function xlsxAll(rows,o){
   const GE=glKz(rows,'all',win,AE.week.ps),GU=glKz(RU,'all',win,AU.week.ps);
   // Blätter „Durchschnitt“ und „Hochs und Tiefs“: alle Konten, ganzer Zeitraum, vor und nach PF, EUR und USD, je Wert eigener Extremwert und eigenes Datum
   const P0=v=>v==null||miss?'':X.P(v),E0=v=>v==null?'':X.E(v),N0=v=>v==null?'':X.N(v),D0=o=>o?X.D(o.d||o.w):'';
-  const head=t=>[[X.T(t)],[`Alle Konten, ganzer Zeitraum: Handelstage vom ${fD(win.s)} bis ${fD(htLetzter(win,win.tg))}`],
+  // ab 0.179 aus htSpanne (dieselbe Wurzel wie das Bild des Überblicks); win.s ist hier der erste Trade, also immer ein gezählter Handelstag
+  const head=t=>{const hs=htSpanne(win,win.tg);return [[X.T(t)],[`Alle Konten, ganzer Zeitraum: Handelstage vom ${fD(hs.s)} bis ${fD(hs.e)}`],
     ['Rendite auf die Investition aller Konten. Durchschnitte pro Woche und Monat sowie beste und schwächste Woche nur aus ganzen Wochen und Monaten.'],
-    [`Zählweise beim Export: Tage ohne Trade mitgezählt: ${zero?'ja':'nein'}`],[]];
+    [`Zählweise beim Export: Tage ohne Trade mitgezählt: ${zero?'ja':'nein'}`],[]]};
   const newSheet=(name,t)=>({name,rows:head(t),merges:[],hdr:[],grp:[],skip:[0,1,2,3]});
   const PF=[['vor PF','I','V'],['nach PF','X','N']];
   // Durchschnitt
@@ -13719,7 +13822,7 @@ let FP_OPEN=null;
 // Die drei Knöpfe Rendite/Betrag (Überblick, „Hochs und Tiefs“, „Pro Konto“), alle schalten S.ui.unit
 const UNIT_DD=['u1','u2','u3'];
 // Menüs, die rechts am Knopf im Kartentitel stehen und bei Platzmangel volle Fensterbreite bekommen (placeU)
-const TITLE_DD=[...UNIT_DD,'vs','va','vw','gb','gb2','msz','msk','msb'];
+const TITLE_DD=[...UNIT_DD,'vs','va','vw','gb','gb2','msz','msk','msb','ovb'];
 const WALLET_DD=['vs','va','vw','wr'];
 // Kartenfilter im Reiter Wallet (ab 0.38): Menü → Schlüssel in S.ui.cf. Gespeichert sind die abgewählten Werte, Neues ist also sichtbar.
 // Ab 0.43 nur noch der Filter der Liste „Alle Vorgänge“ (vf → S.ui.cf.vg); die Werte der alten Karten bleiben gespeichert, ungenutzt
@@ -13924,6 +14027,8 @@ function buildFpanel(which){
   if(which==='gb'||which==='gb2'){$('fp-'+which).innerHTML='<div class="fgrp"><button type="button" class="wopt" data-gimg="save">Speichern</button><button type="button" class="wopt" data-gimg="share">Teilen</button></div>';return}
   // Ab 0.139: Menü „Bild ▾“ an einem Meilenstein (Karte und Feier-Fenster) und „Konten für Meilensteine“ im Titel der Karte
   if(which==='msb'){$('fp-msb').innerHTML='<div class="fgrp"><button type="button" class="wopt" data-msim="save">Speichern</button><button type="button" class="wopt" data-msim="share">Teilen</button></div>';return}
+  // Ab 0.179: Menü „Bild ▾“ im Überblick: „Speichern“, „Teilen“ (wenn das Gerät Dateien teilen kann) und das Häkchen „Betrag zeigen“ (S.ui.ovb)
+  if(which==='ovb'){$('fp-ovb').innerHTML=`<div class="fgrp"><button type="button" class="wopt" data-ovim="save">${esc(OV_TXT.speichern)}</button>${CAN_SHARE_FILE?`<button type="button" class="wopt" data-ovim="share">${esc(OV_TXT.teilen)}</button>`:''}</div><div class="fgrp"><label class="fopt"><input type="checkbox" id="ov-amt"${ovAmt()?' checked':''}><span>${esc(OV_TXT.betrag)}</span></label></div>`;return}
   // Ab 0.154: Menü „Bild ▾“ im Jahresrückblick (jrMenuH: Seite 1 ein Bild, Seite 2 „Kurzfassung“ und „Alle Werte“)
   if(which==='jrb'){$('fp-jrb').innerHTML=jrMenuH();return}
   // Ab 0.142: „nur dieses“ wie im Konten-Menü der Filterzeile; Menü „Zeitraum“ der Karte: „Gesamt“ und die Jahre mit Trades der gezählten Konten, absteigend
@@ -14448,8 +14553,12 @@ document.querySelectorAll('.fpan').forEach(p=>wheelContain(p));
 // nur verkleinert, bekommen alle Kachelwerte dieselbe kleinere Schrift (box.dataset.vfs), damit die Reihen einheitlich bleiben. Sonst 2 Spalten.
 // Danach passt fitTileVals() einzelne Werte an, die trotzdem nicht passen.
 const TILE_MIN=0.7;
+// Ab 0.179: „Diese Woche“ (#cwbar) und „Investition jetzt“ (#invbar) sind die letzten Kinder von #tiles (.ovx). Die Spaltenzahl entscheiden weiter nur
+// die zehn Kacheln. Bei 5 Spalten stehen beide als Leiste in Reihe 3 (Florians Auftrag 0.179: „Diese Woche“ unter den linken drei Kachelspalten,
+// „Investition jetzt“ unter den rechten zwei, allein bleibt sie rechts), sonst als Kacheln nach den zehn (4 Spalten: Reihe 3 voll, allein steht
+// „Investition“ ganz rechts, Florians Antwort 3 zur Freigabe 0.179; 2 Spalten: Reihe 6, allein links).
 function layoutTiles(){
-  const box=$('tiles');const ts=[...box.children];const cw=box.clientWidth;if(!ts.length||!cw)return;
+  const box=$('tiles');const ts=[...box.children].filter(t=>!t.classList.contains('ovx'));const cw=box.clientWidth;if(!ts.length||!cw)return;
   box.querySelectorAll('.tile>.v').forEach(v=>v.style.fontSize='');
   const probe=document.createElement('span');probe.style.cssText='position:absolute;left:-9999px;top:0;visibility:hidden;white-space:nowrap';
   document.body.appendChild(probe);
@@ -14463,13 +14572,31 @@ function layoutTiles(){
   const fs=parseFloat(getComputedStyle(ts[0].querySelector(':scope>.v')).fontSize);
   box.dataset.vfs=cols>2&&vw>c?Math.floor(fs*c/vw*2)/2:'';
   box.style.gridTemplateColumns=`repeat(${cols},minmax(0,1fr))`;box.style.gridAutoFlow=cols===5?'column':'row';box.style.gridTemplateRows=cols===5?'repeat(2,auto)':'';
-  // 4 Spalten: neunte Kachel in Spalte 2, die zehnte folgt in Spalte 3 (letztes Paar mittig)
-  if(ts[8])ts[8].style.gridColumn=cols===4?'2':'';
+  // 4 Spalten: bis 0.178 stand die neunte Kachel in Spalte 2 (letztes Paar mittig); ab 0.179 füllen „Diese Woche“ und „Investition jetzt“ Reihe 3.
+  // 5 Spalten: die zehn Kacheln fest in Reihe 1 und 2 (Paare untereinander); sonst füllte der Spaltenfluss die freien Felder von Reihe 3, wenn
+  // „Investition jetzt“ dort allein steht.
+  ts.forEach((t,i)=>{t.style.gridColumn=cols===5?String(Math.floor(i/2)+1):'';t.style.gridRow=cols===5?String(i%2+1):''});
   box.dataset.cols=cols;
-  // Ab 0.100: Leiste „Diese Woche“ mit 2 Kachelspalten: Werte bündig mit den Kachelspalten (Innenabstand wie die Kachel, Spaltenabstand Gap + 2 × Innenabstand)
-  {const cb=$('cwbar'),c2=cols===2,P=parseFloat(tc.paddingLeft);cb.classList.toggle('c2',c2);cb.style.paddingLeft=cb.style.paddingRight=c2?P+'px':'';cb.style.columnGap=c2?(gap+2*P)+'px':''}
+  if((cols===5)!==(box.dataset.ovx==='l'))ovxZeichnen(cols!==5);
+  {const dw=$('cwbar'),iv=$('invbar'),L=cols===5;
+   if(dw){dw.style.gridRow=L?'3':'';dw.style.gridColumn=L?'1 / 4':''}
+   if(iv){iv.style.gridRow=L?'3':'';iv.style.gridColumn=L?'4 / 6':cols===4&&!dw?'4':''}}
   fitTileVals();
 }
+// Ab 0.179: „Diese Woche“ und „Investition jetzt“ aus OV_X (renderStats) in #tiles zeichnen. kachel: als Kachel (4 und 2 Spalten, wie „Ø pro Woche“:
+// Titel, groß der Wert nach „Rendite ▾“, klein der andere Wert, darunter der Stand), sonst als Leiste (5 Spalten: links Titel und Stand, rechts die Werte).
+let OV_X=null,OV_B=null;
+function ovxZeichnen(kachel){const box=$('tiles');for(const id of ['cwbar','invbar']){const e=$(id);if(e)e.remove()}
+  box.dataset.ovx=kachel?'k':'l';box.insertAdjacentHTML('beforeend',ovxH(kachel))}
+function ovxH(kachel){if(!OV_X)return '';const X=OV_X,d=X.dw,I=X.inv,H=[];
+  const invT=gl('inv','Investition')+' '+(I.jetzt?'jetzt':'am '+dS(I.d));
+  if(d){const tit=d.t?jlink('w',d.W,'Diese Woche'):'Diese Woche';
+    if(kachel){const [v,o]=!d.t?['–','']:X.pct?[d.rH,d.aH]:[d.aH,d.rH];
+      H.push(`<div class="tile ovx" id="cwbar"><div class="k">${tit}</div><div class="v">${v}</div><div class="s">${o?o+'<br>':''}${esc(d.st)}</div></div>`)}
+    else H.push(`<div class="cwbar ovx" id="cwbar"><div class="cwt"><div class="cwh">${tit}</div><div class="s">${esc(d.st)}</div></div><div class="cwv"><div><div class="k">${X.ex?gl('netto','Netto-Gewinn'):gl('vorpf','Ergebnis vor PF')}</div><div class="v">${d.t?d.aH:'–'}</div></div><div><div class="k">${gl('rendite','Rendite')}</div><div class="v">${d.t?d.rH:'–'}</div></div></div></div>`)}
+  if(kachel)H.push(`<div class="tile ovx" id="invbar"><div class="k">${invT}</div><div class="v">${I.vH}</div>${I.miss?`<div class="s">${I.miss}</div>`:''}</div>`);
+  else H.push(`<div class="cwbar ovx" id="invbar"><div class="cwt"><div class="cwh">${invT}</div>${I.miss?`<div class="s">${I.miss}</div>`:''}</div><div class="cwv"><div><div class="v">${I.vH}</div></div></div></div>`);
+  return H.join('')}
 // Voller Text eines Kachelwerts (Beträge stehen in .vi mit data-f = mit Nachkommastellen, data-s = ohne)
 function tileFull(v){const i=v.querySelector('.vi');return i?v.textContent.replace(i.textContent,i.dataset.f):v.textContent}
 // Für jede Kachel einzeln, ausgehend von der gemeinsamen Schrift aus layoutTiles(): Passt der Wert nicht, zuerst ohne Nachkommastellen
@@ -14485,8 +14612,8 @@ function fitTileVals(){
     let fs=parseFloat(getComputedStyle(v).fontSize);
     for(let k=0;k<30&&fs>8&&w()>av+0.5;k++){let nf=Math.floor(fs*av/w()*2)/2;if(nf>=fs)nf=fs-0.5;fs=Math.max(8,nf);v.style.fontSize=fs+'px'}
   }
-  // Ab 0.100: Werte der Leiste „Diese Woche“ genauso (nur wenn sie nicht passen: ohne Nachkommastellen, dann kleiner)
-  for(const v of $('cwbar').querySelectorAll('.v')){
+  // Ab 0.100: Werte der Leiste „Diese Woche“ genauso (nur wenn sie nicht passen: ohne Nachkommastellen, dann kleiner); ab 0.179 auch „Investition jetzt“
+  for(const v of $('tiles').querySelectorAll('.cwbar .v')){
     v.style.fontSize='';const i=v.querySelector('.vi');if(i)i.textContent=i.dataset.f;
     const av=v.clientWidth;if(!av)continue;
     const rg=document.createRange();const w=()=>{rg.selectNodeContents(v);return rg.getBoundingClientRect().width};
@@ -14514,6 +14641,8 @@ const HB={},hbOf=id=>HB[id]||{e:0,t:0,f:0,k:0};
 // Text des Sortierknopfs in Textstufe t: „Neueste oben“ → „Neueste“ → Pfeil. Der Pfeil zeigt, wo die neueste Zeile steht (↑ oben, ↓ unten).
 const hbSortT=(t,nw)=>t>=2?(nw?'↑':'↓'):t===1?(nw?'Neueste':'Älteste'):(nw?'Neueste oben':'Älteste oben');
 // Kalender-Symbol für den Zeitraum der Meilensteine (letzte Stufen, in der Farbe der Knopfschrift)
+// Ab 0.179: Bild-Symbol für den Knopf „Bild ▾“ im Überblick in der letzten Stufe (ohne ▾, vorgelesen „Bild“), wie das Kalender-Symbol
+const HB_BILD='<svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true"><rect x="1.8" y="2.5" width="12.4" height="11" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2.8 12l3.4-3.8 2.5 2.6 1.6-1.6 2.9 2.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="10.9" cy="5.7" r="1.3" fill="currentColor"/></svg>';
 const HB_CAL='<svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true"><rect x="1.8" y="3" width="12.4" height="11" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M1.8 6.7H14.2M5 1.3V4.3M11 1.3V4.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 // Meilensteine, Konten: „Konten: alle ▾“ / „6 von 10 Konten ▾“ → „alle ▾“ / „6 von 10 ▾“ → „6/10 ▾“ → „6/10“. Zeitraum: „Gesamt ▾“ bzw. das Jahr, ab Stufe 3 ohne ▾.
 const msBtnK=(t,n,N)=>t===0?(n===N?'Konten: alle':`${n} von ${N} Konten`)+' ▾':t===1?(n===N?'alle':`${n} von ${N}`)+' ▾':`${n}/${N}`+(t===2?' ▾':'');
@@ -14527,21 +14656,32 @@ function msBtns(){const st=hbOf('st-ms'),{n,N,y}=MS_BTN,k=$('fb-msk'),z=$('fb-ms
   k.textContent=msBtnK(st.t,n,N);k.setAttribute('aria-label','Konten: '+(n===N?'alle':`${n} von ${N}`));
   if(st.k)z.innerHTML=HB_CAL;else z.textContent=msBtnZ(st.t,y);z.setAttribute('aria-label','Zeitraum: '+(y||MS_TXT.zeit.gesamt))}
 // Alle Knopftexte der Titelleisten für die aktuelle Auswahl in der gewählten Stufe
-function hbTexts(){stSortBtns();msBtns();for(const u of UNIT_DD)$('fb-'+u).textContent=(S.ui.unit!=='amt'?'Rendite':'Betrag')+' ▾';
-  const g=$('fb-gb');g.textContent=grafBtnT(hbOf('st-graf').t);if(CAN_SHARE_FILE)g.removeAttribute('aria-label');else g.setAttribute('aria-label','Bild speichern')}
+// Ab 0.179: Beschriftung der drei Knöpfe Rendite/Betrag; im Überblick in der letzten Stufe kurz („% ▾“, „USD ▾“ bzw. „€ ▾“), vorgelesen voll
+// (GESTALTUNG Abschnitt 0, Regel ab 0.150). Eine Stelle für hbTexts und renderHL.
+function unitTexte(){const pct=S.ui.unit!=='amt';for(const u of UNIT_DD)$('fb-'+u).textContent=(pct?'Rendite':'Betrag')+' ▾';
+  const u=$('fb-u1');if(hbOf('st-ov').t){u.textContent=(pct?'%':CUR_EFF==='eur'?'€':'USD')+' ▾';u.setAttribute('aria-label',pct?'Rendite':'Betrag')}else u.removeAttribute('aria-label')}
+function hbTexts(){stSortBtns();msBtns();unitTexte();
+  const g=$('fb-gb');g.textContent=grafBtnT(hbOf('st-graf').t);if(CAN_SHARE_FILE)g.removeAttribute('aria-label');else g.setAttribute('aria-label','Bild speichern');
+  // Ab 0.179: „Bild ▾“ im Überblick, in der letzten Stufe das Symbol mit dem Vorlesetext „Bild“ (GESTALTUNG Abschnitt 0, Regel ab 0.150)
+  {const b=$('fb-ovb'),k=!!hbOf('st-ov').k;b.innerHTML=k?HB_BILD:'Bild ▾';if(k)b.setAttribute('aria-label','Bild');else b.removeAttribute('aria-label')}}
 // Leitern: je Karte die Stufen in der Reihenfolge, in der sie probiert werden (GESTALTUNG Abschnitt 20). Zuerst Abstände (e), dann kürzere
 // Knopftexte (t), unter 360 px Florians Reihenfolge: kleinere Knopfschrift (f), Kalender-Symbol für den Zeitraum der Meilensteine (k),
 // Kurzform des Titels „Netto / Konto u. Monat“ (k), zuletzt für alle Karten die kleinere Titelschrift (.hbt). Passt auch das nicht, bricht
 // die Leiste um (allerletzte Notlösung). „Aufklappen ▾“ bleibt immer ganz, der Titel wird sonst nie gekürzt, kein Symbol für Konten.
 const HB_L=(()=>{const s=(e,t,f,k)=>({e,t,f:f||0,k:k||0}),sort=[s(0,0),s(1,0),s(1,1),s(1,2),s(1,2,1)],unit=[s(0,0),s(1,0),s(1,0,1)],plain=[s(0,0),s(1,0)];
   // Ab 0.161: Die Grafiken haben keine kürzere Knopfstufe mehr (der Knopf heißt ohne Teilen schon „Bild“); bis 0.160 [s(0,0),s(1,0),s(1,1),s(1,1,1)]
-  return {'st-ov':unit,'st-graf':unit,'st-hl':unit,'st-ms':[s(0,0),s(1,0),s(1,1),s(1,2),s(1,3),s(1,3,1),s(1,3,1,1)],'st-avg':plain,
+  // Ab 0.179: Überblick mit „Bild ▾“: nach der kleineren Knopfschrift das Bild-Symbol ohne ▾ (k); mit dem frei gehaltenen Platz des Schmetterlings
+  // reichte bei 360 px (Roboto) auch die Knopfschrift 13 px nicht (gemessen 332 statt 323 px)
+  // und als letzte eigene Stufe „Rendite ▾“ kurz („% ▾“, bei Betrag „USD ▾“ bzw. „€ ▾“, vorgelesen voll), damit die kleinere Titelschrift für alle Karten
+  // weiter erst nach der Kurzform von „Netto pro Konto und Monat“ kommt (Florians Reihenfolge unter 360 px)
+  return {'st-ov':[s(0,0),s(1,0),s(1,0,1),s(1,0,1,1),s(1,1,1,1)],'st-graf':unit,'st-hl':unit,'st-ms':[s(0,0),s(1,0),s(1,1),s(1,2),s(1,3),s(1,3,1),s(1,3,1,1)],'st-avg':plain,
     'st-week':sort,'st-month':sort,'st-acc':unit,'st-matrix':[s(0,0),s(1,0),s(1,0,0,1)],'real-card':plain,'st-calc':plain}})();
 function hbSet(id,st){const c=$(id);HB[id]=st;c.toggleAttribute('data-hbe',!!st.e);c.toggleAttribute('data-hbf',!!st.f);c.toggleAttribute('data-hbk',!!st.k)}
 // Jeder mögliche Text je Knopf einer Karte in Stufe st (wie fbCands in der Filterzeile): [[Knopf, [HTML, …]], …]
 function hbCands(id,st){
   if(id==='st-week'||id==='st-month')return [[$(id==='st-week'?'wk-sort':'mo-sort'),[hbSortT(st.t,true),hbSortT(st.t,false)]]];
-  if(id==='st-ov'||id==='st-hl'||id==='st-acc')return [[$('fb-'+{'st-ov':'u1','st-hl':'u2','st-acc':'u3'}[id]),['Rendite ▾','Betrag ▾']]];
+  if(id==='st-ov')return [[$('fb-u1'),st.t?['% ▾',(CUR_EFF==='eur'?'€':'USD')+' ▾']:['Rendite ▾','Betrag ▾']],[$('fb-ovb'),[st.k?HB_BILD:'Bild ▾']]];
+  if(id==='st-hl'||id==='st-acc')return [[$('fb-'+{'st-hl':'u2','st-acc':'u3'}[id]),['Rendite ▾','Betrag ▾']]];
   if(id==='st-graf')return [[$('fb-gb'),[grafBtnT(st.t)]]];
   if(id==='st-ms'){const N=MS_BTN.N||1;return [[$('fb-msz'),st.k?[HB_CAL]:['',...MS_BTN.ys].map(y=>esc(msBtnZ(st.t,y)))],[$('fb-msk'),Array.from({length:N},(_,i)=>esc(msBtnK(st.t,i+1,N)))]]}
   return []}
@@ -14555,12 +14695,15 @@ function hbFit(){
   const key=[sec.clientWidth,getComputedStyle(document.body).fontSize,getComputedStyle($('fb-range')).fontSize,MS_BTN.N,MS_BTN.ys.join(),CAN_SHARE_FILE?1:0,vis.map(id=>id+($(id).classList.contains('closed')?'-':'+')).join()].join('#');
   if(key===HB_KEY)return;HB_KEY=key;
   sec.classList.remove('hbt');
-  const fits=(id,st)=>{const h=$(id).querySelector('.sthd>h2');hbSet(id,st);
+  // Ab 0.179: Im Überblick misst die Leiste den Platz des Schmetterlings neben dem Titel immer mit (seine Hülle #ms-bf-ov ist sonst 0 px breit, Regel ab
+  // 0.143: er verändert nie das Layout). Mit „Bild ▾“ lag „Rendite ▾“ bei 360 px sonst über ihm. Die Stufe hängt so nicht davon ab, ob er gerade da ist.
+  const bfw=$('ms-bf-ov'),bfB=Math.ceil(BF_H.ov*BFLY_WH[0]/BFLY_WH[1]);
+  const fits=(id,st)=>{const h=$(id).querySelector('.sthd>h2');hbSet(id,st);if(id==='st-ov')bfw.style.width=bfB+'px';
     for(const [b,L] of hbCands(id,st)){let w=-1,best=L[0];for(const x of L){b.innerHTML=x;const v=b.getBoundingClientRect().width;if(v>w){w=v;best=x}}b.innerHTML=best}
     h.classList.add('hbm');const lim=h.getBoundingClientRect().right+0.02;let r=0; // der Browser bricht schon bei einem Bruchteil eines px um
     for(const nd of h.childNodes){if(nd.nodeType===3){if(!nd.textContent.trim())continue;const g=document.createRange();g.selectNodeContents(nd);r=Math.max(r,g.getBoundingClientRect().right)}
       else if(nd.nodeType===1&&nd.id!=='ms-bf-ov'&&nd.getClientRects().length)r=Math.max(r,nd.getBoundingClientRect().right)}
-    h.classList.remove('hbm');return r<=lim};
+    h.classList.remove('hbm');if(id==='st-ov')bfw.style.width='';return r<=lim};
   const bad=vis.filter(id=>!HB_L[id].some(st=>fits(id,st))),last=id=>HB_L[id][HB_L[id].length-1];
   // Letzte Stufe für alle Karten gemeinsam, damit die Titel gleich groß bleiben. Sie gilt nur, wenn damit mindestens eine Leiste wieder in
   // eine Zeile passt; sonst bleibt die Schrift, und die Leiste bricht um (allerletzte Notlösung).
@@ -14572,7 +14715,7 @@ function stSortBtns(){for(const [id,k,c] of [['wk-sort','wkSort','st-week'],['mo
   b.textContent=hbSortT(hbOf(c).t,nw);b.setAttribute('aria-label','Sortierung: '+(nw?'neueste oben, umschalten':'älteste oben, umschalten'))}}
 function renderStats(rows){
   stSortBtns();
-  const ok=guard('stats-guard');$('stats-body').style.display=ok?'':'none';if(!ok){CW=null;CW_IN=false;renderFbar(false);return}
+  const ok=guard('stats-guard');$('stats-body').style.display=ok?'':'none';if(!ok){CW=null;CW_IN=false;OV_X=OV_B=null;renderFbar(false);return}
   const all=Object.keys(S.accounts).sort();const sel=fltAccs();const selSet=new Set(sel);const allSel=sel.length===all.length;MISS_SEL=sel;
   // PF-Schalter: ex = PF verteilt (PF anteilig bei den Trades, in der laufenden Woche ausgerechnet), sonst PF laut MT5
   const ex=S.ui.flt.pf==='ex',mode=ex?'nach PF':'vor PF',key=ex?'exE':'eur';
@@ -14634,7 +14777,7 @@ function renderStats(rows){
   const empty=rg.bad||!R.some(isTrade);
   $('stats-empty').innerHTML=rg.bad?`<div class="msg warn">${fltBadMsg()}</div>`:empty?'<div class="card"><p style="margin:0">In diesem Zeitraum gibt es bei den gewählten Konten keine Trades.</p></div>':'';
   for(const id of ['st-ov','st-avg','st-graf','st-hl','st-acc','st-month','st-week','st-matrix','st-calc'])$(id).style.display=empty?'none':'';
-  if(empty){grafRedraw=null;return}
+  if(empty){grafRedraw=null;OV_X=OV_B=null;return}
   // Gezähltes Fenster (cntWin): Handelstage (Block „Handelstag“) ab dem ersten Trade der gewählten Konten bzw. ab dem Anfang des Zeitraums,
   // bis zum Ende des Zeitraums, höchstens bis zum Datenstand (Datum des neuesten Reports, sonst letzte Buchung; ab 0.159 ohne den Datenstand
   // selbst, wenn an ihm kein Trade liegt: lastT)
@@ -14652,7 +14795,8 @@ function renderStats(rows){
   const pr=p=>p.rMiss?null:(ex?p.rX:p.rI);
   const pick=(A,Rr)=>{const [c,o]=pct?[Rr,A]:[A,Rr];return [c.v,c.s,o.f]};
   // Bester/Schlechtester Trade: Zeile 3 Datum (Link) und Symbol, Zeile 4 Zahl der Konten (wenn mehr als 1) und PF-Stellung
-  const trSub=p=>{const n=Object.keys(p.by).length;return jlink('t',p.t+'|'+p.sym,dS(p.d))+', '+esc(p.sym)+'<br>'+(n>1?`${n} Konten · `:'')+mode};
+  // Ab 0.179 (Florians Entscheidung, Auftrag 0.179): „nach PF“ bzw. „vor PF“ als Begriff pfst
+  const trSub=p=>{const n=Object.keys(p.by).length;return jlink('t',p.t+'|'+p.sym,dS(p.d))+', '+esc(p.sym)+'<br>'+(n>1?`${n} Konten · `:'')+gl('pfst',mode)};
   const mTx=invMissTxt(sel),noR={v:invDash(sel),s:mTx,f:'–'},none={v:'–',s:'',f:'–'};
   const trTile=(pa,pp)=>pick(pa?{v:monT(pa[key]),s:trSub(pa),f:fCur(pa[key])}:none,AK.miss?noR:pp?{v:fR.format(pr(pp)),s:trSub(pp),f:fR.format(pr(pp))}:none);
   // Beste und Schlechteste Woche: nur gezählte ganze Wochen mit Trades. „Ø pro Woche“ zählt mit dem Häkchen weiter auch Wochen ohne Trade mit 0.
@@ -14692,29 +14836,52 @@ function renderStats(rows){
     [gl('hit','Trefferquote'),G.n?fP.format(G.nW/G.n):'–',`${fI.format(G.nW)} von ${fI.format(G.n)} ${G.n===1?'Trade':'Trades'}`],
     [gl('dd','Max. Drawdown'),ddHtml(dT,'–',true),dT.miss?mTx:'auf deine '+gl('inv','Investition')+(dT.n&&dT.v<0?' · '+jlink('d',dT.d,'am '+dS(dT.d)):'')]
   ];
+  // Ab 0.179 (Florians Auftrag 0.179, Phase 4): Modell für das Bild des Überblicks (ovBildSpec), aus denselben Objekten wie die Kacheln; es rechnet
+  // nichts neu. Je Kachel Betrag (a) und Rendite (r) als Text mit dem Datum der jeweiligen Stelle (d), null = kein Wert; z = Durchschnitt
+  // {k: Basis, a, r}. Zeitraum = erster bis letzter gezählter Handelstag (htSpanne, wie die Kopfzeile im Excel mit allen Daten).
+  {const avgB=(z,one,many,ohne)=>z.k?{a:fCur(ex?z.aX:z.aI),r:AK.miss?null:fR.format(ex?z.rX:z.rI),base:`aus ${z.k} ${z.k===1?one:many}`}:{ohne};
+   const wkB=o=>o.a?{a:{t:fCur(o.a.v),d:wkSub(o.a.o.w)},r:AK.miss?null:{t:fR.format(o.r.v),d:wkSub(o.r.o.w)}}:{ohne:'noch keine ganze Woche'};
+   const trB=(pa,pp)=>({a:pa?{t:fCur(pa[key]),d:dS(pa.d)}:null,r:AK.miss||!pp?null:{t:fR.format(pr(pp)),d:dS(pp.d)}});
+   OV_B={ex,pct,miss:!!AK.miss,zeit:rg.bad?null:htSpanne(win,win.tg),
+     netto:{k:ex?'Netto-Gewinn':'Ergebnis vor PF',a:fCur(ex?T.nN:T.res)},rendite:rS.miss||rS.n===0?null:fR.format(rS.v),
+     tag:avgB(AK.day,'Handelstag','Handelstagen',''),woche:avgB(AK.week,'ganzen Woche','ganzen Wochen','noch keine ganze Woche'),
+     bw:wkB(GW.bestW),sw:wkB(GW.worstW),bt:trB(eo(GW.bestT.a),eo(GW.bestT.r)),st:trB(eo(GW.worstT.a),eo(GW.worstT.r)),
+     tq:{v:G.n?fP.format(G.nW/G.n):'–',s:`${fI.format(G.nW)} von ${fI.format(G.n)} ${G.n===1?'Trade':'Trades'}`},
+     dd:{v:dT.miss||dT.n===0?'–':fR.format(dT.v),d:!dT.miss&&dT.n&&dT.v<0?dS(dT.d):''}}}
   // Ab 0.139: Schmetterling an der Kachel, wenn sie gerade den neuen Meilenstein zeigt: „Beste Woche“ und „Bester Trade“ dieselbe Woche bzw.
   // denselben Trade (in der gewählten Einheit und PF-Stellung), Stufen an „Netto-Gewinn“ (nur bei „PF verteilt“) und „Rendite“
   const bwS=pct?(AK.miss?null:GW.bestW.r):GW.bestW.a,btS=pct?(AK.miss?null:eo(GW.bestT.r)):eo(GW.bestT.a);
   const tbf=[ex?msBf('k:sn',['sn']):'',msBf('k:sr',['sr']),'','',bwS?msBf('k:aw',['aw','jw'],bwS.o.w):'','',btS?msBf('k:at',['at','jt'],btS.t+'|'+btS.sym):''];
-  $('tiles').innerHTML=tiles.map(([k,v,s,alt],i)=>`<div class="tile${tbf[i]?' hasbf':''}"><div class="k">${k}</div><div class="v"${alt?` data-alt="${esc(alt)}"`:''}>${v}</div>${s?`<div class="s">${s}</div>`:''}${tbf[i]||''}</div>`).join('');
-  // Ab 0.100: Leiste „Diese Woche“. Sichtbar, wenn die Woche (Mo bis So) des neuesten Trades der gewählten Konten die heutige Woche ist (Uhr des Geräts)
-  // und im gewählten Zeitraum liegt, also bis Sonntag 23:59, auch nach der Abrechnung. Stand: laufend (CW) vor Samstag „bisher · n von 5 Handelstagen“
-  // (n = Handelstage der Woche bis zum Datenstand, ab 0.159 aus htListe: der Datenstand zählt nur mit Trade, in einer Woche mit dem 25.12. oder
-  // dem 01.01. ohne Trade „von 4“), ab Samstag „Handel vorbei“ (mit „· PF noch offen“, wenn die Woche vor PF in USD im Plus ist), sonst „abgerechnet“.
-  // Werte wie die erste Kachel (PF verteilt: Netto-Gewinn, PF laut MT5: Ergebnis vor PF) und die Rendite nach PF-Schalter, immer beide.
-  {const bar=$('cwbar');let lt=null;for(const r of RA)if(isTrade(r))lt=r;
-   const W=lt?lt.wk:null,inO=r=>(!rg.from||r.d>=rg.from)&&(!toOrig||r.d<=toOrig);
-   const on=!!W&&!rg.bad&&W===monday(todayLocal())&&RA.some(r=>isTrade(r)&&r.wk===W&&inO(r));
-   bar.hidden=!on;
-   if(on){const rw=nocwOn()?CWR:R.filter(r=>r.wk===W),z=pfz(rw);
-     // Handelstage der Woche W (Montag bis Freitag): alle und die bis zum gezählten Ende der Daten
-     const wT=new Set(RA.filter(r=>isTrade(r)&&r.wk===W).map(r=>r.d)),wE=addDays(W,4),wN=htListe(W,wE,null,wT).length,wB=htListe(W,wE,cntWin(W,null,null,dataEnd,lastT),wT).length;
-     // Ab 0.162 (Florians Antwort 1 zur Freigabe 0.162): „PF noch offen“, wenn die Woche vor PF in USD im Plus ist (bis 0.161 in der Währung der
-     // Anzeige; in Euro konnte eine Woche mit genau 0 USD knapp im Plus sein, weil ihre Tage verschiedene Kurse haben)
-     let st=CW!==W?'abgerechnet':dataEnd<addDays(W,5)?`bisher · ${wB} von ${wN} Handelstagen`:sumTrades(rw,false,true).v>0?'Handel vorbei · PF noch offen':'Handel vorbei';
-     if(nocwOn())st+=' · nicht in den Kennzahlen';
-     bar.innerHTML=`<div class="cwt"><div class="cwh">${jlink('w',W,'Diese Woche')}</div><div class="s">${st}</div></div><div class="cwv"><div><div class="k">${ex?gl('netto','Netto-Gewinn'):gl('vorpf','Ergebnis vor PF')}</div><div class="v">${monT(ex?z.nN:z.res)}</div></div><div><div class="k">${gl('rendite','Rendite')}</div><div class="v">${retHtml(retSum(rw,'sel',ex),'–',true)}</div></div></div>`}
-   else bar.innerHTML=''}
+  // Ab 0.100: Leiste „Diese Woche“. Stand: laufend (CW) vor Samstag „bisher · n von 5 Handelstagen“ (n = Handelstage der Woche bis zum Datenstand,
+  // ab 0.159 aus htListe: der Datenstand zählt nur mit Trade, in einer Woche mit dem 25.12. oder dem 01.01. ohne Trade „von 4“), ab Samstag
+  // „Handel vorbei“ (mit „· PF noch offen“, wenn die Woche vor PF in USD im Plus ist), sonst „abgerechnet“. Werte wie die erste Kachel (PF verteilt:
+  // Netto-Gewinn, PF laut MT5: Ergebnis vor PF) und die Rendite nach PF-Schalter.
+  // Ab 0.179 (Florians Entscheidung vom 22.11.2026): „Diese Woche“ steht immer, wenn die heutige Woche (Montag bis Sonntag, Uhr des Geräts) im
+  // gewählten Zeitraum liegt (heute im Zeitraum; bis 0.178 nur in der Woche des neuesten Trades). Ohne Trade dieser Woche im Zeitraum: Wert „–“,
+  // Titel ohne Link, Stand „noch kein Trade“, wenn der Datenstand der gewählten Konten schon in dieser Woche liegt, sonst „noch kein Report“
+  // (Florians Wortlaut; ohne „· nicht in den Kennzahlen“). In der angeschnittenen Woche am Monats- oder Jahreswechsel zählt nur, was im Zeitraum
+  // liegt (Florians Antwort 6 zur Freigabe 0.179).
+  // Ab 0.179: „Investition jetzt“ = die Investition der gewählten Konten am Ende des Zeitraums, derselbe Wert wie „Pro Konto“, Zeile „Gesamt“, Spalte
+  // „Investition am Ende“ (capG). „jetzt“, wenn das Ende des Zeitraums nicht vor dem Datenstand liegt, sonst „am 31.12.25“ (auch mit „Laufende Woche
+  // weglassen“: dann endet der Zeitraum am Sonntag davor, Florians Antwort 2 zur Freigabe 0.179).
+  // OV_X hält beides für ovxZeichnen (Leiste oder Kachel) und für das Bild des Überblicks.
+  const endT=rg.to?rg.to.replace(/-/g,'.')+' 23:59:59':'9999',capG=invSumme(sel,endT);
+  {const tdy=todayLocal(),W=monday(tdy),on=!rg.bad&&(!rg.from||tdy>=rg.from)&&(!toOrig||tdy<=toOrig);let dw=null;
+   if(on){const rw=nocwOn()&&CW===W?CWR:R.filter(r=>r.wk===W);
+     if(rw.some(isTrade)){const z=pfz(rw),rr=retSum(rw,'sel',ex),a=ex?z.nN:z.res;
+       // Handelstage der Woche W (Montag bis Freitag): alle und die bis zum gezählten Ende der Daten
+       const wT=new Set(RA.filter(r=>isTrade(r)&&r.wk===W).map(r=>r.d)),wE=addDays(W,4),wN=htListe(W,wE,null,wT).length,wB=htListe(W,wE,cntWin(W,null,null,dataEnd,lastT),wT).length;
+       // Ab 0.162 (Florians Antwort 1 zur Freigabe 0.162): „PF noch offen“, wenn die Woche vor PF in USD im Plus ist (bis 0.161 in der Währung der
+       // Anzeige; in Euro konnte eine Woche mit genau 0 USD knapp im Plus sein, weil ihre Tage verschiedene Kurse haben)
+       let st=CW!==W?'abgerechnet':dataEnd<addDays(W,5)?`bisher · ${wB} von ${wN} Handelstagen`:sumTrades(rw,false,true).v>0?'Handel vorbei · PF noch offen':'Handel vorbei';
+       if(nocwOn())st+=' · nicht in den Kennzahlen';
+       dw={W,t:true,st,aH:monT(a),aT:fCur(a),rH:retHtml(rr,'–',true),rT:rr.miss||rr.n===0?'–':fR.format(rr.v)}}
+     else dw={W,t:false,st:dataEnd&&dataEnd>=W?'noch kein Trade':'noch kein Report'}}
+   const jetzt=!rg.to||!dataEnd||rg.to>=dataEnd;
+   OV_X={dw,ex,pct,inv:{v:capG,jetzt,d:jetzt?dataEnd:rg.to,vH:capG!=null?invM(capG):invDash(sel),miss:capG==null?invMissTxt(sel):''}}}
+  // Kacheln, dazu „Diese Woche“ und „Investition jetzt“ in der Form der zuletzt gemessenen Spaltenzahl (ohne Messung als Leiste); layoutTiles stellt um
+  {const box=$('tiles'),kachel=box.dataset.cols!=='5'&&!!box.dataset.cols;box.dataset.ovx=kachel?'k':'l';
+   box.innerHTML=tiles.map(([k,v,s,alt],i)=>`<div class="tile${tbf[i]?' hasbf':''}"><div class="k">${k}</div><div class="v"${alt?` data-alt="${esc(alt)}"`:''}>${v}</div>${s?`<div class="s">${s}</div>`:''}${tbf[i]||''}</div>`).join('')+ovxH(kachel)}
   layoutTiles();
   // Tabellen: Jede wechselnde Zelle enthält beide Stellungen (sw), sichtbar ist die gewählte
   $('stats-body').classList.toggle('pf-ex',ex);
@@ -14740,9 +14907,9 @@ function renderStats(rows){
       r:[[f(rr(Gk.V.bestT.r)),f(rr(Gk.N.bestT.r))],[f(rr(Gk.V.worstT.r)),f(rr(Gk.N.worstT.r))],[f(z.rI),f(z.rX)]]}};
   const pkHit=Gk=>Gk.n?fP.format(Gk.nW/Gk.n):'–';
   const utd=(A,Rr)=>A.map((a,i)=>{const [c,o]=pct?[Rr[i],a]:[a,Rr[i]];return `<td>${sw(c[0],c[1],o)}</td>`}).join('');
-  const endT=rg.to?rg.to.replace(/-/g,'.')+' 23:59:59':'9999';
-  // Ab 0.161 (Schritt 8): Investition je Konto und der gewählten Konten aus invSumme (Währung der Auswertung)
-  let h='';const capG=invSumme(sel,endT);
+  // Ab 0.161 (Schritt 8): Investition je Konto und der gewählten Konten aus invSumme (Währung der Auswertung); ab 0.179 endT und capG oben
+  // (dieselbe Zahl steht in „Investition jetzt“)
+  let h='';
   for(const a of sel){
     const ra=R.filter(r=>r.a===a);const z=pfz(ra);
     // Fenster des Kontos ab seinem ersten Trade, Ende wie bei den gewählten Konten; ab 0.161 mit seinen Tagen mit Trade (Fund A, Florians Antwort 4
@@ -14859,8 +15026,8 @@ function renderHL(G,AK,h){
     `<tr><td>${gl('summe','Summe')}${pfS}</td>${cellU((s,u)=>Fu(u)(s.sumW[u]))}${cellU((s,u)=>Fu(u)(s.sumL[u]))}</tr>`+
     `<tr><td>${gl('htage','Größter Trade')}${sm('in Handels&shy;tagen')}</td>${cellU((s,u)=>htg(s.bigW[u],day(s,u),u,1))}${cellU((s,u)=>htg(s.bigL[u],day(s,u),u,-1))}</tr>`+
     `<tr><td>${gl('pfaktor','Profit-Faktor')}</td>${cellU(pfL)}${cellU(pfR)}</tr>`;
-  // Beschriftung aller drei Knöpfe Rendite/Betrag (Überblick, Hochs und Tiefs, Pro Konto)
-  for(const u of ['u1','u2','u3'])$('fb-'+u).textContent=(pct?'Rendite':'Betrag')+' ▾';
+  // Beschriftung aller drei Knöpfe Rendite/Betrag (Überblick, Hochs und Tiefs, Pro Konto); ab 0.179 über unitTexte (Kurzform im Überblick)
+  unitTexte();
 }
 // „Hochs und Tiefs“: Alle drei Tabellen bekommen dasselbe gemessene Raster. Gemessen wird bei kleinster Tabellenbreite (Wertezellen auf
 // voller Breite, brechen nie um, inkl. Breitenhalter): Ln = Beschriftung ohne Umbruch, Lm = ihre Mindestbreite (längstes Wort),
@@ -15387,7 +15554,10 @@ function renderGraf(rows,sel,gx){
   }
   // Zusatz in der Titelzeile: PF-Stellung, bei der Investition „am Anfang“, bei der Trefferquote keiner (Vorzeichen vor PF, der Schalter wirkt nicht)
   const tsub=g.what==='inv'?'am Anfang':g.what==='hit'?'':mode;
-  const tline=leg=>esc(title)+(tsub||leg?` <span class="small" style="font-weight:400">${tsub?'· '+tsub+leg:leg.trim()}</span>`:'');
+  // Ab 0.179 (Florians Entscheidung, Auftrag 0.179): in der Karte „am Anfang“ als Begriff anfang, „nach PF“ und „vor PF“ als Begriff pfst
+  // (das Bild zeichnet weiter aus title und tsub, das Vollbild macht aus den Begriffen reinen Text, gfsHead)
+  const tsubH=g.what==='inv'?gl('anfang',tsub):g.what==='hit'?'':gl('pfst',tsub);
+  const tline=leg=>esc(title)+(tsub||leg?` <span class="small" style="font-weight:400">${tsub?'· '+tsubH+leg:leg.trim()}</span>`:'');
   $('graf-title').innerHTML=tline('');
   // Ab 0.58 (4): „Trading Benefit fehlt“ bzw. „Investition unbekannt“ als Begriff mit Grund und Konto (invMissTxt)
   if((g.what==='inv'||(pct&&g.what!=='hit'))&&sel.some(a=>INV[a]!=='ok')){const nf=sel.some(a=>INV[a]==='nofac');box.innerHTML=`<p class="small">${invMissTxt(sel)}${nf?'. Wähle ihn im Reiter „Reports“. Ohne ihn kann das Tool keine Rendite berechnen.':`, weil ${invWhy(sel,'der Anfang des Reports fehlt')}. Die Rendite kann nicht berechnet werden. Siehe Reiter „Reports“.`}</p>`;return}
@@ -15444,7 +15614,10 @@ const CAN_SHARE_FILE=(()=>{try{return !!(navigator.canShare&&navigator.share&&na
 for(const w of ['gb','gb2']){const b=$('fb-'+w);b.textContent=grafBtnT();if(!CAN_SHARE_FILE){b.removeAttribute('aria-expanded');b.removeAttribute('aria-controls');b.setAttribute('aria-label','Bild speichern')}}
 function grafSet(L){GRAF_LAST=L;GPNG=GPNG_B=null;$('graf-btns').hidden=!L;if(GFS){if(L)gfsHead();else gfsClose()}}
 // Kopf im Vollbild: Titel wie in der Karte (mit PF-Stellung und Legende), darunter der Zeitraum
-function gfsHead(){$('gfs-title').innerHTML=$('graf-title').innerHTML;$('gfs-range').textContent=GRAF_LAST?GRAF_LAST.rl:''}
+// Ab 0.179 (Florians Wunsch, Antwort 7 zur Freigabe 0.179): im Vollbild keine Begriffe, nur ihr Text. Die Tafel #glpop liegt außerhalb von #gfs
+// und wäre im echten Vollbild (Fullscreen-API auf #gfs) nicht zu sehen.
+function gfsHead(){const t=$('gfs-title');t.innerHTML=$('graf-title').innerHTML;for(const g of [...t.querySelectorAll('.gl')])g.replaceWith(document.createTextNode(g.textContent));
+  $('gfs-range').textContent=GRAF_LAST?GRAF_LAST.rl:''}
 function gfsRedraw(){if(GFS&&grafRedraw)grafRedraw()}
 function gfsOpen(){
   if(GFS||!GRAF_LAST)return;GFS=true;closeFpanel();if(typeof glClose==='function'&&GP)glClose();
@@ -15471,6 +15644,11 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'&&GFS&&!FP_OPEN&&!GP&&!
 // Drehen oder Größe ändern im Vollbild: neu zeichnen (der allgemeine Handler zeichnet nur bei neuer Breite)
 {let q=0;const f=()=>{if(GFS&&!q)q=requestAnimationFrame(()=>{q=0;gfsRedraw()})};window.addEventListener('resize',f);window.addEventListener('orientationchange',f)}
 // Knöpfe „Bild ▾“ / „Bild“ (Karte und Vollbild; bis 0.160 ohne Teilen „Bild speichern“). Beim Öffnen des Menüs entsteht das Bild schon, damit „Teilen“ in der Nutzergeste bleibt.
+// Ab 0.179: Knopf „Bild ▾“ im Überblick. Immer mit Menü (das Häkchen „Betrag zeigen“ steht darin), auch ohne Teilen. Beim Öffnen entsteht das Bild schon.
+$('fdd-ovb').addEventListener('click',e=>{e.stopPropagation();
+  if(e.target.closest('#fb-ovb')){e.preventDefault();if(FP_OPEN==='ovb')closeFpanel();else{openFpanel('ovb');ovPrep().catch(()=>{})}return}
+  const o=e.target.closest('[data-ovim]');if(o){closeFpanel();if(o.dataset.ovim==='share')ovImgShare();else ovImgSave()}});
+$('fdd-ovb').addEventListener('change',e=>{if(e.target.id!=='ov-amt')return;S.ui.ovb=e.target.checked;save();ovPrep().catch(()=>{})});
 for(const w of ['gb','gb2'])$('fdd-'+w).addEventListener('click',e=>{e.stopPropagation();
   if(e.target.closest('#fb-'+w)){e.preventDefault();if(!CAN_SHARE_FILE){grafSave();return}if(FP_OPEN===w)closeFpanel();else{openFpanel(w);grafPrep()}return}
   const o=e.target.closest('[data-gimg]');if(o){closeFpanel();if(o.dataset.gimg==='share')grafShare();else grafSave()}});
@@ -15988,6 +16166,8 @@ document.addEventListener('click',e=>{const t=e.target;if(!t.closest)return;
     msOpenNew(bf.dataset.bf)}},true);
 // Karte „Meilensteine“: Klick auf einen Eintrag öffnet das Feier-Fenster für diesen einen; „Alle anzeigen“ und „Weniger anzeigen“
 $('ms-list').addEventListener('click',e=>{const t=e.target;if(!t.closest)return;
+  // Ab 0.179: Datum als Link (Kacheln und Verlauf) springt wie das Datum im Feier-Fenster
+  {const j=t.closest('[data-msj]');if(j){e.preventDefault();const en=msById(j.dataset.msj);if(en)msJump(en);return}}
   if(t.closest('[data-msmore]')){MS_ALL=!MS_ALL;msRender();const b=$('ms-list').querySelector('[data-msmore]');if(b)b.focus({preventScroll:true});return}
   if(t.closest('[data-jrmore]')){MS_JR=!MS_JR;msRender();const b=$('ms-list').querySelector('[data-jrmore]');if(b)b.focus({preventScroll:true});return}
   // Ab 0.154: Jahresrückblick (Link-Zeilen, Abschnitt „Rückblick“, Eintrag im Verlauf) im eigenen Fenster
@@ -16188,7 +16368,8 @@ $('graf-avg').onchange=e=>{S.ui.graf.avg=e.target.checked;save();render()};
 // Datum-Links („Gewinn und Verlust“) springen nach „Pro Woche“. „ändern“ in „Durchschnitt“ öffnet das Zeitraum-Menü; ohne stopPropagation
 // würde der Dokument-Klick-Handler es sofort wieder schließen.
 $('stats-body').addEventListener('click',e=>{
-  const a=e.target.closest('a.jl');if(a){e.preventDefault();const j=a.dataset.j,i=j.indexOf('|');jumpTo(j.slice(0,i),j.slice(i+1));return}
+  // Ab 0.179: Datum-Links der Karte „Meilensteine“ (data-msj) springen über msJump (Klick-Handler von #ms-list), nicht hier
+  const a=e.target.closest('a.jl');if(a&&a.dataset.j!=null){e.preventDefault();const j=a.dataset.j,i=j.indexOf('|');jumpTo(j.slice(0,i),j.slice(i+1));return}
   if(e.target.closest('#st-avg .zlink')){e.preventDefault();e.stopPropagation();openFpanel('range')}
   // Ab 0.63: Hinweis in „Dein echtes Geld“ ohne Tag-Daten öffnet „＋ Daten“ bei den Tag-Daten
   if(e.target.closest('[data-realgo]'))dtOpen('tag')});
@@ -16265,7 +16446,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.178',VDATE='22.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.179',VDATE='22.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -16983,7 +17164,8 @@ function closeModal(){if(!MODAL)return;const was=MODAL;modalOn(MODAL,false);MODA
   // Ab 0.139: Feier-Fenster zu (angesehen bzw. ausgeblendet, Herz pulsiert, Sprung). msClosed zeichnet neu, der Fokus geht an den Schmetterling neben „Überblick“.
   // Ab 0.154: Jahresrückblick zu (Effekte aus, Herz, wartendes Fenster nach einem Anlass)
   if(was.id==='jr-modal'){MODAL_FROM=null;jrClosed();return}
-  if(was.id==='ms-modal'){MODAL_FROM=null;msClosed();const b=document.querySelector('#ms-bf-ov .bfb');if(b&&b.getClientRects&&b.getClientRects().length)b.focus({preventScroll:true});return}
+  // Ab 0.179: der Fokus erst nach dem Neuzeichnen (msClosed mit danach), sonst ginge er mit dem alten Schmetterling verloren
+  if(was.id==='ms-modal'){MODAL_FROM=null;msClosed(()=>{const b=document.querySelector('#ms-bf-ov .bfb');if(b&&b.getClientRects&&b.getClientRects().length)b.focus({preventScroll:true})});return}
   if(MODAL_FROM&&MODAL_FROM.isConnected)MODAL_FROM.focus();MODAL_FROM=null}
 /* ---------------- Ab 0.44: „＋ Daten“ (Fenster dt-modal) ----------------
    Ersetzt den Assistenten, die Schritte-Leiste und die Karte „Daten einlesen“. Vier Kacheln mit Status (wzOk): Tag-Daten, Börsen, Wallet-Dateien,
