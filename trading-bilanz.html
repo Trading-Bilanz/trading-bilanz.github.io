@@ -1552,12 +1552,17 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jrein{margin:18px 0 4px;background:var(--ok-bg);border-radius:12px;padding:14px 16px;text-align:center}
 .jrein p{margin:0 0 10px}.jrein p:last-child{margin:0}
 .jrs3 .jrh{margin:10px 0 6px}
-/* Ab 0.175: „Wertschätzung teilen“ mit dem Baustein aus dem Reiter „Resonanz“ (.rsgrid, .rsk); QR-Code wie bis 0.174 150 px (bis 0.174 .jrblk, .jradr) */
+/* Ab 0.175: „Wertschätzung teilen“ mit dem Baustein aus dem Reiter „Resonanz“ (.rsgrid, .rsk; bis 0.174 .jrblk, .jradr) */
 /* Im Fenster stehen „In Krypto“ und „Per PayPal“ untereinander: nebeneinander wäre „In Krypto“ bei 780 px zu schmal, der QR-Code stünde über der
-   Adresse statt links daneben (gemessen in 0.175, Abweichung vom Plan, im Bericht) */
-.jrs3 .rsspende{margin-top:16px;grid-template-columns:minmax(0,1fr)}
-.jrs3 .qr{width:150px;height:150px;padding:8px}
-.jrs3 .rsschon{margin:12px 0 16px}
+   Adresse statt links daneben (gemessen in 0.175, Abweichung vom Plan, im Bericht). Dafür im Fenster kompakter als im Reiter (Innenabstand,
+   Abstände, QR-Code 130 px, bis 0.174 150 px), damit die Ansicht bei 1920 × 955 weiter ohne Scrollen passt (gemessen in 0.175: Inhalt 916 px mit
+   den Maßen des Reiters, Platz 879 px) */
+.jrs3 .rsspende{margin-top:12px;grid-template-columns:minmax(0,1fr)}
+.jrs3 .rsgrid{gap:12px}
+.jrs3 .rsk{padding:14px 16px}
+.jrs3 .rsadr{margin:10px 0}
+.jrs3 .qr{width:130px;height:130px;padding:7px}
+.jrs3 .rsschon{margin:10px 0 12px}
 .jrdanke{margin:8px 0 0}
 /* Ab 0.167: Einleitung auf Seite 2 des Jahresrückblicks, unter „Dein Jahr in Zahlen“ */
 .jreinl{margin:10px auto 0;max-width:34em;font-size:var(--fs-s);color:var(--ink2);text-wrap:balance}
