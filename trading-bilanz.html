@@ -1363,7 +1363,11 @@ button.msv{cursor:pointer}button.msv:focus-visible{outline:2px solid var(--accen
 /* Ab 0.167: Kachel mit Begriff (msValH, „Plus-Wochen in Folge“): Knopf über der ganzen Fläche, Wert und Datum lassen den Klick durch, der Begriff liegt darüber */
 .msvb{cursor:pointer}.msvbtn{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;border-radius:0;background:none;cursor:pointer}
 .msvbtn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}.msvb>.v,.msvb>.s{pointer-events:none}.msvb>.k{position:relative;z-index:1}
+/* Ab 0.179: Datum als Link in der Kachel liegt über dem Knopf der Fläche (wie der Begriff im Titel) */
+.msvb>.s>a.jl{pointer-events:auto;position:relative;z-index:1}
 @media (hover:hover) and (pointer:fine){button.msv:hover>.k{text-decoration:underline}}
+/* Ab 0.179: Kacheln mit Datum-Link (msvj) unterstreichen beim Darüberfahren den Titel wie die Knopf-Kacheln, nicht über dem Datum */
+@media (hover:hover) and (pointer:fine){.msvj>.msvbtn:hover~.k{text-decoration:underline}}
 .msmks{display:flex;flex-wrap:wrap;gap:8px}
 .msmk{position:relative;display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:var(--fs-s);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;padding:4px 12px;border-radius:999px;border:1.5px solid var(--tab-line);background:var(--gold-soft);color:var(--ink);margin:0;line-height:1.4}
 /* ab 0.143: kleines Abzeichen (16 px) frei über der rechten oberen Ecke der Marke (bis 0.142 in der Marke, sie wurde breiter) */
@@ -4877,12 +4881,17 @@ function msOhne(M,k,y){const O=MS_TXT.ohne,yb=k==='am'?(M.mGanz||{}):M.yb[k]||{}
 // Ab 0.167 (Florians Auftrag 0.167, Abschnitt 6.7, und seine Antwort 15 zur Freigabe): Die Beschriftung „Plus-Wochen in Folge“ ist der Begriff
 // „Plus-Woche“. Ein Begriff darf nicht in einem Knopf liegen: Diese Kachel ist deshalb ein Kasten (.msvb) mit einem Knopf über der ganzen Fläche
 // (.msvbtn, öffnet das Blatt wie bisher), der Begriff liegt darüber. Aussehen wie die anderen Kacheln.
+// Ab 0.179 (Florians Auftrag 0.179, Phase 2b): Hat der Eintrag ein Sprungziel (e.j), ist das Datum ein Link (a.jl, data-msj) mit demselben Sprung wie das
+// Datum im Feier-Fenster (msJump). Ein Link darf nicht in einem Knopf liegen: Die Kachel ist dann ein Kasten (.msvb) mit dem Knopf über der ganzen
+// Fläche (öffnet das Blatt), Datum und Begriff liegen darüber. Mit der Tastatur sind Kachel und Datum je ein eigener Halt. Ohne Sprungziel (z. B.
+// „Bester Monat“) bleibt die Kachel ein Knopf und das Datum Text. Keine größere Tippfläche (Florians Antwort 8 zur Freigabe 0.179).
 function msValH(M,k,g,y,nl){const e=y?(M.val.Y[y]||{})[k]:M.val.G[k],T=k==='rw'?gl('plusw',esc(MS_TXT.kachel[k])):esc(MS_TXT.kachel[k]);
   if(!e)return `<div class="msv"><span class="k">${T}</span><span class="v none">${esc(msOhne(M,k,y))}</span></div>`;
   const bf=nl.has(e.id)?`<span class="bfw bf-k${MS_FLASH.includes(e.id)?' fl':''} noprint">${bflyH(BF_H.k)}</span>`:'';
-  if(k==='rw'){const w=e.r!=null?fR.format(e.r):fI.format(e.n),d=msDate(e,true),m=e.mehr?msMehr(e):'';
-    return `<div class="msv msvb${bf?' hasbf':''}"><button type="button" class="msvbtn" data-ms="${esc(e.id)}" data-msg="${g}" aria-label="${esc([MS_TXT.kachel[k],w,d,m].filter(Boolean).join(' '))}"></button><span class="k">${T}</span><span class="v">${esc(w)}${bf}</span><span class="s">${esc(d)}</span>${m?`<span class="s">${esc(m)}</span>`:''}</div>`}
-  return `<button type="button" class="msv${bf?' hasbf':''}" data-ms="${esc(e.id)}" data-msg="${g}"><span class="k">${T}</span><span class="v">${esc(e.r!=null?fR.format(e.r):fI.format(e.n))}${bf}</span><span class="s">${esc(msDate(e,true))}</span>${e.mehr?`<span class="s">${esc(msMehr(e))}</span>`:''}</button>`}
+  const w=e.r!=null?fR.format(e.r):fI.format(e.n),d=msDate(e,true),m=e.mehr?msMehr(e):'';
+  if(k==='rw'||e.j){const dH=e.j?`<a href="#" class="jl" data-msj="${esc(e.id)}">${esc(d)}</a>`:esc(d);
+    return `<div class="msv msvb${k!=='rw'?' msvj':''}${bf?' hasbf':''}"><button type="button" class="msvbtn" data-ms="${esc(e.id)}" data-msg="${g}" aria-label="${esc([MS_TXT.kachel[k],w,d,m].filter(Boolean).join(' '))}"></button><span class="k">${T}</span><span class="v">${esc(w)}${bf}</span><span class="s">${dH}</span>${m?`<span class="s">${esc(m)}</span>`:''}</div>`}
+  return `<button type="button" class="msv${bf?' hasbf':''}" data-ms="${esc(e.id)}" data-msg="${g}"><span class="k">${T}</span><span class="v">${esc(w)}${bf}</span><span class="s">${esc(d)}</span>${m?`<span class="s">${esc(m)}</span>`:''}</button>`}
 // „Erreicht“: je Art die höchste Stufe (bei einem Jahr die höchste in diesem Jahr); Auszahlungen: „Ausgezahlt wie eingezahlt“ vor „Erste Auszahlung“
 function msErrH(M,L,nl){const K=MS_TXT.marke,top=k=>L.filter(e=>e.k===k).sort((a,b)=>(b.n||0)-(a.n||0)||(a.d<b.d?1:-1))[0];
   // ab 0.167 bei den Auszahlungen die höchste: 200 % und mehr (ex) vor 100 % (ee) vor „Erste Auszahlung“
@@ -4900,8 +4909,10 @@ function msVerlaufZ(e,cur){const U=MS_TXT.unter,R=MS_TXT.reihe;let t,w='',sub=''
   else if(e.k==='jr'){t=msTitle(e);w=e.st&&e.st.r!=null?fR.format(e.st.r):''}
   else t=msTitle(e);
   return {t,w,sub}}
+// Ab 0.179 (Florians Auftrag 0.179, Phase 2b): Mit Sprungziel (e.j) ist das Datum ein Link (a.jl, data-msj, msJump), auch „läuft noch“ (Sprung zum
+// Anfang, Florians Antwort 6 zur Freigabe 0.179). Titel und Zeile öffnen weiter das Feier-Fenster.
 function msEntryH(e,cur){const z=msVerlaufZ(e,cur),dt=e.lauf?MS_TXT.lauf:e.k==='jr'?e.y:e.dk==='m'?fM(e.m):fD(e.d);
-  return `<div class="mse${e.lauf?' lauf':''}" data-ms="${esc(e.id)}" data-msg="v"><span class="msed">${esc(dt)}</span><span class="msek">${esc(msKat(e))}</span><span class="mset"><button type="button" class="zlink msn">${esc(z.t)}</button>${z.sub?`<span class="small">${esc(z.sub)}</span>`:''}</span><span class="msew">${esc(z.w)}</span></div>`}
+  return `<div class="mse${e.lauf?' lauf':''}" data-ms="${esc(e.id)}" data-msg="v"><span class="msed">${e.j?`<a href="#" class="jl" data-msj="${esc(e.id)}">${esc(dt)}</a>`:esc(dt)}</span><span class="msek">${esc(msKat(e))}</span><span class="mset"><button type="button" class="zlink msn">${esc(z.t)}</button>${z.sub?`<span class="small">${esc(z.sub)}</span>`:''}</span><span class="msew">${esc(z.w)}</span></div>`}
 // Jahre im Zeitraum-Menü: nur Jahre mit Trades der gezählten Konten, absteigend; ein Jahr, das es nicht mehr gibt, wird wieder „Gesamt“
 const msYearOk=M=>{if(MS_Y&&!(M.ys||[]).includes(MS_Y))MS_Y='';return MS_Y};
 /* Ab 0.157 (Florians Auftrag): Zeile ganz oben im Inhalt der Karte „Meilensteine“, über „Rekorde“, klein und grau: „Die Filterzeile oben wirkt
@@ -5082,11 +5093,22 @@ function msOpenNew(id){if(MS_NL.length)msShow(MS_NL,{start:id||MS_NL[0].id})}
 function msPulse(){const h=document.querySelector('#tabs [data-t="support"] svg.heart');if(!h||!h.classList||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   h.classList.remove('hp');void h.getBoundingClientRect();h.classList.add('hp')}
 // Nach dem Schließen (closeModal): angesehen oder ausgeblendet, Herz, danach ein wartendes Fenster nach einem Anlass (Bild geteilt) nachholen
-function msClosed(){const c=MS_CUR;MS_CUR=null;msbHome();if(!c)return;MSP=null;MS_L=[];
+// Ab 0.179 (Florians Punkt 11 zur Freigabe 0.179): Das Neuzeichnen (render, Sprung, Herz) läuft erst, nachdem der Browser das geschlossene Fenster
+// gezeichnet hat (nachBild). Bis 0.178 lief render() für das ganze Tool im Klick, das Fenster blieb so lange stehen (gemessen mit 10 Konten etwa
+// 250 ms in der Cloud, bei Florian in Vivaldi über 1 s). danach = was nach dem Neuzeichnen kommt (Fokus, closeModal).
+function msClosed(danach){const c=MS_CUR;MS_CUR=null;msbHome();if(!c){if(danach)danach();return}MSP=null;MS_L=[];
   const j=MS_JUMP;MS_JUMP=null;
-  if(j&&j.res){if(j.gold)donGold();else{S.ui.tab='support';save();render();tabTop()}}else if(j&&j.all)goTo('stats','st-ms');else{render();if(j&&j.e)msJump(j.e)}
-  msPulse();
-  if(FEN_NACH){const a=FEN_NACH;FEN_NACH=null;clearTimeout(FEN_T);FEN_T=setTimeout(()=>fenTry(a),700)}}
+  nachBild(()=>{
+    if(j&&j.res){if(j.gold)donGold();else{S.ui.tab='support';save();render();tabTop()}}else if(j&&j.all)goTo('stats','st-ms');else{render();if(j&&j.e)msJump(j.e)}
+    msPulse();
+    if(FEN_NACH){const a=FEN_NACH;FEN_NACH=null;clearTimeout(FEN_T);FEN_T=setTimeout(()=>fenTry(a),700)}
+    if(danach)danach()})}
+// Ab 0.179: Arbeit nach dem Schließen eines Fensters erst nach dem nächsten gezeichneten Bild (requestAnimationFrame, dann ein eigener Schritt), damit das
+// Fenster sofort verschwindet. Die Liste läuft genau einmal; der zweite Zeitgeber holt sie nach, falls der Browser kein Bild zeichnet (Tab im Hintergrund).
+// nachBildJetzt führt sie sofort aus (die node-Tests haben keine Zeitgeber).
+let NACH_BILD=[];
+function nachBild(fn){NACH_BILD.push(fn);if(NACH_BILD.length>1)return;requestAnimationFrame(()=>setTimeout(nachBildJetzt,0));setTimeout(nachBildJetzt,250)}
+function nachBildJetzt(){const L=NACH_BILD;NACH_BILD=[];for(const f of L)f()}
 // Sprung über das Datum nach „Pro Woche“. Liegt das Ziel außerhalb von Zeitraum oder Konten des Filters, stellt das Tool nur um, was nötig
 // ist (Zeitraum auf „Gesamter Zeitraum“, Konten auf alle), springt hin und sagt es in einem Toast. Liegt es im Filter, bleibt alles.
 function msJumpNeed(e,rows){const [k,key]=e.j,f=S.ui.flt,d=k==='t'?dOf(key.split('|')[0]):key,to=k==='w'?addDays(key,6):d;
@@ -5452,11 +5474,13 @@ function jrFit(){const b=$('jr-body');if(!b||!JR||JR.v!==2)return;const eng=matc
     if(um)K.forEach((k,i)=>{if(!k.classList.contains('jrr'))return;const p=kOf(K[i-1]),q=kOf(k),h=Math.max(p.offsetHeight,q.offsetHeight);p.style.minHeight=q.style.minHeight=h+'px'})}}
 // Nach dem Schließen: Effekte aus, Herz im Reiter „Resonanz“, danach ein wartendes Fenster nach einem Anlass (Bild); ab 0.158 ohne den Sprung
 // „Alle Meilensteine“
+// Ab 0.179 (Florians Punkt 11 zur Freigabe 0.179): Neuzeichnen erst nach dem nächsten Bild (nachBild), wie beim Feier-Fenster
 function jrClosed(){JR_T.forEach(clearTimeout);JR_T=[];if(FP_OPEN==='jrb')closeFpanel();const bx=$('jr-modal').querySelector('.box');bx.classList.remove('jrspielt','jrschlaegt');
   JR=null;JRP=null;
-  render();
-  msPulse();
-  if(FEN_NACH){const a=FEN_NACH;FEN_NACH=null;clearTimeout(FEN_T);FEN_T=setTimeout(()=>fenTry(a),700)}}
+  nachBild(()=>{
+    render();
+    msPulse();
+    if(FEN_NACH){const a=FEN_NACH;FEN_NACH=null;clearTimeout(FEN_T);FEN_T=setTimeout(()=>fenTry(a),700)}})}
 // ---- Bilder des Jahresrückblicks (ab 0.154): immer hell, ohne Bewegung, Farben fest im Bild, Fußzeile mit dem Toolnamen wie bei den Meilensteinen;
 // nie Hinweise auf fehlende Daten, kein „Letzter Trade am …“, keine Kontonamen. Was das Fenster zeigt („Betrag zeigen“, „Schwächste Werte
 // zeigen“), kommt ins Bild. Arten: s1 = Seite 1 (1080 × 1350, mit Morgenlicht, Leitsatz; Netto-Gewinn nur mit „Betrag zeigen“), kurz =
@@ -14663,7 +14687,8 @@ function renderStats(rows){
   const pr=p=>p.rMiss?null:(ex?p.rX:p.rI);
   const pick=(A,Rr)=>{const [c,o]=pct?[Rr,A]:[A,Rr];return [c.v,c.s,o.f]};
   // Bester/Schlechtester Trade: Zeile 3 Datum (Link) und Symbol, Zeile 4 Zahl der Konten (wenn mehr als 1) und PF-Stellung
-  const trSub=p=>{const n=Object.keys(p.by).length;return jlink('t',p.t+'|'+p.sym,dS(p.d))+', '+esc(p.sym)+'<br>'+(n>1?`${n} Konten · `:'')+mode};
+  // Ab 0.179 (Florians Entscheidung, Auftrag 0.179): „nach PF“ bzw. „vor PF“ als Begriff pfst
+  const trSub=p=>{const n=Object.keys(p.by).length;return jlink('t',p.t+'|'+p.sym,dS(p.d))+', '+esc(p.sym)+'<br>'+(n>1?`${n} Konten · `:'')+gl('pfst',mode)};
   const mTx=invMissTxt(sel),noR={v:invDash(sel),s:mTx,f:'–'},none={v:'–',s:'',f:'–'};
   const trTile=(pa,pp)=>pick(pa?{v:monT(pa[key]),s:trSub(pa),f:fCur(pa[key])}:none,AK.miss?noR:pp?{v:fR.format(pr(pp)),s:trSub(pp),f:fR.format(pr(pp))}:none);
   // Beste und Schlechteste Woche: nur gezählte ganze Wochen mit Trades. „Ø pro Woche“ zählt mit dem Häkchen weiter auch Wochen ohne Trade mit 0.
@@ -15398,7 +15423,10 @@ function renderGraf(rows,sel,gx){
   }
   // Zusatz in der Titelzeile: PF-Stellung, bei der Investition „am Anfang“, bei der Trefferquote keiner (Vorzeichen vor PF, der Schalter wirkt nicht)
   const tsub=g.what==='inv'?'am Anfang':g.what==='hit'?'':mode;
-  const tline=leg=>esc(title)+(tsub||leg?` <span class="small" style="font-weight:400">${tsub?'· '+tsub+leg:leg.trim()}</span>`:'');
+  // Ab 0.179 (Florians Entscheidung, Auftrag 0.179): in der Karte „am Anfang“ als Begriff anfang, „nach PF“ und „vor PF“ als Begriff pfst
+  // (das Bild zeichnet weiter aus title und tsub, das Vollbild macht aus den Begriffen reinen Text, gfsHead)
+  const tsubH=g.what==='inv'?gl('anfang',tsub):g.what==='hit'?'':gl('pfst',tsub);
+  const tline=leg=>esc(title)+(tsub||leg?` <span class="small" style="font-weight:400">${tsub?'· '+tsubH+leg:leg.trim()}</span>`:'');
   $('graf-title').innerHTML=tline('');
   // Ab 0.58 (4): „Trading Benefit fehlt“ bzw. „Investition unbekannt“ als Begriff mit Grund und Konto (invMissTxt)
   if((g.what==='inv'||(pct&&g.what!=='hit'))&&sel.some(a=>INV[a]!=='ok')){const nf=sel.some(a=>INV[a]==='nofac');box.innerHTML=`<p class="small">${invMissTxt(sel)}${nf?'. Wähle ihn im Reiter „Reports“. Ohne ihn kann das Tool keine Rendite berechnen.':`, weil ${invWhy(sel,'der Anfang des Reports fehlt')}. Die Rendite kann nicht berechnet werden. Siehe Reiter „Reports“.`}</p>`;return}
@@ -15455,7 +15483,10 @@ const CAN_SHARE_FILE=(()=>{try{return !!(navigator.canShare&&navigator.share&&na
 for(const w of ['gb','gb2']){const b=$('fb-'+w);b.textContent=grafBtnT();if(!CAN_SHARE_FILE){b.removeAttribute('aria-expanded');b.removeAttribute('aria-controls');b.setAttribute('aria-label','Bild speichern')}}
 function grafSet(L){GRAF_LAST=L;GPNG=GPNG_B=null;$('graf-btns').hidden=!L;if(GFS){if(L)gfsHead();else gfsClose()}}
 // Kopf im Vollbild: Titel wie in der Karte (mit PF-Stellung und Legende), darunter der Zeitraum
-function gfsHead(){$('gfs-title').innerHTML=$('graf-title').innerHTML;$('gfs-range').textContent=GRAF_LAST?GRAF_LAST.rl:''}
+// Ab 0.179 (Florians Wunsch, Antwort 7 zur Freigabe 0.179): im Vollbild keine Begriffe, nur ihr Text. Die Tafel #glpop liegt außerhalb von #gfs
+// und wäre im echten Vollbild (Fullscreen-API auf #gfs) nicht zu sehen.
+function gfsHead(){const t=$('gfs-title');t.innerHTML=$('graf-title').innerHTML;for(const g of [...t.querySelectorAll('.gl')])g.replaceWith(document.createTextNode(g.textContent));
+  $('gfs-range').textContent=GRAF_LAST?GRAF_LAST.rl:''}
 function gfsRedraw(){if(GFS&&grafRedraw)grafRedraw()}
 function gfsOpen(){
   if(GFS||!GRAF_LAST)return;GFS=true;closeFpanel();if(typeof glClose==='function'&&GP)glClose();
@@ -15999,6 +16030,8 @@ document.addEventListener('click',e=>{const t=e.target;if(!t.closest)return;
     msOpenNew(bf.dataset.bf)}},true);
 // Karte „Meilensteine“: Klick auf einen Eintrag öffnet das Feier-Fenster für diesen einen; „Alle anzeigen“ und „Weniger anzeigen“
 $('ms-list').addEventListener('click',e=>{const t=e.target;if(!t.closest)return;
+  // Ab 0.179: Datum als Link (Kacheln und Verlauf) springt wie das Datum im Feier-Fenster
+  {const j=t.closest('[data-msj]');if(j){e.preventDefault();const en=msById(j.dataset.msj);if(en)msJump(en);return}}
   if(t.closest('[data-msmore]')){MS_ALL=!MS_ALL;msRender();const b=$('ms-list').querySelector('[data-msmore]');if(b)b.focus({preventScroll:true});return}
   if(t.closest('[data-jrmore]')){MS_JR=!MS_JR;msRender();const b=$('ms-list').querySelector('[data-jrmore]');if(b)b.focus({preventScroll:true});return}
   // Ab 0.154: Jahresrückblick (Link-Zeilen, Abschnitt „Rückblick“, Eintrag im Verlauf) im eigenen Fenster
@@ -16199,7 +16232,8 @@ $('graf-avg').onchange=e=>{S.ui.graf.avg=e.target.checked;save();render()};
 // Datum-Links („Gewinn und Verlust“) springen nach „Pro Woche“. „ändern“ in „Durchschnitt“ öffnet das Zeitraum-Menü; ohne stopPropagation
 // würde der Dokument-Klick-Handler es sofort wieder schließen.
 $('stats-body').addEventListener('click',e=>{
-  const a=e.target.closest('a.jl');if(a){e.preventDefault();const j=a.dataset.j,i=j.indexOf('|');jumpTo(j.slice(0,i),j.slice(i+1));return}
+  // Ab 0.179: Datum-Links der Karte „Meilensteine“ (data-msj) springen über msJump (Klick-Handler von #ms-list), nicht hier
+  const a=e.target.closest('a.jl');if(a&&a.dataset.j!=null){e.preventDefault();const j=a.dataset.j,i=j.indexOf('|');jumpTo(j.slice(0,i),j.slice(i+1));return}
   if(e.target.closest('#st-avg .zlink')){e.preventDefault();e.stopPropagation();openFpanel('range')}
   // Ab 0.63: Hinweis in „Dein echtes Geld“ ohne Tag-Daten öffnet „＋ Daten“ bei den Tag-Daten
   if(e.target.closest('[data-realgo]'))dtOpen('tag')});
@@ -16994,7 +17028,8 @@ function closeModal(){if(!MODAL)return;const was=MODAL;modalOn(MODAL,false);MODA
   // Ab 0.139: Feier-Fenster zu (angesehen bzw. ausgeblendet, Herz pulsiert, Sprung). msClosed zeichnet neu, der Fokus geht an den Schmetterling neben „Überblick“.
   // Ab 0.154: Jahresrückblick zu (Effekte aus, Herz, wartendes Fenster nach einem Anlass)
   if(was.id==='jr-modal'){MODAL_FROM=null;jrClosed();return}
-  if(was.id==='ms-modal'){MODAL_FROM=null;msClosed();const b=document.querySelector('#ms-bf-ov .bfb');if(b&&b.getClientRects&&b.getClientRects().length)b.focus({preventScroll:true});return}
+  // Ab 0.179: der Fokus erst nach dem Neuzeichnen (msClosed mit danach), sonst ginge er mit dem alten Schmetterling verloren
+  if(was.id==='ms-modal'){MODAL_FROM=null;msClosed(()=>{const b=document.querySelector('#ms-bf-ov .bfb');if(b&&b.getClientRects&&b.getClientRects().length)b.focus({preventScroll:true})});return}
   if(MODAL_FROM&&MODAL_FROM.isConnected)MODAL_FROM.focus();MODAL_FROM=null}
 /* ---------------- Ab 0.44: „＋ Daten“ (Fenster dt-modal) ----------------
    Ersetzt den Assistenten, die Schritte-Leiste und die Karte „Daten einlesen“. Vier Kacheln mit Status (wzOk): Tag-Daten, Börsen, Wallet-Dateien,
