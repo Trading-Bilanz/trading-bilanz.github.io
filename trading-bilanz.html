@@ -314,8 +314,8 @@ tr.sum td b,tr.gesamt td b,.tdbk tr.tdcur td b,.tdrund li.tdcur>.tdar b{font-wei
 .ov .tiles{margin:8px 0 2px}
 .ov .tile{background:var(--bg);border:0;border-radius:8px}
 /* Ab 0.100: Leiste „Diese Woche“ unter den Kacheln, volle Breite, wie eine Kachel, etwas weniger Innenabstand, kleinere Werte, keine Farbe.
-   PC: eine Zeile (links Titel und Stand, rechts Betrag und Rendite). Mit 2 Kachelspalten (.c2, gesetzt von layoutTiles): Titel und Stand
-   über beiden Spalten, die Werte darunter bündig mit den Kachelspalten (Innenabstand und Spaltenabstand setzt layoutTiles). */
+   PC: eine Zeile (links Titel und Stand, rechts Betrag und Rendite). Ab 0.179 nur bei 5 Kachelspalten, neben ihr „Investition jetzt“ im selben
+   Aussehen (ovxZeichnen); sonst beide als Kacheln. */
 .cwbar{display:flex;align-items:center;justify-content:space-between;gap:6px 24px;background:var(--bg);border-radius:8px;padding:10px 16px;margin:10px 0 2px}
 .cwbar[hidden]{display:none}
 /* Ab 0.100: Grafik im Vollbild: eine Fläche über allem (Fullscreen-API, sonst feste Fläche), Titel und Zeitraum oben, die Grafik füllt den Rest */
@@ -342,10 +342,9 @@ html.gfso,html.gfso body{overflow:hidden}
 .cwbar .cwv{display:flex;gap:28px;flex:none}
 .cwbar .k{font-size:var(--fs-s);color:var(--ink2)}
 .cwbar .v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.cwbar.c2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));row-gap:6px}
-.cwbar.c2 .cwt{grid-column:1/-1}
-.cwbar.c2 .cwv{display:contents}
-.cwbar.c2 .cwv>div{min-width:0}
+/* Ab 0.179: Leisten „Diese Woche“ und „Investition jetzt“ stehen in Reihe 3 des Rasters der Kacheln (nur bei 5 Spalten, sonst Kacheln); Abstand über das
+   Raster, Höhe gleich. Bis 0.178 eine eigene Leiste unter den Kacheln, mit 2 Spalten zweizeilig (.c2). */
+.tiles>.cwbar{margin:0;min-width:0}
 th .sm,td .sm{display:block;font-weight:400;font-size:var(--fs-xxs);color:var(--muted)}
 td.acc{white-space:normal;min-width:7em}
 /* Ab 0.113 (Florians Auftrag): Kontoname in „Pro Konto“ und „Netto pro Konto und Monat“ in fester Breite, so breit wie bis 0.112 in USD
@@ -2161,8 +2160,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <div class="card fold ov stk" data-fold="st-ov" id="st-ov">
       <div class="sthd"><h2 class="hx">Überblick <button type="button" class="ib" data-gl="k-ov" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Überblick">i</button><span class="noprint" id="ms-bf-ov"></span><span class="fdd wdd udd noprint" id="fdd-u1"><button type="button" class="btn h2btn" id="fb-u1" aria-expanded="false" aria-controls="fp-u1">Rendite ▾</button><div class="fpan" id="fp-u1" role="dialog" aria-label="Rendite oder Betrag"></div></span></h2></div>
       <div class="tiles" id="tiles"></div>
-      <!-- Ab 0.100: Leiste „Diese Woche“ (renderStats), sichtbar in der Woche des neuesten Trades, wenn sie die heutige ist -->
-      <div class="cwbar" id="cwbar" hidden></div>
+      <!-- Ab 0.100: Leiste „Diese Woche“ (renderStats). Ab 0.179 entstehen „Diese Woche“ (#cwbar) und „Investition jetzt“ (#invbar) als letzte
+           Kinder von #tiles (ovxZeichnen): bei 5 Kachelspalten als Leisten in Reihe 3, sonst als Kacheln -->
     </div>
     <!-- Ab 0.146: Reihenfolge der Karten (Florians Auftrag, ersetzt die vom 08.11.2026): Überblick · Grafiken · Hochs und Tiefs · Meilensteine ·
          Durchschnitt · Pro Woche · Pro Monat · Pro Konto · Netto pro Konto und Monat · Dein echtes Geld · Was wäre wenn. Nichts hängt an der Lage:
@@ -14483,8 +14482,12 @@ document.querySelectorAll('.fpan').forEach(p=>wheelContain(p));
 // nur verkleinert, bekommen alle Kachelwerte dieselbe kleinere Schrift (box.dataset.vfs), damit die Reihen einheitlich bleiben. Sonst 2 Spalten.
 // Danach passt fitTileVals() einzelne Werte an, die trotzdem nicht passen.
 const TILE_MIN=0.7;
+// Ab 0.179: „Diese Woche“ (#cwbar) und „Investition jetzt“ (#invbar) sind die letzten Kinder von #tiles (.ovx). Die Spaltenzahl entscheiden weiter nur
+// die zehn Kacheln. Bei 5 Spalten stehen beide als Leiste in Reihe 3 (Florians Auftrag 0.179: „Diese Woche“ unter den linken drei Kachelspalten,
+// „Investition jetzt“ unter den rechten zwei, allein bleibt sie rechts), sonst als Kacheln nach den zehn (4 Spalten: Reihe 3 voll, allein steht
+// „Investition“ ganz rechts, Florians Antwort 3 zur Freigabe 0.179; 2 Spalten: Reihe 6, allein links).
 function layoutTiles(){
-  const box=$('tiles');const ts=[...box.children];const cw=box.clientWidth;if(!ts.length||!cw)return;
+  const box=$('tiles');const ts=[...box.children].filter(t=>!t.classList.contains('ovx'));const cw=box.clientWidth;if(!ts.length||!cw)return;
   box.querySelectorAll('.tile>.v').forEach(v=>v.style.fontSize='');
   const probe=document.createElement('span');probe.style.cssText='position:absolute;left:-9999px;top:0;visibility:hidden;white-space:nowrap';
   document.body.appendChild(probe);
@@ -14498,13 +14501,31 @@ function layoutTiles(){
   const fs=parseFloat(getComputedStyle(ts[0].querySelector(':scope>.v')).fontSize);
   box.dataset.vfs=cols>2&&vw>c?Math.floor(fs*c/vw*2)/2:'';
   box.style.gridTemplateColumns=`repeat(${cols},minmax(0,1fr))`;box.style.gridAutoFlow=cols===5?'column':'row';box.style.gridTemplateRows=cols===5?'repeat(2,auto)':'';
-  // 4 Spalten: neunte Kachel in Spalte 2, die zehnte folgt in Spalte 3 (letztes Paar mittig)
-  if(ts[8])ts[8].style.gridColumn=cols===4?'2':'';
+  // 4 Spalten: bis 0.178 stand die neunte Kachel in Spalte 2 (letztes Paar mittig); ab 0.179 füllen „Diese Woche“ und „Investition jetzt“ Reihe 3.
+  // 5 Spalten: die zehn Kacheln fest in Reihe 1 und 2 (Paare untereinander); sonst füllte der Spaltenfluss die freien Felder von Reihe 3, wenn
+  // „Investition jetzt“ dort allein steht.
+  ts.forEach((t,i)=>{t.style.gridColumn=cols===5?String(Math.floor(i/2)+1):'';t.style.gridRow=cols===5?String(i%2+1):''});
   box.dataset.cols=cols;
-  // Ab 0.100: Leiste „Diese Woche“ mit 2 Kachelspalten: Werte bündig mit den Kachelspalten (Innenabstand wie die Kachel, Spaltenabstand Gap + 2 × Innenabstand)
-  {const cb=$('cwbar'),c2=cols===2,P=parseFloat(tc.paddingLeft);cb.classList.toggle('c2',c2);cb.style.paddingLeft=cb.style.paddingRight=c2?P+'px':'';cb.style.columnGap=c2?(gap+2*P)+'px':''}
+  if((cols===5)!==(box.dataset.ovx==='l'))ovxZeichnen(cols!==5);
+  {const dw=$('cwbar'),iv=$('invbar'),L=cols===5;
+   if(dw){dw.style.gridRow=L?'3':'';dw.style.gridColumn=L?'1 / 4':''}
+   if(iv){iv.style.gridRow=L?'3':'';iv.style.gridColumn=L?'4 / 6':cols===4&&!dw?'4':''}}
   fitTileVals();
 }
+// Ab 0.179: „Diese Woche“ und „Investition jetzt“ aus OV_X (renderStats) in #tiles zeichnen. kachel: als Kachel (4 und 2 Spalten, wie „Ø pro Woche“:
+// Titel, groß der Wert nach „Rendite ▾“, klein der andere Wert, darunter der Stand), sonst als Leiste (5 Spalten: links Titel und Stand, rechts die Werte).
+let OV_X=null;
+function ovxZeichnen(kachel){const box=$('tiles');for(const id of ['cwbar','invbar']){const e=$(id);if(e)e.remove()}
+  box.dataset.ovx=kachel?'k':'l';box.insertAdjacentHTML('beforeend',ovxH(kachel))}
+function ovxH(kachel){if(!OV_X)return '';const X=OV_X,d=X.dw,I=X.inv,H=[];
+  const invT=gl('inv','Investition')+' '+(I.jetzt?'jetzt':'am '+dS(I.d));
+  if(d){const tit=d.t?jlink('w',d.W,'Diese Woche'):'Diese Woche';
+    if(kachel){const [v,o]=!d.t?['–','']:X.pct?[d.rH,d.aH]:[d.aH,d.rH];
+      H.push(`<div class="tile ovx" id="cwbar"><div class="k">${tit}</div><div class="v">${v}</div><div class="s">${o?o+'<br>':''}${esc(d.st)}</div></div>`)}
+    else H.push(`<div class="cwbar ovx" id="cwbar"><div class="cwt"><div class="cwh">${tit}</div><div class="s">${esc(d.st)}</div></div><div class="cwv"><div><div class="k">${X.ex?gl('netto','Netto-Gewinn'):gl('vorpf','Ergebnis vor PF')}</div><div class="v">${d.t?d.aH:'–'}</div></div><div><div class="k">${gl('rendite','Rendite')}</div><div class="v">${d.t?d.rH:'–'}</div></div></div></div>`)}
+  if(kachel)H.push(`<div class="tile ovx" id="invbar"><div class="k">${invT}</div><div class="v">${I.vH}</div>${I.miss?`<div class="s">${I.miss}</div>`:''}</div>`);
+  else H.push(`<div class="cwbar ovx" id="invbar"><div class="cwt"><div class="cwh">${invT}</div>${I.miss?`<div class="s">${I.miss}</div>`:''}</div><div class="cwv"><div><div class="v">${I.vH}</div></div></div></div>`);
+  return H.join('')}
 // Voller Text eines Kachelwerts (Beträge stehen in .vi mit data-f = mit Nachkommastellen, data-s = ohne)
 function tileFull(v){const i=v.querySelector('.vi');return i?v.textContent.replace(i.textContent,i.dataset.f):v.textContent}
 // Für jede Kachel einzeln, ausgehend von der gemeinsamen Schrift aus layoutTiles(): Passt der Wert nicht, zuerst ohne Nachkommastellen
@@ -14520,8 +14541,8 @@ function fitTileVals(){
     let fs=parseFloat(getComputedStyle(v).fontSize);
     for(let k=0;k<30&&fs>8&&w()>av+0.5;k++){let nf=Math.floor(fs*av/w()*2)/2;if(nf>=fs)nf=fs-0.5;fs=Math.max(8,nf);v.style.fontSize=fs+'px'}
   }
-  // Ab 0.100: Werte der Leiste „Diese Woche“ genauso (nur wenn sie nicht passen: ohne Nachkommastellen, dann kleiner)
-  for(const v of $('cwbar').querySelectorAll('.v')){
+  // Ab 0.100: Werte der Leiste „Diese Woche“ genauso (nur wenn sie nicht passen: ohne Nachkommastellen, dann kleiner); ab 0.179 auch „Investition jetzt“
+  for(const v of $('tiles').querySelectorAll('.cwbar .v')){
     v.style.fontSize='';const i=v.querySelector('.vi');if(i)i.textContent=i.dataset.f;
     const av=v.clientWidth;if(!av)continue;
     const rg=document.createRange();const w=()=>{rg.selectNodeContents(v);return rg.getBoundingClientRect().width};
@@ -14607,7 +14628,7 @@ function stSortBtns(){for(const [id,k,c] of [['wk-sort','wkSort','st-week'],['mo
   b.textContent=hbSortT(hbOf(c).t,nw);b.setAttribute('aria-label','Sortierung: '+(nw?'neueste oben, umschalten':'älteste oben, umschalten'))}}
 function renderStats(rows){
   stSortBtns();
-  const ok=guard('stats-guard');$('stats-body').style.display=ok?'':'none';if(!ok){CW=null;CW_IN=false;renderFbar(false);return}
+  const ok=guard('stats-guard');$('stats-body').style.display=ok?'':'none';if(!ok){CW=null;CW_IN=false;OV_X=null;renderFbar(false);return}
   const all=Object.keys(S.accounts).sort();const sel=fltAccs();const selSet=new Set(sel);const allSel=sel.length===all.length;MISS_SEL=sel;
   // PF-Schalter: ex = PF verteilt (PF anteilig bei den Trades, in der laufenden Woche ausgerechnet), sonst PF laut MT5
   const ex=S.ui.flt.pf==='ex',mode=ex?'nach PF':'vor PF',key=ex?'exE':'eur';
@@ -14669,7 +14690,7 @@ function renderStats(rows){
   const empty=rg.bad||!R.some(isTrade);
   $('stats-empty').innerHTML=rg.bad?`<div class="msg warn">${fltBadMsg()}</div>`:empty?'<div class="card"><p style="margin:0">In diesem Zeitraum gibt es bei den gewählten Konten keine Trades.</p></div>':'';
   for(const id of ['st-ov','st-avg','st-graf','st-hl','st-acc','st-month','st-week','st-matrix','st-calc'])$(id).style.display=empty?'none':'';
-  if(empty){grafRedraw=null;return}
+  if(empty){grafRedraw=null;OV_X=null;return}
   // Gezähltes Fenster (cntWin): Handelstage (Block „Handelstag“) ab dem ersten Trade der gewählten Konten bzw. ab dem Anfang des Zeitraums,
   // bis zum Ende des Zeitraums, höchstens bis zum Datenstand (Datum des neuesten Reports, sonst letzte Buchung; ab 0.159 ohne den Datenstand
   // selbst, wenn an ihm kein Trade liegt: lastT)
@@ -14732,25 +14753,36 @@ function renderStats(rows){
   // denselben Trade (in der gewählten Einheit und PF-Stellung), Stufen an „Netto-Gewinn“ (nur bei „PF verteilt“) und „Rendite“
   const bwS=pct?(AK.miss?null:GW.bestW.r):GW.bestW.a,btS=pct?(AK.miss?null:eo(GW.bestT.r)):eo(GW.bestT.a);
   const tbf=[ex?msBf('k:sn',['sn']):'',msBf('k:sr',['sr']),'','',bwS?msBf('k:aw',['aw','jw'],bwS.o.w):'','',btS?msBf('k:at',['at','jt'],btS.t+'|'+btS.sym):''];
-  $('tiles').innerHTML=tiles.map(([k,v,s,alt],i)=>`<div class="tile${tbf[i]?' hasbf':''}"><div class="k">${k}</div><div class="v"${alt?` data-alt="${esc(alt)}"`:''}>${v}</div>${s?`<div class="s">${s}</div>`:''}${tbf[i]||''}</div>`).join('');
-  // Ab 0.100: Leiste „Diese Woche“. Sichtbar, wenn die Woche (Mo bis So) des neuesten Trades der gewählten Konten die heutige Woche ist (Uhr des Geräts)
-  // und im gewählten Zeitraum liegt, also bis Sonntag 23:59, auch nach der Abrechnung. Stand: laufend (CW) vor Samstag „bisher · n von 5 Handelstagen“
-  // (n = Handelstage der Woche bis zum Datenstand, ab 0.159 aus htListe: der Datenstand zählt nur mit Trade, in einer Woche mit dem 25.12. oder
-  // dem 01.01. ohne Trade „von 4“), ab Samstag „Handel vorbei“ (mit „· PF noch offen“, wenn die Woche vor PF in USD im Plus ist), sonst „abgerechnet“.
-  // Werte wie die erste Kachel (PF verteilt: Netto-Gewinn, PF laut MT5: Ergebnis vor PF) und die Rendite nach PF-Schalter, immer beide.
-  {const bar=$('cwbar');let lt=null;for(const r of RA)if(isTrade(r))lt=r;
-   const W=lt?lt.wk:null,inO=r=>(!rg.from||r.d>=rg.from)&&(!toOrig||r.d<=toOrig);
-   const on=!!W&&!rg.bad&&W===monday(todayLocal())&&RA.some(r=>isTrade(r)&&r.wk===W&&inO(r));
-   bar.hidden=!on;
-   if(on){const rw=nocwOn()?CWR:R.filter(r=>r.wk===W),z=pfz(rw);
-     // Handelstage der Woche W (Montag bis Freitag): alle und die bis zum gezählten Ende der Daten
-     const wT=new Set(RA.filter(r=>isTrade(r)&&r.wk===W).map(r=>r.d)),wE=addDays(W,4),wN=htListe(W,wE,null,wT).length,wB=htListe(W,wE,cntWin(W,null,null,dataEnd,lastT),wT).length;
-     // Ab 0.162 (Florians Antwort 1 zur Freigabe 0.162): „PF noch offen“, wenn die Woche vor PF in USD im Plus ist (bis 0.161 in der Währung der
-     // Anzeige; in Euro konnte eine Woche mit genau 0 USD knapp im Plus sein, weil ihre Tage verschiedene Kurse haben)
-     let st=CW!==W?'abgerechnet':dataEnd<addDays(W,5)?`bisher · ${wB} von ${wN} Handelstagen`:sumTrades(rw,false,true).v>0?'Handel vorbei · PF noch offen':'Handel vorbei';
-     if(nocwOn())st+=' · nicht in den Kennzahlen';
-     bar.innerHTML=`<div class="cwt"><div class="cwh">${jlink('w',W,'Diese Woche')}</div><div class="s">${st}</div></div><div class="cwv"><div><div class="k">${ex?gl('netto','Netto-Gewinn'):gl('vorpf','Ergebnis vor PF')}</div><div class="v">${monT(ex?z.nN:z.res)}</div></div><div><div class="k">${gl('rendite','Rendite')}</div><div class="v">${retHtml(retSum(rw,'sel',ex),'–',true)}</div></div></div>`}
-   else bar.innerHTML=''}
+  // Ab 0.100: Leiste „Diese Woche“. Stand: laufend (CW) vor Samstag „bisher · n von 5 Handelstagen“ (n = Handelstage der Woche bis zum Datenstand,
+  // ab 0.159 aus htListe: der Datenstand zählt nur mit Trade, in einer Woche mit dem 25.12. oder dem 01.01. ohne Trade „von 4“), ab Samstag
+  // „Handel vorbei“ (mit „· PF noch offen“, wenn die Woche vor PF in USD im Plus ist), sonst „abgerechnet“. Werte wie die erste Kachel (PF verteilt:
+  // Netto-Gewinn, PF laut MT5: Ergebnis vor PF) und die Rendite nach PF-Schalter.
+  // Ab 0.179 (Florians Entscheidung vom 22.11.2026): „Diese Woche“ steht immer, wenn die heutige Woche (Montag bis Sonntag, Uhr des Geräts) im
+  // gewählten Zeitraum liegt (heute im Zeitraum; bis 0.178 nur in der Woche des neuesten Trades). Ohne Trade dieser Woche im Zeitraum: Wert „–“,
+  // Titel ohne Link, Stand „noch kein Trade“, wenn der Datenstand der gewählten Konten schon in dieser Woche liegt, sonst „noch kein Report“
+  // (Florians Wortlaut; ohne „· nicht in den Kennzahlen“). In der angeschnittenen Woche am Monats- oder Jahreswechsel zählt nur, was im Zeitraum
+  // liegt (Florians Antwort 6 zur Freigabe 0.179).
+  // Ab 0.179: „Investition jetzt“ = die Investition der gewählten Konten am Ende des Zeitraums, derselbe Wert wie „Pro Konto“, Zeile „Gesamt“, Spalte
+  // „Investition am Ende“ (capG). „jetzt“, wenn das Ende des Zeitraums nicht vor dem Datenstand liegt, sonst „am 31.12.25“ (auch mit „Laufende Woche
+  // weglassen“: dann endet der Zeitraum am Sonntag davor, Florians Antwort 2 zur Freigabe 0.179).
+  // OV_X hält beides für ovxZeichnen (Leiste oder Kachel) und für das Bild des Überblicks.
+  const endT=rg.to?rg.to.replace(/-/g,'.')+' 23:59:59':'9999',capG=invSumme(sel,endT);
+  {const tdy=todayLocal(),W=monday(tdy),on=!rg.bad&&(!rg.from||tdy>=rg.from)&&(!toOrig||tdy<=toOrig);let dw=null;
+   if(on){const rw=nocwOn()&&CW===W?CWR:R.filter(r=>r.wk===W);
+     if(rw.some(isTrade)){const z=pfz(rw),rr=retSum(rw,'sel',ex),a=ex?z.nN:z.res;
+       // Handelstage der Woche W (Montag bis Freitag): alle und die bis zum gezählten Ende der Daten
+       const wT=new Set(RA.filter(r=>isTrade(r)&&r.wk===W).map(r=>r.d)),wE=addDays(W,4),wN=htListe(W,wE,null,wT).length,wB=htListe(W,wE,cntWin(W,null,null,dataEnd,lastT),wT).length;
+       // Ab 0.162 (Florians Antwort 1 zur Freigabe 0.162): „PF noch offen“, wenn die Woche vor PF in USD im Plus ist (bis 0.161 in der Währung der
+       // Anzeige; in Euro konnte eine Woche mit genau 0 USD knapp im Plus sein, weil ihre Tage verschiedene Kurse haben)
+       let st=CW!==W?'abgerechnet':dataEnd<addDays(W,5)?`bisher · ${wB} von ${wN} Handelstagen`:sumTrades(rw,false,true).v>0?'Handel vorbei · PF noch offen':'Handel vorbei';
+       if(nocwOn())st+=' · nicht in den Kennzahlen';
+       dw={W,t:true,st,aH:monT(a),aT:fCur(a),rH:retHtml(rr,'–',true),rT:rr.miss||rr.n===0?'–':fR.format(rr.v)}}
+     else dw={W,t:false,st:dataEnd&&dataEnd>=W?'noch kein Trade':'noch kein Report'}}
+   const jetzt=!rg.to||!dataEnd||rg.to>=dataEnd;
+   OV_X={dw,ex,pct,inv:{v:capG,jetzt,d:jetzt?dataEnd:rg.to,vH:capG!=null?invM(capG):invDash(sel),miss:capG==null?invMissTxt(sel):''}}}
+  // Kacheln, dazu „Diese Woche“ und „Investition jetzt“ in der Form der zuletzt gemessenen Spaltenzahl (ohne Messung als Leiste); layoutTiles stellt um
+  {const box=$('tiles'),kachel=box.dataset.cols!=='5'&&!!box.dataset.cols;box.dataset.ovx=kachel?'k':'l';
+   box.innerHTML=tiles.map(([k,v,s,alt],i)=>`<div class="tile${tbf[i]?' hasbf':''}"><div class="k">${k}</div><div class="v"${alt?` data-alt="${esc(alt)}"`:''}>${v}</div>${s?`<div class="s">${s}</div>`:''}${tbf[i]||''}</div>`).join('')+ovxH(kachel)}
   layoutTiles();
   // Tabellen: Jede wechselnde Zelle enthält beide Stellungen (sw), sichtbar ist die gewählte
   $('stats-body').classList.toggle('pf-ex',ex);
@@ -14776,9 +14808,9 @@ function renderStats(rows){
       r:[[f(rr(Gk.V.bestT.r)),f(rr(Gk.N.bestT.r))],[f(rr(Gk.V.worstT.r)),f(rr(Gk.N.worstT.r))],[f(z.rI),f(z.rX)]]}};
   const pkHit=Gk=>Gk.n?fP.format(Gk.nW/Gk.n):'–';
   const utd=(A,Rr)=>A.map((a,i)=>{const [c,o]=pct?[Rr[i],a]:[a,Rr[i]];return `<td>${sw(c[0],c[1],o)}</td>`}).join('');
-  const endT=rg.to?rg.to.replace(/-/g,'.')+' 23:59:59':'9999';
-  // Ab 0.161 (Schritt 8): Investition je Konto und der gewählten Konten aus invSumme (Währung der Auswertung)
-  let h='';const capG=invSumme(sel,endT);
+  // Ab 0.161 (Schritt 8): Investition je Konto und der gewählten Konten aus invSumme (Währung der Auswertung); ab 0.179 endT und capG oben
+  // (dieselbe Zahl steht in „Investition jetzt“)
+  let h='';
   for(const a of sel){
     const ra=R.filter(r=>r.a===a);const z=pfz(ra);
     // Fenster des Kontos ab seinem ersten Trade, Ende wie bei den gewählten Konten; ab 0.161 mit seinen Tagen mit Trade (Fund A, Florians Antwort 4
