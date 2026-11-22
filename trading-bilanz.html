@@ -1790,6 +1790,8 @@ details.more .hint{margin-top:6px}
 #s-stats .sthd>h2.hbm{flex-wrap:nowrap!important;white-space:nowrap!important}
 #s-stats .sthd>h2.hbm>*{flex-shrink:0!important;white-space:nowrap!important}
 .h2btn>svg{display:block}
+/* Ab 0.179: Bild-Symbol im Überblick so hoch wie die Knöpfe mit Text in derselben Stufe (Knopfschrift 13 px: 30 px) */
+#fb-ovb>svg{margin:1.5px 0}#fb-ovb{vertical-align:middle}
 .hbts{display:none}
 @media screen{
   #s-stats.hbt .card.fold>.sthd>h2{font-size:16px}
@@ -14639,6 +14641,8 @@ const HB={},hbOf=id=>HB[id]||{e:0,t:0,f:0,k:0};
 // Text des Sortierknopfs in Textstufe t: „Neueste oben“ → „Neueste“ → Pfeil. Der Pfeil zeigt, wo die neueste Zeile steht (↑ oben, ↓ unten).
 const hbSortT=(t,nw)=>t>=2?(nw?'↑':'↓'):t===1?(nw?'Neueste':'Älteste'):(nw?'Neueste oben':'Älteste oben');
 // Kalender-Symbol für den Zeitraum der Meilensteine (letzte Stufen, in der Farbe der Knopfschrift)
+// Ab 0.179: Bild-Symbol für den Knopf „Bild ▾“ im Überblick in der letzten Stufe (ohne ▾, vorgelesen „Bild“), wie das Kalender-Symbol
+const HB_BILD='<svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true"><rect x="1.8" y="2.5" width="12.4" height="11" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2.8 12l3.4-3.8 2.5 2.6 1.6-1.6 2.9 2.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="10.9" cy="5.7" r="1.3" fill="currentColor"/></svg>';
 const HB_CAL='<svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true"><rect x="1.8" y="3" width="12.4" height="11" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M1.8 6.7H14.2M5 1.3V4.3M11 1.3V4.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 // Meilensteine, Konten: „Konten: alle ▾“ / „6 von 10 Konten ▾“ → „alle ▾“ / „6 von 10 ▾“ → „6/10 ▾“ → „6/10“. Zeitraum: „Gesamt ▾“ bzw. das Jahr, ab Stufe 3 ohne ▾.
 const msBtnK=(t,n,N)=>t===0?(n===N?'Konten: alle':`${n} von ${N} Konten`)+' ▾':t===1?(n===N?'alle':`${n} von ${N}`)+' ▾':`${n}/${N}`+(t===2?' ▾':'');
@@ -14652,21 +14656,32 @@ function msBtns(){const st=hbOf('st-ms'),{n,N,y}=MS_BTN,k=$('fb-msk'),z=$('fb-ms
   k.textContent=msBtnK(st.t,n,N);k.setAttribute('aria-label','Konten: '+(n===N?'alle':`${n} von ${N}`));
   if(st.k)z.innerHTML=HB_CAL;else z.textContent=msBtnZ(st.t,y);z.setAttribute('aria-label','Zeitraum: '+(y||MS_TXT.zeit.gesamt))}
 // Alle Knopftexte der Titelleisten für die aktuelle Auswahl in der gewählten Stufe
-function hbTexts(){stSortBtns();msBtns();for(const u of UNIT_DD)$('fb-'+u).textContent=(S.ui.unit!=='amt'?'Rendite':'Betrag')+' ▾';
-  const g=$('fb-gb');g.textContent=grafBtnT(hbOf('st-graf').t);if(CAN_SHARE_FILE)g.removeAttribute('aria-label');else g.setAttribute('aria-label','Bild speichern')}
+// Ab 0.179: Beschriftung der drei Knöpfe Rendite/Betrag; im Überblick in der letzten Stufe kurz („% ▾“, „USD ▾“ bzw. „€ ▾“), vorgelesen voll
+// (GESTALTUNG Abschnitt 0, Regel ab 0.150). Eine Stelle für hbTexts und renderHL.
+function unitTexte(){const pct=S.ui.unit!=='amt';for(const u of UNIT_DD)$('fb-'+u).textContent=(pct?'Rendite':'Betrag')+' ▾';
+  const u=$('fb-u1');if(hbOf('st-ov').t){u.textContent=(pct?'%':CUR_EFF==='eur'?'€':'USD')+' ▾';u.setAttribute('aria-label',pct?'Rendite':'Betrag')}else u.removeAttribute('aria-label')}
+function hbTexts(){stSortBtns();msBtns();unitTexte();
+  const g=$('fb-gb');g.textContent=grafBtnT(hbOf('st-graf').t);if(CAN_SHARE_FILE)g.removeAttribute('aria-label');else g.setAttribute('aria-label','Bild speichern');
+  // Ab 0.179: „Bild ▾“ im Überblick, in der letzten Stufe das Symbol mit dem Vorlesetext „Bild“ (GESTALTUNG Abschnitt 0, Regel ab 0.150)
+  {const b=$('fb-ovb'),k=!!hbOf('st-ov').k;b.innerHTML=k?HB_BILD:'Bild ▾';if(k)b.setAttribute('aria-label','Bild');else b.removeAttribute('aria-label')}}
 // Leitern: je Karte die Stufen in der Reihenfolge, in der sie probiert werden (GESTALTUNG Abschnitt 20). Zuerst Abstände (e), dann kürzere
 // Knopftexte (t), unter 360 px Florians Reihenfolge: kleinere Knopfschrift (f), Kalender-Symbol für den Zeitraum der Meilensteine (k),
 // Kurzform des Titels „Netto / Konto u. Monat“ (k), zuletzt für alle Karten die kleinere Titelschrift (.hbt). Passt auch das nicht, bricht
 // die Leiste um (allerletzte Notlösung). „Aufklappen ▾“ bleibt immer ganz, der Titel wird sonst nie gekürzt, kein Symbol für Konten.
 const HB_L=(()=>{const s=(e,t,f,k)=>({e,t,f:f||0,k:k||0}),sort=[s(0,0),s(1,0),s(1,1),s(1,2),s(1,2,1)],unit=[s(0,0),s(1,0),s(1,0,1)],plain=[s(0,0),s(1,0)];
   // Ab 0.161: Die Grafiken haben keine kürzere Knopfstufe mehr (der Knopf heißt ohne Teilen schon „Bild“); bis 0.160 [s(0,0),s(1,0),s(1,1),s(1,1,1)]
-  return {'st-ov':unit,'st-graf':unit,'st-hl':unit,'st-ms':[s(0,0),s(1,0),s(1,1),s(1,2),s(1,3),s(1,3,1),s(1,3,1,1)],'st-avg':plain,
+  // Ab 0.179: Überblick mit „Bild ▾“: nach der kleineren Knopfschrift das Bild-Symbol ohne ▾ (k); mit dem frei gehaltenen Platz des Schmetterlings
+  // reichte bei 360 px (Roboto) auch die Knopfschrift 13 px nicht (gemessen 332 statt 323 px)
+  // und als letzte eigene Stufe „Rendite ▾“ kurz („% ▾“, bei Betrag „USD ▾“ bzw. „€ ▾“, vorgelesen voll), damit die kleinere Titelschrift für alle Karten
+  // weiter erst nach der Kurzform von „Netto pro Konto und Monat“ kommt (Florians Reihenfolge unter 360 px)
+  return {'st-ov':[s(0,0),s(1,0),s(1,0,1),s(1,0,1,1),s(1,1,1,1)],'st-graf':unit,'st-hl':unit,'st-ms':[s(0,0),s(1,0),s(1,1),s(1,2),s(1,3),s(1,3,1),s(1,3,1,1)],'st-avg':plain,
     'st-week':sort,'st-month':sort,'st-acc':unit,'st-matrix':[s(0,0),s(1,0),s(1,0,0,1)],'real-card':plain,'st-calc':plain}})();
 function hbSet(id,st){const c=$(id);HB[id]=st;c.toggleAttribute('data-hbe',!!st.e);c.toggleAttribute('data-hbf',!!st.f);c.toggleAttribute('data-hbk',!!st.k)}
 // Jeder mögliche Text je Knopf einer Karte in Stufe st (wie fbCands in der Filterzeile): [[Knopf, [HTML, …]], …]
 function hbCands(id,st){
   if(id==='st-week'||id==='st-month')return [[$(id==='st-week'?'wk-sort':'mo-sort'),[hbSortT(st.t,true),hbSortT(st.t,false)]]];
-  if(id==='st-ov'||id==='st-hl'||id==='st-acc')return [[$('fb-'+{'st-ov':'u1','st-hl':'u2','st-acc':'u3'}[id]),['Rendite ▾','Betrag ▾']]];
+  if(id==='st-ov')return [[$('fb-u1'),st.t?['% ▾',(CUR_EFF==='eur'?'€':'USD')+' ▾']:['Rendite ▾','Betrag ▾']],[$('fb-ovb'),[st.k?HB_BILD:'Bild ▾']]];
+  if(id==='st-hl'||id==='st-acc')return [[$('fb-'+{'st-hl':'u2','st-acc':'u3'}[id]),['Rendite ▾','Betrag ▾']]];
   if(id==='st-graf')return [[$('fb-gb'),[grafBtnT(st.t)]]];
   if(id==='st-ms'){const N=MS_BTN.N||1;return [[$('fb-msz'),st.k?[HB_CAL]:['',...MS_BTN.ys].map(y=>esc(msBtnZ(st.t,y)))],[$('fb-msk'),Array.from({length:N},(_,i)=>esc(msBtnK(st.t,i+1,N)))]]}
   return []}
@@ -14680,12 +14695,15 @@ function hbFit(){
   const key=[sec.clientWidth,getComputedStyle(document.body).fontSize,getComputedStyle($('fb-range')).fontSize,MS_BTN.N,MS_BTN.ys.join(),CAN_SHARE_FILE?1:0,vis.map(id=>id+($(id).classList.contains('closed')?'-':'+')).join()].join('#');
   if(key===HB_KEY)return;HB_KEY=key;
   sec.classList.remove('hbt');
-  const fits=(id,st)=>{const h=$(id).querySelector('.sthd>h2');hbSet(id,st);
+  // Ab 0.179: Im Überblick misst die Leiste den Platz des Schmetterlings neben dem Titel immer mit (seine Hülle #ms-bf-ov ist sonst 0 px breit, Regel ab
+  // 0.143: er verändert nie das Layout). Mit „Bild ▾“ lag „Rendite ▾“ bei 360 px sonst über ihm. Die Stufe hängt so nicht davon ab, ob er gerade da ist.
+  const bfw=$('ms-bf-ov'),bfB=Math.ceil(BF_H.ov*BFLY_WH[0]/BFLY_WH[1]);
+  const fits=(id,st)=>{const h=$(id).querySelector('.sthd>h2');hbSet(id,st);if(id==='st-ov')bfw.style.width=bfB+'px';
     for(const [b,L] of hbCands(id,st)){let w=-1,best=L[0];for(const x of L){b.innerHTML=x;const v=b.getBoundingClientRect().width;if(v>w){w=v;best=x}}b.innerHTML=best}
     h.classList.add('hbm');const lim=h.getBoundingClientRect().right+0.02;let r=0; // der Browser bricht schon bei einem Bruchteil eines px um
     for(const nd of h.childNodes){if(nd.nodeType===3){if(!nd.textContent.trim())continue;const g=document.createRange();g.selectNodeContents(nd);r=Math.max(r,g.getBoundingClientRect().right)}
       else if(nd.nodeType===1&&nd.id!=='ms-bf-ov'&&nd.getClientRects().length)r=Math.max(r,nd.getBoundingClientRect().right)}
-    h.classList.remove('hbm');return r<=lim};
+    h.classList.remove('hbm');if(id==='st-ov')bfw.style.width='';return r<=lim};
   const bad=vis.filter(id=>!HB_L[id].some(st=>fits(id,st))),last=id=>HB_L[id][HB_L[id].length-1];
   // Letzte Stufe für alle Karten gemeinsam, damit die Titel gleich groß bleiben. Sie gilt nur, wenn damit mindestens eine Leiste wieder in
   // eine Zeile passt; sonst bleibt die Schrift, und die Leiste bricht um (allerletzte Notlösung).
@@ -15008,8 +15026,8 @@ function renderHL(G,AK,h){
     `<tr><td>${gl('summe','Summe')}${pfS}</td>${cellU((s,u)=>Fu(u)(s.sumW[u]))}${cellU((s,u)=>Fu(u)(s.sumL[u]))}</tr>`+
     `<tr><td>${gl('htage','Größter Trade')}${sm('in Handels&shy;tagen')}</td>${cellU((s,u)=>htg(s.bigW[u],day(s,u),u,1))}${cellU((s,u)=>htg(s.bigL[u],day(s,u),u,-1))}</tr>`+
     `<tr><td>${gl('pfaktor','Profit-Faktor')}</td>${cellU(pfL)}${cellU(pfR)}</tr>`;
-  // Beschriftung aller drei Knöpfe Rendite/Betrag (Überblick, Hochs und Tiefs, Pro Konto)
-  for(const u of ['u1','u2','u3'])$('fb-'+u).textContent=(pct?'Rendite':'Betrag')+' ▾';
+  // Beschriftung aller drei Knöpfe Rendite/Betrag (Überblick, Hochs und Tiefs, Pro Konto); ab 0.179 über unitTexte (Kurzform im Überblick)
+  unitTexte();
 }
 // „Hochs und Tiefs“: Alle drei Tabellen bekommen dasselbe gemessene Raster. Gemessen wird bei kleinster Tabellenbreite (Wertezellen auf
 // voller Breite, brechen nie um, inkl. Breitenhalter): Ln = Beschriftung ohne Umbruch, Lm = ihre Mindestbreite (längstes Wort),
