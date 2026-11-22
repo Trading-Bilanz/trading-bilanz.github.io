@@ -2940,30 +2940,41 @@ const CATS={einzahlung:'Einzahlung von Kapital',kapitalabzug:'Kapitalabzug',gewi
 const MAP_NUM=/\d+(?:[.,]\d+)*/g;
 function mapLabel(x){return String(x.cmt||x.type||'').trim().replace(MAP_NUM,'…')}
 function mapKey(x){return mapLabel(x).toLowerCase()}
-// Ab 0.80 (1): Reinvest bei Tag. Der Knopf „Reinvest“ bucht in derselben Sekunde zwei balance-Zeilen: „Adjust-…“ (negativ, der abgeschöpfte Gewinn)
+// Ab 0.80 (1): Reinvest bei Tag. Der Knopf „Reinvest“ bucht zwei balance-Zeilen: „Adjust-…“ (negativ, der abgeschöpfte Gewinn)
 // und „Upgrade-…“ (positiv, derselbe Betrag × Trading Benefit). Das „-“ im Kommentar ist kein Vorzeichen, der Betrag kommt aus Profit.
 // Passt Upgrade ≈ |Adjust| × Trading Benefit des Kontos (± 0,01 USD), gilt ohne Frage: Adjust = Gewinnauszahlung, Upgrade = Einzahlung von Kapital.
 // Das geht vor eigenen Zuordnungen. Passt der Faktor nicht oder fehlt der Trading Benefit, ordnet das Tool nichts zu (die Zeilen gehen über S.map,
 // ohne Zuordnung „bitte wählen“), und bad trägt den Hinweis für die Karte „Buchungsarten“ (ab 0.81 immer mit den Zahlen). Ein Adjust ohne Upgrade
 // (oder umgekehrt): kein Paar, kein Hinweis.
+// Ab 0.179 (Florians Entscheidung vom 22.11.2026, bis 0.178 nur in derselben Sekunde): Ein Paar ist dasselbe Konto, ein negatives „Adjust…“ und
+// ein positives „Upgrade…“, höchstens 5 Minuten auseinander (RV_FENSTER, auch über Mitternacht), egal welches zuerst kommt. Jede Buchung gehört
+// zu höchstens einem Paar. Reihenfolge (Florians Antwort 1 zur Freigabe 0.179): zuerst die Paare mit passendem Faktor, darunter das zeitlich
+// nächste; danach unter den übrigen Buchungen das zeitlich nächste Paar für den Hinweis. Bei gleichem Abstand gilt die Reihenfolge im Report
+// (erst das Adjust, dann das Upgrade), so bleiben Paare in derselben Sekunde genau wie bis 0.178.
 // RV = Zwischenspeicher, gilt für dieses S.deals und bis zum nächsten save() bzw. render().
 let RV=null,RV_D=null;
-const RV_AD=/^adjust(?![a-z])/i,RV_UP=/^upgrade(?![a-z])/i;
+const RV_AD=/^adjust(?![a-z])/i,RV_UP=/^upgrade(?![a-z])/i,RV_FENSTER=300;
+// Zeitpunkt einer MT5-Buchung („2026.10.05 18:30:12“) in Sekunden, ohne Zeitzone (nur für Abstände)
+function rvSek(t){const m=String(t||'').match(/^(\d{4})[.-](\d\d)[.-](\d\d)[ T](\d\d):(\d\d)(?::(\d\d))?/);return m?Date.UTC(+m[1],m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0))/1000:NaN}
 function rvScan(){
   if(RV&&RV_D===S.deals)return RV;
   const ok={},bad={},by={};
   for(const [k,x] of Object.entries(S.deals)){if(!x||x.type!=='balance')continue;const c=String(x.cmt||'').trim(),ad=RV_AD.test(c)&&x.prof<0,up=RV_UP.test(c)&&x.prof>0;if(!ad&&!up)continue;
-    const g=x.a+'|'+x.t;(by[g]||(by[g]={a:x.a,ad:[],up:[]}))[ad?'ad':'up'].push(k)}
+    const s=rvSek(x.t);if(!isFinite(s))continue;(by[x.a]||(by[x.a]={ad:[],up:[]}))[ad?'ad':'up'].push({k,s,i:0})}
   const n2=v=>fN.format(Math.abs(v)),q=v=>String(Math.round(v*100)/100).replace('.',',');
-  for(const G of Object.values(by)){
+  for(const [a,G] of Object.entries(by)){
     if(!G.ad.length||!G.up.length)continue;
-    const f=(S.accounts[G.a]||{}).factor,used=new Set();
-    if(f>0)for(const ka of G.ad){const xa=S.deals[ka],ku=G.up.find(u=>!used.has(u)&&Math.abs(S.deals[u].prof+xa.prof*f)<=0.0100001);if(ku){used.add(ku);ok[ka]='gewinnauszahlung';ok[ku]='einzahlung'}}
-    const ra=G.ad.filter(k=>!ok[k]),ru=G.up.filter(k=>!ok[k]);
-    for(let i=0;i<Math.min(ra.length,ru.length);i++){const xa=S.deals[ra[i]],xu=S.deals[ru[i]];
+    G.ad.forEach((o,i)=>o.i=i);G.up.forEach((o,i)=>o.i=i);
+    const f=(S.accounts[a]||{}).factor,used=new Set();
+    // Alle möglichen Paare im Fenster, das zeitlich nächste zuerst (bei gleichem Abstand: Reihenfolge im Report)
+    const P=[];for(const x of G.ad)for(const u of G.up){const d=Math.abs(u.s-x.s);if(d<=RV_FENSTER)P.push({x,u,d})}
+    P.sort((p,r)=>p.d-r.d||p.x.i-r.x.i||p.u.i-r.u.i);
+    const frei=p=>!used.has(p.x.k)&&!used.has(p.u.k),nimm=p=>{used.add(p.x.k);used.add(p.u.k)};
+    if(f>0)for(const p of P){if(!frei(p)||Math.abs(S.deals[p.u.k].prof+S.deals[p.x.k].prof*f)>0.0100001)continue;nimm(p);ok[p.x.k]='gewinnauszahlung';ok[p.u.k]='einzahlung'}
+    for(const p of P){if(!frei(p))continue;nimm(p);const xa=S.deals[p.x.k],xu=S.deals[p.u.k];
       // Ab 0.81 (1): auch ohne Trading Benefit mit den Zahlen, damit man den Faktor gleich sieht
       const h=`Upgrade ${n2(xu.prof)} ÷ Adjust ${n2(xa.prof)} = ${q(xu.prof/-xa.prof)}, `+(f>0?`eingestellt ist ${facT(f)}.`:'Trading Benefit für dieses Konto fehlt.');
-      bad[ra[i]]=h;bad[ru[i]]=h}
+      bad[p.x.k]=h;bad[p.u.k]=h}
   }
   RV={ok,bad};RV_D=S.deals;return RV;
 }
@@ -16265,7 +16276,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.178',VDATE='22.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.179',VDATE='22.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
