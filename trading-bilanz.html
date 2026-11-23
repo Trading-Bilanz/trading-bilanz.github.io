@@ -14598,10 +14598,13 @@ function ovxZeichnen(kachel){const box=$('tiles');for(const id of ['cwbar','invb
   box.dataset.ovx=kachel?'k':'l';box.insertAdjacentHTML('beforeend',ovxH(kachel))}
 function ovxH(kachel){if(!OV_X)return '';const X=OV_X,d=X.dw,I=X.inv,H=[];
   const invT=gl('inv','Investition')+' '+(I.jetzt?'jetzt':'am '+dS(I.d));
+  // Ab 0.182: „nicht in den Kennzahlen“ (mit „Laufende Woche weglassen“) aus dem Begriff nichtkz, derselbe Text wie in „Pro Woche“; in der
+  // Kachel in einer eigenen Zeile, in der Leiste mit „ · “ in derselben Zeile (Florians Entscheidung 3 vom 23.11.2026)
+  const nk=d&&d.nk?esc(GL.nichtkz.t):'';
   if(d){const tit=d.t?jlink('w',d.W,'Diese Woche'):'Diese Woche';
     if(kachel){const [v,o]=!d.t?['–','']:X.pct?[d.rH,d.aH]:[d.aH,d.rH];
-      H.push(`<div class="tile ovx" id="cwbar"><div class="k">${tit}</div><div class="v">${v}</div><div class="s">${o?o+'<br>':''}${esc(d.st)}</div></div>`)}
-    else H.push(`<div class="cwbar ovx" id="cwbar"><div class="cwt"><div class="cwh">${tit}</div><div class="s">${esc(d.st)}</div></div><div class="cwv"><div><div class="k">${X.ex?gl('netto','Netto-Gewinn'):gl('vorpf','Ergebnis vor PF')}</div><div class="v">${d.t?d.aH:'–'}</div></div><div><div class="k">${gl('rendite','Rendite')}</div><div class="v">${d.t?d.rH:'–'}</div></div></div></div>`)}
+      H.push(`<div class="tile ovx" id="cwbar"><div class="k">${tit}</div><div class="v">${v}</div><div class="s">${o?o+'<br>':''}${esc(d.st)}${nk?'<br>'+nk:''}</div></div>`)}
+    else H.push(`<div class="cwbar ovx" id="cwbar"><div class="cwt"><div class="cwh">${tit}</div><div class="s">${esc(d.st)}${nk?' · '+nk:''}</div></div><div class="cwv"><div><div class="k">${X.ex?gl('netto','Netto-Gewinn'):gl('vorpf','Ergebnis vor PF')}</div><div class="v">${d.t?d.aH:'–'}</div></div><div><div class="k">${gl('rendite','Rendite')}</div><div class="v">${d.t?d.rH:'–'}</div></div></div></div>`)}
   if(kachel)H.push(`<div class="tile ovx" id="invbar"><div class="k">${invT}</div><div class="v">${I.vH}</div>${I.miss?`<div class="s">${I.miss}</div>`:''}</div>`);
   else H.push(`<div class="cwbar ovx" id="invbar"><div class="cwt"><div class="cwh">${invT}</div>${I.miss?`<div class="s">${I.miss}</div>`:''}</div><div class="cwv"><div><div class="v">${I.vH}</div></div></div></div>`);
   return H.join('')}
@@ -14861,9 +14864,10 @@ function renderStats(rows){
   // denselben Trade (in der gewählten Einheit und PF-Stellung), Stufen an „Netto-Gewinn“ (nur bei „PF verteilt“) und „Rendite“
   const bwS=pct?(AK.miss?null:GW.bestW.r):GW.bestW.a,btS=pct?(AK.miss?null:eo(GW.bestT.r)):eo(GW.bestT.a);
   const tbf=[ex?msBf('k:sn',['sn']):'',msBf('k:sr',['sr']),'','',bwS?msBf('k:aw',['aw','jw'],bwS.o.w):'','',btS?msBf('k:at',['at','jt'],btS.t+'|'+btS.sym):''];
-  // Ab 0.100: Leiste „Diese Woche“. Stand: laufend (CW) vor Samstag „bisher · n von 5 Handelstagen“ (n = Handelstage der Woche bis zum Datenstand,
+  // Ab 0.100: Leiste „Diese Woche“. Stand: laufend (CW) vor Samstag „n von 5 Handelstagen“ (n = Handelstage der Woche bis zum Datenstand,
   // ab 0.159 aus htListe: der Datenstand zählt nur mit Trade, in einer Woche mit dem 25.12. oder dem 01.01. ohne Trade „von 4“), ab Samstag
-  // „Handel vorbei“ (mit „· PF noch offen“, wenn die Woche vor PF in USD im Plus ist), sonst „abgerechnet“. Werte wie die erste Kachel (PF verteilt:
+  // „PF noch offen“, wenn die Woche vor PF in USD im Plus ist, sonst „Handel vorbei“; danach „abgerechnet“ (Wortlaut ab 0.182, unten).
+  // Werte wie die erste Kachel (PF verteilt:
   // Netto-Gewinn, PF laut MT5: Ergebnis vor PF) und die Rendite nach PF-Schalter.
   // Ab 0.179 (Florians Entscheidung vom 22.11.2026): „Diese Woche“ steht immer, wenn die heutige Woche (Montag bis Sonntag, Uhr des Geräts) im
   // gewählten Zeitraum liegt (heute im Zeitraum; bis 0.178 nur in der Woche des neuesten Trades). Ohne Trade dieser Woche im Zeitraum: Wert „–“,
@@ -14883,9 +14887,12 @@ function renderStats(rows){
        const wT=new Set(RA.filter(r=>isTrade(r)&&r.wk===W).map(r=>r.d)),wE=addDays(W,4),wN=htListe(W,wE,null,wT).length,wB=htListe(W,wE,cntWin(W,null,null,dataEnd,lastT),wT).length;
        // Ab 0.162 (Florians Antwort 1 zur Freigabe 0.162): „PF noch offen“, wenn die Woche vor PF in USD im Plus ist (bis 0.161 in der Währung der
        // Anzeige; in Euro konnte eine Woche mit genau 0 USD knapp im Plus sein, weil ihre Tage verschiedene Kurse haben)
-       let st=CW!==W?'abgerechnet':dataEnd<addDays(W,5)?`bisher · ${wB} von ${wN} Handelstagen`:sumTrades(rw,false,true).v>0?'Handel vorbei · PF noch offen':'Handel vorbei';
-       if(nocwOn())st+=' · nicht in den Kennzahlen';
-       dw={W,t:true,st,aH:monT(a),aT:fCur(a),rH:retHtml(rr,'–',true),rT:rr.miss||rr.n===0?'–':fR.format(rr.v)}}
+       // Ab 0.182 (Florians Entscheidungen vom 23.11.2026): „n von N Handelstagen“ ohne „bisher · “ (das „von N“ zeigt, dass die Woche noch läuft),
+       // im Plus nur „PF noch offen“ (bis 0.181 „Handel vorbei · PF noch offen“); „Handel vorbei“ und „abgerechnet“ bleiben. „Laufende Woche
+       // weglassen“ steht als Merkmal nk daneben (bis 0.181 mit „ · “ an st gehängt); ovxH setzt den Text in der Kachel in eine eigene Zeile,
+       // in der Leiste mit „ · “ dahinter.
+       const st=CW!==W?'abgerechnet':dataEnd<addDays(W,5)?`${wB} von ${wN} Handelstagen`:sumTrades(rw,false,true).v>0?'PF noch offen':'Handel vorbei';
+       dw={W,t:true,st,nk:nocwOn(),aH:monT(a),aT:fCur(a),rH:retHtml(rr,'–',true),rT:rr.miss||rr.n===0?'–':fR.format(rr.v)}}
      else dw={W,t:false,st:dataEnd&&dataEnd>=W?'noch kein Trade':'noch kein Report'}}
    const jetzt=!rg.to||!dataEnd||rg.to>=dataEnd;
    OV_X={dw,ex,pct,inv:{v:capG,jetzt,d:jetzt?dataEnd:rg.to,vH:capG!=null?invM(capG):invDash(sel),miss:capG==null?invMissTxt(sel):''}}}
@@ -16456,7 +16463,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.180',VDATE='23.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.182',VDATE='23.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
