@@ -3934,6 +3934,17 @@ function pfz(rows){
   for(const r of rows)if(r.cat==='close'||r.cat==='open')fN-=r.pfE;
   z.fV=z.fee;z.nV=z.tax;z.fN=fN;z.nN=sumTrades(rows,true).v;return z;
 }
+// Ab 0.182 (Florians Entscheidungen vom 23.11.2026, Auftrag 0.182, Phase 2, und seine Antworten 3, 4a und 5 zur Freigabe): die eine Stelle, die
+// entscheidet, ob ein Zeitraum (Woche oder Monat) als Zeile in „Pro Woche“ und „Pro Monat“ und als Spalte in „Netto pro Konto und Monat“ steht.
+// Ja mit einem Trade. Ohne Trade nur, wenn die Zeile in der gezeigten PF-Stellung einen Wert hätte: bei „PF laut MT5“ (ex = false) eine gebuchte
+// Performance Fee oder Gebühr ungleich 0 (z. B. die PF einer Woche, die erst am Montag danach oder im nächsten Jahr gebucht ist), bei „PF verteilt“
+// nie (dort steht die PF bei den Trades ihrer Woche). Ein- und Auszahlungen allein (Einzahlung, Kapitalabzug, Gewinnauszahlung, „Noch unklar“)
+// ergeben überall 0 oder „–“; „Investition am Anfang“ und „Kumuliert“ zählen nicht als Werte, sie sind Stände, die der Zeitraum nur weitergibt
+// (Florians Antwort 3). Summe, Kumuliert und die Investition der folgenden Zeile bleiben gleich: ein weggelassener Zeitraum trägt dort nichts bei.
+// Bis 0.181 stand jeder Zeitraum mit irgendeiner Buchung da, auch als Zeile voller Nullen (z. B. die Woche der ersten Einzahlung).
+function listenZeile(rows,ex){
+  return rows.some(isTrade)||(!ex&&rows.some(r=>r.cat==='fee'&&Math.abs(r.amt)>=0.005));
+}
 // Zeilen für die Auswertung in der gewählten Währung. Bei 'usd' flache Kopien, in denen eur, exE und pfE den Betrag in USD tragen,
 // direkt aus der Kontowährung (amt, exU; ab 0.114 immer USD). So rechnen agg(), pfz(), positions(),
 // sumTrades() (bis 0.164 auch tradeStats()) unverändert in der gewählten Währung. amt, exU und die Investition bleiben, Rendite, Max. Drawdown und
@@ -14947,7 +14958,9 @@ function renderStats(rows){
   {const inv=invSumme(sel,'9999','usd'),invE=inv==null?null:invSumme(sel,'9999','eur');
    CALC_D={k:AK.week.k,rets:AK.week.ps.map(p=>p.rX),miss:AK.miss||inv==null,accs:sel,why:invWhy(sel,'der Anfang eines Reports fehlt'),inv,invE};renderCalc()}
   // Monate. Kumuliert ab Anfang des Zeitraums: PF laut MT5 Summe der Gewinne vor PF, PF verteilt Summe der Netto-Gewinne
-  const yms=[...new Set(R.map(r=>r.ym))].sort();
+  // Ab 0.182: nur Monate, die listenZeile zeigt (Florians Antwort 5 zur Freigabe 0.182); dieselben Monate für „Pro Monat“ und die Spalten von
+  // „Netto pro Konto und Monat“. Bis 0.181 jeder Monat mit irgendeiner Buchung, auch ein Monat nur mit einer Einzahlung als Zeile voller Nullen.
+  const yms=[...new Set(R.map(r=>r.ym))].sort().filter(m=>listenZeile(R.filter(r=>r.ym===m),ex));
   let mh='',cV=0,cN=0;
   // Investition am Anfang des Monats (invStart): beim ersten Trade, ohne Trade am sichtbaren Monatsbeginn
   const mStart=m=>rg.from&&rg.from>m+'-01'&&rg.from.slice(0,7)===m?rg.from:m+'-01';
@@ -15203,7 +15216,11 @@ function weekTree(R0,cx){
   // die Reihenfolge der Blöcke. Die Tage in einer Woche bleiben Montag bis Freitag von oben nach unten, die Summe bleibt unten.
   let h='',cV=0,cN=0,py=null;const T=pfz(R0),blocks=[];
   for(const w of wks){
-    const rw=W.get(w);const z=pfz(rw);cV+=z.res;cN+=z.nN;const np=positions(rw).length;
+    const rw=W.get(w);
+    // Ab 0.182: eine Woche ohne Trade, die nur Nullen zeigen würde (nur Ein- oder Auszahlungen), steht nicht da (listenZeile). Sie fällt vor dem Jahr
+    // weg: Die zweistellige Jahreszahl steht so an der ersten gezeigten Woche eines Jahres.
+    if(!listenZeile(rw,ex))continue;
+    const z=pfz(rw);cV+=z.res;cN+=z.nN;const np=positions(rw).length;
     // Jahr (zweistellig) nur bei der ersten Woche eines neuen Kalenderjahres
     const nk=cwr.length&&w===cx.cw;
     const [s,e]=nk?cx.cwSpan:cx.wkSpan(w);const y=e.slice(0,4);const yy=py!==null&&y!==py?y.slice(2):'';py=y;
