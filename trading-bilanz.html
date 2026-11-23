@@ -3195,6 +3195,14 @@ function fmtDec(v,dec){
   ip=ip.replace(/\B(?=(\d{3})+(?!\d))/g,'.');
   return (neg?'-':'')+ip+(fp!=null?','+fp:'');
 }
+// Ab 0.185 (Florians Regel, GESTALTUNG Abschnitt 4): „Die Farbe eines Werts folgt der Zahl, die man sieht. Was gerundet 0,00 zeigt, ist neutral.
+// Gerechnet und gezählt wird weiter mit dem genauen Wert.“ Eine Wurzel für alle Stellen, die nach dem Vorzeichen färben oder ein „+“ setzen:
+// zeigtMinus = die gezeigte Zahl (fmtDec mit dec Nachkommastellen, bei Prozent den Wert mal 100) trägt ein Minus; zeigtPlus = sie ist größer als 0
+// (kein „+0,00“); zeigtNull = sie zeigt 0 (z. B. „0,00“). Bis 0.184 färbten mon() und eur() ab −0,005, Rendite, Max. Drawdown und die Grafiken
+// ab < 0 („0,00 %“ rot bei −0,0036 %), der Rechner ab −0,005 mit 0 Nachkommastellen („0 €“ rot).
+const zeigtMinus=(v,dec)=>{const r=fmtDec(v,dec);return r!=null&&r[0]==='-'};
+const zeigtPlus=(v,dec)=>zeigtMinus(-v,dec);
+const zeigtNull=(v,dec)=>{const r=fmtDec(v,dec);return r!=null&&!/[1-9]/.test(r)};
 // Ab 0.45 (1.13): ohne Zahl „unbekannt“ statt NaN
 const fN={format:v=>{const r=fmtDec(v,2);return r==null?'unbekannt':r}};
 const fE={format:v=>{const r=fmtDec(v,2);return r==null?'unbekannt':r+' €'}};
@@ -3203,7 +3211,7 @@ const fI={format:v=>{const r=fmtDec(v,0);return r==null?'unbekannt':r}};
 const fDec=(v,dec)=>{const r=fmtDec(v,dec);return r==null?'unbekannt':r};
 const fP={format:v=>{if(v==null||isNaN(v))return '–';return fmtDec(v*100,1)+' %'}};
 const fR={format:v=>{if(v==null||isNaN(v))return '–';return fmtDec(v*100,2)+' %'}}; // nur für die Rendite je Trade (2 Nachkommastellen)
-function eur(v,cls=true){if(v==null)return '–';if(isNaN(v))return '<span class="unk">unbekannt</span>';const c=cls?(v<-0.005?' class="neg"':''):'';return `<span${c}>${fE.format(v)}</span>`}
+function eur(v,cls=true){if(v==null)return '–';if(isNaN(v))return '<span class="unk">unbekannt</span>';const c=cls?(zeigtMinus(v,2)?' class="neg"':''):'';return `<span${c}>${fE.format(v)}</span>`}
 function usd(v){if(v==null||isNaN(v))return '–';return fN.format(v)+' USD'}
 // Beträge der Auswertung in der Währung des Schalters (S.ui.flt.cur): „1.234,56 €“ bzw. „1.234,56 USD“. Steuer und Krypto nutzen weiter eur() und usd().
 // CUR_EFF: Währung, in der die Auswertung gerade rechnet. Fehlen für die gewählten Konten und den Zeitraum Kurse (CUR_MISS, aus renderStats),
@@ -3211,7 +3219,7 @@ function usd(v){if(v==null||isNaN(v))return '–';return fN.format(v)+' USD'}
 let CUR_EFF='usd',CUR_MISS=null;
 const CUR=()=>CUR_EFF==='usd'?' USD':' €';
 function fCur(v,dec=2){const r=fmtDec(v,dec);return r==null?'NaN':r+CUR()}
-function mon(v,cls=true){if(v==null||isNaN(v))return '–';const c=cls?(v<-0.005?' class="neg"':''):'';return `<span${c}>${fCur(v)}</span>`}
+function mon(v,cls=true){if(v==null||isNaN(v))return '–';const c=cls?(zeigtMinus(v,2)?' class="neg"':''):'';return `<span${c}>${fCur(v)}</span>`}
 // Betrag in einer Kachel: mit und ohne Nachkommastellen. Passt der volle Wert nicht in seine Kachel, nimmt fitTileVals() die Kurzform.
 function monT(v){if(v==null||isNaN(v))return '–';return `<span class="vi" data-f="${fCur(v)}" data-s="${fCur(v,0)}">${fCur(v)}</span>`}
 function num(s){s=String(s||'').replace(/[\s ]/g,'');if(!s)return 0;const v=parseFloat(s);return isNaN(v)?0:v}
@@ -3551,7 +3559,7 @@ function catOf(x){
 const MAP_SIGN={einzahlung:1,kapitalabzug:-1,gewinnauszahlung:-1};
 function mapSign(e){const want=MAP_SIGN[e.cat];if(!want||S.map[e.k]!==e.cat)return '';
   const L=e.deals.filter(x=>x.prof*want<0);if(!L.length)return '';
-  const sum=L.reduce((a,x)=>a+x.prof,0),v=(sum>0?'+':'')+usd(sum),art=CATS[e.cat].replace(/ \(.*\)$/,'');
+  const sum=L.reduce((a,x)=>a+x.prof,0),v=(zeigtPlus(sum,2)?'+':'')+usd(sum),art=CATS[e.cat].replace(/ \(.*\)$/,'');
   return `Prüfe die Art: Bei „${art}“ erwartet das Tool ein ${want>0?'Plus':'Minus'}, ${L.length===1?`hier steht aber ${v}`:`hier stehen aber ${fI.format(L.length)} Buchungen mit zusammen ${v}`}.`}
 function mapKinds(){const m={},R=rvScan();
   for(const [dk,x] of Object.entries(S.deals)){if(x.type==='buy'||x.type==='sell'||R.ok[dk])continue;const k=mapKey(x);
@@ -4161,7 +4169,7 @@ function ddHtml(o,empty,plain,ma){
   if(o.miss)return empty==='–'?invDash(ma||MISS_SEL):empty;
   if(o.n===0)return empty;
   const t=fR.format(o.v);
-  return o.v<0&&!plain?`<span class="neg">${t}</span>`:t;
+  return zeigtMinus(o.v*100,2)&&!plain?`<span class="neg">${t}</span>`:t;
 }
 // Tabellenzelle mit beiden Stellungen übereinander: v = vor PF, n = nach PF (HTML), sichtbar ist nur die gewählte (Klasse pf-ex).
 // So ist jede Spalte in beiden Stellungen gleich breit. g = Werte, die nur Breite halten.
@@ -5457,7 +5465,11 @@ function jrKopf(st,amt){const r={t:st.r==null?'–':fR.format(st.r),s:st.r!=null
 // ---- Seite 1. Monatsbalken: Rendite je Monat (ohne Investition der Betrag), Gold, Verlustmonate gedämpft orange unter der Nulllinie, Monate ohne
 // Trades nur eine flache Linie; die Höhe bestimmt das CSS (ab 0.158 9/10 der Höhe des Schmetterlings, 54 bis 160 px, am Handy bis 125 px), der
 // größte Ausschlag nach oben und nach unten füllt sie zusammen.
-function jrBalkenH(st){const X=MS_TXT.jr,v=m=>st.miss?m.a:m.r,V=st.mon.map(m=>m.n?v(m)||0:0),P=Math.max(0,...V),Nn=Math.max(0,...V.map(x=>-x)),k=100/((P+Nn)||1),z=+(P*k).toFixed(2);
+// Ab 0.185 (Florians Regel, GESTALTUNG Abschnitt 4, und seine Antwort F4 zum Plan 0.185): Ein Monat, der gerundet 0,00 zeigt (Rendite in % bzw.
+// Betrag mit 2 Nachkommastellen, wie im Vorlesetext), steht wie ein Monat mit genau 0: kleiner goldener Balken über der Linie, nicht orange darunter.
+// Eine Rechnung für das Fenster (jrBalkenH) und das Bild (jrPng, sp.mon). Bis 0.184 zählte das Vorzeichen des genauen Werts.
+const jrMonBalken=(st,m)=>{const x=m.n?(st.miss?m.a:m.r)||0:0;return zeigtNull(st.miss?x:x*100,2)?0:x};
+function jrBalkenH(st){const X=MS_TXT.jr,V=st.mon.map(m=>jrMonBalken(st,m)),P=Math.max(0,...V),Nn=Math.max(0,...V.map(x=>-x)),k=100/((P+Nn)||1),z=+(P*k).toFixed(2);
   const lab=st.mon.filter(m=>m.n).map(m=>`${MON[+m.m.slice(5)-1]} ${st.miss?msMon(m.a,st.cur):fR.format(m.r)}`).join(', ');
   // Ab 0.156 in Prozent der Höhe: Die Höhe der Balken bestimmt das CSS
   return `<div class="jrmon"><div class="jrbal" role="img" aria-label="${esc(X.monate+': '+(lab||'–'))}">${st.mon.map((m,i)=>{const x=V[i],h=+(Math.abs(x)*k).toFixed(2);
@@ -5673,7 +5685,7 @@ function jrClosed(){JR_T.forEach(clearTimeout);JR_T=[];if(FP_OPEN==='jrb')closeF
 const JR_C={bg:'#f6f5f2',card:'#ffffff',line:'#e2e0da',gold:'#C49A55',goldInk:'#86601c',ink:'#1a1a1a',ink2:'#373d43',muted:'#454b51',dawn:'#fbeccc',neg:'#c2410c'};
 function jrBildSpec(k,st,o){const X=MS_TXT.jr,y=String(o.y);
   if(k==='s1'){const kp=jrKopf(st,!!o.amt);return {art:'s1',W:1080,H:1350,titel:X.titel.replace('{j}',y),rendite:kp.r,renditeL:X.rendite,netto:kp.n,nettoL:kp.n!=null?X.netto.replace('{c}',jrCur(st.cur)):null,
-    mon:st.mon.map(m=>({n:m.n,v:m.n?(st.miss?m.a:m.r)||0:0})),mb:X.mb,monL:X.monate,leit:o.leit,fuss:MS_TXT.fuss}}
+    mon:st.mon.map(m=>({n:m.n,v:jrMonBalken(st,m)})),mb:X.mb,monL:X.monate,leit:o.leit,fuss:MS_TXT.fuss}}
   const G=jrModel(st,{amt:!!o.amt,weak:!!o.weak,art:k}),sp={art:k,W:1080,H:1350,kat:X.titel.replace('{j}',y),titel:X.zahlen,gruppen:G,fuss:MS_TXT.fuss};
   if(k==='alle')sp.H=jrLayout(sp).H;return sp}
 // Lage der Bilder „Kurzfassung“ und „Alle Werte“ (Maße der Vorlagen bei Maßstab s = 1): Kopf (Schmetterling, Kategorie, Titel, goldene Linie),
@@ -13946,7 +13958,7 @@ function unklarH(tax){const L=unklarDeals();if(!L.length)return '';
   const sumU=L.reduce((s,x)=>s+x.prof,0),wantE=tax||CUR_EFF==='eur';
   let sumE=0;if(wantE)for(const x of L){const ri=rateInfo(dOf(x.t),x.t);if(!ri||!ri.v){sumE=NaN;break}sumE+=x.prof/ri.v}
   const E=wantE&&!isNaN(sumE),sum=E?sumE:sumU;
-  const n=L.length,sg=v=>(v>0?'+':'')+(E?fE.format(v):usd(v)),d1=fD(dOf(L[0].t)),d2=fD(dOf(L[n-1].t)),A=[...new Set(L.map(x=>x.a))].sort();
+  const n=L.length,sg=v=>(zeigtPlus(v,2)?'+':'')+(E?fE.format(v):usd(v)),d1=fD(dOf(L[0].t)),d2=fD(dOf(L[n-1].t)),A=[...new Set(L.map(x=>x.a))].sort();
   const when=d1===d2?`am ${d1}`:`vom ${d1} bis ${d2}`,acc=A.length===1?`Konto ${esc(A[0])}`:`Konten ${esc(and2(A))}`;
   const t=(n===1?`1 Buchung ist noch unklar: ${sg(sum)} ${when}, ${acc}. Sie ist nicht eingerechnet.`:`${fI.format(n)} Buchungen sind noch unklar: zusammen ${sg(sum)}, ${when}, ${acc}. Sie sind nicht eingerechnet.`)+
     (S.ui.country==='none'?' Investition und Ergebnis können daher abweichen.':' Investition, Ergebnis und Steuer können daher abweichen.')+(tax?' Sag das deiner Steuerberatung.':'');
@@ -13967,7 +13979,7 @@ function retHtml(o,empty,plain,ma){
   if(o.miss)return empty==='–'?invDash(ma||MISS_SEL):empty;
   if(o.n===0)return empty;
   const t=fR.format(o.v);
-  return o.v<0&&!plain?`<span class="neg">${t}</span>`:t;
+  return zeigtMinus(o.v*100,2)&&!plain?`<span class="neg">${t}</span>`:t;
 }
 // Name und Nummer eines Kontos für die erste Tabellenspalte: Name darf umbrechen, Nummer klein darunter
 function accCell(a){const x=S.accounts[a];return x&&x.name?`<span class="accn">${esc(x.name)}</span><span class="sm">${a}</span>`:`<span class="accn">${a}</span>`}
@@ -14620,7 +14632,8 @@ ${ECB_CITE}`},
   abgl:{t:'Abgleich',h:'Das Tool zählt alle Buchungen zusammen, die es aus dem Report gelesen hat, und vergleicht sie mit den Summen am Ende des Reports: Kommission, Gebühr, Swap und Gewinn aus der Summenzeile der Buchungen, deinen letzten Kontostand mit dem Kontostand dort, dazu „Nettogewinn gesamt“ (bis auf Rundung) und die Zahl der Trades. Geprüft wird der zuletzt geladene Report.\n<b>✓ stimmt:</b> Alles wurde vollständig gelesen.\n<b>⚠ Abweichung:</b> Darunter steht die Zeile, die nicht passt, mit dem gelesenen Wert und dem Wert im Report. Das Tool hat den Report vielleicht nicht ganz richtig gelesen. Speichere ihn frisch aus MT5 und lade ihn hier noch einmal. Bleibt die Warnung, stimmen die Zahlen dieses Kontos vielleicht nicht. Schreibe mir dann bitte an florian@weltenwandel.at.'},
   'k-calc':{t:'Was wäre wenn',h:'Rechnet hoch, was aus einer Investition werden könnte, wenn es so weiterläuft wie in deinen bisherigen Wochen. Die Szenarien beruhen nur auf diesen Wochen. Eine Verlustphase, die bisher nicht vorkam, ist darin nicht enthalten.\nBeträge in € werden zum letzten vorhandenen Kurs in USD umgerechnet, weil die Trades in USD laufen.'},
   netto:{t:'Netto-Gewinn',h:'Das Ergebnis nach Abzug der Performance Fee, also das, was dir bleibt.'},
-  vorpf:{t:'Ergebnis vor PF',h:'Gewinne minus Verluste deiner Trades laut MT5, nach Kommission und Swap, vor Abzug der Performance Fee.'},
+  // Ab 0.185 (Florians Wortlaut, Auftrag 0.185, Punkt 1): Die Kommission ist schon abgezogen; MT5 zeigt in der Liste „Positionen“ den Gewinn vor der Kommission.
+  vorpf:{t:'Ergebnis vor PF',h:'Gewinne minus Verluste deiner Trades mit Swap, vor Abzug der Performance Fee. Die Kommission ist schon abgezogen. Darum kann ein Trade hier knapp im Minus stehen, obwohl MT5 ihn in der Liste „Positionen“ knapp im Plus zeigt. Dort steht der Gewinn noch vor der Kommission.'},
   pf:{t:'Performance Fee',h:'30 % vom Wochengewinn, Tag bucht sie jeden Samstag ab.\n<b>Monatswechsel:</b> Bei „PF laut MT5“ zählt die PF im Monat der Abbuchung, bei „PF verteilt“ im Monat, in dem du den Gewinn gemacht hast.'},
   pfplus:{t:'Positive Performance Fee',h:'In einer Gewinnwoche senkt ein Verlust die Performance Fee, er kostet dich deshalb nur 70 %. In einer Verlustwoche gibt es keine PF, dann kostet er 100 %. Annahme: Tag nimmt Verluste nicht in die nächste Woche mit.'},
   rendite:{t:'Rendite',h:'Jeder Trade wird mit deiner Investition zu Beginn des Trades verglichen, die Renditen aller Trades werden zusammengezählt. Gemeint ist dein eingesetztes Geld, nicht der vervielfachte Kontostand im MT5. Bei Trading Benefit (×12, ×24) ist die Rendite deshalb viel höher als im MT5 oder bei Myfxbook.\nOhne Trading Benefit kennt das Tool deine Investition nicht. Die Rendite steht dann als „–“.\nDeshalb ist die Rendite nicht einfach Netto-Gewinn geteilt durch Investition, sobald sich deine Investition im Zeitraum ändert. Bei „PF laut MT5“ passen die beiden auch innerhalb einer Woche nicht zusammen: Die Rendite ist dann vor PF, der Netto-Gewinn nach der abgebuchten Fee.'},
@@ -15368,7 +15381,7 @@ function renderCalc(){
   // Gezeigt wird nur die gewählte Variante (mit oder ohne Wiederanlage), immer Betrag am Ende und Gewinn. Gerechnet in USD (I × k).
   const R=sc.map(([l,r])=>{const o=calcScen(I*k,r,n);return c.reinv?[o.cE,o.cG]:[o.sE,o.sG]});
   // Ergebnisse in der Währung des Schalters; Euro zum letzten vorhandenen Kurs
-  const M=v=>{const x=v/k;return `<span${x<-0.005?' class="neg"':''}>${fCur(x,0)}</span>`};
+  const M=v=>{const x=v/k;return `<span${zeigtMinus(x,0)?' class="neg"':''}>${fCur(x,0)}</span>`};
   // Zeilennamen mit Bindestrich, damit sie am Handy dort umbrechen
   let h=`<tr><th>${SM0}</th>${sc.map(([l])=>`<th>${l}${SM0}</th>`).join('')}</tr><tr><td>${gl('wr','Wochen-Rendite')}</td>${sc.map(([,r])=>`<td>${retHtml({v:r,n:1,miss:false},'–')}</td>`).join('')}</tr>`;
   h+=`<tr><td>End-Betrag</td>${R.map(o=>`<td><b>${M(o[0])}</b></td>`).join('')}</tr><tr><td>Gewinn</td>${R.map(o=>`<td>${M(o[1])}</td>`).join('')}</tr>`;
@@ -15406,9 +15419,9 @@ function weekTree(R0,cx){
   const W=by(R,r=>r.wk);const wks=[...W.keys()].sort();const ex=S.ui.flt.pf==='ex',multi=cx.multi;
   const fee=t=>`<span class="fee-d">${t}</span>`;
   // PF bei PF verteilt in Tag-, Trade- und Konto-Zeilen: grau, ein Plus (Verlust senkt die PF) als Begriff
-  const pfP=v=>fee(v>0.005?gl('pfplus',fCur(v)):fCur(v));
+  const pfP=v=>fee(zeigtPlus(v,2)?gl('pfplus',fCur(v)):fCur(v));
   // Netto-Gewinn eines Tages: grau statt rot, wenn er nur wegen der PF negativ ist (Ergebnis vor PF des Tages ≥ 0, z. B. Samstag ohne Trade)
-  const netD=(v,res)=>v<-0.005&&res>-0.005?fee(fCur(v)):mon(v);
+  const netD=(v,res)=>zeigtMinus(v,2)&&!zeigtMinus(res,2)?fee(fCur(v)):mon(v);
   const rH=v=>retHtml({v,n:1,miss:false},'');
   const c1=t=>`<td><div class="c1">${t}</div></td>`;
   // Ab 0.146: Jede Woche ist ein Block (Wochenzeile mit ihren Tagen, Trades und Konten). Die Blöcke entstehen immer von alt nach neu, so bleiben
@@ -15482,14 +15495,17 @@ function byBucket(rows,res){const m=new Map();for(const r of rows){if(!isTrade(r
 // Wert einer Gruppe von Trades: Betrag = Gewinn in der Währung des Schalters, % = Summe der Trade-Renditen auf die Investition der gewählten Konten.
 // ex = nach PF. null, wenn % nicht berechnet werden kann.
 function grpVal(rows,unit,ex){if(unit==='pct'){const o=retSum(rows,'sel',ex);return o.miss||o.n===0?null:{v:o.v}}return sumTrades(rows,ex)}
-const mkPt=(key,label,o)=>({key,label,v:o.v,color:o.v<0?'neg':'pos'});
+// Ab 0.185: Farbe eines Punkts nach der Zahl im Info-Feld (Betrag mit 2 Nachkommastellen, Prozent mit 2), Wurzel zeigtMinus. Gerundet 0,00 ist
+// blau wie ein Wert von genau 0 (Florians Antwort F3 A zum Plan 0.185); bis 0.184 rot ab < 0. unit fehlt bei Investition und Trefferquote (nie negativ).
+const grFarbe=(v,unit)=>zeigtMinus(unit==='pct'?v*100:v,2)?'neg':'pos';
+const mkPt=(key,label,o,unit)=>({key,label,v:o.v,color:grFarbe(o.v,unit)});
 // fill = Schlüssel der Zeiträume im gezählten Fenster (winKeys), die ohne Trade als 0 erscheinen („Tage ohne Trade mitzählen“)
 // Ab 0.158 (Florians Auftrag): Ein Zeitraum ohne Trade trägt leer = true. Er bleibt als 0 in der Grafik, bekommt aber nie die Beschriftung von
 // höchstem oder tiefstem Wert (drawChart, opts.ext), auch nicht im Bild der Grafik. „Ø pro Trade“ und „Nach Wochentag“ haben den Fall nicht:
 // Sie zeichnen nur Zeiträume bzw. Wochentage mit Trades.
 function periodPoints(rows,res,unit,ex,fill){
   const m=byBucket(rows,res);const out=[];const ks=new Set(m.keys());if(fill)for(const k of fill)ks.add(k);
-  for(const k of [...ks].sort()){const g=m.get(k);const o=g?grpVal(g,unit,ex):{v:0};if(o){const p=mkPt(k,bucketLabel(k,res),o);if(!g)p.leer=true;out.push(p)}}
+  for(const k of [...ks].sort()){const g=m.get(k);const o=g?grpVal(g,unit,ex):{v:0};if(o){const p=mkPt(k,bucketLabel(k,res),o,unit);if(!g)p.leer=true;out.push(p)}}
   return out;
 }
 // Tage (Handelstage nach dem Kalender, htListe), Wochen (Montag) oder Monate ('YYYY-MM'), die das gezählte Fenster schneiden
@@ -15498,7 +15514,7 @@ function winKeys(win,res){const ks=[];
   else if(res==='week'){for(let w=monday(win.s);w<=win.e;w=addDays(w,7))ks.push(w)}
   else for(let m=win.s.slice(0,7);m<=win.e.slice(0,7);m=addMonths(m+'-01',1).slice(0,7))ks.push(m);
   return ks}
-function cumulatePoints(pts){let c=0;return pts.map(p=>{c+=p.v;return {key:p.key,label:p.label,v:c,color:c<0?'neg':'pos'}})}
+function cumulatePoints(pts,unit){let c=0;return pts.map(p=>{c+=p.v;return {key:p.key,label:p.label,v:c,color:grFarbe(c,unit)}})}
 // Ø pro Trade je Zeitraum. Ein Trade ist eine Position: gleiche Schließzeit und gleiches Symbol auf mehreren Konten zählt einmal.
 function avgPoints(rows,res,unit,ex){
   const m=byBucket(rows,res);const out=[];
@@ -15507,7 +15523,7 @@ function avgPoints(rows,res,unit,ex){
   // Betrag die Summe aller Trade-Zeilen ÷ Zahl der Trades, mit der Kommission beim Eröffnen, die es nur in Test-Sicherungen gab (Resonanz).
   for(const k of [...m.keys()].sort()){const rr=m.get(k);const z=avgKz(rr,null,'sel',false,['trade']).trade;if(!z.k)continue;
     if(unit==='pct'&&!grpVal(rr,unit,ex))continue;
-    out.push(mkPt(k,bucketLabel(k,res),{v:unit==='pct'?(ex?z.rX:z.rI):(ex?z.aX:z.aI)}))}
+    out.push(mkPt(k,bucketLabel(k,res),{v:unit==='pct'?(ex?z.rX:z.rI):(ex?z.aX:z.aI)},unit))}
   return out;
 }
 const WDL=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
@@ -15520,7 +15536,7 @@ function weekdayPoints(rows,unit,ex,avg,cnt){
   const g=[[],[],[],[],[],[],[]];
   for(const r of rows){if(!isTrade(r))continue;g[(new Date(r.d+'T12:00:00Z').getUTCDay()+6)%7].push(r)}
   const out=[];
-  g.forEach((rr,i)=>{if(!rr.length)return;const o=grpVal(rr,unit,ex);if(!o)return;let v=o.v;if(avg){if(!cnt[i])return;v/=cnt[i]}out.push({axis:WD[i],label:WDL[i],v,color:v<0?'neg':'pos'})});
+  g.forEach((rr,i)=>{if(!rr.length)return;const o=grpVal(rr,unit,ex);if(!o)return;let v=o.v;if(avg){if(!cnt[i])return;v/=cnt[i]}out.push({axis:WD[i],label:WDL[i],v,color:grFarbe(v,unit)})});
   return out;
 }
 // Verteilung der Trades (Positionen) nach Gewinn (Betrag in der Währung des Schalters) oder Rendite in %
@@ -15797,7 +15813,7 @@ function renderGraf(rows,sel,gx){
   if((g.what==='inv'||(pct&&g.what!=='hit'))&&sel.some(a=>INV[a]!=='ok')){const nf=sel.some(a=>INV[a]==='nofac');box.innerHTML=`<p class="small">${invMissTxt(sel)}${nf?'. Wähle ihn im Reiter „Reports“. Ohne ihn kann das Tool keine Rendite berechnen.':`, weil ${invWhy(sel,'der Anfang des Reports fehlt')}. Die Rendite kann nicht berechnet werden. Siehe Reiter „Reports“.`}</p>`;return}
   const yf=pct?(v=>fR.format(v)):(v=>fI.format(Math.round(v))+CUR()),tf=pct?(v=>fR.format(v)):(v=>fCur(v));
   if(g.what==='period'||g.what==='cum'||g.what==='avg'){
-    pts=g.what==='avg'?avgPoints(rows,g.res,g.unit,ex):periodPoints(rows,g.res,g.unit,ex,gx.zero?winKeys(gx.win,g.res):null);if(g.what==='cum')pts=cumulatePoints(pts);
+    pts=g.what==='avg'?avgPoints(rows,g.res,g.unit,ex):periodPoints(rows,g.res,g.unit,ex,gx.zero?winKeys(gx.win,g.res):null);if(g.what==='cum')pts=cumulatePoints(pts,g.unit);
     // Ab 0.102: höchster und tiefster Wert bei „Pro Zeitraum“ und „Ø pro Trade“ (nicht beim Verlauf)
     opts={kind:g.kind,res:g.res,yfmt:yf,tipfmt:tf,ext:g.what==='period'||g.what==='avg'};
     // Ø-Linie: derselbe Wert wie in der Karte „Durchschnitt“ (Auflösung bzw. pro Trade), nicht der Schnitt der sichtbaren Balken
@@ -16687,7 +16703,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.183',VDATE='23.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.185',VDATE='23.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
