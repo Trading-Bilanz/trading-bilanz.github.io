@@ -3401,8 +3401,8 @@ async function loadFiles(files){
         S.deals[k]=Object.assign({a:r.acc},x);a++}
       added+=a;dup+=d;upd+=u;nOk++;
       // Ab 0.183 (Florians Entscheidung 12): Handy-Zeilen dieses Kontos, deren Schritt nicht nach seiner letzten Buchung beginnt, fallen weg (hyKuerzen)
-      const hn=hyKuerzen([r.acc]);
-      out.push(r.deals.length?`<b>${esc(f.name)}</b>: Konto ${r.acc}, ${a} ${a===1?'neue Buchung':'neue Buchungen'}${d?`, ${d} schon vorhanden`:''}${u?`, davon ${u} aktualisiert (Kontostand oder Betrag aus diesem Report übernommen)`:''}${hn?`, ${hn===1?'1 Trade':`${fI.format(hn)} Trades`} vom Handy ersetzt`:''}.`+
+      const hk=hyKuerzen([r.acc]),hn=hyTeileT(hk.n,hk.m);
+      out.push(r.deals.length?`<b>${esc(f.name)}</b>: Konto ${r.acc}, ${a} ${a===1?'neue Buchung':'neue Buchungen'}${d?`, ${d} schon vorhanden`:''}${u?`, davon ${u} aktualisiert (Kontostand oder Betrag aus diesem Report übernommen)`:''}${hn?`, ${hn} vom Handy ersetzt`:''}.`+
         (u?`<details class="wfd"><summary>${u===1?'Aktualisierte Buchung':'Aktualisierte Buchungen'} ansehen</summary><ul>${UL.join('')}</ul></details>`:''):
         `<b>${esc(f.name)}</b>: Konto ${r.acc}, keine Buchungen in diesem Report.`);
     }catch(e){out.push(`<b>${esc(f.name)}</b>: konnte nicht gelesen werden (${esc(e.message)}). Speichere den Report neu aus MT5 und lade ihn noch einmal.`)}
@@ -3446,7 +3446,14 @@ function readText(f){return new Promise((res,rej)=>{const fr=new FileReader();fr
    Ohne PC-Report des Kontos lehnt das Tool den Tagesbericht ab.
    Gezählt werden die Handy-Zeilen nur in der Auswertung (enrich mit {hy:true}, render). Steuer, Zusammenfassung, Excel, CSV, Meilensteine,
    Feier-Fenster und Jahresrückblick bekommen sie nie (Florians Antworten 2, 3 und 5). Ohne Schalter erkennt das Tool den Bericht und erklärt ihn
-   (HY_APP, Florians Wortlaut aus Punkt 13 der Freigabe 0.183). */
+   (HY_APP, Florians Wortlaut aus Punkt 13 der Freigabe 0.183).
+   Ab 0.186 (Florians Auftrag 0.186 „Nachtrag vom Handy, Wiederanlage und mehrere Tage“ und seine Freigabe), was oben anders ist:
+   - Berichte über einen oder mehrere Tage (Tagesbericht, „individuell“, „letzte Woche“ …), weiter ein Konto je Bericht; es zählt nur der Bereich der
+     Kurve (hyLies). Zwei oder mehr Trades im selben Schritt nach der Grenze: nichts einlesen (R-72), auch im Tagesbericht (bis 0.183 gleich aufgeteilt).
+   - Schritt über der Grenze (Florians Antwort 1): hyPlan bzw. hyBleibt gleichen ihn mit den Trades des PC-Reports im Teil vor der Grenze ab.
+   - Speicher je Tag mit dem Stand des Tags (Korrektur 1): Ein Bericht ersetzt die Tage mit älterem oder gleichem Stand, Tage mit neuerem bleiben;
+     ein neuer PC-Report entfernt die Tage, deren Stand nicht nach seiner Grenze liegt, ganz. Kommission und Cent-Korrektur nach der Grenze: Summe des
+     Berichts minus PC-Report im selben Zeitraum. „Deine Konten“ zeigt den Stand in Ortszeit (hyOrt). */
 // Schalter je Browser (Florians Antwort 1): nicht in der Sicherung, „Sicherung laden“ ändert ihn nicht. Ein mit #handy-ein, aus mit #handy-aus (hyHash)
 const HY_KEY=KEY+'-handy';
 function hyOn(){try{return localStorage.getItem(HY_KEY)==='1'}catch(e){return false}}
@@ -3458,18 +3465,27 @@ function hyHash(){const h=String(location.hash||'').toLowerCase();if(h!=='#handy
 window.addEventListener('hashchange',hyHash);
 // Florians Wortlaut (Punkt 13 der Freigabe 0.183): ein Bericht aus der MT5-App ohne Schalter
 const HY_APP='Das ist ein Bericht aus der MT5-App am Handy. Er enthält nur Summen, keine einzelnen Buchungen. Für die Trading-Bilanz brauchst du den Bericht der Kontohistorie aus MT5 am Computer.';
-const HY_TXT={fmt:'Dieser Bericht aus der MT5-App hat ein Format, das das Tool nicht kennt (vielleicht nach einem Update der App). Nichts eingelesen.',
-  tage:'Dieser Bericht aus der MT5-App umfasst mehr als einen Tag. Für den Nachtrag vom Handy braucht das Tool den Bericht über einen Tag. Nichts eingelesen.'};
+const HY_TXT={fmt:'Dieser Bericht aus der MT5-App hat ein Format, das das Tool nicht kennt (vielleicht nach einem Update der App). Nichts eingelesen.'};
 // Erkennen am Inhalt: die Zuweisung window.__report = { in den ersten 20.000 Zeichen
 const HY_RE=/window\.__report\s*=\s*\{/;
 const hyIst=t=>HY_RE.test(String(t||'').slice(0,20000));
 function hyJson(t){const m=HY_RE.exec(t);if(!m)return null;const a=m.index+m[0].length-1,e=t.indexOf('<\/script>',a);
   try{return JSON.parse(t.slice(a,e<0?t.length:e).trim().replace(/;\s*$/,''))}catch(x){return null}}
-// Sekunden seit 1970 (Zeit im MT5-Report) → 'YYYY.MM.DD HH:MM:SS' wie in den MT5-Reports
-const hyZeit=x=>{const d=new Date(x*1000),p=n=>String(n).padStart(2,'0');return `${d.getUTCFullYear()}.${p(d.getUTCMonth()+1)}.${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`};
+// Sekunden seit 1970 (Zeit im MT5-Report) → 'YYYY.MM.DD HH:MM:SS' wie in den MT5-Reports, und zurück (hyEpoch). Ab 0.186 als Funktionen: hyFix braucht
+// sie schon beim Start (fixState läuft vor diesem Block, eine Konstante gäbe es dort noch nicht)
+function hyZeit(x){const d=new Date(x*1000),p=n=>String(n).padStart(2,'0');return `${d.getUTCFullYear()}.${p(d.getUTCMonth()+1)}.${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`}
+function hyEpoch(t){return Date.UTC(+t.slice(0,4),+t.slice(5,7)-1,+t.slice(8,10),+t.slice(11,13),+t.slice(14,16),+t.slice(17,19))/1000}
+// Ab 0.186: Zeit im MT5-Report → Ortszeit in Österreich und Deutschland (Wurzel MT5_VORAUS), für „Deine Konten“ (Florians Antwort 3 zu Bericht 0.183)
+function hyOrt(t){return hyZeit(hyEpoch(t)-MT5_VORAUS*3600)}
+// Tag 'YYYY-MM-DD' einer Zeit 'YYYY.MM.DD HH:MM:SS'
+function hyTag(t){return t.slice(0,10).replace(/\./g,'-')}
 // c Cent auf n Teile, die Summe bleibt c (der Rest geht auf die ersten Teile)
 function hyTeile(c,n){if(n<=0)return [];const b=Math.trunc(c/n),r=c-b*n;return Array.from({length:n},(_,i)=>b+(i<Math.abs(r)?Math.sign(r):0))}
-// Liest einen Bericht aus der MT5-App: {acc, cur, day, exp, per, L} oder {err: 'fmt' | 'tage', acc}
+// Liest einen Bericht aus der MT5-App (ab 0.186 über einen oder mehrere Tage). Bereich: von 00:00 des Tags des ersten Punkts der Kurve bis zu ihrem
+// letzten Punkt (der Export, bei einem Zeitraum in der Vergangenheit 23:59:59 des letzten Tags); profitMoney und profitDeals reichen bei „individuell“
+// bis heute (dort Nullen), sie zählen nur in diesem Bereich. Rückgabe {acc, cur, von, bis, exp, heute (Tagesbericht von heute), per, x0, S: Schritte
+// mit Trade {x, n, nLo, nSh, g, v (Cent), sy}, K: Stufen der Kurve {x, xp (Punkt davor), d (Cent)}, dep, wd ([Cent, Anzahl] aus summary), pg, lg, comm (Cent)} oder {err, acc}.
+// Von der Kurve zählen nur die Stufen: Ihre Höhen können falsch sein (Auftrag 0.183 und 0.186).
 function hyLies(t){
   const R=hyJson(t);if(!R||typeof R!=='object')return {err:'fmt',acc:''};
   const A=R.account||{},B=R.balance||{},PM=R.profitMoney||{},PD=R.profitDeals||{},LS=R.longShort||{},SD=R.symbolDeals||{},LI=R.longShortIndicators||{},PT=R.profitTotal||{};
@@ -3480,58 +3496,144 @@ function hyLies(t){
   if(![PM.loss,PD.profit,PD.loss,LS.long,LS.short].every(a=>a.length===n0&&a.every((p,i)=>p.x===P0[i].x)))return F;
   if(!Array.isArray(SD.chart)||!SD.chart.every(s=>Array.isArray(s)&&typeof s[0]==='string'&&reihe(s[1])))return F;
   if(!Array.isArray(LI.commissions)||LI.commissions.length<2||!LI.commissions.every(v=>typeof v==='number'))return F;
-  const xe=B.chart[B.chart.length-1].x,exp=hyZeit(xe),tag=exp.slice(0,10);
-  // Ein Tag: jeder Punkt der Kurve und jeder Schritt liegt am Tag des Exports
-  if(![...B.chart,...P0].every(p=>hyZeit(p.x).slice(0,10)===tag))return {err:'tage',acc};
   const ct=v=>Math.round(v*100),cur=String(A.currency||'').toUpperCase();
+  const xe=B.chart[B.chart.length-1].x,x0=Math.floor(B.chart[0].x/86400)*86400,exp=hyZeit(xe),von=hyTag(hyZeit(x0)),bis=hyTag(exp);
   // Symbole je Schritt (Anzahl der Trades je Symbol)
   const SY=new Map();for(const [s,pts] of SD.chart)for(const p of pts){const n=Math.round(p.y[0]);if(n>0){const l=SY.get(p.x)||[];for(let k=0;k<n;k++)l.push(s);SY.set(p.x,l)}}
-  const L=[];
-  for(let i=0;i<n0;i++){
-    const x=P0[i].x,nW=Math.round(PD.profit[i].y[0]),nL=Math.round(PD.loss[i].y[0]),nLo=Math.round(LS.long[i].y[0]),nSh=Math.round(LS.short[i].y[0]);
-    const n=Math.max(nW+nL,nLo+nSh);if(!(n>0))continue;
-    const net=[...hyTeile(ct(P0[i].y[0]),nW),...hyTeile(ct(PM.loss[i].y[0]),nL)];while(net.length<n)net.push(0);
-    const seite=[...Array(Math.max(0,nLo)).fill('buy'),...Array(Math.max(0,nSh)).fill('sell')];while(seite.length<n)seite.push(seite[0]||'buy');
-    const sy=SY.get(x)||[],m=Math.max(x,Math.min(x+Math.floor(per/2),xe-(n-1)));
-    for(let k=0;k<n;k++)L.push({s:hyZeit(x),t:hyZeit(m+k),sym:sy[k]||sy[0]||'',seite:seite[k],net:net[k],cost:0});
-  }
-  // Kommission je Richtung (longShortIndicators: [Long, Short])
-  [['buy',0],['sell',1]].forEach(([sd,j])=>{const T=L.filter(x=>x.seite===sd),c=hyTeile(ct(LI.commissions[j]),T.length);T.forEach((x,i)=>x.cost=c[i])});
-  // Cent-Korrektur an den Brutto-Summen aus profitTotal
-  for(const [sg,tot] of [[1,PT.profit_gross],[-1,PT.loss_gross]]){if(typeof tot!=='number')continue;
-    const G=L.filter(x=>Math.sign(x.net-x.cost)===sg);if(!G.length)continue;const d=ct(tot)-G.reduce((s,x)=>s+x.net-x.cost,0);if(!d||Math.abs(d)>G.length)continue;
+  const St=[];
+  for(let i=0;i<n0;i++){const x=P0[i].x;if(x<x0||x>xe)continue;
+    const nW=Math.round(PD.profit[i].y[0]),nL=Math.round(PD.loss[i].y[0]),nLo=Math.round(LS.long[i].y[0]),nSh=Math.round(LS.short[i].y[0]),n=Math.max(nW+nL,nLo+nSh);
+    if(n>0)St.push({x,n,nLo,nSh,g:ct(P0[i].y[0]),v:ct(PM.loss[i].y[0]),sy:SY.get(x)||[]})}
+  const K=[];for(let i=1;i<B.chart.length;i++){const d=ct(B.chart[i].y[0])-ct(B.chart[i-1].y[0]);if(d)K.push({x:B.chart[i].x,xp:B.chart[i-1].x,d})}
+  const sm=R.summary||{},paar=v=>Array.isArray(v)&&typeof v[0]==='number'?[ct(v[0]),Math.round(v[1]||0)]:[0,0];
+  return {acc,cur,von,bis,exp,heute:von===bis&&exp.slice(11)!=='23:59:59',per,x0,S:St,K,dep:paar(sm.deposit),wd:paar(sm.withdrawal),
+    pg:typeof PT.profit_gross==='number'?ct(PT.profit_gross):null,lg:typeof PT.loss_gross==='number'?ct(PT.loss_gross):null,comm:[ct(LI.commissions[0]),ct(LI.commissions[1])]}}
+// Schließungen eines Trades eines Kontos aus den PC-Reports (für den Abgleich an der Grenze)
+function hySchl(a){return Object.values(S.deals).filter(x=>x.a===a&&(x.type==='buy'||x.type==='sell')&&/out/.test(x.dir))}
+// Ab 0.186: die Handy-Zeilen eines gelesenen Berichts nach der Grenze g (Zeit der letzten Buchung der PC-Reports des Kontos), mit den Trades des
+// PC-Reports P (hySchl). Ein Schritt ganz vor der Grenze zählt nicht. Ein Schritt über der Grenze (Florians Antwort 1 zur Freigabe 0.186): So viele
+// Trades, wie der PC-Report im Teil vor der Grenze schon hat, sind schon da; bleibt genau einer übrig, kommt er herein, mit Netto = Schritt minus
+// diese Trades und einer Zeit nach der Grenze. Bleiben in einem Schritt mehr als ein Trade übrig, lassen sie sich nicht trennen (doppelt, R-72).
+// Kommission je Richtung und Cent-Korrektur: Summe des Berichts minus PC-Report im selben Zeitraum (bis zur Grenze).
+function hyPlan(H,D,g){if(H.exp<=g)return {L:[],E:[],doppelt:null,depA:0,wdA:0,wdT:{}};
+  const P=D.filter(x=>(x.type==='buy'||x.type==='sell')&&/out/.test(x.dir)),bal=D.filter(x=>x.type!=='buy'&&x.type!=='sell');
+  const per=H.per,start=hyZeit(H.x0),xe=hyEpoch(H.exp),eg=hyEpoch(g),L=[];let doppelt=null;
+  const imPC=(a,b)=>P.filter(x=>x.t>=a&&x.t<=b);
+  for(const st of H.S){const s=hyZeit(st.x),e=hyZeit(st.x+per-1);if(e<=g)continue;
+    let n=st.n,net=st.g+st.v,lo=st.nLo;const sy=[...st.sy];
+    if(s<=g)for(const p of imPC(s,g)){n--;net-=Math.round((p.prof+p.cost)*100);if(p.type==='sell')lo--;const i=sy.indexOf(p.sym);if(i>=0)sy.splice(i,1)}
+    if(n<=0)continue;
+    if(n>1){if(!doppelt)doppelt={x:st.x,n};continue}
+    const t=Math.min(Math.max(st.x+Math.floor(per/2),s<=g?eg+1:st.x),st.x+per-1,xe);
+    L.push({x:st.x,s,n:st.n,t:hyZeit(t),sym:sy[0]||st.sy[0]||'',seite:lo>0?'buy':'sell',net,cost:0})}
+  const V=imPC(start,g<H.exp?g:H.exp);
+  // Kommission je Richtung (longShortIndicators: [Long, Short]); eine Schließung „sell“ schließt eine Long-Position
+  [['buy',0],['sell',1]].forEach(([sd,j])=>{const pc=V.filter(x=>(x.type==='sell')===(sd==='buy')).reduce((s,x)=>s+Math.round(x.cost*100),0);
+    const T=L.filter(x=>x.seite===sd),c=hyTeile(H.comm[j]-pc,T.length);T.forEach((x,i)=>x.cost=c[i])});
+  // Cent-Korrektur an den Brutto-Summen aus profitTotal (Florians Antwort 4 zu 0.183), höchstens 1 Cent je Trade der Gruppe
+  for(const [sg,tot] of [[1,H.pg],[-1,H.lg]]){if(tot==null)continue;const pc=V.filter(x=>Math.sign(x.prof)===sg).reduce((s,x)=>s+Math.round(x.prof*100),0);
+    const G=L.filter(x=>Math.sign(x.net-x.cost)===sg);if(!G.length)continue;const d=tot-pc-G.reduce((s,x)=>s+x.net-x.cost,0);if(!d||Math.abs(d)>G.length)continue;
     G.reduce((b,x)=>Math.abs(x.net-x.cost)>Math.abs(b.net-b.cost)?x:b).net+=d}
-  return {acc,cur,day:tag.replace(/\./g,'-'),exp,per,L:L.map(x=>({s:x.s,t:x.t,sym:x.sym,seite:x.seite,type:x.seite==='buy'?'sell':'buy',prof:(x.net-x.cost)/100,cost:x.cost/100}))}}
+  // Ab 0.186 (Florians Auftrag 0.186, Aufgabe 1): Ein- und Auszahlungen nach der Grenze = Summe des Berichts minus PC-Report im selben Zeitraum, auf den
+  // Cent. Verteilt über die Stufen der Kurve nach der Grenze: Rest einer Stufe = Stufe minus Netto der Trades in ihrem Fenster minus Buchungen des
+  // PC-Reports im Teil vor der Grenze. Einzahlungen auf die Fenster mit positivem Rest, Auszahlungen auf die mit negativem; was zur Summe fehlt, anteilig
+  // (teile). Eine Einzahlung steht am Ende ihres Fensters minus 1 s (ein Trade im selben Fenster zählt so davor), höchstens beim Export.
+  const ct=v=>Math.round(v*100),gb=g<H.exp?g:H.exp,Bv=bal.filter(x=>x.t>=start&&x.t<=gb);
+  const depA=H.dep[0]-Bv.filter(x=>x.prof>0).reduce((s,x)=>s+ct(x.prof),0),wdA=H.wd[0]-Bv.filter(x=>x.prof<0).reduce((s,x)=>s-ct(x.prof),0);
+  const W=[];for(const k of H.K){if(hyZeit(k.x)<=g)continue;const a0=Math.floor(k.xp/per)*per,xp=hyZeit(k.xp);
+    let r=k.d-H.S.filter(st=>st.x>=a0&&st.x<k.x).reduce((s,st)=>s+st.g+st.v,0);if(xp<=g)r-=bal.filter(x=>x.t>xp&&x.t<=g).reduce((s,x)=>s+ct(x.prof),0);
+    W.push({s:xp,t:hyZeit(Math.min(Math.max(k.x-1,eg+1),xe)),r})}
+  // Der Unterschied zur Summe (z. B. eine Gewinnauszahlung im selben Fenster wie eine Einzahlung) wird anteilig verteilt, der Rest in Cent auf den größten Teil
+  const teile=(sum,Ws)=>{if(sum<=0)return [];if(!Ws.length)return [{w:W[W.length-1]||{s:gb,t:hyZeit(Math.min(eg+1,xe))},c:sum}];
+    const A=Ws.map(w=>({w,c:Math.abs(w.r)})),r0=A.reduce((s,a)=>s+a.c,0);for(const a of A)a.c=Math.round(a.c*sum/r0);
+    A.reduce((b,a)=>a.c>b.c?a:b).c+=sum-A.reduce((s,a)=>s+a.c,0);return A.filter(a=>a.c>0)};
+  const E=teile(depA,W.filter(w=>w.r>0)).map(a=>({kind:'ein',s:a.w.s,t:a.w.t,type:'balance',prof:a.c/100,cost:0})),wdT={};
+  for(const a of teile(wdA,W.filter(w=>w.r<0))){const d=hyTag(a.w.t);(wdT[d]||(wdT[d]=[])).push([a.w.s,a.c])}
+  return {L:L.map(x=>({s:x.s,n:x.n,t:x.t,sym:x.sym,seite:x.seite,type:x.seite==='buy'?'sell':'buy',prof:(x.net-x.cost)/100,cost:x.cost/100})),E,doppelt,depA,wdA,wdT}}
+// Ab 0.186 (Florians Auftrag 0.186, Entscheidung A): Gewinn, der noch nicht ausgezahlt ist (Cent) = Netto der Trades minus Gewinnauszahlungen minus
+// abgebuchte PF aus den Buchungen der PC-Reports bis zur Grenze g (die eine Summe agg: resUsd + feeUsd − pwUsd), dazu je Tag mit Handy-Zeilen,
+// der nicht im neuen Bericht liegt (ohne), das Netto seiner Trades minus seine Auszahlungen (e.wd). Die Trades des neuen Berichts rechnet hyNimm dazu.
+function hyOffen(a,g,ohne){const z=agg(enrich().filter(r=>r.a===a&&r.x.t<=g));let c=Math.round((z.resUsd+z.feeUsd-z.pwUsd)*100);
+  for(const [d,e] of Object.entries((S.hy&&S.hy[a])||{}))if(!ohne.includes(d))c+=e.L.filter(x=>x.kind!=='ein').reduce((s,x)=>s+Math.round((x.prof+x.cost)*100),0)-hyWd(e);
+  return c}
+// Auszahlungen eines Tags vom Handy (Cent): e.wd = Liste [Beginn des Fensters, Cent]
+function hyWd(e){return (e.wd||[]).reduce((s,w)=>s+w[1],0)}
+// Toleranz der Prüfung A (Florians Vorschlag, im Plan 0.186 bestätigt): 1 USD
+const HY_TOL=100;
 // Grenzen aller Konten: je Konto die Zeit der letzten Buchung aus den PC-Reports (S.deals)
 function hyGrenzen(){const g={};for(const x of Object.values(S.deals))if(!(x.a in g)||x.t>g[x.a])g[x.a]=x.t;return g}
-// Leere Tage, Konten ohne Handy-Zeile oder ohne Eintrag in S.accounts und ein leeres S.hy fallen weg
-function hyAufraeumen(){if(!S.hy)return;for(const a of Object.keys(S.hy)){if(S.accounts[a])for(const d of Object.keys(S.hy[a]))if(!S.hy[a][d].L.length)delete S.hy[a][d];
+// Tage ohne Handy-Zeile (und ab 0.186 ohne Merker kab und ohne Auszahlungen wd), Konten ohne Tag oder ohne Eintrag in S.accounts und ein leeres S.hy fallen weg.
+// Ein Tag nur mit Auszahlungen (z. B. die PF am Samstag) bleibt, damit hyOffen sie bei einem späteren Bericht abzieht.
+function hyAufraeumen(){if(!S.hy)return;for(const a of Object.keys(S.hy)){if(S.accounts[a])for(const d of Object.keys(S.hy[a]))if(!S.hy[a][d].L.length&&!S.hy[a][d].kab&&!S.hy[a][d].wd)delete S.hy[a][d];
   if(!S.accounts[a]||!Object.keys(S.hy[a]).length)delete S.hy[a]}if(!Object.keys(S.hy).length)delete S.hy}
-// Nach einem PC-Report (oder beim Start): Handy-Zeilen der Konten accs (Vorgabe alle), deren Schritt nicht nach der Grenze beginnt, fallen weg. Rückgabe: Zahl
-function hyKuerzen(accs){if(!S.hy)return 0;const g=hyGrenzen();let n=0;
-  for(const a of accs||Object.keys(S.hy)){const H=S.hy[a];if(!H)continue;const G=g[a]||'';for(const e of Object.values(H)){const k=e.L.filter(x=>x.s>G);n+=e.L.length-k.length;e.L=k}}
-  hyAufraeumen();return n}
-// Zahl der Handy-Zeilen (eines Kontos oder aller)
-const hyZahl=a=>S.hy?(a?[a]:Object.keys(S.hy)).reduce((s,k)=>s+Object.values(S.hy[k]||{}).reduce((t,e)=>t+e.L.length,0),0):0;
+// Gilt eine Handy-Zeile x (Schrittweite per) nach der Grenze G noch? Schritt ganz davor: nein; ganz danach: ja; über der Grenze: nur, wenn der PC-Report
+// im Teil vor der Grenze weniger Trades hat als der Schritt (x.n; Stände aus 0.183 ohne x.n: 1)
+// Ab 0.186 eine Einzahlung (x.kind 'ein'): bleibt, wenn ihr Fenster nach der Grenze beginnt; über der Grenze nur, wenn der PC-Report im Teil vor der
+// Grenze keine Einzahlung hat (Florians Antwort 1 zur Freigabe 0.186); nie, wenn ihre Zeit nicht nach der Grenze liegt
+function hyBleibt(x,per,G,P,Ein){if(!G)return true;if(x.kind==='ein')return x.t>G&&(x.s>G||!Ein.some(p=>p.t>x.s&&p.t<=G));
+  if(hyZeit(hyEpoch(x.s)+per-1)<=G)return false;if(x.s>G)return true;
+  return P.filter(p=>p.t>=x.s&&p.t<=G).length<(x.n||1)}
+// Nach einem PC-Report (oder beim Start): Ein Tag, dessen Stand nicht nach der Grenze liegt, fällt ganz weg; sonst jede Zeile nach hyBleibt. Rückgabe: Zahl
+// der weggefallenen Trades (n) und, ab 0.186, Einzahlungen (m)
+function hyKuerzen(accs){if(!S.hy)return {n:0,m:0};const g=hyGrenzen();let n=0,m=0;const zaehl=L=>{for(const x of L)if(x.kind==='ein')m++;else n++};
+  for(const a of accs||Object.keys(S.hy)){const H=S.hy[a];if(!H)continue;const G=g[a]||'',P=G?hySchl(a):[],Ein=G?Object.values(S.deals).filter(x=>x.a===a&&x.type!=='buy'&&x.type!=='sell'&&x.prof>0):[];
+    const Aus=G?Object.values(S.deals).filter(x=>x.a===a&&x.type!=='buy'&&x.type!=='sell'&&x.prof<0):[];
+    for(const [d,e] of Object.entries(H)){if(G&&e.exp<=G){zaehl(e.L);delete H[d];continue}const k=e.L.filter(x=>hyBleibt(x,e.per,G,P,Ein));zaehl(e.L.filter(x=>!k.includes(x)));e.L=k;
+      // Auszahlungen wie Einzahlungen: bleiben, wenn ihr Fenster nach der Grenze beginnt oder der PC-Report im Teil davor keine Auszahlung hat
+      if(e.wd&&G){e.wd=e.wd.filter(([s])=>s>G||!Aus.some(p=>p.t>s&&p.t<=G));if(!e.wd.length)delete e.wd}}
+    // Merker kab: fällt weg, sobald die PC-Reports alle Auszahlungen vom Handy der Tage mit Merker enthalten (dann stimmt die Investition)
+    if(G&&!Object.values(H).some(e=>e.kab&&e.wd))for(const e of Object.values(H))delete e.kab}
+  hyAufraeumen();return {n,m}}
+// Zahl der Handy-Zeilen (eines Kontos oder aller); ab 0.186 art 'tr' nur Trades, 'ein' nur Einzahlungen
+const hyZahl=(a,art)=>S.hy?(a?[a]:Object.keys(S.hy)).reduce((s,k)=>s+Object.values(S.hy[k]||{}).reduce((t,e)=>t+e.L.filter(x=>!art||(art==='ein')===(x.kind==='ein')).length,0),0):0;
+// Text „2 Trades und 1 Einzahlung“ (ab 0.186; '' ohne beides)
+const hyTeileT=(n,m)=>[n?(n===1?'1 Trade':`${fI.format(n)} Trades`):'',m?(m===1?'1 Einzahlung':`${fI.format(m)} Einzahlungen`):''].filter(Boolean).join(' und ');
 // Stand beim Start und nach „Sicherung laden“ prüfen (fixState): nur gültige Einträge, gekürzt an der Grenze
 function hyFix(){if(S.hy==null)return;if(typeof S.hy!=='object'||Array.isArray(S.hy)){delete S.hy;return}
   for(const [a,H] of Object.entries(S.hy)){if(!H||typeof H!=='object'||Array.isArray(H)){delete S.hy[a];continue}
-    for(const [d,e] of Object.entries(H))if(!/^\d{4}-\d\d-\d\d$/.test(d)||!e||typeof e!=='object'||!Array.isArray(e.L)||typeof e.exp!=='string')delete H[d];
-    else e.L=e.L.filter(x=>x&&typeof x.s==='string'&&typeof x.t==='string'&&typeof x.prof==='number'&&typeof x.cost==='number'&&(x.type==='buy'||x.type==='sell'))}
+    for(const [d,e] of Object.entries(H))if(!/^\d{4}-\d\d-\d\d$/.test(d)||!e||typeof e!=='object'||!Array.isArray(e.L)||typeof e.exp!=='string'||!(e.per>0))delete H[d];
+    else{e.L=e.L.filter(x=>x&&typeof x.s==='string'&&typeof x.t==='string'&&typeof x.prof==='number'&&typeof x.cost==='number'&&(x.type==='buy'||x.type==='sell'||x.kind==='ein'));
+      if(e.wd!=null&&!(Array.isArray(e.wd)&&e.wd.length&&e.wd.every(w=>Array.isArray(w)&&typeof w[0]==='string'&&Number.isInteger(w[1])&&w[1]>0)))delete e.wd;if(e.kab!=null&&e.kab!==1)delete e.kab}}
   hyKuerzen()}
-// Einen gelesenen Bericht aus der MT5-App übernehmen (Schalter an). Rückgabe {ok|warn|bad, n, t: Meldung (HTML)}
+// Ende eines Schritts als Uhrzeit, Mitternacht danach als „24:00“
+const hyBisUhr=(x,per)=>{const e=hyZeit(x+per);return e.slice(11,16)==='00:00'&&hyTag(e)>hyTag(hyZeit(x))?'24:00':e.slice(11,16)};
+// Einen gelesenen Bericht aus der MT5-App übernehmen (Schalter an). Rückgabe {ok|warn|bad, n, t: Meldung (HTML)}.
+// Ab 0.186 (Florians Korrektur 1 zur Freigabe 0.186): Speicher je Tag mit dem Stand des Tags (Export, bei einem vergangenen Tag 23:59:59). Der Bericht ersetzt
+// die Tage, deren Stand älter oder gleich ist; Tage mit neuerem Stand bleiben. Ganz verworfen (R-65) wird er nur, wenn er für keinen Tag einen neueren
+// Stand hat. Zwei Trades im selben Schritt nach der Grenze: nichts (R-72, Florians Wunsch, zwei Fassungen nach Korrektur 2).
 function hyNimm(H,fn){const nm=`<b>${esc(fn)}</b>: `;
   if(H.err)return {bad:1,n:0,t:nm+HY_TXT[H.err]};
   if(H.cur!=='USD')return {bad:1,n:0,t:nm+`Dieses Konto läuft in ${esc(H.cur||'einer anderen Währung')}. Die Trading-Bilanz unterstützt nur USD-Konten, wie bei Tag Markets üblich.`};
   const a=H.acc,g=hyGrenzen()[a];
   if(!S.accounts[a]||!g)return {bad:1,n:0,t:nm+`Konto ${esc(a)} kennt das Tool noch nicht. Lade zuerst den Report der Kontohistorie dieses Kontos vom PC.`};
-  const bis=`${fD(H.day)} bis ${H.exp.slice(11,16)} Uhr (Zeit im MT5-Report)`,alt=S.hy&&S.hy[a]&&S.hy[a][H.day];
-  if(alt&&alt.exp>=H.exp)return {warn:1,n:0,t:nm+`Für Konto ${esc(a)} hat das Tool schon den Tagesbericht vom ${fD(H.day)} bis ${alt.exp.slice(11,16)} Uhr. Dieser hier ist ${alt.exp===H.exp?'derselbe':'älter'}, nichts eingelesen.`};
-  const L=H.L.filter(x=>x.s>g);
-  if(!L.length)return {warn:1,n:0,t:nm+`Tagesbericht vom Handy, Konto ${esc(a)}, ${bis}: `+(H.L.length?`Diese Trades sind schon im Report der Kontohistorie (letzte Buchung am ${fD(dOf(g))} um ${g.slice(11,16)} Uhr). Nichts eingelesen.`:'An diesem Tag gibt es noch keinen Trade. Nichts eingelesen.')};
-  ((S.hy||(S.hy={}))[a]||(S.hy[a]={}))[H.day]={exp:H.exp,per:H.per,f:fn,L:L.map((x,i)=>Object.assign({k:`h${H.day}-${i+1}`},x))};
-  const n=L.length;
-  return {ok:1,n,t:nm+`Tagesbericht vom Handy, Konto ${esc(a)}, ${bis}: ${n===1?'1 Trade':`${fI.format(n)} Trades`} als Nachtrag${alt?` (ersetzt den Tagesbericht bis ${alt.exp.slice(11,16)} Uhr)`:''}. Der nächste Report der Kontohistorie ersetzt ${n===1?'ihn':'sie'}.`}}
+  const kopf=`${H.heute?'Tagesbericht':'Bericht'} vom Handy, Konto ${esc(a)}, ${H.von===H.bis?fD(H.von):fD(H.von)+DS+fD(H.bis)}, Stand ${H.exp.slice(11,16)} Uhr (Zeit im MT5-Report)`;
+  const Pl=hyPlan(H,Object.values(S.deals).filter(x=>x.a===a),g);
+  if(Pl.doppelt){const x=Pl.doppelt.x,s=hyZeit(x),wo=H.per>=86400?dm(hyTag(s)):`${dm(hyTag(s))} ${s.slice(11,16)}${DS}${hyBisUhr(x,H.per)} Uhr, Zeit im MT5-Report`;
+    return {bad:1,n:0,t:nm+`In diesem Bericht vom Handy liegen ${fI.format(Pl.doppelt.n)} Trades im selben Zeitabschnitt (${wo}). So kann das Tool sie nicht trennen. Nichts eingelesen. `+
+      (H.heute?'Der nächste Report der Kontohistorie bringt sie.':'Ein kürzerer Zeitraum („individuell“, z. B. nur die Tage seit dem letzten Report der Kontohistorie) trennt sie vielleicht.')}}
+  // Tage nach der Grenze mit ihrem Stand
+  const dExp=d=>{const e=d.replace(/-/g,'.')+' 23:59:59';return H.exp<e?H.exp:e},tage=[];
+  for(let d=H.von>hyTag(g)?H.von:hyTag(g);d<=H.bis;d=addDays(d,1))tage.push(d);
+  // Ab 0.186 Prüfung A (Florians Entscheidung A): Auszahlungen des Berichts nach der Grenze höchstens so hoch wie der offene Gewinn (hyOffen plus die
+  // Trades dieses Berichts) plus 1 USD: Dann zählen seine Einzahlungen. Sonst nicht, und die Tage bekommen den Merker kab (Hinweis in der Auswertung).
+  const L=Pl.L,okA=Pl.wdA<=0||Pl.wdA<=hyOffen(a,g,tage)+L.reduce((s,x)=>s+Math.round((x.prof+x.cost)*100),0)+HY_TOL,E=okA?Pl.E:[];
+  if(!L.length&&!E.length&&okA&&!Object.keys(Pl.wdT).length)return {warn:1,n:0,t:nm+`${kopf}: `+(H.S.length||H.dep[1]?`Alles darin ist schon im Report der Kontohistorie (letzte Buchung am ${fD(dOf(g))} um ${g.slice(11,16)} Uhr). Nichts eingelesen.`:'Darin gibt es keinen Trade und keine Einzahlung. Nichts eingelesen.')};
+  // Inhalt je Tag: Trades und Einzahlungen (Schlüssel h<Tag>-<Nr>), Auszahlungen als Summe (wd), Merker kab. Ein Tag ohne Inhalt hat keinen Stand:
+  // Er zählt weder als neuer noch als alter Stand.
+  const neu={},zu=d=>neu[d]||(neu[d]=[]);for(const x of [...L,...E])zu(hyTag(x.t)).push(x);
+  const inhalt=d=>!!neu[d]||!okA||!!Pl.wdT[d];
+  const H0=(S.hy&&S.hy[a])||{};
+  if(!tage.some(d=>H0[d]?H0[d].exp<dExp(d):inhalt(d))){const Ex=tage.filter(d=>H0[d]),m=Ex.map(d=>H0[d].exp).sort().pop();
+    return {warn:1,n:0,t:nm+`Für Konto ${esc(a)} hat das Tool für diese Tage schon einen Bericht vom Handy mit Stand ${dm(hyTag(m))} ${m.slice(11,16)} Uhr (Zeit im MT5-Report). Dieser hier ist ${Ex.every(d=>H0[d].exp===dExp(d))?'derselbe':'älter'}, nichts eingelesen.`}}
+  let ers='';const Hn=(S.hy||(S.hy={}))[a]||(S.hy[a]={}),neuT=[];
+  for(const d of tage){const ex=Hn[d];if(ex&&ex.exp>dExp(d))continue;if(ex&&ex.L.length&&ex.exp>ers)ers=ex.exp;
+    if(inhalt(d)){const Z=(neu[d]||[]).sort((p,q)=>p.t<q.t?-1:p.t>q.t?1:0);Hn[d]=Object.assign({exp:dExp(d),per:H.per,f:fn,L:Z.map((x,i)=>Object.assign({k:`h${d}-${i+1}`},x))},Pl.wdT[d]?{wd:Pl.wdT[d]}:{},okA?{}:{kab:1});
+      neuT.push(d)}else delete Hn[d]}
+  // Dieselben Regeln wie nach einem PC-Report (hyKuerzen), damit ein Neustart nichts anderes ergibt; gezählt wird danach
+  hyKuerzen([a]);const Hk=(S.hy&&S.hy[a])||{},Zk=neuT.flatMap(d=>Hk[d]?Hk[d].L:[]),n=Zk.filter(x=>x.kind!=='ein').length,m=Zk.length-n;
+  const ersT=ers?` (ersetzt den Stand ${hyTag(ers)===H.bis?'':dm(hyTag(ers))+' '}${ers.slice(11,16)} Uhr)`:'';
+  const zusA=okA?'':` ${Pl.depA>0?'Die Einzahlungen zählen erst mit dem Report der Kontohistorie: Es':'Es'} ging mehr Geld vom Konto, als an Gewinn offen war, vielleicht ein Kapitalabzug.`;
+  return {ok:1,n:n+m,t:nm+`${kopf}: `+(n+m?`${hyTeileT(n,m)} als Nachtrag${ersT}. Der nächste Report der Kontohistorie ersetzt ${n===1&&!m?'ihn':'sie'}.`:`Nichts als Nachtrag${ersT}.`)+zusA}}
 // Datei aus der MT5-App: mit Schalter einlesen, ohne nur erklären
 function hyDatei(fn,txt){if(!hyOn())return {bad:1,n:0,app:1,t:`<b>${esc(fn)}</b>: ${HY_APP}`};return hyNimm(hyLies(txt),fn)}
 
@@ -3796,13 +3898,15 @@ function pasteRates(){
 // Schließungen eines Trades (cat 'close', x.hy = 1, x.hs = Beginn des Schritts). Nur die Auswertung bekommt diese Liste (render); alle Summen rechnen
 // mit ihr unverändert. Ohne o.hy (Vorgabe) genau die Buchungen der MT5-Reports wie bis 0.182, für Steuer, Zusammenfassung, Excel, CSV, Meilensteine.
 function hyDeals(){const L=[];if(!S.hy)return L;
+  // Ab 0.186: eine Einzahlung (z.kind 'ein') als Buchung mit der Art „Einzahlung von Kapital“ (hyCat), wie „Deposit“ aus dem PC-Report
   for(const [a,H] of Object.entries(S.hy)){if(!S.accounts[a])continue;for(const e of Object.values(H))for(const z of e.L)
-    L.push({a,id:z.k,t:z.t,sym:z.sym,type:z.type,dir:'out',cost:z.cost,prof:z.prof,bal:null,cmt:'',hy:1,hs:z.s,seite:z.seite})}
+    L.push(z.kind==='ein'?{a,id:z.k,t:z.t,sym:'',type:'balance',dir:'',cost:0,prof:z.prof,bal:null,cmt:'Deposit',hy:1,hs:z.s,hyCat:'einzahlung'}:
+      {a,id:z.k,t:z.t,sym:z.sym,type:z.type,dir:'out',cost:z.cost,prof:z.prof,bal:null,cmt:'',hy:1,hs:z.s,seite:z.seite})}
   return L}
 function enrich(o){
   RD=null;const rows=[];
   for(const x of (o&&o.hy?[...Object.values(S.deals),...hyDeals()]:Object.values(S.deals))){
-    const d=dOf(x.t);const cat=catOf(x);
+    const d=dOf(x.t);const cat=x.hyCat||catOf(x);
     // Alle Konten laufen in USD (ab 0.114 lehnt das Einlesen andere Kontowährungen ab): Euro = Betrag ÷ EZB-Kurs (USD je EUR) des Tages
     const ri=rateInfo(d,x.t),r=ri?ri.v:null;
     let amt=0;
@@ -4023,6 +4127,12 @@ function addAnalysis(rows){
    - Außerdem: Fee in einer Woche mit Verlust ('loss').
    Ein Hinweis für alle Konten gemeinsam (renderChain); „Ausblenden“ merkt sich die Deal-Nummern der Fees in S.pfOk. */
 let PFCHK={rate:null,tests:[],iss:[]},PF_SRC={};
+// Ab 0.186: die gemeinsamen Werte aus addAnalysis (Investition CAP und CAPE, INV, CHAIN, PFCHK, PF_SRC) merken und wieder setzen. Sie gelten je Liste:
+// Mit Einzahlungen vom Handy ist die Investition der Auswertung (rowsA) eine andere als die der Buchungen (rows). render rechnet die Auswertung mit
+// denen ihrer Liste und setzt danach die der Buchungen (ANA_PC) für alles andere (Excel, Steuer, Meilensteine, „Deine Konten“). msKnown nutzt dasselbe.
+let ANA_PC=null;
+function anaMerk(){return [CAP,CAPE,INV,CHAIN,PFCHK,PF_SRC]}
+function anaSetz(k){[CAP,CAPE,INV,CHAIN,PFCHK,PF_SRC]=k}
 // Ab 0.87 (0.1): Anteil, wenn noch kein Konto eine Performance Fee gebucht hat: fest 30 % des positiven Ergebnisses (wie bei Tag)
 const PF_FIX={u:0.3,t:'',a:''};
 // Ab 0.86 (AU-11): Satz zur geschätzten PF der laufenden Woche, wenn ein Konto darin keinen eigenen Anteil hat (PF_SRC), sonst ''.
@@ -4933,9 +5043,9 @@ function msKnown(ms,rows,M){const G=msTop(ms);if(!G)return null;
   let diff=false;const keep=rows.filter(r=>{const m=msMark(ms,r.a,G);const k=r.x.t<=m.t;if(!k)diff=true;return k});
   for(const a of new Set(rows.map(r=>r.a))){const m=msMark(ms,a,G);if(repDay(a)>(m.rd||''))diff=true}
   if(!diff)return null;
-  const sv=[CAP,CAPE,INV,CHAIN,PFCHK,PF_SRC],cp=keep.map(r=>Object.assign({},r));
+  const sv=anaMerk(),cp=keep.map(r=>Object.assign({},r));
   try{addAnalysis(cp);return msCalc(cp,msAccs(),{cur:M.cur,today:msToday(),tags:Object.values(S.tag||{}),rd:a=>{const m=msMark(ms,a,G);return m.rd||(m.t?dOf(m.t):'')}})}
-  finally{[CAP,CAPE,INV,CHAIN,PFCHK,PF_SRC]=sv}}
+  finally{anaSetz(sv)}}
 // Bisherige höchste Marke über alle Konten (Stände bis 0.140: die gemeinsame Marke t)
 function msTop(ms){let G=null;for(const m of Object.values(ms.m||{}))if(m&&m.t&&(!G||m.t>G.t))G={t:m.t,rd:m.rd||''};
   if(!G&&ms.t!=null)G={t:ms.t,rd:''};return G}
@@ -13682,13 +13792,16 @@ function accDelTxt(a){const A=S.accounts[a]||{},rs=(window.__rows||[]).filter(r=
   return `Konto ${a}${A.name?` „${A.name}“`:''} entfernen?\n\n`+[n?`Dabei ${n===1?`fällt 1 Buchung vom ${fD(kb)}`:`fallen ${fI.format(n)} Buchungen vom ${fD(kb)} bis ${fD(rs[n-1].d)}`} weg.`:'',
     own.length?`Auch ${and(own)}, ${own.length===1?'den':'die'} du eingetragen hast, ${own.length===1?'fällt':'fallen'} weg.`:'','Auswertung und Steuer rechnen danach ohne dieses Konto.',
     `Lädst du den Report wieder, kommen die Buchungen zurück${own.length?`, ${own.length===1?own[0]:and(own.map(x=>x.slice(4)))} nicht`:''}.`].filter(Boolean).join(' ')}
-// Ab 0.183: Zeile „Handy 23.11. 13:03 · entfernen“ in „Deine Konten“, Spalte „Report vom“ ('' ohne Handy-Zeilen)
-function hyKontoH(a){const H=S.hy&&S.hy[a];if(!H)return '';const D=Object.keys(H).sort();if(!D.length)return '';const e=H[D[D.length-1]];
-  return `<span class="sm hyk">Handy ${D.length===1?dm(D[0]):`${dm(D[0])}${DS}${dm(D[D.length-1])}`} ${esc(e.exp.slice(11,16))} · <button type="button" class="zlink" data-hydel="${esc(a)}">entfernen</button></span>`}
+// Ab 0.183: Zeile „Handy 23.11. 13:03 · entfernen“ in „Deine Konten“, Spalte „Report vom“ ('' ohne Handy-Zeilen). Ab 0.186 (Florians Antwort 3 zu
+// Bericht 0.183 und Antwort 2 zur Freigabe 0.186): der Stand des neuesten Berichts vom Handy in Ortszeit (hyOrt), wie „Report vom“ darüber, ohne die Tage
+function hyKontoH(a){const H=S.hy&&S.hy[a];if(!H)return '';const E=Object.values(H);if(!E.length)return '';const o=hyOrt(E.map(e=>e.exp).sort().pop());
+  return `<span class="sm hyk">Handy ${dm(hyTag(o))} ${esc(o.slice(11,16))} · <button type="button" class="zlink" data-hydel="${esc(a)}">entfernen</button></span>`}
 // Ab 0.183: „entfernen“ an der Zeile vom Handy, mit Rückfrage (GESTALTUNG Abschnitt 8: Sicherung speichern · Entfernen · Abbrechen)
-async function hyDel(a){const n=hyZahl(a);if(!n)return;
-  if(!(await askBox({title:'Trades vom Handy entfernen',text:`${n===1?'Den Trade':`Die ${fI.format(n)} Trades`} vom Handy von ${accNo(a)} entfernen? ${n===1?'Er zählt':'Sie zählen'} dann nicht mehr in der Auswertung. Lädst du den Tagesbericht wieder, ${n===1?'kommt er':'kommen sie'} zurück.`,ok:'Entfernen',danger:true,more:ASK_BK})))return;
-  if(S.hy)delete S.hy[a];hyAufraeumen();save();render();toast(n===1?`1 Trade vom Handy von Konto ${a} entfernt.`:`${fI.format(n)} Trades vom Handy von Konto ${a} entfernt.`)}
+async function hyDel(a){if(!S.hy||!S.hy[a])return;const n=hyZahl(a,'tr'),m=hyZahl(a,'ein'),T=hyTeileT(n,m),eins=n+m===1;
+  // Ab 0.186 mit Einzahlungen; ohne Trade und Einzahlung (nur der Merker der Prüfung A) „Die Angaben vom Handy“
+  const tl=[n?(n===1?'den Trade':`die ${fI.format(n)} Trades`):'',m?(m===1?'die Einzahlung':`die ${fI.format(m)} Einzahlungen`):''].filter(Boolean).join(' und '),was=tl?tl[0].toUpperCase()+tl.slice(1):'Die Angaben';
+  if(!(await askBox({title:'Trades vom Handy entfernen',text:`${was} vom Handy von ${accNo(a)} entfernen? ${eins?(n?'Er zählt':'Sie zählt'):'Sie zählen'} dann nicht mehr in der Auswertung. Lädst du den Bericht vom Handy wieder, ${eins?(n?'kommt er':'kommt sie'):'kommen sie'} zurück.`,ok:'Entfernen',danger:true,more:ASK_BK})))return;
+  delete S.hy[a];hyAufraeumen();save();render();toast(`${T||'Angaben'} vom Handy von Konto ${a} entfernt.`)}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-hydel]');if(!b)return;e.preventDefault();hyDel(b.dataset.hydel)});
 // Ab 0.58 (6): × am Konto fragt nach dem Weg: „Buchungen neu einlesen“ (Konto bleibt), „Konto entfernen“ (Text aus accDelTxt) oder „Abbrechen“
 const and2=L=>L.length>1?L.slice(0,-1).join(', ')+' und '+L[L.length-1]:L[0]||'';
@@ -13953,9 +14066,15 @@ function unklarH(tax){const L=unklarDeals();if(!L.length)return '';
   return `<div class="card"><p class="sigl y" style="margin:0">${t} <button type="button" class="zlink" data-mapgo>Zu den Buchungsarten</button></p></div>`}
 // Ab 0.183 (Florians Antwort 6 zur Freigabe 0.183, Wortlaut aus dem Plan): Zeile mit grauem Rand oben in der Auswertung, solange sie Handy-Zeilen zählt
 // (L = Zeilen mit x.hy der gewählten Konten im Zeitraum). Konto wie überall in der Auswertung mit Namen, sonst Nummer (accName). Nicht im Bild.
-function hyNoteH(L){if(!L.length)return '';const n=L.length,A=[...new Set(L.map(r=>r.a))].sort().map(a=>esc(accName(a))),D=[...new Set(L.map(r=>r.d))].sort();
-  const wann=D.length===1?dm(D[0]):`${dm(D[0])}${DS}${dm(D[D.length-1])}`,wer=A.length===1?`Konto ${A[0]}`:`Konten ${and2(A)}`;
-  return `<div class="card"><p class="sigl" style="margin:0">${n===1?'Darin ist 1 Trade':`Darin sind ${fI.format(n)} Trades`} vom Handy (${wer}, ${wann}). Der nächste Report der Kontohistorie ersetzt ${n===1?'ihn':'sie'}.</p></div>`}
+// Ab 0.186: mit den Einzahlungen vom Handy („Darin sind 2 Trades und 1 Einzahlung vom Handy …“) und, wenn bei einem gewählten Konto im Zeitraum die
+// Prüfung A nicht bestanden ist (Merker kab), Florians Wortlaut (Auftrag 0.186), bei mehreren gewählten Konten mit „Konto {Name}: “ davor
+function hyNoteH(L,sel,rg){const nT=L.filter(isTrade).length,nE=L.filter(r=>r.cat==='einzahlung').length,T=[];
+  if(nT+nE){const A=[...new Set(L.map(r=>r.a))].sort().map(a=>esc(accName(a))),D=[...new Set(L.map(r=>r.d))].sort();
+    const wann=D.length===1?dm(D[0]):`${dm(D[0])}${DS}${dm(D[D.length-1])}`,wer=A.length===1?`Konto ${A[0]}`:`Konten ${and2(A)}`;
+    T.push(`Darin ${nT+nE===1?'ist':'sind'} ${hyTeileT(nT,nE)} vom Handy (${wer}, ${wann}). Der nächste Report der Kontohistorie ersetzt ${nT===1&&!nE?'ihn':'sie'}.`)}
+  const K=(sel||[]).filter(a=>S.hy&&S.hy[a]&&Object.entries(S.hy[a]).some(([d,e])=>e.kab&&(!rg||((!rg.from||d>=rg.from)&&(!rg.to||d<=rg.to)))));
+  for(const a of K)T.push((sel.length>1?`Konto ${esc(accName(a))}: `:'')+'Die Investition zeigt den Stand des letzten Reports der Kontohistorie. Im Bericht vom Handy ging mehr Geld vom Konto, als an Gewinn offen war, vielleicht ein Kapitalabzug.');
+  return T.length?`<div class="card"><p class="sigl" style="margin:0">${T.join(' ')}</p></div>`:''}
 for(const id of ['stats-guard','tax-guard'])$(id).addEventListener('click',e=>{if(e.target.closest('[data-mapgo]'))goTo('reports','map-card')});
 function yearOptions(sel,ys,withAll,cur){
   sel.innerHTML=(withAll?'<option value="all">Gesamter Zeitraum</option>':'')+ys.map(y=>`<option value="${y}">${y}</option>`).join('');
@@ -14944,7 +15063,8 @@ function renderStats(rows){
   {const L=sel.filter(a=>INV[a]==='nofac');$('tb-note').innerHTML=L.length?`<div class="msg info">${esc(tbFehltTxt(L))} <button type="button" class="btn" data-tbgo style="padding:3px 10px;margin-left:4px">Zu „Deine Konten“</button></div>`:''}
   // Ab 0.139: Meilensteine in der Währung der Auswertung (render hat mit der gewählten gerechnet; fehlen Kurse, hier in USD)
   // Ab 0.183: immer mit den Buchungen der MT5-Reports (window.__rows), nie mit den Handy-Zeilen der Auswertung (Florians Antwort 5 zur Freigabe 0.183)
-  if(MS&&MS.cur!==CUR_EFF&&CUR_EFF==='usd'){MS=msNow(window.__rows,'usd');MS_NL=msNeu(MS)}
+  // Ab 0.186 auch mit den gemeinsamen Werten der Buchungen (ANA_PC), nicht mit denen der Auswertung
+  if(MS&&MS.cur!==CUR_EFF&&CUR_EFF==='usd'){const k=anaMerk();if(ANA_PC)anaSetz(ANA_PC);try{MS=msNow(window.__rows,'usd');MS_NL=msNeu(MS)}finally{anaSetz(k)}}
   msRender();msBfOv();
   rows=curRows(rows,CUR_EFF);
   const rg=fltRange(years(rows));
@@ -14957,7 +15077,7 @@ function renderStats(rows){
   renderFbar(true);
   const R=rg.bad?[]:RA.filter(inRg);
   // Ab 0.183 (Florians Antwort 6 zur Freigabe 0.183): graue Zeile oben, solange die Auswertung Handy-Zeilen zählt (gewählte Konten, im Zeitraum)
-  $('hy-note').innerHTML=hyNoteH(R.filter(r=>r.x.hy));
+  $('hy-note').innerHTML=hyNoteH(R.filter(r=>r.x.hy),sel,rg);
   // Mit „Laufende Woche weglassen“: Zeilen der laufenden Woche nur für „Pro Woche“ (dort gekennzeichnet), in keiner Kennzahl
   const CWR=nocwOn()&&!rg.bad?RA.filter(r=>r.wk===CW&&(!rg.from||r.d>=rg.from)&&(!toOrig||r.d<=toOrig)):[];
   // Investition der gewählten Konten zum Zeitpunkt jedes Trades (Scope 'sel')
@@ -16293,14 +16413,14 @@ function render(){
   // Ab 0.183 (Florians Antwort 2 zur Freigabe 0.183): zwei Listen aus der einen Wurzel enrich. rows = die Buchungen der MT5-Reports für alles außer
   // der Auswertung (Steuer, Zusammenfassung, Excel, CSV, Meilensteine, Feier-Fenster, Jahresrückblick, Reiter Reports, window.__rows). rowsA = dieselben
   // mit den Handy-Zeilen, nur für die Auswertung (window.__rowsA, auswRows). Ohne Handy-Zeilen ist rowsA dieselbe Liste wie rows, alles wie bis 0.182.
-  // addAnalysis läuft für rowsA danach: Die gemeinsamen Werte (CAP, INV, CHAIN, PFCHK) sind dieselben (Handy-Zeilen haben keine Ein- und Auszahlungen
-  // und stehen nicht in S.deals), PF_SRC kann für die laufende Woche weitere Konten nennen; es steht nur in der Auswertung („Pro Woche“).
-  let rowsA=rows;if(S.hy){rowsA=enrich({hy:true});addAnalysis(rowsA)}
+  // addAnalysis läuft für rowsA danach. Ab 0.186 sind die gemeinsamen Werte je Liste verschieden (Investition mit Einzahlungen vom Handy, PF_SRC):
+  // anaMerk merkt beide, danach gelten wieder die der Buchungen (ANA_PC); nur renderStats rechnet mit denen der Auswertung (KA).
+  const KPC=anaMerk();ANA_PC=KPC;let rowsA=rows,KA=KPC;if(S.hy){rowsA=enrich({hy:true});addAnalysis(rowsA);KA=anaMerk();anaSetz(KPC)}
   window.__rowsA=rowsA;
   try{MS=msNow(rows);msCheck(MS,null,rows);MS_NL=msNeu(MS)}catch(e){console.warn('Meilensteine:',e);MS=null;MS_NL=[]}
   const st=status();renderTabs(st);
   window.__rows=rows;renderAccounts(rows);renderChain();renderMap();renderNext();renderGuideBtns();renderRates();renderRateList();renderWallet();
-  if(S.ui.tab==='stats'){renderStats(rowsA);hbFit()}else renderFbar(false);
+  if(S.ui.tab==='stats'){anaSetz(KA);try{renderStats(rowsA);hbFit()}finally{anaSetz(KPC)}}else renderFbar(false);
   renderWbar(S.ui.tab==='wallet');
   if(S.ui.tab==='tax')renderTax(rows);
   window.__rows=rows;renderStale();msGlSync();
@@ -16687,7 +16807,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.183',VDATE='23.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.186',VDATE='23.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
