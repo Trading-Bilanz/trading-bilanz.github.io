@@ -4108,6 +4108,7 @@ const tgSet=rows=>new Set(rows.filter(isTrade).map(r=>r.d));
 // Excel mit allen Daten „Handelstage vom … bis …“: nie ein Samstag oder Sonntag ohne Trade. Bis 0.159 stand dort das Ende des Fensters.
 // Ab 0.179: erster und letzter gezählter Handelstag eines Fensters (htSpanne), für die Kopfzeile im Excel mit allen Daten und das Bild des Überblicks.
 // Ohne Handelstag im Fenster Anfang und Ende des Fensters (wie bis 0.178 htLetzter).
+// Ab 0.180: Das Bild des Überblicks nimmt von hier nur den Anfang; sein Ende ist das Datum der Investition (OV_X.inv.d, in ovBildSpec).
 function htSpanne(win,tage){const l=htListe(win.s,win.e,null,tage);return l.length?{s:l[0],e:l[l.length-1]}:{s:win.s,e:win.e}}
 function htLetzter(win,tage){return htSpanne(win,tage).e}
 // Letzter Tag mit Trade in den Zeilen rows ('' ohne Trade), für cntWin
@@ -5595,11 +5596,16 @@ function jrImgShare(k){if(!JR)return;const n=jrFile(k),go=b=>{const f=new File([
 // ---- Bild des Überblicks (ab 0.179, Florians Auftrag 0.179, Phase 4, und seine Antworten 4 und 5 zur Freigabe). Zeigt, was der Überblick zeigt, mit
 // denselben Werten aus denselben Daten (OV_B aus renderStats, „Diese Woche“ und „Investition“ aus OV_X), rechnet nichts neu, folgt der Filterzeile
 // (Zeitraum, Konten, PF, Währung) und „Rendite ▾“. Immer hell, Farben fest (JR_C), 1080 breit, Höhe nach Inhalt, mindestens 1350 px; gezeichnet von
-// jrPng mit der Art 'ov' (dieselbe Zeichnung der Reihen wie „Kurzfassung“ und „Alle Werte“). Kopf: „Überblick“ in Gold, darunter Zeitraum (erster bis
-// letzter gezählter Handelstag, htSpanne, Jahr zweistellig) und PF-Stellung; keine Kontenzahl, keine Kontonamen, keine Hinweise.
+// jrPng mit der Art 'ov' (dieselbe Zeichnung der Reihen wie „Kurzfassung“ und „Alle Werte“). Kopf: „Überblick“ in Gold, darunter Zeitraum (bis 0.179
+// erster bis letzter gezählter Handelstag aus htSpanne, ab 0.180 siehe unten; Jahr zweistellig) und PF-Stellung; keine Kontenzahl, keine Kontonamen, keine Hinweise.
 // Mit Betrag: Netto-Gewinn | Rendite, Ø pro Handelstag | Ø pro Woche, Beste | Schlechteste Woche, Bester | Schlechtester Trade, Trefferquote | Max.
 // Drawdown, Diese Woche | Investition. Ohne Betrag: alle Beträge weg, immer Rendite: Rendite | Diese Woche, dann die vier Paare. Fehlt die Investition,
 // bleibt sie draußen (Florians Antwort 5). Ein Wert allein in seiner Reihe steht über die ganze Breite mit größerem Wert (gross; Florians Antwort 4).
+// Ab 0.180 (Florians Entscheidungen vom 23.11.2026): Der Zeitraum im Kopf endet am Datum, zu dem die Investition gilt (OV_X.inv.d, dieselbe Stelle
+// wie „Investition jetzt“ bzw. „Investition am …“ in der Ansicht: der Datenstand, das Ende eines früheren Zeitraums, mit „Laufende Woche weglassen“
+// der Sonntag davor). Der Anfang bleibt der erste gezählte Handelstag (htSpanne). Die Kopfzeile im Excel bleibt beim letzten gezählten Handelstag.
+// „Investition“ ohne die kleine Zeile „am …“ (das Datum steht im Kopf). „Diese Woche“ steht nur im Bild, wenn es in dieser Woche schon einen Trade
+// gibt; ohne Report oder Trade in dieser Woche fehlt sie im Bild (die Ansicht zeigt dann „noch kein Report“ bzw. „noch kein Trade“ und bleibt so).
 const OV_TXT={titel:'Überblick',nach:'nach Performance Fee',vor:'vor Performance Fee',auf:'auf die Investition',inv:'Investition',am:'am {d}',ab:'ab {d}',
   betrag:'Betrag zeigen',speichern:'Speichern',teilen:'Teilen',datei:'Ueberblick'};
 // Zeitraum mit zweistelligem Jahr: „06.07. - 20.11.26“, über zwei Jahre „15.12.25 - 23.01.26“, ein Tag „20.11.26“
@@ -5612,13 +5618,15 @@ function ovBildSpec(B,X,o){if(!B||!X)return null;const T=OV_TXT,amt=!!o.amt,am=d
   // Woche und Trade: der Wert der gewählten Einheit mit seinem Datum, wie die Kachel; ohne Wert kein Datum
   const ext=(k,x)=>{if(x.ohne)return Z(k,'–',[x.ohne]);const w=!amt||B.pct?x.r:x.a;return w?Z(k,w.t,[w.d]):Z(k,'–',[])};
   const ren=Z('Rendite',B.rendite,B.rendite?[T.auf]:[]);
-  const dw=X.dw?(d=>{const a=ab(dS(d.W));if(!d.t)return Z('Diese Woche','–',[a+' · '+d.st]);if(!amt)return Z('Diese Woche',d.rT,[a]);const [g,kl]=B.pct?[d.rT,d.aT]:[d.aT,d.rT];return Z('Diese Woche',g,[kl,a])})(X.dw):null;
-  const inv=amt&&X.inv.v!=null?Z(T.inv,fCur(X.inv.v),[am(dS(X.inv.d))]):null;
+  const dw=X.dw&&X.dw.t?(d=>{const a=ab(dS(d.W));if(!amt)return Z('Diese Woche',d.rT,[a]);const [g,kl]=B.pct?[d.rT,d.aT]:[d.aT,d.rT];return Z('Diese Woche',g,[kl,a])})(X.dw):null;
+  const inv=amt&&X.inv.v!=null?Z(T.inv,fCur(X.inv.v),[]):null;
   const mitte=[[avg('Ø pro Handelstag',B.tag),avg('Ø pro Woche',B.woche)],[ext('Beste Woche',B.bw),ext('Schlechteste Woche',B.sw)],[ext('Bester Trade',B.bt),ext('Schlechtester Trade',B.st)],
     [Z('Trefferquote',B.tq.v,[B.tq.s]),Z('Max. Drawdown',B.dd.v,B.dd.d?[am(B.dd.d)]:[])]];
   const reihen=(amt?[[Z(B.netto.k,B.netto.a,[]),ren],...mitte,[dw,inv]]:[[ren,dw],...mitte]).map(r=>r.filter(Boolean)).filter(r=>r.length);
   for(const r of reihen)if(r.length===1)r[0].gross=true;
-  const sp={art:'ov',W:1080,H:1350,titel:T.titel,unter:[ovZeit(B.zeit),B.ex?T.nach:T.vor].filter(Boolean).join(' · '),gruppen:[{h:null,reihen}],fuss:MS_TXT.fuss};
+  // Zeitraum: Anfang aus htSpanne, Ende das Datum der Investition (ab 0.180, siehe oben)
+  const zeit=B.zeit&&{s:B.zeit.s,e:X.inv.d||B.zeit.e};
+  const sp={art:'ov',W:1080,H:1350,titel:T.titel,unter:[ovZeit(zeit),B.ex?T.nach:T.vor].filter(Boolean).join(' · '),gruppen:[{h:null,reihen}],fuss:MS_TXT.fuss};
   sp.H=jrLayout(sp).H;return sp}
 // „Betrag zeigen“ (S.ui.ovb): eigene Einstellung, beim ersten Mal an, gemerkt, reist mit der Sicherung
 const ovAmt=()=>S.ui.ovb!==false;
@@ -14839,6 +14847,7 @@ function renderStats(rows){
   // Ab 0.179 (Florians Auftrag 0.179, Phase 4): Modell für das Bild des Überblicks (ovBildSpec), aus denselben Objekten wie die Kacheln; es rechnet
   // nichts neu. Je Kachel Betrag (a) und Rendite (r) als Text mit dem Datum der jeweiligen Stelle (d), null = kein Wert; z = Durchschnitt
   // {k: Basis, a, r}. Zeitraum = erster bis letzter gezählter Handelstag (htSpanne, wie die Kopfzeile im Excel mit allen Daten).
+  // Ab 0.180: Davon nimmt das Bild nur den Anfang; das Ende ist das Datum der Investition (OV_X.inv.d, in ovBildSpec).
   {const avgB=(z,one,many,ohne)=>z.k?{a:fCur(ex?z.aX:z.aI),r:AK.miss?null:fR.format(ex?z.rX:z.rI),base:`aus ${z.k} ${z.k===1?one:many}`}:{ohne};
    const wkB=o=>o.a?{a:{t:fCur(o.a.v),d:wkSub(o.a.o.w)},r:AK.miss?null:{t:fR.format(o.r.v),d:wkSub(o.r.o.w)}}:{ohne:'noch keine ganze Woche'};
    const trB=(pa,pp)=>({a:pa?{t:fCur(pa[key]),d:dS(pa.d)}:null,r:AK.miss||!pp?null:{t:fR.format(pr(pp)),d:dS(pp.d)}});
@@ -14865,6 +14874,7 @@ function renderStats(rows){
   // „Investition am Ende“ (capG). „jetzt“, wenn das Ende des Zeitraums nicht vor dem Datenstand liegt, sonst „am 31.12.25“ (auch mit „Laufende Woche
   // weglassen“: dann endet der Zeitraum am Sonntag davor, Florians Antwort 2 zur Freigabe 0.179).
   // OV_X hält beides für ovxZeichnen (Leiste oder Kachel) und für das Bild des Überblicks.
+  // Ab 0.180: inv.d ist auch das Ende des Zeitraums im Kopf des Bildes (ovBildSpec).
   const endT=rg.to?rg.to.replace(/-/g,'.')+' 23:59:59':'9999',capG=invSumme(sel,endT);
   {const tdy=todayLocal(),W=monday(tdy),on=!rg.bad&&(!rg.from||tdy>=rg.from)&&(!toOrig||tdy<=toOrig);let dw=null;
    if(on){const rw=nocwOn()&&CW===W?CWR:R.filter(r=>r.wk===W);
@@ -16446,7 +16456,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.179',VDATE='22.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.180',VDATE='23.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
