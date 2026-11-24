@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'sha256-ufhi0R7qi/xSm3kmxbPOba8AhtN37YvNkRTr8IKYzKo='; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'sha256-q2HB696kW9xB3FV+luyCrr6uURj7IQEY98wkrqK2P9M='; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anleitung zur Trading-Bilanz</title>
 <!-- Ab 0.90: Favicon, apple-touch-icon und Logo aus icons/ (img-src 'self' erlaubt Bilder vom eigenen Server), Angaben für die Link-Vorschau wie im Tool -->
@@ -46,6 +46,7 @@
   --line:#e2e0da; --accent:#2a63a6; --accent-soft:#e6eef8; --sub-bg:#f0f3f7;
   --ph-bg:#e9ebee; --ph-line:#c9cdd2; --shot-line:#e2e0da;
   --mark:#10a846; --tab-line:#c9c3b5; --ok-soft:#eaf5ee;
+  --link:#0b57d0;
   --radius:10px; --fs-s:14px;
 }
 @media (prefers-color-scheme: dark){
@@ -54,12 +55,17 @@
     --line:#30363c; --accent:#6ea3e0; --accent-soft:#22324a; --sub-bg:#1a232d;
     --ph-bg:#262b30; --ph-line:#3d444b; --shot-line:#4a525a;
     --tab-line:#4f565d; --ok-soft:#1b2a21;
+    --link:#8ab4f8;
     color-scheme:dark;
   }
 }
 *{box-sizing:border-box}
 html{scroll-padding-top:12px}
-html.js{scroll-padding-top:60px}
+/* Ab 0.188 (Florians Auftrag 0.188, Punkt 3): Der Abstand von 60 px unter der stehenden Leiste gilt nur für die Inhalte (.wrap), nicht für die Seite.
+   Bis 0.187 html.js{scroll-padding-top:60px}: Dann lag das Menü „Gerät“ in der Leiste selbst im Streifen, den die Seite als verdeckt ansah. Bekam es
+   beim Öffnen den Fokus, zentrierte Chromium es, und weil die Leiste mitwandert, sprang nur die Seite um etwa einen halben Bildschirm nach oben. */
+html.js{scroll-padding-top:0}
+html.js .wrap,html.js .wrap *{scroll-margin-top:60px}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
 .wrap{max-width:860px;margin:0 auto;padding:24px 16px 40px}
 header h1{font-size:28px;line-height:1.25;margin:0 0 6px;letter-spacing:-.01em}
@@ -69,7 +75,11 @@ header h1{display:flex;align-items:center;gap:10px}
 .hlogo{transform:translateY(-3%)}
 @media (max-width:560px){header h1{gap:6px}.hlogo{height:24px}}
 .sub{color:var(--ink2);margin:0 0 12px}
-a{color:var(--accent)}
+/* Ab 0.188 (Florians Auftrag 0.188, Punkt 5): Links im Blau der Textlinks des Tools (--link, hell #0b57d0, dunkel #8ab4f8), unterstrichen, auch nach
+   einem Besuch, beim Darüberfahren kräftiger. Bis 0.187 Akzentblau. Das Menü „Inhalt“ (Schriftfarbe), die Aufklapper (Akzentblau) und der
+   Fokusrahmen bleiben. */
+a{color:var(--link);text-decoration-thickness:1px;text-underline-offset:2px}
+a:hover{text-decoration-thickness:2px}
 a:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
 .tool{display:inline-block;margin:4px 0 0;font-weight:600}
 /* Ab 0.70: stehende Leiste oben (nur mit Skript). Ab 0.76: links die Gerätewahl, in der Mitte der Titel des Abschnitts im Blick, rechts „↑ Inhalt“.
@@ -252,7 +262,7 @@ document.addEventListener('DOMContentLoaded',function(){
   var K=document.createElement('div');K.className='lma';
   [['auf','Alle aufklappen'],['zu','Alle zuklappen']].forEach(function(k){var b=document.createElement('button');b.type='button';b.className='lmk';b.setAttribute('data-alle',k[0]);b.textContent=k[1];K.appendChild(b)});mn.appendChild(K);
   // Wo bin ich: die letzte Stelle (Abschnitt oder Kopf einer Stufe), deren Oberkante höchstens 20 px unter der Leiste liegt; ganz oben keine.
-  // 20 px, weil ein Sprung die Überschrift 14 px unter die Leiste legt (scroll-padding-top 60 px, Leiste 46 px). Bis 0.169 waren es 80 px; dann
+  // 20 px, weil ein Sprung die Überschrift 14 px unter die Leiste legt (ab 0.188 scroll-margin-top 60 px, bis 0.187 scroll-padding-top 60 px; Leiste 46 px). Bis 0.169 waren es 80 px; dann
   // galt nach „Alle zuklappen“ der nächste zugeklappte Abschnitt (etwa 60 px tiefer) schon als aktuell.
   // Ist die Seite ganz unten (der letzte Abschnitt kommt nie bis unter die Leiste), gilt die letzte Stelle, die im Fenster beginnt.
   // Eine Rechnung für den Titel der Leiste und „Du bist hier“ im Menü.
@@ -399,7 +409,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <section id="report-speichern">
   <h3 class="st"><span>3. Report speichern</span></h3>
-  <div class="os-mob"><!--Q:js:MT5_PC--><p class="msg info">Das geht nur am Computer. MetaTrader 5 am Handy und im Browser kann keine Reports speichern.</p><!--/Q--></div>
+  <div class="os-mob"><!--Q:js:MT5_PC--><p class="msg info">Das geht nur am Computer. MetaTrader 5 am Handy und im Browser kann keine Reports speichern.<!--Z--> Der „Bericht“ aus der MT5-App am Handy reicht nicht: Er enthält nur Summen, keine einzelnen Trades.<!--/Z--></p><!--/Q--></div>
   <!--Q:os:MT5_SAVE.win|MT5_SAVE.mac|MT5_SAVE.win--><ol class="steps">
     <li>Öffne MetaTrader 5 am Computer und wähle das Konto (Doppelklick im Navigator).</li>
     <li>Wähle <b>„Ansicht → Terminal“</b> (engl. <i>View → Toolbox</i>)<span class="os-win os-mob"> oder drücke Strg+T</span>.</li>
@@ -467,6 +477,9 @@ document.addEventListener('DOMContentLoaded',function(){
   <p>Darunter folgen „Grafiken“, „Hochs und Tiefs“, „Meilensteine“ und „Durchschnitt“, dann „Pro Woche“, „Pro Monat“, „Pro Konto“ und „Netto pro Konto und Monat“, zuletzt „Was wäre wenn“. Nach <a href="#stufe-2">Stufe 2</a> kommt „Dein echtes Geld“ dazu.</p>
   <h4>Meilensteine</h4>
   <p>Die Karte „Meilensteine“ sammelt deine Rekorde, Serien und Erreichtes. Zeitraum und Konten wählst du rechts in der Karte, von der Filterzeile oben übernimmt sie nur die Währung, und sie rechnet immer mit „PF verteilt“. Ab und zu erscheint an einem Wert, neben „Überblick“ oder am Reiter „Auswertung“ ein besonderes Symbol. Du wirst es erkennen. Ein Klick darauf zeigt dir, was du erreicht hast.</p>
+  <h4>Bilder zum Teilen</h4>
+  <p>Deine Ergebnisse kannst du als Bild speichern oder teilen: den Überblick, die Grafiken und jeden Meilenstein. Die Bilder sind eigens dafür gestaltet, immer hell und klar, auch wenn du das Tool dunkel nutzt. Beim Überblick und bei den Meilensteinen wählst du, ob Beträge zu sehen sind. Ohne sie zeigt das Bild nur Prozente und Zahlen wie Wochen oder Trades, dein Kontostand bleibt bei dir.</p>
+  <p><span class="os-win os-mac">Klicke</span><span class="os-mob">Tippe</span> im Überblick oder bei den Grafiken auf <b>„Bild“</b>. Bei einem Meilenstein steht der Knopf unten im Fenster, das sich <span class="os-win os-mac">mit einem Klick auf ihn öffnet</span><span class="os-mob">öffnet, wenn du auf ihn tippst</span>. Kann dein Browser teilen, schickst du das Bild direkt weiter, z. B. in Telegram, sonst speicherst du es als Datei. Das Bild entsteht auf deinem Gerät, und nur du entscheidest, wohin es geht.</p>
 </section>
 
 <section id="sichern">
@@ -864,9 +877,8 @@ document.addEventListener('DOMContentLoaded',function(){
 </main>
 
 <footer>
-  <p>Trading-Bilanz · Anleitung, Stand 21.11.2026 · Keine Steuer- oder Finanzberatung.</p>
-  <p><b>Nur das Original:</b> Nutze die Trading-Bilanz nur von <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, zum Beispiel mit einer anderen Spendenadresse.</p>
-  <p><b>Datenschutz:</b> Diese Seite speichert nichts und lädt nur ihre eigenen Bilder. Beim Aufruf speichert GitHub deine IP-Adresse aus Sicherheitsgründen (<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub&nbsp;↗</a>).</p>
+  <p>Trading-Bilanz · Anleitung, Stand 24.11.2026 · Keine Steuer- oder Finanzberatung.</p>
+  <p><b>Datenschutz:</b> Diese Seite speichert nichts und lädt nur ihre eigenen Bilder. GitHub speichert beim Aufruf deine IP-Adresse (<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub&nbsp;↗</a>).</p>
   <p><a href="https://weltenwandel.at/impressum.html" target="_blank" rel="noopener">Impressum&nbsp;↗</a> · <a href="mailto:florian@weltenwandel.at">florian@weltenwandel.at</a> · <a href="https://trading-bilanz.github.io" target="_blank" rel="noopener">Zur Trading-Bilanz</a></p>
 </footer>
 </div>
