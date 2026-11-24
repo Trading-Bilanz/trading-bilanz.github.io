@@ -3647,15 +3647,23 @@ function hyNimm(H,fn){const nm=`<b>${esc(fn)}</b>: `;
   const H0=(S.hy&&S.hy[a])||{};
   if(!tage.some(d=>H0[d]?H0[d].exp<dExp(d):inhalt(d))){const Ex=tage.filter(d=>H0[d]),m=Ex.map(d=>H0[d].exp).sort().pop();
     return {warn:1,n:0,t:nm+`Für Konto ${esc(a)} hat das Tool für diese Tage schon einen Bericht vom Handy mit Stand ${dm(hyTag(m))} ${m.slice(11,16)} Uhr (Zeit im MT5-Report). Dieser hier ist ${Ex.every(d=>H0[d].exp===dExp(d))?'derselbe':'älter'}, nichts eingelesen.`}}
-  let ers='';const Hn=(S.hy||(S.hy={}))[a]||(S.hy[a]={}),neuT=[];
+  let ers='',m0=0;const Hn=(S.hy||(S.hy={}))[a]||(S.hy[a]={}),neuT=[];
   for(const d of tage){const ex=Hn[d];if(ex&&ex.exp>dExp(d))continue;if(ex&&ex.L.length&&ex.exp>ers)ers=ex.exp;
     if(inhalt(d)){const Z=(neu[d]||[]).sort((p,q)=>p.t<q.t?-1:p.t>q.t?1:0);Hn[d]=Object.assign({exp:dExp(d),per:H.per,f:fn,L:Z.map((x,i)=>Object.assign({k:`h${d}-${i+1}`},x))},Pl.wdT[d]?{wd:Pl.wdT[d]}:{},okA?{}:{kab:1});
-      neuT.push(d)}else delete Hn[d]}
+      neuT.push(d);m0+=Z.filter(x=>x.kind==='ein').length}else delete Hn[d]}
   // Dieselben Regeln wie nach einem PC-Report (hyKuerzen), damit ein Neustart nichts anderes ergibt; gezählt wird danach
   hyKuerzen([a]);const Hk=(S.hy&&S.hy[a])||{},Zk=neuT.flatMap(d=>Hk[d]?Hk[d].L:[]),n=Zk.filter(x=>x.kind!=='ein').length,m=Zk.length-n;
   const ersT=ers?` (ersetzt den Stand ${hyTag(ers)===H.bis?'':dm(hyTag(ers))+' '}${ers.slice(11,16)} Uhr)`:'';
-  const zusA=okA?'':` ${Pl.depA>0?'Die Einzahlungen zählen erst mit dem Report der Kontohistorie: Es':'Es'} ging mehr Geld vom Konto, als an Gewinn offen war, vielleicht ein Kapitalabzug.`;
-  return {ok:1,n:n+m,t:nm+`${kopf}: `+(n+m?`${hyTeileT(n,m)} als Nachtrag${ersT}. Der nächste Report der Kontohistorie ersetzt ${n===1&&!m?'ihn':'sie'}.`:`Nichts als Nachtrag${ersT}.`)+zusA}}
+  const kabT='Es ging mehr Geld vom Konto, als an Gewinn offen war, vielleicht ein Kapitalabzug.';
+  // Ab 0.188 (Florians Freigabe 0.188): Kommt keine Handy-Zeile herein, je Fall ein eigener Satz ohne Kopf (statt „Nichts als Nachtrag“):
+  // Einzahlungen, die wegen Prüfung A nicht zählen (R-74); eine Einzahlung, die beim Einlesen wieder wegfällt, weil der PC-Report im Teil ihres
+  // Schritts vor der Grenze schon eine hat (R-75); sonst nur Auszahlungen, gemerkt für Prüfung A (R-73, bei nicht bestandener Prüfung mit kabT)
+  if(!(n+m)){const t=!okA&&Pl.depA>0?`Die Einzahlungen darin zählen erst mit dem Report der Kontohistorie: ${kabT}`:
+      m0>m?'Die Einzahlung darin liegt in einem Abschnitt, den der Report der Kontohistorie schon zum Teil enthält. Sie kommt mit dem nächsten Report.':
+      'Darin sind nach dem letzten Report der Kontohistorie nur Auszahlungen. Sie zählen nur für die Prüfung der Investition.'+(okA?'':' '+kabT);
+    return {ok:1,n:0,t:nm+t}}
+  const zusA=okA?'':` ${Pl.depA>0?'Die Einzahlungen zählen erst mit dem Report der Kontohistorie: ':''}${kabT}`;
+  return {ok:1,n:n+m,t:nm+`${kopf}: ${hyTeileT(n,m)} als Nachtrag${ersT}. Der nächste Report der Kontohistorie ersetzt ${n===1&&!m?'ihn':'sie'}.`+zusA}}
 // Datei aus der MT5-App: mit Schalter einlesen, ohne nur erklären
 function hyDatei(fn,txt){if(!hyOn())return {bad:1,n:0,app:1,t:`<b>${esc(fn)}</b>: ${HY_APP}`};return hyNimm(hyLies(txt),fn)}
 
@@ -13840,10 +13848,11 @@ function accDelTxt(a){const A=S.accounts[a]||{},rs=(window.__rows||[]).filter(r=
 function hyKontoH(a){const H=S.hy&&S.hy[a];if(!H)return '';const E=Object.values(H);if(!E.length)return '';const o=hyOrt(E.map(e=>e.exp).sort().pop());
   return `<span class="sm hyk">Handy ${dm(hyTag(o))} ${esc(o.slice(11,16))} · <button type="button" class="zlink" data-hydel="${esc(a)}">entfernen</button></span>`}
 // Ab 0.183: „entfernen“ an der Zeile vom Handy, mit Rückfrage (GESTALTUNG Abschnitt 8: Sicherung speichern · Entfernen · Abbrechen)
+// Ab 0.188 heißt die Rückfrage in jedem Fall „Angaben vom Handy entfernen“ (Florians Auftrag 0.188), der Text darunter nennt Trades und Einzahlungen
 async function hyDel(a){if(!S.hy||!S.hy[a])return;const n=hyZahl(a,'tr'),m=hyZahl(a,'ein'),T=hyTeileT(n,m),eins=n+m===1;
   // Ab 0.186 mit Einzahlungen; ohne Trade und Einzahlung (nur der Merker der Prüfung A) „Die Angaben vom Handy“
   const tl=[n?(n===1?'den Trade':`die ${fI.format(n)} Trades`):'',m?(m===1?'die Einzahlung':`die ${fI.format(m)} Einzahlungen`):''].filter(Boolean).join(' und '),was=tl?tl[0].toUpperCase()+tl.slice(1):'Die Angaben';
-  if(!(await askBox({title:'Trades vom Handy entfernen',text:`${was} vom Handy von ${accNo(a)} entfernen? ${eins?(n?'Er zählt':'Sie zählt'):'Sie zählen'} dann nicht mehr in der Auswertung. Lädst du den Bericht vom Handy wieder, ${eins?(n?'kommt er':'kommt sie'):'kommen sie'} zurück.`,ok:'Entfernen',danger:true,more:ASK_BK})))return;
+  if(!(await askBox({title:'Angaben vom Handy entfernen',text:`${was} vom Handy von ${accNo(a)} entfernen? ${eins?(n?'Er zählt':'Sie zählt'):'Sie zählen'} dann nicht mehr in der Auswertung. Lädst du den Bericht vom Handy wieder, ${eins?(n?'kommt er':'kommt sie'):'kommen sie'} zurück.`,ok:'Entfernen',danger:true,more:ASK_BK})))return;
   delete S.hy[a];hyAufraeumen();save();render();toast(`${T||'Angaben'} vom Handy von Konto ${a} entfernt.`)}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-hydel]');if(!b)return;e.preventDefault();hyDel(b.dataset.hydel)});
 // Ab 0.58 (6): × am Konto fragt nach dem Weg: „Buchungen neu einlesen“ (Konto bleibt), „Konto entfernen“ (Text aus accDelTxt) oder „Abbrechen“
