@@ -3110,6 +3110,9 @@ for(const k of ['tag','cx','wallets','defCoin','rsrc','rown','rcov','tagDrop','t
   // Ab 0.46 (2.4): gelernte Einzahlungsadressen von Tag einmal entfernen (die Auszahlungsadresse bleibt). Die Erkennung braucht sie nicht.
   if(!S.ui.wTagEin){for(const [a,x] of Object.entries(S.addr))if(x&&x.tag&&x.tag.ein){if(x.tag.aus)delete x.tag.ein;else delete S.addr[a]}S.ui.wTagEin=1}
   if(!S.ui.wDet){S.ui.fold=S.ui.fold||{};for(const k of ['tag-card','wf-card','cx-card','cxflow-card'])S.ui.fold[k]=true;S.ui.wDet=1}
+  // Ab 0.191 (Florians Auftrag 0.191, Teil 4.3; OFFEN „Aus 0.175“): Seit 0.175 ist „Anregungen, Fehler, Feedback“ eine Kachel ohne Zuklappen. Der
+  // gemerkte Zustand der alten Karte fällt beim Laden eines Stands weg (Start und „Sicherung laden“), beim nächsten Speichern auch im Speicher.
+  if(S.ui.fold&&typeof S.ui.fold==='object')delete S.ui.fold['fb-card'];
   // ab Version 0.41: Tag des Einlesens je Adresse und Netzwerk (impN)
   wImpN(S);
   S.ui.deOther=S.ui.deOther==null?'':String(S.ui.deOther);if(!['DE','none'].includes(S.ui.country))S.ui.country='AT';
@@ -5198,9 +5201,7 @@ const msIsSer=k=>/^j?r[gdw]$/.test(k),msIsMw=k=>/^j?mw$/.test(k),msIsRek=k=>/^[a
 // Kategorie eines Eintrags im Verlauf
 function msKat(e){const K=MS_TXT.kat;return msIsSer(e.k)?K.ser:msIsRek(e.k)||msIsMw(e.k)?K.rek:MS_STU.includes(e.k)?K.stu:e.k==='ea'||e.k==='ee'||e.k==='ex'?K.aus:e.k==='ja'?K.ja:K.jr}
 const msById=id=>MS&&(MS.list.find(e=>e.id===id)||(MS.px||[]).find(e=>e.id===id))||null;
-// Letzter Eintrag einer Art; überholt ist ein Eintrag, wenn es einen neueren derselben Art gibt
-function msLast(M,k){return msSort(M.list).find(e=>e.k===k)||null}
-function msAlt(M,e){const a=msArt(e);return msSort(M.list).find(x=>msArt(x)===a)!==e}
+// Ab 0.191 (Florians Auftrag 0.191, Teil 4.2; OFFEN „Aus 0.169“): msLast und msAlt entfernt, niemand rief sie auf.
 // Text für einen Wert ohne Wert (je Art, was fehlt). y = Jahr oder ''.
 // Ab 0.161: beim Monat entscheidet, ob es einen ganzen Monat gibt (M.mGanz, auch ohne Trades), wie bis 0.160 über die Schleife der Karte
 function msOhne(M,k,y){const O=MS_TXT.ohne,yb=k==='am'?(M.mGanz||{}):M.yb[k]||{},any=y?yb[y]!=null:Object.keys(yb).length>0;
@@ -5213,7 +5214,8 @@ function msOhne(M,k,y){const O=MS_TXT.ohne,yb=k==='am'?(M.mGanz||{}):M.yb[k]||{}
 // Datum im Feier-Fenster (msJump). Ein Link darf nicht in einem Knopf liegen: Die Kachel ist dann ein Kasten (.msvb) mit dem Knopf über der ganzen
 // Fläche (öffnet das Blatt), Datum und Begriff liegen darüber. Mit der Tastatur sind Kachel und Datum je ein eigener Halt. Ohne Sprungziel (z. B.
 // „Bester Monat“) bleibt die Kachel ein Knopf und das Datum Text. Keine größere Tippfläche (Florians Antwort 8 zur Freigabe 0.179).
-function msValH(M,k,g,y,nl){const e=y?(M.val.Y[y]||{})[k]:M.val.G[k],T=k==='rw'?gl('plusw',esc(MS_TXT.kachel[k])):esc(MS_TXT.kachel[k]);
+// Ab 0.191 (Florians Freigabe 0.191, B1): Begriff an „Plus-Wochen in Folge“ auf einem Jahr mit dem Satz zu Neujahr (plusw), bei „Gesamt“ ohne (plusw0)
+function msValH(M,k,g,y,nl){const e=y?(M.val.Y[y]||{})[k]:M.val.G[k],T=k==='rw'?(y?gl('plusw',esc(MS_TXT.kachel[k])):gl('plusw0',esc(MS_TXT.kachel[k]))):esc(MS_TXT.kachel[k]);
   if(!e)return `<div class="msv"><span class="k">${T}</span><span class="v none">${esc(msOhne(M,k,y))}</span></div>`;
   const bf=nl.has(e.id)?`<span class="bfw bf-k${MS_FLASH.includes(e.id)?' fl':''} noprint">${bflyH(BF_H.k)}</span>`:'';
   const w=e.r!=null?fR.format(e.r):fI.format(e.n),d=msDate(e,true),m=e.mehr?msMehr(e):'';
@@ -5561,7 +5563,7 @@ function jrModel(st,o){const X=MS_TXT.jr,K=X.k,Sx=X.s,O=X.ohne,cur=st.cur,amt=!!
   // Ergebnis
   {const hit=tile(K.hit,T(st.n?fP.format(st.win/st.n):'–'),[T(Sx.hit.replace('{w}',fI.format(st.win)).replace('{n}',`${fI.format(st.n)} ${st.n===1?'Trade':'Trades'}`))]);
    const tr=tile(K.trades,T(fI.format(st.n)),[T((st.tage===1?Sx.tage1:Sx.tage).replace('{n}',fI.format(st.tage)))]);
-   const wp=st.wPlus&&st.wPlus.of?tile(K.wPlus,T(fI.format(st.wPlus.n)),[T(Sx.wPlus.replace('{n}',`${fI.format(st.wPlus.of)} ${st.wPlus.of===1?'Woche':'Wochen'}`))],['plusw']):tile(K.wPlus,N(O.w),null,['plusw']);
+   const wp=st.wPlus&&st.wPlus.of?tile(K.wPlus,T(fI.format(st.wPlus.n)),[T(Sx.wPlus.replace('{n}',`${fI.format(st.wPlus.of)} ${st.wPlus.of===1?'Woche':'Wochen'}`))],['wplus']):tile(K.wPlus,N(O.w),null,['wplus']);
    hit.g=['hit'];const r=[tile(K.rendite,R(st.r),null,['rendite']),hit,tr];if(art==='kurz')r.push(wp);else if(amt)r.push(tile(kc(K.netto),{t:fN.format(st.net),s:true},null,['netto']));
    G.push({id:'erg',h:X.gr.erg,reihen:[r]})}
   // Bestwerte und schwächste Werte: Datum, mit „Betrag zeigen“ der Betrag in einer eigenen kleinen Zeile (nie in der Kurzfassung)
@@ -5574,7 +5576,7 @@ function jrModel(st,o){const X=MS_TXT.jr,K=X.k,Sx=X.s,O=X.ohne,cur=st.cur,amt=!!
   if(art!=='kurz'){
     // Beständigkeit: Wochen im Plus, Serien aus den Meilensteinen, meiste Gewinn-Trades in einer Woche, stärkster Wochentag
     const S2=st.ser||{},ser=(k,z)=>Object.assign(z?tile(K[k],T(fI.format(z.n)),jrSpan(z).map(T)):tile(K[k],N(O[k])),k==='rw'?{g:['plusw']}:null);
-    const wp=st.wPlus&&st.wPlus.of?tile(K.wPlus,T(fI.format(st.wPlus.n)),[T(Sx.wPlus.replace('{n}',`${fI.format(st.wPlus.of)} ${st.wPlus.of===1?'Woche':'Wochen'}`))],['plusw']):tile(K.wPlus,N(O.w),null,['plusw']);
+    const wp=st.wPlus&&st.wPlus.of?tile(K.wPlus,T(fI.format(st.wPlus.n)),[T(Sx.wPlus.replace('{n}',`${fI.format(st.wPlus.of)} ${st.wPlus.of===1?'Woche':'Wochen'}`))],['wplus']):tile(K.wPlus,N(O.w),null,['wplus']);
     const mw=S2.mw?tile(K.mw,T(fI.format(S2.mw.n)),[T(Sx.mw.replace('{d}',fD(S2.mw.w)))],['meiste']):tile(K.mw,N(O.mw),null,['meiste']);
     // der Durchschnitt des Wochentags steht in der kleinen Zeile hinter „Ø“; in dieser Gruppe hat sonst kein Wert ein Vorzeichen, die Plus-Regel ändert hier nichts
     const wd=st.wd?tile(K.wd,T(WDL[st.wd.i]),[T(Sx.wd.replace('{v}',fR.format(st.wd.v)))]):tile(K.wd,T('–'));
@@ -14833,7 +14835,18 @@ ${ECB_CITE}`},
 // Ab 0.167 (Florians Auftrag 0.167, Abschnitt 6.7, Wortlaut aus seiner Antwort 2 zur Freigabe): neue Begriffe „Plus-Woche“ (Rückblick und Kachel der
 // Karte „Meilensteine“) und „mit allen Handelstagen“ (Rückblick). Dazu eine Einstellung für den Jahresrückblick statt einer Kopie (jr: weg = der Satz,
 // der dort nicht stimmt, dazu = was dort gilt; Florians Antwort 14 zur Freigabe 0.167). Im Rückblick hängt glOpen nie den Absatz zum Betrag an (amt).
-GL.plusw={t:'Plus-Woche',h:'Eine Woche mit einem Ergebnis über null, nach PF in USD. Auch eine angefangene Woche zählt, etwa die erste, wenn du mitten in der Woche begonnen hast. Die laufende Woche zählt erst, wenn die PF abgebucht ist. Eine Woche über Neujahr zählt im Jahr ihres Donnerstags.'};
+// Ab 0.191 (Florians Auftrag 0.191, Teil 4.1; Wortlaut Fassung A und Ort B1 aus seiner Freigabe): die Woche über Neujahr, eine Wurzel für den Text.
+// jahr = wie die Woche über Neujahr zählt (überall, wo Wochen eines Jahres nach dem Donnerstag zählen), ganz = warum sie beim Durchschnitt pro Woche
+// und bei der besten und schwächsten Woche fehlen kann (nur an „Wochen im Plus“ im Rückblick: dort stehen diese Werte im selben Fenster).
+// Bis 0.189 endete „Plus-Woche“ überall mit „Eine Woche über Neujahr zählt im Jahr ihres Donnerstags.“, auch in der Karte bei „Gesamt“.
+const NJ_WOCHE={jahr:'Die Woche über Neujahr zählt zu dem Jahr, in dem ihr Donnerstag liegt, wie bei den Kalenderwochen.',
+  ganz:'Liegen ihre Handelstage in beiden Jahren, zählt sie beim Durchschnitt pro Woche und bei der besten und schwächsten Woche nicht mit.'};
+// Begriff „Plus-Woche“ (Florians Wortlaut aus 0.167 ohne den Satz zu Neujahr) in drei Fassungen: plusw0 ohne Neujahr (Kachel der Karte bei „Gesamt“),
+// plusw mit dem ersten Satz (Rückblick „Plus-Wochen in Folge“, Kachel der Karte auf einem Jahr), wplus mit beiden Sätzen (Rückblick „Wochen im Plus“)
+const PLUSW_H='Eine Woche mit einem Ergebnis über null, nach PF in USD. Auch eine angefangene Woche zählt, etwa die erste, wenn du mitten in der Woche begonnen hast. Die laufende Woche zählt erst, wenn die PF abgebucht ist.';
+GL.plusw0={t:'Plus-Woche',h:PLUSW_H};
+GL.plusw={t:'Plus-Woche',h:PLUSW_H+' '+NJ_WOCHE.jahr};
+GL.wplus={t:'Plus-Woche',h:PLUSW_H+' '+NJ_WOCHE.jahr+' '+NJ_WOCHE.ganz};
 GL.alleht={t:'mit allen Handelstagen',h:'Im Rückblick zählt jeder Handelstag des Jahres mit, auch die ohne Trade. In der Auswertung schaltest du das mit „Tage ohne Trade mitzählen“ ein und aus, hier gilt es immer.'};
 GL.rendite.jr={weg:'Bei „PF laut MT5“ passen die beiden auch innerhalb einer Woche nicht zusammen: Die Rendite ist dann vor PF, der Netto-Gewinn nach der abgebuchten Fee.',dazu:'Im Rückblick zählt sie immer nach PF.'};
 GL.tag.jr={weg:'Ob Tage ohne Trade mitzählen, stellst du im Zeitraum-Menü unter „Zählweise“ ein.',dazu:'Im Rückblick zählen Tage ohne Trade immer mit.'};
@@ -16868,7 +16881,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.189',VDATE='24.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.191',VDATE='24.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
