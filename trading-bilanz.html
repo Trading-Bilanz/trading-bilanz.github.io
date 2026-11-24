@@ -2318,6 +2318,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
       <div class="sthd"><h2 class="hx hxn"><span id="tax-title">Jahresabrechnung</span> <button type="button" class="ib" data-gl="k-taxat" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Jahresabrechnung">i</button></h2></div>
       <!-- Ab 0.73 (2.1): eine Tabelle wie Seite 1 der Zusammenfassung (taxRows), darunter nur einzelne Sätze -->
       <div class="tscroll"><table id="t-taxparts"></table></div>
+      <!-- Ab 0.193 (Florians Antwort 1 zur Freigabe 0.193): Hinweis „noch unklar“ direkt unter der Tabelle, vor den Sätzen zu Krypto (unklarSteuerH) -->
+      <div id="tax-unklar"></div>
       <div id="taxcx-warn"></div>
       <div id="taxnotes"></div>
     </div>
@@ -2348,6 +2350,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
       <div class="sthd"><h2 class="hx hxn"><span id="de-title">Jahresabrechnung (Deutschland)</span> <button type="button" class="ib" data-gl="k-taxde" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Jahresabrechnung">i</button></h2></div>
       <!-- Ab 0.73 (2.1): eine Tabelle wie Seite 1 der Zusammenfassung (taxRows). Das Feld bleibt unter der Tabelle: Es speist den Baustein a-frei -->
       <div class="tscroll"><table id="t-de-parts"></table></div>
+      <!-- Ab 0.193 (Florians Antwort 1 zur Freigabe 0.193): Hinweis „noch unklar“ direkt unter der Tabelle, vor dem Feld „Andere private Veräußerungsgewinne“ -->
+      <div id="de-unklar"></div>
       <div id="de-cx-body">
         <div class="row" style="margin-top:12px"><label for="de-other">Andere private Veräußerungsgewinne dieses Jahres (EUR)</label><input type="text" class="n" id="de-other" placeholder="optional" style="width:120px"><span class="gl" data-gl="deother" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Was zählt dazu?</span></div>
         <div id="de-fg"></div>
@@ -3714,7 +3718,13 @@ function mapKinds(){const m={},R=rvScan();
   return m}
 function unknownKinds(){const m={};for(const [k,e] of Object.entries(mapKinds()))if(e.cat===null)m[k]=e;return m}
 // Ab 0.80 (3): alle Buchungen „noch unklar“ (für die Hinweise oben in Auswertung und Steuer)
-function unklarDeals(){return Object.values(S.deals).filter(x=>x.type!=='buy'&&x.type!=='sell'&&catOf(x)==='unklar').sort((p,q)=>p.t<q.t?-1:p.t>q.t?1:0)}
+// Ab 0.193 (Florians Auftrag 0.193, „Eine Wurzel“): Auswahl auf dieselbe Liste. o.jahr = nur Buchungen mit diesem Jahr im Datum (Zeit im MT5-Report,
+// wie die Tabelle der Jahresabrechnung), o.zaehlt = nur Konten mit dem Häkchen „Zählt“ in „Konten für die Steuer“ (taxIn). Ohne o alle, wie bis 0.192
+// (Hinweis oben in der Auswertung, unklarH).
+function unklarDeals(o){o=o||{};return Object.values(S.deals).filter(x=>x.type!=='buy'&&x.type!=='sell'&&catOf(x)==='unklar'&&(!o.jahr||dOf(x.t).slice(0,4)===o.jahr)&&(!o.zaehlt||taxIn(x.a))).sort((p,q)=>p.t<q.t?-1:p.t>q.t?1:0)}
+// Ab 0.193: Euro-Betrag einer Buchung „noch unklar“ zum EZB-Kurs ihres Tages (rateInfo, wie enrich), NaN ohne Kurs. Die eine Stelle für die Summe
+// oben in der Auswertung (unklarH) und die Beträge im Reiter Steuer (unklarSteuerH). Bis 0.192 stand die Rechnung in unklarH.
+function unklarEur(x){const ri=rateInfo(dOf(x.t),x.t);return ri&&ri.v?x.prof/ri.v:NaN}
 
 /* ---------------- Kurse ----------------
    Drei Ebenen, beim Nachschlagen zusammengeführt (RM): eigene Kurse (S.rown) < eingebaut (RBM) < geladen oder aus Datei (S.rates, beides EZB).
@@ -14125,22 +14135,40 @@ function guard(id){
   if(!Object.keys(S.accounts).length)parts.push('Lade zuerst im Reiter „Reports“ deine MT5-Reports.');
   else if(st.unk)parts.push(`Im Reiter „Reports“ ${st.unk===1?'ist':'sind'} in „Buchungsarten“ noch ${st.unk} ${st.unk===1?'Buchungsart':'Buchungsarten'} offen. <button type="button" class="zlink" data-mapgo>Zu den Buchungsarten</button>`);
   // Ab 0.80 (3): Buchungen „noch unklar“ sperren nichts, oben steht dann ein Hinweis (unklarH)
-  $(id).innerHTML=parts.length?`<div class="card"><div class="msg warn">${parts.join('<br>')}</div></div>`:unklarH(id==='tax-guard');
+  // Ab 0.193 (Florians Auftrag 0.193): nur noch in der Auswertung; im Reiter Steuer steht er in der Karte „Jahresabrechnung“ (unklarSteuerH)
+  $(id).innerHTML=parts.length?`<div class="card"><div class="msg warn">${parts.join('<br>')}</div></div>`:id==='stats-guard'?unklarH():'';
   return !parts.length;
 }
 // Ab 0.80 (3): Hinweis oben in Auswertung und Steuer, solange es Buchungen „noch unklar“ gibt: Anzahl, Betrag, Datum, Konto, Link zur Karte.
-// Im Reiter Steuer zusätzlich „Sag das deiner Steuerberatung.“ Nicht in Zusammenfassung und Steuer-Excel. Mit „Ohne Steuer“ ohne das Wort Steuer.
-// Ab 0.115: Betrag in der Auswertung in der Währung des Schalters (CUR_EFF), im Reiter Steuer in Euro, beides wie die übrigen Beträge:
-// jede Buchung zum EZB-Kurs ihres Tages (rateInfo, wie enrich). Fehlt für eine der Buchungen der Kurs, steht die Summe wie bisher in USD.
-function unklarH(tax){const L=unklarDeals();if(!L.length)return '';
-  const sumU=L.reduce((s,x)=>s+x.prof,0),wantE=tax||CUR_EFF==='eur';
-  let sumE=0;if(wantE)for(const x of L){const ri=rateInfo(dOf(x.t),x.t);if(!ri||!ri.v){sumE=NaN;break}sumE+=x.prof/ri.v}
+// Nicht in Zusammenfassung und Steuer-Excel. Mit „Ohne Steuer“ ohne das Wort Steuer.
+// Ab 0.115: Betrag in der Auswertung in der Währung des Schalters (CUR_EFF), wie die übrigen Beträge: in Euro jede Buchung zum EZB-Kurs ihres
+// Tages (unklarEur, ab 0.193). Fehlt für eine der Buchungen der Kurs, steht die Summe wie bisher in USD.
+// Ab 0.193 (Florians Auftrag 0.193): nur noch oben in der Auswertung, alle Jahre und alle Konten, Wortlaut unverändert. Bis 0.192 auch oben im
+// Reiter Steuer (unklarH(true): in Euro, dazu „Sag das deiner Steuerberatung.“); dort ab 0.193 unklarSteuerH in der Karte „Jahresabrechnung“.
+function unklarH(){const L=unklarDeals();if(!L.length)return '';
+  const sumU=L.reduce((s,x)=>s+x.prof,0),wantE=CUR_EFF==='eur';
+  let sumE=0;if(wantE)for(const x of L){const e=unklarEur(x);if(isNaN(e)){sumE=NaN;break}sumE+=e}
   const E=wantE&&!isNaN(sumE),sum=E?sumE:sumU;
   const n=L.length,sg=v=>(zeigtPlus(v,2)?'+':'')+(E?fE.format(v):usd(v)),d1=fD(dOf(L[0].t)),d2=fD(dOf(L[n-1].t)),A=[...new Set(L.map(x=>x.a))].sort();
   const when=d1===d2?`am ${d1}`:`vom ${d1} bis ${d2}`,acc=A.length===1?`Konto ${esc(A[0])}`:`Konten ${esc(and2(A))}`;
   const t=(n===1?`1 Buchung ist noch unklar: ${sg(sum)} ${when}, ${acc}. Sie ist nicht eingerechnet.`:`${fI.format(n)} Buchungen sind noch unklar: zusammen ${sg(sum)}, ${when}, ${acc}. Sie sind nicht eingerechnet.`)+
-    (S.ui.country==='none'?' Investition und Ergebnis können daher abweichen.':' Investition, Ergebnis und Steuer können daher abweichen.')+(tax?' Sag das deiner Steuerberatung.':'');
+    (S.ui.country==='none'?' Investition und Ergebnis können daher abweichen.':' Investition, Ergebnis und Steuer können daher abweichen.');
   return `<div class="card"><p class="sigl y" style="margin:0">${t} <button type="button" class="zlink" data-mapgo>Zu den Buchungsarten</button></p></div>`}
+// Ab 0.193 (Florians Auftrag 0.193 und seine Antworten 1 bis 5 zur Freigabe 0.193): Hinweis „noch unklar“ in der Karte „Jahresabrechnung“
+// (Österreich #tax-unklar, Deutschland #de-unklar), direkt unter der Tabelle, vor den Sätzen zu Krypto, im Aussehen des Satzes zum Datenstand (p.sigl.y).
+// Nur Buchungen des Steuerjahrs y von Konten mit „Zählt“ (unklarDeals); gibt es keine, kein Hinweis (auch wenn Konten ohne „Zählt“ welche haben).
+// Bis 3 Buchungen einzeln mit Betrag in Euro (unklarEur, Format wie alle Beträge im Reiter: fE; fehlt der Kurs, diese eine Buchung in USD), Datum
+// und Konto, ab 4 die ersten 3 und „und N weitere“ (ohne Summe). Eine Buchung: Florians Wortlaut. Mehrere: Liegen alle Buchungen des Hinweises
+// auf einem Konto, steht es einmal vorne („5 Buchungen auf Konto … sind noch unklar: …“), sonst bei jeder Buchung in Klammern. „Buchungsarten“
+// ist der Link zur Karte (data-mapgo, wie bis 0.192 „Zu den Buchungsarten“).
+function unklarSteuerH(y){const L=unklarDeals({jahr:y,zaehlt:true}),n=L.length;if(!n)return '';
+  const bet=x=>{const e=unklarEur(x),u=isNaN(e),v=u?x.prof:e;return (zeigtPlus(v,2)?'+':'')+(u?usd(v):fE.format(v))};
+  const am=x=>`${bet(x)} am ${fD(dOf(x.t))}`,A=[...new Set(L.map(x=>x.a))],link='<button type="button" class="zlink" data-mapgo>Buchungsarten</button>';
+  let t;
+  if(n===1)t=`1 Buchung ist noch unklar: ${am(L[0])}, Konto ${esc(L[0].a)}. Sie ist nicht eingerechnet. Ordne sie unter ${link} zu. Wenn du nicht weißt, was sie ist, sag es deiner Steuerberatung.`;
+  else{const I=L.slice(0,3).map(x=>A.length===1?am(x):`${am(x)} (Konto ${esc(x.a)})`),liste=n>3?`${I.join(', ')} und ${fI.format(n-3)} weitere`:`${I.slice(0,-1).join(', ')} und ${I[I.length-1]}`;
+    t=`${fI.format(n)} Buchungen ${A.length===1?`auf Konto ${esc(A[0])} `:''}sind noch unklar: ${liste}. Sie sind nicht eingerechnet. Ordne sie unter ${link} zu. Wenn du nicht weißt, was sie sind, sag es deiner Steuerberatung.`}
+  return `<p class="sigl y">${t}</p>`}
 // Ab 0.183 (Florians Antwort 6 zur Freigabe 0.183, Wortlaut aus dem Plan): Zeile mit grauem Rand oben in der Auswertung, solange sie Handy-Zeilen zählt
 // (L = Zeilen mit x.hy der gewählten Konten im Zeitraum). Konto wie überall in der Auswertung mit Namen, sonst Nummer (accName). Nicht im Bild.
 // Ab 0.186: mit den Einzahlungen vom Handy („Darin sind 2 Trades und 1 Einzahlung vom Handy …“) und, wenn bei einem gewählten Konto im Zeitraum die
@@ -14152,7 +14180,8 @@ function hyNoteH(L,sel,rg){const nT=L.filter(isTrade).length,nE=L.filter(r=>r.ca
   const K=(sel||[]).filter(a=>S.hy&&S.hy[a]&&Object.entries(S.hy[a]).some(([d,e])=>e.kab&&(!rg||((!rg.from||d>=rg.from)&&(!rg.to||d<=rg.to)))));
   for(const a of K)T.push((sel.length>1?`Konto ${esc(accName(a))}: `:'')+'Die Investition zeigt den Stand des letzten Reports der Kontohistorie. Im Bericht vom Handy ging mehr Geld vom Konto, als an Gewinn offen war, vielleicht ein Kapitalabzug.');
   return T.length?`<div class="card"><p class="sigl" style="margin:0">${T.join(' ')}</p></div>`:''}
-for(const id of ['stats-guard','tax-guard'])$(id).addEventListener('click',e=>{if(e.target.closest('[data-mapgo]'))goTo('reports','map-card')});
+// Ab 0.193: auch der Link „Buchungsarten“ im Hinweis „noch unklar“ der Jahresabrechnung (#tax-unklar, #de-unklar)
+for(const id of ['stats-guard','tax-guard','tax-unklar','de-unklar'])$(id).addEventListener('click',e=>{if(e.target.closest('[data-mapgo]'))goTo('reports','map-card')});
 function yearOptions(sel,ys,withAll,cur){
   sel.innerHTML=(withAll?'<option value="all">Gesamter Zeitraum</option>':'')+ys.map(y=>`<option value="${y}">${y}</option>`).join('');
   sel.value=(cur&&(cur==='all'?withAll:ys.includes(cur)))?cur:(withAll?'all':ys[ys.length-1]);
@@ -15147,7 +15176,7 @@ function renderStats(rows){
   // Währungsschalter: Ab hier tragen eur, exE und pfE den Betrag in der gewählten Währung (curRows)
   {const r0=fltRange(years(rows)),m=r0.bad?{n:0}:missingRates({accs:selSet,from:r0.from,to:r0.to,inv:true,hy:1,real:Object.values(S.tag).some(t=>t.status==='ok')});CUR_MISS=m.n?m:null}
   CUR_EFF=S.ui.flt.cur==='usd'||CUR_MISS?'usd':'eur';
-  $('stats-guard').innerHTML=unklarH(false); // ab 0.115: Hinweis „noch unklar“ in der eben bestimmten Währung (guard() lief vorher)
+  $('stats-guard').innerHTML=unklarH(); // ab 0.115: Hinweis „noch unklar“ in der eben bestimmten Währung (guard() lief vorher)
   $('cur-note').innerHTML=CUR_MISS&&S.ui.flt.cur!=='usd'?`<div class="msg info">Beträge in USD, weil für Euro Kurse fehlen. <button type="button" class="btn" data-rl="cur-rlm" style="padding:3px 10px;margin-left:4px">Kurse laden</button></div><div id="cur-rlm"></div>`:'';
   // Ab 0.58 (4): Hinweis, solange bei einem gewählten Konto der Trading Benefit fehlt, mit dem Sprung zu „Deine Konten“
   // Ab 0.169 der Satz aus tbFehltTxt (wie die Karte „Meilensteine“); bis 0.168 „… Ohne ihn keine Rendite.“ fest hier
@@ -16186,6 +16215,8 @@ function renderTax(rows){
   glSet('tx-salcx',`Aus ${CY.n===1?'1 Verkauf':fI.format(CY.n)+' Verkäufen'} (Einzahlungen bei Tag, Verkäufe, Zahlungen).`);
   glSet('k-taxat',hasCxData?'<b>Krypto:</b> '+GL['k-atcx'].h+(payBN(C,y)?'\n'+PAY_ANN.AT:''):'');
   $('t-taxparts').innerHTML=taxTabH({c:{y,cfd:R.length>0,cx:hasCx,opt:!!S.ui.opt},T,R,cy:CY,DE:false},hasCxData,cxIncl);
+  // Ab 0.193: Hinweis „noch unklar“ für das Steuerjahr, direkt unter der Tabelle
+  $('tax-unklar').innerHTML=unklarSteuerH(y);
   // Ab 0.120: Jahressumme „Bezahlungen in Coins erhalten“ (grau, nur über 0) nach dem Satz zum Herausnehmen
   $('taxcx-warn').innerHTML=(hasCxData&&!cxIncl?'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung, Excel und Steuerschätzung). Krypto-Gewinne sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>':hasCxData?taxCxNote(C,y):'')+(hasCxData?bzLine(C,y):'');
   $('tx-not-l').innerHTML=taxNotList('AT');
@@ -16327,6 +16358,8 @@ function renderTaxDE(rows,y){
   renderTaxDECx(y);
   $('de-title').textContent=`Jahresabrechnung ${y} (Deutschland)`;
   $('t-de-parts').innerHTML=taxTabH({c:{y,cfd:R.length>0,cx:DECX.on,opt:false},T,R,cy:DECX.Y,DE:true},DECX.has,S.ui.cxIncl!==false);
+  // Ab 0.193: Hinweis „noch unklar“ für das Steuerjahr, direkt unter der Tabelle
+  $('de-unklar').innerHTML=unklarSteuerH(y);
   const notes=[...nyNotes(rows,y)];const lastD=taxDs(y);notes.push(...taxDsNotes(y,lastD));   // ab 0.72 Datenstand (2.3), ab Nachtrag 1 je Jahr
   // Ab 0.73 (2.6): wie in Österreich; Fristen und Annahmen im (i) der Karte (k-taxde)
   glSet('tx-salcfd','Anlage KAP, Zeile 19: ausländische Kapitalerträge ohne Steuerabzug, Gewinne und Verluste aus CFDs saldiert. Jede Buchung ist zum EZB-Kurs ihres Tages umgerechnet.'+(T.res<0?'\nDer Saldo ist negativ. In Deutschland wird ein Verlust aus Kapitalvermögen, der nicht verrechnet werden kann, ins nächste Jahr vorgetragen. Dafür muss er in der Steuererklärung stehen.':''));
@@ -16904,7 +16937,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.192',VDATE='24.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.193',VDATE='24.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
