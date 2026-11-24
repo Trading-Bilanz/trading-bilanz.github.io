@@ -3641,7 +3641,7 @@ function hyNimm(H,fn){const nm=`<b>${esc(fn)}</b>: `;
   hyKuerzen([a]);const Hk=(S.hy&&S.hy[a])||{},Zk=neuT.flatMap(d=>Hk[d]?Hk[d].L:[]),n=Zk.filter(x=>x.kind!=='ein').length,m=Zk.length-n;
   const ersT=ers?` (ersetzt den Stand ${hyTag(ers)===H.bis?'':dm(hyTag(ers))+' '}${ers.slice(11,16)} Uhr)`:'';
   const kabT='Es ging mehr Geld vom Konto, als an Gewinn offen war, vielleicht ein Kapitalabzug.';
-  // Ab 0.187 (Florians Freigabe 0.187): Kommt keine Handy-Zeile herein, je Fall ein eigener Satz ohne Kopf (statt „Nichts als Nachtrag“):
+  // Ab 0.188 (Florians Freigabe 0.188): Kommt keine Handy-Zeile herein, je Fall ein eigener Satz ohne Kopf (statt „Nichts als Nachtrag“):
   // Einzahlungen, die wegen Prüfung A nicht zählen (R-74); eine Einzahlung, die beim Einlesen wieder wegfällt, weil der PC-Report im Teil ihres
   // Schritts vor der Grenze schon eine hat (R-75); sonst nur Auszahlungen, gemerkt für Prüfung A (R-73, bei nicht bestandener Prüfung mit kabT)
   if(!(n+m)){const t=!okA&&Pl.depA>0?`Die Einzahlungen darin zählen erst mit dem Report der Kontohistorie: ${kabT}`:
@@ -13834,7 +13834,7 @@ function accDelTxt(a){const A=S.accounts[a]||{},rs=(window.__rows||[]).filter(r=
 function hyKontoH(a){const H=S.hy&&S.hy[a];if(!H)return '';const E=Object.values(H);if(!E.length)return '';const o=hyOrt(E.map(e=>e.exp).sort().pop());
   return `<span class="sm hyk">Handy ${dm(hyTag(o))} ${esc(o.slice(11,16))} · <button type="button" class="zlink" data-hydel="${esc(a)}">entfernen</button></span>`}
 // Ab 0.183: „entfernen“ an der Zeile vom Handy, mit Rückfrage (GESTALTUNG Abschnitt 8: Sicherung speichern · Entfernen · Abbrechen)
-// Ab 0.187 heißt die Rückfrage in jedem Fall „Angaben vom Handy entfernen“ (Florians Auftrag 0.187), der Text darunter nennt Trades und Einzahlungen
+// Ab 0.188 heißt die Rückfrage in jedem Fall „Angaben vom Handy entfernen“ (Florians Auftrag 0.188), der Text darunter nennt Trades und Einzahlungen
 async function hyDel(a){if(!S.hy||!S.hy[a])return;const n=hyZahl(a,'tr'),m=hyZahl(a,'ein'),T=hyTeileT(n,m),eins=n+m===1;
   // Ab 0.186 mit Einzahlungen; ohne Trade und Einzahlung (nur der Merker der Prüfung A) „Die Angaben vom Handy“
   const tl=[n?(n===1?'den Trade':`die ${fI.format(n)} Trades`):'',m?(m===1?'die Einzahlung':`die ${fI.format(m)} Einzahlungen`):''].filter(Boolean).join(' und '),was=tl?tl[0].toUpperCase()+tl.slice(1):'Die Angaben';
@@ -16854,7 +16854,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.187',VDATE='24.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.188',VDATE='24.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
