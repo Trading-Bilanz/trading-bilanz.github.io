@@ -392,22 +392,18 @@ button.ib:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (max-width:700px){#glpop{width:85vw}}
 @keyframes hl{0%,35%{background:var(--accent-soft)}100%{background:transparent}}
 /* Datum-Links der Karte „Gewinn und Verlust“ springen nach „Pro Woche“ (jumpTo), die Zeile leuchtet dort einmal auf */
-/* Ab 0.189 (Florians Auftrag 0.189, Punkt 5, und seine Antworten 5 und 6 zur Freigabe): Textlinks .zlink überall in --link wie die Links ab 0.175
-   (unten): unterstrichen, auch nach einem Besuch, beim Darüberfahren kräftiger. Bis 0.188 Akzentblau ohne Unterstrich, beim Darüberfahren unterstrichen.
-   In der Auswertung nur „ändern“ (Karte „Durchschnitt“) und „zurücksetzen“ („Was wäre wenn“, #c-reset), dazu die Datum-Links (a.jl) und die Links
-   im Feier-Fenster (#ms-all, .msline a). Die übrigen .zlink der Auswertung bleiben wie bis 0.188 (Florians Vorgabe 0.189): in der Karte
-   „Meilensteine“ „Verlauf ▸“ und „Jahresrückblicke ▸“ (.msvt), „Rückblick ansehen ›“ (.jrka) und die Titel im Verlauf (.msn). Ebenso bleibt das
-   „✗“ in „Kontostände prüfen“ (button.zlink.gl, ein Begriff, kein Link). :where und :not(:where()) halten die Gewichtung niedrig, damit die
-   eigenen Farben von .msn, .msvt, .jrka und .wbx weiter gelten. */
-a.zlink,button.zlink{color:var(--link);-webkit-text-decoration-line:underline;text-decoration-line:underline;text-decoration-thickness:1px;text-underline-offset:2px}
-a.zlink:hover,button.zlink:hover{text-decoration-thickness:2px}
-:where(#s-stats) :is(a,button).zlink:not(:where(#c-reset,#st-avg .zlink)){color:var(--accent);text-decoration:none;text-underline-offset:auto}
-:where(#s-stats) :is(a,button).zlink:not(:where(#c-reset,#st-avg .zlink)):hover{text-decoration:underline}
-button.zlink.gl{text-decoration:none;text-underline-offset:2px}
-button.zlink.gl:hover{text-decoration:underline}
-/* Datum-Links (Kacheln, „Hochs und Tiefs“): dünn durchgezogen unterstrichen, beim Darüberfahren kräftiger. Gepunktet = Erklärung (Begriff),
-   durchgezogen = Sprung. Ab 0.189 (Florians Auftrag 0.189, Punkt 5) in --link; bis 0.188 in der Farbe des umgebenden kleinen Texts. */
-a.jl{color:var(--link);-webkit-text-decoration-line:underline;text-decoration-line:underline;-webkit-text-decoration-style:solid;text-decoration-style:solid;text-decoration-thickness:1px;text-underline-offset:2px}
+/* Textknöpfe .zlink: Akzentblau ohne Unterstrich, beim Darüberfahren unterstrichen.
+   Ab 0.192 (Florians Korrektur zu 0.189 in der Freigabe 0.192): --link nur für echte Links. Ein echter Link führt zu einer Seite außerhalb des Tools,
+   zur Anleitung oder zu einer Stelle in der Anleitung, oder er öffnet eine Mail. Was im Tool etwas tut, öffnet, aufklappt oder springt, sieht wieder
+   aus wie bis 0.188 (0.189 bis 0.191: alle .zlink, die Datum-Links a.jl und die Links im Feier-Fenster in --link). In --link bleiben die echten
+   Links mit .zlink: „Im Block-Explorer ansehen ↗“ und „↗“ im Reiter Wallet (a.zlink, wie ab 0.189). */
+a.zlink,button.zlink{color:var(--accent);text-decoration:none}
+a.zlink:hover,button.zlink:hover{text-decoration:underline}
+a.zlink{color:var(--link);-webkit-text-decoration-line:underline;text-decoration-line:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+a.zlink:hover{text-decoration-thickness:2px}
+/* Datum-Links (Kacheln, „Hochs und Tiefs“): Farbe des umgebenden kleinen Texts, dünn durchgezogen unterstrichen, beim Darüberfahren kräftiger.
+   Gepunktet = Erklärung (Begriff), durchgezogen = Sprung. 0.189 bis 0.191 in --link, ab 0.192 wieder wie bis 0.188 (Florians Freigabe 0.192). */
+a.jl{color:inherit;-webkit-text-decoration-line:underline;text-decoration-line:underline;-webkit-text-decoration-style:solid;text-decoration-style:solid;text-decoration-thickness:1px;text-underline-offset:2px}
 a.jl:hover,a.jl:focus-visible{text-decoration-thickness:2px}
 /* Ab 0.175 (Florians Auftrag 0.175, Phase 3, und seine Antworten 3 und 4 zur Freigabe): Textlinks in --link, unterstrichen, auch nach einem Besuch
    (kein Violett; die Farbe gilt für besuchte Links mit). Gilt im Reiter „Resonanz“, in „Wertschätzung teilen“ (Jahresrückblick, auch „← Zurück zum
@@ -417,11 +413,30 @@ a.jl:hover,a.jl:focus-visible{text-decoration-thickness:2px}
    „Mehr lesen“ (Reiter „Steuer“), metatrader5.com („MetaTrader 5 verbinden“), der Link im gelben Kasten der Begrüßung (heruntergeladene Datei) und
    „Anregungen, Fehler, Feedback“ im Hinweis „Performance Fee“. Nur über CSS, damit die Seite des Reiters „Steuer“ Byte für Byte gleich bleibt.
    Bleiben, wie sie sind: .zlink im Reiter „Wallet“, die Sprünge in der Auswertung (a.jl), die Links der Karte „Meilensteine“, alle Knöpfe.
-   [Ab 0.189 bekommen auch .zlink, a.jl, #ms-all und .msline a --link (oben bzw. bei der Karte „Meilensteine“); alle Knöpfe bleiben.] */
+   [0.189 bis 0.191 hatten auch .zlink, a.jl, #ms-all und .msline a --link; ab 0.192 wieder wie bis 0.188, außer a.zlink (oben).]
+   [Ab 0.192 (Florians Freigabe 0.192, Punkte 4 bis 6, 8 und 9) Ausnahmen darunter: „Fehler gefunden? So hilfst du mir“ wie „Verlauf“, „So machst du
+   einen Screenshot“ ohne Unterstrich, „Mehr dazu“ und „QR-Code zeigen“ wie .zlink, „Ich habe schon gespendet“ ein grüner Knopf (.btn.don), die
+   Mail-Adresse nirgends unterstrichen.] */
 :is(#s-support,.jrs3,footer,#privacy-modal) :is(a:not(.btn),button.zlink,summary),a[href^="https://trading-bilanz.github.io/anleitung.html"]:not(.btn),
 a[href^="https://www.ecb.europa.eu/"],a[href^="https://www.metatrader5.com"],#disc-more,.ystr a,a[data-fbgo]{color:var(--link);-webkit-text-decoration-line:underline;text-decoration-line:underline;text-decoration-thickness:1px;text-underline-offset:2px}
 :is(#s-support,.jrs3,footer,#privacy-modal) :is(a:not(.btn),button.zlink,summary):hover,a[href^="https://trading-bilanz.github.io/anleitung.html"]:not(.btn):hover,
 a[href^="https://www.ecb.europa.eu/"]:hover,a[href^="https://www.metatrader5.com"]:hover,#disc-more:hover,.ystr a:hover,a[data-fbgo]:hover{text-decoration-thickness:2px}
+/* Ab 0.192 (Florians Freigabe 0.192, Punkt 4): „Fehler gefunden? So hilfst du mir“ wie „Verlauf“ in der Karte „Meilensteine“: Pfeil vor dem Text
+   (▸ zu, ▾ offen), fett, Akzentblau, nicht unterstrichen, beim Darüberfahren unterstrichen. Bis 0.191 in --link, unterstrichen. */
+#s-support button#fb-fehler-k{color:var(--accent);font-weight:600;text-decoration:none;text-underline-offset:auto}
+#s-support button#fb-fehler-k:hover{text-decoration:underline}
+#s-support button#fb-fehler-k::before{content:"▸ "}
+#s-support button#fb-fehler-k[aria-expanded="true"]::before{content:"▾ "}
+/* Ab 0.192 (Punkt 5): „So machst du einen Screenshot“ verliert nur den Unterstrich, auch beim Darüberfahren. */
+#s-support details.rsauf>summary,#s-support details.rsauf>summary:hover{text-decoration:none}
+/* Ab 0.192 (Punkt 6): „Mehr dazu“ und „QR-Code zeigen“ / „QR-Code ausblenden“ (Reiter „Resonanz“ und „Wertschätzung teilen“) wie die Knöpfe mit .zlink */
+:is(#s-support,.jrs3) button.zlink:is([data-rsqr],[data-rsmehr]):not(#fb-fehler-k){color:var(--accent);text-decoration:none;text-underline-offset:auto}
+:is(#s-support,.jrs3) button.zlink:is([data-rsqr],[data-rsmehr]):not(#fb-fehler-k):hover{text-decoration:underline}
+/* Ab 0.192 (Punkt 9): die Mail-Adresse nirgends unterstrichen (Fußzeile, Fenster „Datenschutz“), Farbe wie bisher (--link) */
+:is(#s-support,.jrs3,footer,#privacy-modal) a[href^="mailto"]:not(.btn),:is(#s-support,.jrs3,footer,#privacy-modal) a[href^="mailto"]:not(.btn):hover{text-decoration:none}
+/* Ab 0.192 (Punkt 8): „Ich habe schon gespendet“ (Reiter „Resonanz“ und „Wertschätzung teilen“) ein grüner Knopf im Grün von „Zur Spende“ (--don),
+   Schrift weiß, auch beim Darüberfahren. Bis 0.191 ein Textknopf in --link. */
+button.btn.don,button.btn.don:hover,button.btn.don:focus-visible{background:var(--don);border-color:var(--don);color:#fff}
 button.zlink{border:0;background:none;padding:0;font:inherit;cursor:pointer}
 #t-week tr.hl td,#t-oc tr.hl td{animation:hl 2.2s ease-out}
 /* Titelzeile mit kleinem Knopf rechts (Schalter Rendite/Betrag in „Überblick“, „Hochs und Tiefs“ und „Pro Konto“) */
@@ -1386,7 +1401,8 @@ button.msv{cursor:pointer}button.msv:focus-visible{outline:2px solid var(--accen
 button.msmk{cursor:pointer}button.msmk:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (hover:hover) and (pointer:fine){button.msmk:hover{text-decoration:underline}}
 #st-ms .msvh{margin-top:18px}
-button.zlink.msvt{color:var(--accent);font-weight:600}button.msvt::after{content:" ▸"}button.msvt[aria-expanded="true"]::after{content:" ▾"}
+/* Ab 0.192 (Florians Freigabe 0.192, Punkt 3): Pfeil vor dem Text („▸ Verlauf (42)“, offen „▾ Verlauf (42)“); bis 0.191 dahinter */
+button.zlink.msvt{color:var(--accent);font-weight:600}button.msvt::before{content:"▸ "}button.msvt[aria-expanded="true"]::before{content:"▾ "}
 .msvl{position:relative;margin:6px 0 0;padding-left:20px}
 .msvl::before{content:"";position:absolute;left:5px;top:10px;bottom:10px;width:2px;border-radius:1px;background:var(--tab-line)}
 .msvl h4{position:relative}
@@ -1436,9 +1452,8 @@ table.msjr{border-collapse:collapse;margin:4px auto 6px;max-width:100%}table.msj
 #ms-lines:empty{display:none}
 .msline{margin:8px 0 0;color:var(--ink2)}
 #ms-modal .mft{align-items:center;justify-content:flex-end}#ms-all{margin-right:auto}
-/* Ab 0.189 (Florians Auftrag 0.189, Punkt 5): „Alle Meilensteine“ und der Link in der leisen Zeile in --link wie alle Textlinks; bis 0.188 Akzentblau */
-#ms-all,.msline a{color:var(--link);-webkit-text-decoration-line:underline;text-decoration-line:underline;text-decoration-thickness:1px;text-underline-offset:2px}
-#ms-all:hover,.msline a:hover{text-decoration-thickness:2px}
+/* 0.189 bis 0.191 in --link; ab 0.192 wieder wie bis 0.188 (Florians Freigabe 0.192) */
+#ms-all,.msline a{color:var(--accent)}
 @media(max-width:560px){#ms-all{flex:1 0 100%}}
 /* Ab 0.154: Jahresrückblick in der Karte „Meilensteine“: Abschnitt „Rückblick“ (ein Wert wie die Rekorde, darunter der Link), Link-Zeile
    „Jahresrückblicke“ wie „Verlauf“ (Zeilen mit Jahr, Titel, Rendite; am Handy oben Jahr und Rendite, darunter der Titel), graue Marke „unvollständig“
@@ -1448,6 +1463,8 @@ table.msjr{border-collapse:collapse;margin:4px auto 6px;max-width:100%}table.msj
 button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
 .jrmk{display:inline-block;margin-left:8px;padding:0 7px;border:1px solid var(--line);border-radius:999px;font-size:var(--fs-xxs);font-weight:400;line-height:1.6;color:var(--muted);vertical-align:middle;white-space:nowrap}
 #st-ms .jrvh+.msvh,#st-ms .jrvl+.msvh{margin-top:8px}
+/* Ab 0.192 (Florians Freigabe 0.192, Punkt 2): „› Rückblick ansehen“ in eigener Zeile direkt über „Verlauf“ (.jrah), Abstand wie oben */
+#st-ms .jrah+.msvh{margin-top:8px}
 .mse.jre{grid-template-columns:92px minmax(0,1fr) auto}
 @media(max-width:560px){.mse.jre .msew{grid-column:3;grid-row:1}.mse.jre .mset{grid-column:1/4;grid-row:2}}
 /* Ab 0.154: Jahresrückblick (#jr-modal). Am PC 780 px breit, damit die Reihen von Seite 2 passen (Testseite), sonst wie die übrigen Fenster.
@@ -5193,9 +5210,14 @@ let MS_JR=false;
 const jrMkH=e=>e.voll?'':`<span class="jrmk">${esc(MS_TXT.jr.marke)}</span>`;
 function jrKarteH(M,y){const X=MS_TXT.jr;
   if(y){const e=M.list.find(x=>x.k==='jr'&&x.y===y);if(!e)return '';const st=e.st;
-    return `<h3 class="msh3">${esc(X.karte)}</h3><div class="jrkv"><button type="button" class="msv" data-jr="${esc(y)}"><span class="k">${esc(X.titel.replace('{j}',y))}</span><span class="v">${esc(st.r==null?'–':fR.format(st.r))}${jrMkH(e)}</span><span class="s">${esc(X.netto2.replace('{v}',msMon(st.net,M.cur)))} · ${esc(`${fI.format(st.n)} ${st.n===1?'Trade':'Trades'}`)}</span></button><button type="button" class="zlink jrka" data-jr="${esc(y)}">${esc(X.ansehen)}</button></div>`}
+    return `<h3 class="msh3">${esc(X.karte)}</h3><div class="jrkv"><button type="button" class="msv" data-jr="${esc(y)}"><span class="k">${esc(X.titel.replace('{j}',y))}</span><span class="v">${esc(st.r==null?'–':fR.format(st.r))}${jrMkH(e)}</span><span class="s">${esc(X.netto2.replace('{v}',msMon(st.net,M.cur)))} · ${esc(`${fI.format(st.n)} ${st.n===1?'Trade':'Trades'}`)}</span></button></div>`}
   const L=M.list.filter(x=>x.k==='jr').sort((a,b)=>a.y<b.y?1:-1);if(!L.length)return '';
   return `<h3 class="msvh jrvh"><button type="button" class="zlink msvt" data-jrmore aria-expanded="${MS_JR}">${esc(X.liste)} (${fI.format(L.length)})</button></h3>`+(MS_JR?`<div class="msvl jrvl"><div class="msl">${L.map(e=>`<div class="mse jre" data-jr="${esc(e.y)}"><span class="msed">${esc(e.y)}</span><span class="mset"><button type="button" class="zlink msn">${esc(X.titel.replace('{j}',e.y))}</button></span><span class="msew">${esc(e.st.r==null?'–':fR.format(e.st.r))}${jrMkH(e)}</span></div>`).join('')}</div></div>`:'')}
+// Ab 0.192 (Florians Freigabe 0.192, Punkt 2 und 3): „› Rückblick ansehen“ bei einem gewählten Jahr in eigener Zeile direkt über „Verlauf“, bei einem
+// Jahr ohne Verlauf als letzte Zeile der Karte; Schrift wie „Verlauf“ (fett, Akzentblau), öffnet das Fenster des Rückblicks. Die Kachel oben bleibt ein
+// Knopf, der den Rückblick ebenso öffnet. Bis 0.191 stand „Rückblick ansehen ›“ direkt unter der Kachel im Abschnitt „Rückblick“.
+function jrAnsehenH(M,y){const e=M.list.find(x=>x.k==='jr'&&x.y===y);if(!e)return '';
+  return `<h3 class="msvh jrah"><button type="button" class="zlink jrka" data-jr="${esc(y)}">${esc(MS_TXT.jr.ansehen)}</button></h3>`}
 const MS_REK=['at','ad','aw','am'],MS_SER=['rg','rd','rw','mw'],MS_STU=['sn','sr','sg'];
 const msIsSer=k=>/^j?r[gdw]$/.test(k),msIsMw=k=>/^j?mw$/.test(k),msIsRek=k=>/^[aj][tdwm]$/.test(k);
 // Kategorie eines Eintrags im Verlauf
@@ -5294,6 +5316,7 @@ function msRender(){const M=MS;if(!M)return;
   const er=msErrH(M,LY,nl);if(er)h+=`<h3 class="msh3">${esc(yt(T.err))}</h3><div class="msmks">${er}</div>`;
   const V=L.filter(inY);
   if(!y)h+=jrKarteH(M,'');
+  else h+=jrAnsehenH(M,y);
   if(V.length){h+=`<h3 class="msvh"><button type="button" class="zlink msvt" data-msmore aria-expanded="${MS_ALL}">${esc(yt(T.verlauf))} (${fI.format(V.length)})</button></h3>`;
     if(MS_ALL){const lauf=V.filter(e=>e.lauf),rest=V.filter(e=>!e.lauf),ys=[...new Set(rest.map(eY))];
       h+=`<div class="msvl">${lauf.length?`<div class="msl">${lauf.map(e=>msEntryH(e,M.cur)).join('')}</div>`:''}${ys.map(z=>`${y?'':`<h4>${z}</h4>`}<div class="msl">${rest.filter(e=>eY(e)===z).map(e=>msEntryH(e,M.cur)).join('')}</div>`).join('')}</div>`}}
@@ -16881,7 +16904,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.191',VDATE='24.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.192',VDATE='24.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -17061,7 +17084,7 @@ const MS_TXT={
     // ab 0.175 kommen Adresse, Kopieren, PayPal und Weitererzählen aus dem Baustein (donBauH, RES_TXT); bis 0.174 hier wAdr, kopieren, paypal, sagen
     betrag:'Betrag zeigen',weak:'Schwächste Werte zeigen',betragK:'Beträge',weakK:'Schwächste Werte',bild:'Bild',bildS:'Bild speichern',alleHt:'mit allen Handelstagen',konten:'{n} von {N} Konten',kurz:'Kurzfassung',kurzK:'(ohne Beträge)',alle:'Alle Werte',
     speichern:'Speichern',teilen:'Teilen',ariaWeiter:'Weiter zu Seite 2',ariaZurueck:'Zurück zu Seite 1',ariaBild:'Bild',
-    karte:'Rückblick',ansehen:'Rückblick ansehen ›',liste:'Jahresrückblicke',netto2:'{v} Netto-Gewinn',
+    karte:'Rückblick',ansehen:'› Rückblick ansehen',liste:'Jahresrückblicke',netto2:'{v} Netto-Gewinn',
     datei:{s1:'Trading-Jahr-{j}',kurz:'Trading-Jahr-{j}-Kurzfassung',alle:'Trading-Jahr-{j}-Alle-Werte'}},
   // ab 0.167 (Florians Fassungen): Toasts nach einem Sprung und die Meldungen beim Bild neu; die Meldungen gelten ab 0.167 auch für die Grafiken der
   // Auswertung (Florians Antwort 9 zur Freigabe 0.167). Bis 0.166 „Das Tool hat den Zeitraum auf „Gesamter Zeitraum“ gestellt …“ usw., „Das Bild ließ
@@ -17186,7 +17209,7 @@ function donBauH(o){o=o||{};const X=RES_TXT,j=!!o.jr,id=(r,w)=>j?(w?` id="${w}"`
     <p class="rsnetz"${id('don-netz')}>${zbNw(X.netz)}</p>
     <div class="rswarn"${id('don-warn')}>${X.warn} <button type="button" class="zlink" data-rsmehr aria-expanded="false" aria-controls="${mid}">${esc(X.mehr)}</button><p id="${mid}" hidden>${zbNw(esc(X.warnMehr))}</p></div></div>`;
   const paypal=`<div class="rsk rspp"><h3>${esc(X.paypal)}</h3><p class="small rsunter">${esc(X.paypalS)}</p><p class="rsknopf"><a class="btn primary"${id('don-paypal')} href="${DON_PP}" target="_blank" rel="noopener">${esc(X.paypalK)}&nbsp;↗</a></p></div>`;
-  const schon=`<div class="rsschon"><p${id('don-schon')}><button type="button" class="zlink" data-schon>${esc(X.schon)}</button></p><p class="jrdanke" data-dank${dk?'':' hidden'}>${dk?herzH('💚 '+dk):''}</p></div>`;
+  const schon=`<div class="rsschon"><p${id('don-schon')}><button type="button" class="btn don" data-schon>${esc(X.schon)}</button></p><p class="jrdanke" data-dank${dk?'':' hidden'}>${dk?herzH('💚 '+dk):''}</p></div>`;
   const sagen=`<div class="rsk rssagen"><h3>${esc(X.sagenT)}</h3><p>${esc(X.sagen)}</p><p class="rsknopf"><button type="button" class="btn" data-rslink>${esc(X.link)}</button></p></div>`;
   // Ab 0.177: zuerst „Drei Wege, sie zu teilen“ (an beiden Orten); im Fenster (Florians Auftrag 0.177, Phase 4) die goldene Fläche mit „In Krypto“
   // in voller Breite, darunter „Per PayPal“ und „Weitererzählen“ nebeneinander, unten „Ich habe schon gespendet“ (bis 0.176 untereinander, ohne Fläche)
