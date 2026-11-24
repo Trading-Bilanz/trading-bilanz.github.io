@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'sha256-q2HB696kW9xB3FV+luyCrr6uURj7IQEY98wkrqK2P9M='; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'sha256-+T1QO42tOuTKoIar9Nd1Ff4XXZipIsTD1j661nPU4AU='; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anleitung zur Trading-Bilanz</title>
 <!-- Ab 0.90: Favicon, apple-touch-icon und Logo aus icons/ (img-src 'self' erlaubt Bilder vom eigenen Server), Angaben für die Link-Vorschau wie im Tool -->
@@ -61,8 +61,8 @@
 }
 *{box-sizing:border-box}
 html{scroll-padding-top:12px}
-/* Ab 0.188 (Florians Auftrag 0.188, Punkt 3): Der Abstand von 60 px unter der stehenden Leiste gilt nur für die Inhalte (.wrap), nicht für die Seite.
-   Bis 0.187 html.js{scroll-padding-top:60px}: Dann lag das Menü „Gerät“ in der Leiste selbst im Streifen, den die Seite als verdeckt ansah. Bekam es
+/* Ab 0.189 (Florians Auftrag 0.189, Punkt 3): Der Abstand von 60 px unter der stehenden Leiste gilt nur für die Inhalte (.wrap), nicht für die Seite.
+   Bis 0.188 html.js{scroll-padding-top:60px}: Dann lag das Menü „Gerät“ in der Leiste selbst im Streifen, den die Seite als verdeckt ansah. Bekam es
    beim Öffnen den Fokus, zentrierte Chromium es, und weil die Leiste mitwandert, sprang nur die Seite um etwa einen halben Bildschirm nach oben. */
 html.js{scroll-padding-top:0}
 html.js .wrap,html.js .wrap *{scroll-margin-top:60px}
@@ -75,8 +75,8 @@ header h1{display:flex;align-items:center;gap:10px}
 .hlogo{transform:translateY(-3%)}
 @media (max-width:560px){header h1{gap:6px}.hlogo{height:24px}}
 .sub{color:var(--ink2);margin:0 0 12px}
-/* Ab 0.188 (Florians Auftrag 0.188, Punkt 5): Links im Blau der Textlinks des Tools (--link, hell #0b57d0, dunkel #8ab4f8), unterstrichen, auch nach
-   einem Besuch, beim Darüberfahren kräftiger. Bis 0.187 Akzentblau. Das Menü „Inhalt“ (Schriftfarbe), die Aufklapper (Akzentblau) und der
+/* Ab 0.189 (Florians Auftrag 0.189, Punkt 5): Links im Blau der Textlinks des Tools (--link, hell #0b57d0, dunkel #8ab4f8), unterstrichen, auch nach
+   einem Besuch, beim Darüberfahren kräftiger. Bis 0.188 Akzentblau. Das Menü „Inhalt“ (Schriftfarbe), die Aufklapper (Akzentblau) und der
    Fokusrahmen bleiben. */
 a{color:var(--link);text-decoration-thickness:1px;text-underline-offset:2px}
 a:hover{text-decoration-thickness:2px}
@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded',function(){
   var K=document.createElement('div');K.className='lma';
   [['auf','Alle aufklappen'],['zu','Alle zuklappen']].forEach(function(k){var b=document.createElement('button');b.type='button';b.className='lmk';b.setAttribute('data-alle',k[0]);b.textContent=k[1];K.appendChild(b)});mn.appendChild(K);
   // Wo bin ich: die letzte Stelle (Abschnitt oder Kopf einer Stufe), deren Oberkante höchstens 20 px unter der Leiste liegt; ganz oben keine.
-  // 20 px, weil ein Sprung die Überschrift 14 px unter die Leiste legt (ab 0.188 scroll-margin-top 60 px, bis 0.187 scroll-padding-top 60 px; Leiste 46 px). Bis 0.169 waren es 80 px; dann
+  // 20 px, weil ein Sprung die Überschrift 14 px unter die Leiste legt (ab 0.189 scroll-margin-top 60 px, bis 0.188 scroll-padding-top 60 px; Leiste 46 px). Bis 0.169 waren es 80 px; dann
   // galt nach „Alle zuklappen“ der nächste zugeklappte Abschnitt (etwa 60 px tiefer) schon als aktuell.
   // Ist die Seite ganz unten (der letzte Abschnitt kommt nie bis unter die Leiste), gilt die letzte Stelle, die im Fenster beginnt.
   // Eine Rechnung für den Titel der Leiste und „Du bist hier“ im Menü.
