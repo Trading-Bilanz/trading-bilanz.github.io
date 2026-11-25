@@ -32,7 +32,7 @@
   --bg:#f6f5f2; --card:#ffffff; --ink:#1a1a1a; --ink2:#373d43; --muted:#454b51;
   --line:#e2e0da; --accent:#2a63a6; --accent-soft:#e6eef8; --neg:#c2410c; --pos:#1f7a4d; --neg-gs:#b03a0b;
   /* Ab 0.98 (Florians Auftrag): eine gelbe Fläche für alle (--warn-bg, Gelb des Kastens aus 0.97, vorher #fff4dc / dunkel #3a2f14). Sie gilt für
-     .msg.warn, den Stand-Kasten im Reiter Kurse und den gelben Kasten der Begrüßung (.ystr). Schrift: --warn-ink hell 6,6 : 1, dunkel 8,6 : 1 */
+     .msg.warn, den Stand-Kasten im Reiter Kurse und bis 0.197 den gelben Kasten der Begrüßung (.ystr, ab 0.198 ein grauer Strich). Schrift: --warn-ink hell 6,6 : 1, dunkel 8,6 : 1 */
   --warn-bg:#fff7cc; --warn-ink:#7a4f00; --ok-bg:#e5f4ec; --ok-ink:#1f6b44; --bad-bg:#fde8e1; --bad-ink:#9a3412;
   /* Stand-Kasten im Reiter Kurse (0.35): Text mindestens 7 zu 1 auf --ok-bg bzw. --warn-bg (7,2 und ab 0.98 7,3) */
   --st-ok-ink:#1a5a39; --st-warn-ink:#714900;
@@ -52,9 +52,8 @@
   --gold-ink:#86601c; --gold-soft:#faf4e0;
   /* Ab 0.154: Jahresrückblick (aus Florians Testseite): Morgenlicht oben im Fenster (--jr-dawn, dunkel gedämpft) und Goldstaub (drei Funken) */
   --jr-dawn:#fbeccc; --jr-st1:#f6d77e; --jr-st2:#e0aa28; --jr-st3:#fff3c4;
-  /* Ab 0.97: gelber Streifen der Begrüßung offline (.ystr), gelber als --sig-y (Farbton 50° statt 42°), Text 16,1 : 1, Link 5,66 : 1.
-     Ab 0.98 ist seine Fläche --warn-bg (dieselbe für alle gelben Flächen), hier nur noch der Rand */
-  --ystr-line:#ccaa00;
+  /* Ab 0.97 bis 0.197: gelber Streifen der Begrüßung offline (.ystr) mit eigenem Rand --ystr-line (hell #ccaa00, dunkel #e8cf4a). Ab 0.198 ein grauer
+     Strich (#intro-orig), Rand und Klasse sind weg (Florians Auftrag 0.198, Punkt B, Regel in GESTALTUNG Abschnitt 4) */
   /* Ab 0.57: Sand für „In der Liste zeigen“ (springt in „Alle Vorgänge“), keine Bedeutung wie OK, Warnung oder Art */
   --go-line:#a8946f; --go-bg:#f7f2e9; --go-dk:#8a7653;
   /* Ab 0.175 (Florians Auftrag 0.175, Phase 3): Blau der Textlinks (Reiter „Resonanz“, Fußzeile, „Datenschutz“, „Wertschätzung teilen“ und die Links,
@@ -80,7 +79,6 @@
     --tab-line:#D4B27A;
     --gold-ink:#d9b97f; --gold-soft:#2c271f;
     --jr-dawn:#3a3020;
-    --ystr-line:#e8cf4a;
     --go-line:#9c8a6a; --go-bg:#2a251e; --go-dk:#b8a582;
     /* Ab 0.175: Blau der Textlinks dunkel (Florians Antwort 8a zur Freigabe 0.175): 7,6 : 1 auf --card, 8,5 : 1 auf --bg, mindestens 6,1 : 1 auf allen Meldungsflächen */
     --link:#8ab4f8;
@@ -119,7 +117,9 @@ html.online .offl{display:none}
 #intro-dl p+p{margin-top:8px}
 .ibox{background:var(--sub-bg);border:1px solid var(--line);border-radius:var(--radius);padding:2px 16px 6px;margin:14px 0}
 /* Ab 0.78 (Florians Farbregel): In der Begrüßung hat jede Farbe genau eine Aufgabe. Grau = Frage nach dem Land (.ibox), Rot = Haftung (.dstr,
-   Farben wie .disc), Gelb = Echtheit (.ystr, das Gelb für „bitte prüfen“), Blau = Download und Hauptknopf. Die Punkte der Liste sind ohne Farbe. */
+   Farben wie .disc), Gelb = Echtheit (.ystr, das Gelb für „bitte prüfen“), Blau = Download und Hauptknopf. Die Punkte der Liste sind ohne Farbe.
+   Ab 0.198 (Florians Auftrag 0.198, Punkt B): „Neue Versionen und das Original: …“ ist ein grauer Strich (#intro-orig, .sigl), kein gelber Kasten mehr:
+   eine Anmerkung, im Tool ist nichts zu tun (GESTALTUNG Abschnitt 4, „Gelbe Fläche und Strich nach Bedeutung“). */
 /* Ab 0.79 (Florians Auftrag, Ausnahme zur Farbregel): Titel im Grün der Häkchen fertiger Reiter (.dot.ok, --pos), hell 5,3 : 1 und dunkel 7,2 : 1 auf --card */
 #intro-t{color:var(--pos)}
 ul.ilist{list-style:none;padding:0;margin:8px 0 6px}
@@ -130,11 +130,11 @@ p.idat{margin:6px 0 0}
 #intro-tax>p{font-size:var(--fs-s)}
 #intro-tax>p.small{margin:8px 0}
 #intro-tax>.dstr{margin:8px 0 10px}
-.dstr,.ystr{border-radius:8px;padding:6px 12px;font-size:var(--fs-s);color:var(--ink);margin:12px 0}
+.dstr{border-radius:8px;padding:6px 12px;font-size:var(--fs-s);color:var(--ink);margin:12px 0}
 .dstr{border:2px solid var(--neg);background:var(--bad-bg)}
-/* Ab 0.97 (Florians Wunsch): gelber als --sig-y (geht ins Orange), eigener Rand. Ab 0.98 Fläche --warn-bg wie alle gelben Flächen */
-.ystr{border:2px solid var(--ystr-line);background:var(--warn-bg)}
-.dstr p,.ystr p{margin:0}
+/* Ab 0.97 bis 0.197 (Florians Wunsch): gelber Kasten .ystr (eigener Rand, ab 0.98 Fläche --warn-bg). Ab 0.198 grauer Strich: Schrift wie bisher klein */
+#intro-orig{font-size:var(--fs-s);margin:12px 0}
+.dstr p,#intro-orig p{margin:0}
 /* Drei Knöpfe gleich breit nebeneinander; passen sie nicht in eine Zeile (Handy), stehen sie untereinander in voller Breite. Kein Knopf bricht um. */
 #intro-land{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 12px}
 #intro-land .btn{white-space:nowrap;min-width:0}
@@ -418,9 +418,9 @@ a.jl:hover,a.jl:focus-visible{text-decoration-thickness:2px}
    einen Screenshot“ ohne Unterstrich, „Mehr dazu“ und „QR-Code zeigen“ wie .zlink, „Ich habe schon gespendet“ ein grüner Knopf (.btn.don), die
    Mail-Adresse nirgends unterstrichen.] */
 :is(#s-support,.jrs3,footer,#privacy-modal) :is(a:not(.btn),button.zlink,summary),a[href^="https://trading-bilanz.github.io/anleitung.html"]:not(.btn),
-a[href^="https://www.ecb.europa.eu/"],a[href^="https://www.metatrader5.com"],#disc-more,.ystr a,a[data-fbgo]{color:var(--link);-webkit-text-decoration-line:underline;text-decoration-line:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+a[href^="https://www.ecb.europa.eu/"],a[href^="https://www.metatrader5.com"],#disc-more,#intro-orig a,a[data-fbgo]{color:var(--link);-webkit-text-decoration-line:underline;text-decoration-line:underline;text-decoration-thickness:1px;text-underline-offset:2px}
 :is(#s-support,.jrs3,footer,#privacy-modal) :is(a:not(.btn),button.zlink,summary):hover,a[href^="https://trading-bilanz.github.io/anleitung.html"]:not(.btn):hover,
-a[href^="https://www.ecb.europa.eu/"]:hover,a[href^="https://www.metatrader5.com"]:hover,#disc-more:hover,.ystr a:hover,a[data-fbgo]:hover{text-decoration-thickness:2px}
+a[href^="https://www.ecb.europa.eu/"]:hover,a[href^="https://www.metatrader5.com"]:hover,#disc-more:hover,#intro-orig a:hover,a[data-fbgo]:hover{text-decoration-thickness:2px}
 /* Ab 0.192 (Florians Freigabe 0.192, Punkt 4): „Fehler gefunden? So hilfst du mir“ wie „Verlauf“ in der Karte „Meilensteine“: Pfeil vor dem Text
    (▸ zu, ▾ offen), fett, Akzentblau, nicht unterstrichen, beim Darüberfahren unterstrichen. Bis 0.191 in --link, unterstrichen. */
 #s-support button#fb-fehler-k{color:var(--accent);font-weight:600;text-decoration:none;text-underline-offset:auto}
@@ -2527,8 +2527,9 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <div class="msg info onl" id="intro-dl"><p>Lieber ganz ohne Internet? Lade dir das Tool herunter. Deine Daten nimmst du mit einer Sicherung mit, im Reiter „Sicherung“.</p>
     <p><b>Lade die Datei nur hier herunter</b>, von <span class="nw">trading-bilanz.github.io</span>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p>
     <div class="row"><button type="button" class="btn" data-offdl>Für offline herunterladen</button></div></div>
-  <!-- Nur in der heruntergeladenen Datei (.offl), ab 0.78 als gelber Streifen (.ystr), ab 0.97 ohne 🛡️, ab 0.98 an derselben Stelle wie online das blaue Kästchen -->
-  <div class="ystr offl"><p><b>Neue Versionen und das Original:</b> <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p></div>
+  <!-- Nur in der heruntergeladenen Datei (.offl), ab 0.78 als gelber Streifen (.ystr), ab 0.97 ohne 🛡️, ab 0.98 an derselben Stelle wie online das blaue Kästchen.
+       Ab 0.198 (Florians Auftrag 0.198, Punkt B): grauer Strich (.sigl), Wortlaut unverändert -->
+  <div class="sigl offl" id="intro-orig"><p><b>Neue Versionen und das Original:</b> <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">trading-bilanz.github.io</a>. Kopien aus anderen Quellen können verändert sein, etwa mit einer anderen Spendenadresse oder mit Code, der deine Daten abgreift.</p></div>
   <!-- Ab 0.78: Überschrift im Kästchen, Knöpfe gleich breit (am Handy untereinander), Haftung als roter Streifen (.dstr) -->
   <div class="ibox" id="intro-tax">
     <h3 id="intro-tax-t">Wo zahlst du Steuern?</h3>
@@ -12549,7 +12550,8 @@ function flowDetail(f,DEw){
   const parts=f.parts||[];
   // Ab 0.46 (1.2): Spaltenköpfe mit Erklärung als Begriffe
   const th=sale?`<tr><th>${gl('kaufdatum','Kaufdatum')}</th><th>Menge</th><th>${gl('einkaufswert','Einkaufswert')}</th><th>${gl('haltefrist','Haltedauer')}</th><th>${gl('steuerpfl','steuerpflichtig')}</th><th>${gl('vpreis','Veräußerungspreis')}</th><th>${gl('wkosten','Werbungskosten')}</th><th>${gl('gewinnverlust','Gewinn/Verlust')}</th></tr>`:`<tr><th>${gl('kaufdatum','Kaufdatum')}</th><th>Menge</th><th>${gl('einkaufswert','Einkaufswert')}</th></tr>`;
-  const tr=parts.map(x=>sale?`<tr><td>${x.kd?fD(x.kd):'–'}</td><td>${fmtNum(x.q)}</td><td>${x.miss?'<span class="small">Einkauf fehlt</span>':fE.format(x.ak)}</td><td>${x.miss?'–':x.days+' Tage'}</td><td>${x.tax===true?'ja':x.tax===false?'nein':'–'}</td><td>${fE.format(x.vp)}</td><td>${x.wk?fE.format(x.wk):'–'}</td><td>${eur(x.gain)}</td></tr>`:
+  // Ab 0.198 (Florians Auftrag 0.198, Fund 1 aus Bericht 0.195): Haltedauer über die Wurzel nTage („1 Tag“, ab 1.000 mit Tausenderpunkt), bis 0.197 „… Tage“
+  const tr=parts.map(x=>sale?`<tr><td>${x.kd?fD(x.kd):'–'}</td><td>${fmtNum(x.q)}</td><td>${x.miss?'<span class="small">Einkauf fehlt</span>':fE.format(x.ak)}</td><td>${x.miss?'–':nTage(x.days)}</td><td>${x.tax===true?'ja':x.tax===false?'nein':'–'}</td><td>${fE.format(x.vp)}</td><td>${x.wk?fE.format(x.wk):'–'}</td><td>${eur(x.gain)}</td></tr>`:
     `<tr><td>${fD(x.kd)}</td><td>${fmtNum(x.q)}</td><td>${fE.format(x.ak)}</td></tr>`).join('');
   P.push(`<div class="fxs"><table class="fxt">${th}${tr}</table></div>`);
   if(sale){P.push(pt(`<b>Veräußerungspreis:</b> ${fE.format(f.eur)}. ${flowValText(f)}`));if(f.fee>0)P.push(pt(`<b>Werbungskosten:</b> ${fE.format(f.fee)}, anteilig auf die Posten verteilt.`));
@@ -14168,9 +14170,17 @@ function guard(id){
   else if(st.unk)parts.push(`Im Reiter „Reports“ ${st.unk===1?'ist':'sind'} in „Buchungsarten“ noch ${st.unk} ${st.unk===1?'Buchungsart':'Buchungsarten'} offen. <button type="button" class="zlink" data-mapgo>Zu den Buchungsarten</button>`);
   // Ab 0.80 (3): Buchungen „noch unklar“ sperren nichts, oben steht dann ein Hinweis (unklarH)
   // Ab 0.193 (Florians Auftrag 0.193): nur noch in der Auswertung; im Reiter Steuer steht er in der Karte „Jahresabrechnung“ (unklarSteuerH)
-  $(id).innerHTML=parts.length?`<div class="card"><div class="msg warn">${parts.join('<br>')}</div></div>`:id==='stats-guard'?unklarH():'';
+  // Ab 0.198 (Florians Auftrag 0.198, Punkt A, und Freigabe Antwort 2): in der Auswertung zeichnet awOben alle Hinweise oben in einer Karte
+  if(id==='stats-guard'){AW_OBEN.fl=parts.length?`<div class="msg warn">${parts.join('<br>')}</div>`:unklarH();awOben()}
+  else $(id).innerHTML=parts.length?`<div class="card"><div class="msg warn">${parts.join('<br>')}</div></div>`:'';
   return !parts.length;
 }
+// Ab 0.198 (Florians Auftrag 0.198, Punkt A, und Freigabe Antwort 2): alle Hinweise oben in der Auswertung stehen in einer Karte (#stats-guard), die
+// gelben Flächen zuerst („Lade zuerst …“ bzw. offene Buchungsarten, sonst „noch unklar“), darunter die Striche („Deine Daten reichen bis …“). Abstände aus
+// den Bausteinen (.msg 8 px, .sigl 10 px), wie in der Karte „CFD {Jahr}“ im Reiter Steuer. Bis 0.197 je eine eigene Karte in #stats-guard und #stale2;
+// #stale2 bleibt als Platz und ist leer. AW_OBEN merkt die Teile: fl setzen guard und renderStats, st setzt renderStale (läuft nach renderStats).
+const AW_OBEN={fl:'',st:''};
+function awOben(){const h=AW_OBEN.fl+AW_OBEN.st;$('stats-guard').innerHTML=h?`<div class="card">${h}</div>`:'';$('stale2').innerHTML=''}
 // Ab 0.80 (3): Hinweis oben in Auswertung und Steuer, solange es Buchungen „noch unklar“ gibt: Anzahl, Betrag, Datum, Konto, Link zur Karte.
 // Nicht in Zusammenfassung und Steuer-Excel. Mit „Ohne Steuer“ ohne das Wort Steuer.
 // Ab 0.115: Betrag in der Auswertung in der Währung des Schalters (CUR_EFF), wie die übrigen Beträge: in Euro jede Buchung zum EZB-Kurs ihres
@@ -14185,8 +14195,9 @@ function unklarH(){const L=unklarDeals();if(!L.length)return '';
   const when=d1===d2?`am ${d1}`:`vom ${d1} bis ${d2}`,acc=A.length===1?`Konto ${esc(A[0])}`:`Konten ${esc(and2(A))}`;
   const t=(n===1?`1 Buchung ist noch unklar: ${sg(sum)} ${when}, ${acc}. Sie ist nicht eingerechnet.`:`${fI.format(n)} Buchungen sind noch unklar: zusammen ${sg(sum)}, ${when}, ${acc}. Sie sind nicht eingerechnet.`)+
     (S.ui.country==='none'?' Investition und Ergebnis können daher abweichen.':' Investition, Ergebnis und Steuer können daher abweichen.');
-  // Ab 0.195 (Florians Auftrag 0.195, Teil C, Punkt 1): gelbe Fläche in der Form von „Lade zuerst …“ an derselben Stelle (guard), bis 0.194 gelber Strich
-  return `<div class="card"><div class="msg warn">${t} <button type="button" class="zlink" data-mapgo>Zu den Buchungsarten</button></div></div>`}
+  // Ab 0.195 (Florians Auftrag 0.195, Teil C, Punkt 1): gelbe Fläche in der Form von „Lade zuerst …“ an derselben Stelle (guard), bis 0.194 gelber Strich.
+  // Ab 0.198 nur die Fläche, die Karte drumherum zeichnet awOben (bis 0.197 mit eigener Karte)
+  return `<div class="msg warn">${t} <button type="button" class="zlink" data-mapgo>Zu den Buchungsarten</button></div>`}
 // Ab 0.193 (Florians Auftrag 0.193 und seine Antworten 1 bis 5 zur Freigabe 0.193): Hinweis „noch unklar“ in der Karte „Jahresabrechnung“
 // (Österreich #tax-unklar, Deutschland #de-unklar), direkt unter der Tabelle, vor den Sätzen zu Krypto, im Aussehen des Satzes zum Datenstand (p.sigl.y).
 // Nur Buchungen des Steuerjahrs y von Konten mit „Zählt“ (unklarDeals); gibt es keine, kein Hinweis (auch wenn Konten ohne „Zählt“ welche haben).
@@ -15211,7 +15222,8 @@ function renderStats(rows){
   // Währungsschalter: Ab hier tragen eur, exE und pfE den Betrag in der gewählten Währung (curRows)
   {const r0=fltRange(years(rows)),m=r0.bad?{n:0}:missingRates({accs:selSet,from:r0.from,to:r0.to,inv:true,hy:1,real:Object.values(S.tag).some(t=>t.status==='ok')});CUR_MISS=m.n?m:null}
   CUR_EFF=S.ui.flt.cur==='usd'||CUR_MISS?'usd':'eur';
-  $('stats-guard').innerHTML=unklarH(); // ab 0.115: Hinweis „noch unklar“ in der eben bestimmten Währung (guard() lief vorher)
+  // ab 0.115: Hinweis „noch unklar“ in der eben bestimmten Währung (guard() lief vorher); ab 0.198 über awOben in der Karte mit allen Hinweisen oben
+  AW_OBEN.fl=unklarH();awOben();
   $('cur-note').innerHTML=CUR_MISS&&S.ui.flt.cur!=='usd'?`<div class="msg info">Beträge in USD, weil für Euro Kurse fehlen. <button type="button" class="btn" data-rl="cur-rlm" style="padding:3px 10px;margin-left:4px">Kurse laden</button></div><div id="cur-rlm"></div>`:'';
   // Ab 0.58 (4): Hinweis, solange bei einem gewählten Konto der Trading Benefit fehlt, mit dem Sprung zu „Deine Konten“
   // Ab 0.169 der Satz aus tbFehltTxt (wie die Karte „Meilensteine“); bis 0.168 „… Ohne ihn keine Rendite.“ fest hier
@@ -16996,7 +17008,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.197',VDATE='25.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.198',VDATE='25.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -17441,7 +17453,8 @@ function fenBack(fn){const ok=()=>document.visibilityState!=='hidden'&&(!documen
 $('btn-don-go').innerHTML=HEART+' Zur Spende';
 // „Deine Daten reichen bis …“ ab 35 Tagen: im Reiter Reports (#stale1) als gelbe Fläche, oben in der Auswertung (#stale2) ab 0.195 als gelber Strich in einer
 // Karte (Florians Auftrag 0.195, Teil C, Punkt 2, und Antwort 3 zur Freigabe: Reports bleibt eine Fläche). Bis 0.194 an beiden Stellen die Fläche.
-function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let t='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)t=`Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.`}$('stale1').innerHTML=t?`<div class="msg warn">${t}</div>`:'';$('stale2').innerHTML=t?`<div class="card"><p class="sigl y" style="margin:0">${t}</p></div>`:''}
+// Ab 0.198 (Florians Auftrag 0.198, Punkt A): in der Auswertung als Strich in der gemeinsamen Karte oben (awOben), unter den Flächen
+function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let t='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)t=`Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.`}$('stale1').innerHTML=t?`<div class="msg warn">${t}</div>`:'';AW_OBEN.st=t?`<p class="sigl y">${t}</p>`:'';awOben()}
 // Klick auf einen Kartentitel klappt die Karte auf oder zu. Lag der Kartenanfang beim Zuklappen schon über der Filterzeile, rückt die Karte darunter, damit die nächste Karte im Blick ist.
 // Ab 0.50 (13): Die Karte klappt nur, wenn Drücken und Loslassen der Maus beide auf dem Titel waren (nicht in einem Feld, Knopf, Menü oder Begriff)
 // und dabei kein Text markiert wurde. Vorher klappte z. B. „Alle Vorgänge“ zu, wenn man im Suchfeld Text markierte und außerhalb losließ.
