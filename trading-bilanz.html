@@ -682,25 +682,30 @@ tr.hide{display:none}
 .taxxr{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;margin:0 0 6px}
 .taxxr span{overflow-wrap:anywhere}.taxxr input{flex:1 1 200px;min-width:0;max-width:320px}
 .taxja{margin:10px 0}.taxja summary{font-size:var(--fs-s);cursor:pointer}.taxja p{margin:6px 0}
-/* Ab 0.73: Tabelle „Jahresabrechnung“ wie Seite 1 der Zusammenfassung: feste Spalten, Posten eingerückt, Spalte mit Kennzahl bzw. Anlage und Zeile */
-#tx-sum .tscroll,#de-sum .tscroll{overflow:visible}
-#t-taxparts,#t-de-parts{table-layout:fixed}
-#t-taxparts .txe,#t-de-parts .txe{width:112px}
-#t-taxparts .txk{width:112px}#t-de-parts .txk{width:176px}
-#tx-sum .tscroll th,#de-sum .tscroll th{padding-bottom:7px}
-#t-taxparts td:first-child,#t-de-parts td:first-child,#t-taxparts th:first-child,#t-de-parts th:first-child{position:static;box-shadow:none;white-space:normal;overflow-wrap:anywhere}
-#t-taxparts tr.txg td,#t-de-parts tr.txg td{font-weight:700;padding-top:14px;white-space:normal}
-#t-taxparts tr.txp td:first-child,#t-de-parts tr.txp td:first-child{padding-left:22px}
-#t-taxparts tr.txck td,#t-de-parts tr.txck td{white-space:normal;padding-left:22px;font-size:var(--fs-s)}
+/* Ab 0.73: Tabelle „Jahresabrechnung“ wie Seite 1 der Zusammenfassung: feste Spalten, Posten eingerückt, Spalte mit Kennzahl bzw. Anlage und Zeile.
+   Ab 0.195 (Florians Auftrag 0.195, Teil A): zwei Karten „CFD {Jahr}“ (#tx-sum, #de-sum, Tabellen #t-taxparts, #t-de-parts) und „Krypto {Jahr}“
+   (#tx-cx, #de-cx, Tabellen #t-taxcx, #t-de-cx). Beide Tabellen eines Lands haben dieselben Spalten, die Euro-Spalte steht untereinander.
+   Das Häkchen „Krypto in diese Abrechnung aufnehmen“ steht in einer eigenen Zeile über der Tabelle (p.txck); bis 0.194 eine Zeile der Tabelle. */
+#tx-sum .tscroll,#de-sum .tscroll,#tx-cx .tscroll,#de-cx .tscroll{overflow:visible}
+#t-taxparts,#t-de-parts,#t-taxcx,#t-de-cx{table-layout:fixed}
+#t-taxparts .txe,#t-de-parts .txe,#t-taxcx .txe,#t-de-cx .txe{width:112px}
+#t-taxparts .txk,#t-taxcx .txk{width:112px}#t-de-parts .txk,#t-de-cx .txk{width:176px}
+#tx-sum .tscroll th,#de-sum .tscroll th,#tx-cx .tscroll th,#de-cx .tscroll th{padding-bottom:7px}
+#t-taxparts td:first-child,#t-de-parts td:first-child,#t-taxparts th:first-child,#t-de-parts th:first-child,#t-taxcx td:first-child,#t-de-cx td:first-child,#t-taxcx th:first-child,#t-de-cx th:first-child{position:static;box-shadow:none;white-space:normal;overflow-wrap:anywhere}
+#t-taxparts tr.txg td,#t-de-parts tr.txg td,#t-taxcx tr.txg td,#t-de-cx tr.txg td{font-weight:700;padding-top:14px;white-space:normal}
+#t-taxparts tr.txp td:first-child,#t-de-parts tr.txp td:first-child,#t-taxcx tr.txp td:first-child,#t-de-cx tr.txp td:first-child{padding-left:22px}
+p.txck{margin:4px 0 10px}
 @media(max-width:700px){
   /* Ab 0.99: Spalte „Kennzahl E1kv“ 72 px (vorher 66) und „Anlage und Zeile“ 96 px (vorher 88), damit „Kennzahl“ und „Kryptowerte“ auch mit
      breiterer Schrift ganz hineinpassen (Chromium unter Linux bei 412 px: 2 bzw. 3 px zu breit) */
-  #t-taxparts .txe,#t-de-parts .txe{width:92px}#t-taxparts .txk{width:72px}#t-de-parts .txk{width:96px}
-  #t-taxparts th,#t-taxparts td,#t-de-parts th,#t-de-parts td{padding-left:5px;padding-right:5px;font-size:var(--fs-s)}
-  #t-taxparts tr.txp td:first-child,#t-de-parts tr.txp td:first-child{padding-left:12px}
-  #t-de-parts td:last-child{white-space:normal}
+  #t-taxparts .txe,#t-de-parts .txe,#t-taxcx .txe,#t-de-cx .txe{width:92px}#t-taxparts .txk,#t-taxcx .txk{width:72px}#t-de-parts .txk,#t-de-cx .txk{width:96px}
+  #t-taxparts th,#t-taxparts td,#t-de-parts th,#t-de-parts td,#t-taxcx th,#t-taxcx td,#t-de-cx th,#t-de-cx td{padding-left:5px;padding-right:5px;font-size:var(--fs-s)}
+  #t-taxparts tr.txp td:first-child,#t-de-parts tr.txp td:first-child,#t-taxcx tr.txp td:first-child,#t-de-cx tr.txp td:first-child{padding-left:12px}
+  #t-de-parts td:last-child,#t-de-cx td:last-child{white-space:normal}
 }
 /* Hinweis im Reiter Steuer: normaler Text mit schmalem Rand links in der Signalfarbe, keine farbige Fläche (GESTALTUNG Abschnitt 4) */
+/* Ab 0.195 (Florians Regel 0.195, GESTALTUNG Abschnitt 4): Der Strich ist eine Anmerkung zu den Zahlen daneben. Muss oder sollte man etwas im Tool
+   tun oder ist eine Eingabe falsch, steht die gelbe Fläche (.msg.warn), auch im Reiter Steuer. */
 .sigl{border-left:3px solid var(--sig-g);padding:2px 0 2px 12px;margin:10px 0;font-size:14px;color:var(--ink)}
 .sigl.y{border-left-color:var(--sig-y)}.sigl.r{border-left-color:var(--sig-r)}
 .disc{border:2px solid var(--neg);background:var(--bad-bg);color:var(--ink);border-radius:var(--radius);padding:12px 18px;margin:0 0 16px}
@@ -2314,14 +2319,22 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <div id="tax-miss"></div>
   <div id="tax-body">
     <!-- Ab 0.72 (1.1): Karten wie in der Auswertung: stehender Titel mit (i), Erklärungen nur im (i), Hinweise als ein Satz -->
+    <!-- Ab 0.195 (Florians Auftrag 0.195, Teil A): bis 0.194 eine Karte „Jahresabrechnung {Jahr} (Österreich)“, jetzt zwei: „CFD {Jahr}“ und „Krypto {Jahr}“ -->
     <div class="card stk" id="tx-sum">
-      <div class="sthd"><h2 class="hx hxn"><span id="tax-title">Jahresabrechnung</span> <button type="button" class="ib" data-gl="k-taxat" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Jahresabrechnung">i</button></h2></div>
-      <!-- Ab 0.73 (2.1): eine Tabelle wie Seite 1 der Zusammenfassung (taxRows), darunter nur einzelne Sätze -->
+      <div class="sthd"><h2 class="hx hxn"><span id="tax-title">CFD</span> <button type="button" class="ib" data-gl="k-taxat" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: CFD">i</button></h2></div>
+      <!-- Ab 0.73 (2.1): eine Tabelle wie Seite 1 der Zusammenfassung (taxRows), darunter nur einzelne Sätze. Ab 0.195 nur der Teil CFD -->
       <div class="tscroll"><table id="t-taxparts"></table></div>
-      <!-- Ab 0.193 (Florians Antwort 1 zur Freigabe 0.193): Hinweis „noch unklar“ direkt unter der Tabelle, vor den Sätzen zu Krypto (unklarSteuerH) -->
+      <!-- Ab 0.193 (Florians Antwort 1 zur Freigabe 0.193): Hinweis „noch unklar“ direkt unter der Tabelle (unklarSteuerH), ab 0.195 als gelbe Fläche -->
       <div id="tax-unklar"></div>
-      <div id="taxcx-warn"></div>
+      <!-- Sätze zu den MT5-Reports: Silvester, PF im Jänner, Datenstand, Frage zum Datenstand, Bank -->
       <div id="taxnotes"></div>
+    </div>
+    <!-- Ab 0.195: Karte „Krypto {Jahr}“, nur mit Krypto-Daten. Häkchen (eigene Zeile, auch wenn es aus ist), Tabelle, Sätze zu Krypto -->
+    <div class="card stk" id="tx-cx" style="display:none">
+      <div class="sthd"><h2 class="hx hxn"><span id="tax-cx-title">Krypto</span> <button type="button" class="ib" data-gl="k-atcx" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Krypto">i</button></h2></div>
+      <div id="tax-cx-tick"></div>
+      <div class="tscroll" id="tax-cx-tab"><table id="t-taxcx"></table></div>
+      <div id="taxcx-warn"></div>
     </div>
     <div class="card fold stk" data-fold="tx-est" id="tx-est">
       <div class="sthd"><h2 class="hx">Steuer geschätzt <button type="button" class="ib" data-gl="k-taxest" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Steuer geschätzt">i</button></h2></div>
@@ -2346,18 +2359,26 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     </div>
   </div>
   <div id="tax-de" style="display:none">
+    <!-- Ab 0.195 (Florians Auftrag 0.195, Teil A): bis 0.194 eine Karte „Jahresabrechnung {Jahr} (Deutschland)“, jetzt zwei: „CFD {Jahr}“ und „Krypto {Jahr}“ -->
     <div class="card stk" id="de-sum">
-      <div class="sthd"><h2 class="hx hxn"><span id="de-title">Jahresabrechnung (Deutschland)</span> <button type="button" class="ib" data-gl="k-taxde" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Jahresabrechnung">i</button></h2></div>
-      <!-- Ab 0.73 (2.1): eine Tabelle wie Seite 1 der Zusammenfassung (taxRows). Das Feld bleibt unter der Tabelle: Es speist den Baustein a-frei -->
+      <div class="sthd"><h2 class="hx hxn"><span id="de-title">CFD</span> <button type="button" class="ib" data-gl="k-taxde" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: CFD">i</button></h2></div>
+      <!-- Ab 0.73 (2.1): eine Tabelle wie Seite 1 der Zusammenfassung (taxRows). Ab 0.195 nur der Teil CFD -->
       <div class="tscroll"><table id="t-de-parts"></table></div>
-      <!-- Ab 0.193 (Florians Antwort 1 zur Freigabe 0.193): Hinweis „noch unklar“ direkt unter der Tabelle, vor dem Feld „Andere private Veräußerungsgewinne“ -->
+      <!-- Ab 0.193 (Florians Antwort 1 zur Freigabe 0.193): Hinweis „noch unklar“ direkt unter der Tabelle, ab 0.195 als gelbe Fläche -->
       <div id="de-unklar"></div>
+      <div id="de-notes"></div>
+    </div>
+    <!-- Ab 0.195: Karte „Krypto {Jahr}“, nur mit Krypto-Daten. Häkchen, Tabelle, das Feld direkt unter der Tabelle (es speist den Baustein a-frei),
+         dann die Sätze zu Krypto (Florians Antwort 2 zur Freigabe 0.195: wie bisher) -->
+    <div class="card stk" id="de-cx" style="display:none">
+      <div class="sthd"><h2 class="hx hxn"><span id="de-cx-title">Krypto</span> <button type="button" class="ib" data-gl="k-decx" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Krypto">i</button></h2></div>
+      <div id="de-cx-tick"></div>
+      <div class="tscroll" id="de-cx-tab"><table id="t-de-cx"></table></div>
       <div id="de-cx-body">
         <div class="row" style="margin-top:12px"><label for="de-other">Andere private Veräußerungsgewinne dieses Jahres (EUR)</label><input type="text" class="n" id="de-other" placeholder="optional" style="width:120px"><span class="gl" data-gl="deother" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Was zählt dazu?</span></div>
         <div id="de-fg"></div>
       </div>
       <div id="de-cx-warn"></div>
-      <div id="de-notes"></div>
     </div>
     <div class="card fold stk" data-fold="de-est" id="de-est">
       <div class="sthd"><h2 class="hx">Steuer geschätzt <button type="button" class="ib" data-gl="k-taxestde" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Steuer geschätzt">i</button></h2></div>
@@ -13660,14 +13681,22 @@ function taxRows(X,tab){const {c,T,R,cy,DE}=X,y=c.y,o=[],g=(id,l)=>o.push({t:'g'
       if(tab&&cy.fee>0)r('feeS','nachrichtlich: darin abgezogene Verkaufsgebühren',cy.fee)}}
   return o}
 // Tabelle im Reiter: wie die Zusammenfassung, die Posten als Begriffe (Texte der früheren Spalten „Erklärung“ und „Wo eintragen“).
-// Das Häkchen „Krypto … aufnehmen“ steht unter der Gruppenzeile Krypto. Abgewählt bleiben beide stehen, nur die Posten fallen weg.
-function taxTabH(X,has,inc){const DE=X.DE,L=taxRows(X,1),tick=`<tr class="txck noprint"><td colspan="3"><label><input type="checkbox" data-cxincl="1"${inc?' checked':''}> Krypto in diese Abrechnung aufnehmen <span class="small">(normalerweise angehakt lassen)</span></label></td></tr>`;
+// Bis 0.194 eine Tabelle mit beiden Gruppen; das Häkchen „Krypto … aufnehmen“ stand darin unter der Gruppenzeile Krypto.
+// Ab 0.195 (Florians Auftrag 0.195, Teil A, und seine Freigabe): eine Tabelle je Karte aus derselben Quelle (taxRows), teil = 'cfd' (Karte „CFD {Jahr}“)
+// oder 'cx' (Karte „Krypto {Jahr}“): die Gruppenzeile des Teils und ihre Posten. Das Häkchen steht über der Tabelle der Karte „Krypto“ (taxCxTickH).
+// Ohne Zeilen: im Teil CFD der Satz „In diesem Jahr gibt es keine Buchungen der zählenden Konten.“ (ab 0.195 auch, wenn es Krypto gibt; bis 0.194 nur,
+// wenn die ganze Tabelle leer war), im Teil Krypto '' (die Karte zeigt dann keine Tabelle).
+function taxTabH(X,teil){const DE=X.DE;let g='';const L=taxRows(X,1).filter(x=>{if(x.t==='g')g=x.id;return g===teil});
   const grp=l=>`<tr class="txg"><td colspan="3">${l}</td></tr>`;
   // Ab 0.129 (Florians Auftrag): Deutschland, Gruppenzeile Krypto mit Posten: „nach FIFO“ sichtbar und als Begriff (nur im Reiter; taxRows und die Zusammenfassung bleiben)
-  const tr=x=>{if(x.t==='g')return grp(DE&&x.id==='cx'?x.l.replace(/\)$/,', '+gl('fifo','nach FIFO')+')'):x.l)+(x.id==='cx'?tick:'');const k='tx-'+x.id,l=GL[k]?gl(k,x.l):x.id==='gk'||x.id==='lk'?gl('kestverk',x.l):x.id==='vp'?gl('vpreis',x.l):x.id==='ak'?gl('einkaufswert',x.l):x.id==='wk'?gl('wkosten',x.l):x.l;
+  const tr=x=>{if(x.t==='g')return grp(DE&&x.id==='cx'?x.l.replace(/\)$/,', '+gl('fifo','nach FIFO')+')'):x.l);const k='tx-'+x.id,l=GL[k]?gl(k,x.l):x.id==='gk'||x.id==='lk'?gl('kestverk',x.l):x.id==='vp'?gl('vpreis',x.l):x.id==='ak'?gl('einkaufswert',x.l):x.id==='wk'?gl('wkosten',x.l):x.l;
     return `<tr class="${x.t==='sal'?'sum ':''}txp"><td>${l}</td><td>${eur(x.v)}</td><td>${x.k}</td></tr>`};
-  const body=L.map(tr).join('')+(has&&!inc?grp(taxCxGroup(X.c,DE))+tick:'');
+  const body=L.map(tr).join('');
+  if(!body&&teil==='cx')return '';
   return `<colgroup><col><col class="txe"><col class="txk"></colgroup><tr><th>Posten</th><th>EUR</th><th>${DE?'Anlage und Zeile':'Kennzahl E1kv'}</th></tr>`+(body||'<tr><td colspan="3" class="small">In diesem Jahr gibt es keine Buchungen der zählenden Konten.</td></tr>')}
+// Ab 0.195: das Häkchen „Krypto in diese Abrechnung aufnehmen“ in der Karte „Krypto {Jahr}“ (Österreich und Deutschland), eigene Zeile direkt unter
+// dem Titel, an und aus an derselben Stelle (Florians Freigabe 0.195, A1 und A2). Wortlaut wie bis 0.194. Nicht im Druck.
+const taxCxTickH=inc=>`<p class="txck noprint"><label><input type="checkbox" data-cxincl="1"${inc?' checked':''}> Krypto in diese Abrechnung aufnehmen <span class="small">(normalerweise angehakt lassen)</span></label></p>`;
 // Ab 0.73: Begriff oder (i) mit Zusatz, der von den Daten abhängt; der feste Text bleibt in h0
 function glSet(k,extra,t){const x=GL[k]||(GL[k]={t:t||k,h:''});if(x.h0==null)x.h0=x.h;x.h=x.h0+(x.h0&&extra?'\n':'')+(extra||'')}
 // Ab 0.72 (3.3): Zusammenfassung für die Steuerberatung. Seite 1 nur Zahlen, ab Seite 2 Annahmen, geschätzte Werte, offene Fragen, was nicht enthalten ist.
@@ -14153,7 +14182,8 @@ function unklarH(){const L=unklarDeals();if(!L.length)return '';
   const when=d1===d2?`am ${d1}`:`vom ${d1} bis ${d2}`,acc=A.length===1?`Konto ${esc(A[0])}`:`Konten ${esc(and2(A))}`;
   const t=(n===1?`1 Buchung ist noch unklar: ${sg(sum)} ${when}, ${acc}. Sie ist nicht eingerechnet.`:`${fI.format(n)} Buchungen sind noch unklar: zusammen ${sg(sum)}, ${when}, ${acc}. Sie sind nicht eingerechnet.`)+
     (S.ui.country==='none'?' Investition und Ergebnis können daher abweichen.':' Investition, Ergebnis und Steuer können daher abweichen.');
-  return `<div class="card"><p class="sigl y" style="margin:0">${t} <button type="button" class="zlink" data-mapgo>Zu den Buchungsarten</button></p></div>`}
+  // Ab 0.195 (Florians Auftrag 0.195, Teil C, Punkt 1): gelbe Fläche in der Form von „Lade zuerst …“ an derselben Stelle (guard), bis 0.194 gelber Strich
+  return `<div class="card"><div class="msg warn">${t} <button type="button" class="zlink" data-mapgo>Zu den Buchungsarten</button></div></div>`}
 // Ab 0.193 (Florians Auftrag 0.193 und seine Antworten 1 bis 5 zur Freigabe 0.193): Hinweis „noch unklar“ in der Karte „Jahresabrechnung“
 // (Österreich #tax-unklar, Deutschland #de-unklar), direkt unter der Tabelle, vor den Sätzen zu Krypto, im Aussehen des Satzes zum Datenstand (p.sigl.y).
 // Nur Buchungen des Steuerjahrs y von Konten mit „Zählt“ (unklarDeals); gibt es keine, kein Hinweis (auch wenn Konten ohne „Zählt“ welche haben).
@@ -14168,7 +14198,8 @@ function unklarSteuerH(y){const L=unklarDeals({jahr:y,zaehlt:true}),n=L.length;i
   if(n===1)t=`1 Buchung ist noch unklar: ${am(L[0])}, Konto ${esc(L[0].a)}. Sie ist nicht eingerechnet. Ordne sie unter ${link} zu. Wenn du nicht weißt, was sie ist, sag es deiner Steuerberatung.`;
   else{const I=L.slice(0,3).map(x=>A.length===1?am(x):`${am(x)} (Konto ${esc(x.a)})`),liste=n>3?`${I.join(', ')} und ${fI.format(n-3)} weitere`:`${I.slice(0,-1).join(', ')} und ${I[I.length-1]}`;
     t=`${fI.format(n)} Buchungen ${A.length===1?`auf Konto ${esc(A[0])} `:''}sind noch unklar: ${liste}. Sie sind nicht eingerechnet. Ordne sie unter ${link} zu. Wenn du nicht weißt, was sie sind, sag es deiner Steuerberatung.`}
-  return `<p class="sigl y">${t}</p>`}
+  // Ab 0.195 (Florians Auftrag 0.195, Teil B): gelbe Fläche (bis 0.194 gelber Strich wie der Satz zum Datenstand)
+  return `<div class="msg warn">${t}</div>`}
 // Ab 0.183 (Florians Antwort 6 zur Freigabe 0.183, Wortlaut aus dem Plan): Zeile mit grauem Rand oben in der Auswertung, solange sie Handy-Zeilen zählt
 // (L = Zeilen mit x.hy der gewählten Konten im Zeitraum). Konto wie überall in der Auswertung mit Namen, sonst Nummer (accName). Nicht im Bild.
 // Ab 0.186: mit den Einzahlungen vom Handy („Darin sind 2 Trades und 1 Einzahlung vom Handy …“) und, wenn bei einem gewählten Konto im Zeitraum die
@@ -14797,8 +14828,9 @@ ${ECB_CITE}`},
   // Ab 0.181 (Florians Auftrag): „(Datum wie im MT5-Report)“ statt „laut Serverzeit des Brokers“, im Absatz „Jahreswechsel“ „nach der Zeit im MT5-Report
   // (im Winter 2 Stunden später als in Österreich)“ statt „nach der Zeit des Brokers (Zypern)“. Ab 0.183 (Florians Entscheidung) „(1 Stunde später
   // als in Österreich)“, fest (Wurzel MT5_VORAUS bei nyData)
-  'k-taxat':{t:'Jahresabrechnung',h:'Deine CFD-Ergebnisse des Jahres in Euro, jede Buchung zum EZB-Referenzkurs ihres Tages umgerechnet (Datum wie im MT5-Report).\n<b>Annahmen:</b> CFDs sind nicht verbriefte Derivate. Bei einem ausländischen Broker ohne Kapitalertragsteuer-Abzug gilt der normale Tarif, nicht 27,5 %. Die Performance Fee, die Kommission, der Swap und die Gebühren mindern deinen CFD-Gewinn. Das Abzugsverbot für Werbungskosten gilt bei Einkünften zum Tarif nicht.\n<b>Jahreswechsel:</b> Das Tool ordnet CFD-Buchungen nach der Zeit im MT5-Report (1 Stunde später als in Österreich) dem Jahr zu, Krypto-Vorgänge nach österreichischer Zeit. Eine feste Regel dazu gibt es nicht. Kläre große Beträge am Jahreswechsel mit deiner Steuerberatung.'},
-  'k-taxde':{t:'Jahresabrechnung',h:'Deine CFD-Ergebnisse des Jahres in Euro, jede Buchung zum EZB-Referenzkurs ihres Tages umgerechnet. Das passt zur gesetzlichen Regel.\n<b>Annahmen (Recherche Stand 2026):</b> CFDs sind Termingeschäfte. Gewinne und Verluste über einen ausländischen Broker ohne Steuerabzug gehören ab dem Steuerjahr 2025 saldiert in Zeile 19 der Anlage KAP. Die frühere Grenze von 20.000 € für Verluste aus Termingeschäften gilt in allen offenen Fällen nicht mehr. Einen nicht verrechneten Verlust trägt das Finanzamt ins nächste Jahr vor, wenn er in deiner Erklärung steht. Kommission und Swap mindern den Gewinn, die Performance Fee nicht (Sicherheit ca. 60 bis 75 %).\n<b>Steuererklärung:</b> Kapitalerträge ohne Steuerabzug musst du erklären. Frist ohne Steuerberatung: 31. Juli des Folgejahres. Fällt er auf ein Wochenende oder einen Feiertag, gilt der nächste Werktag. Mit Steuerberatung: Ende Februar des übernächsten Jahres. Liegt dein Steuersatz unter 25 %, beantrage die Günstigerprüfung in Zeile 4 der Anlage KAP.'},
+  // Ab 0.195 (Florians Auftrag 0.195, Freigabe A3): (i) der Karte „CFD {Jahr}“, Titel „CFD“ (bis 0.194 „Jahresabrechnung“, mit dem Krypto-Teil aus k-atcx bzw. k-decx)
+  'k-taxat':{t:'CFD',h:'Deine CFD-Ergebnisse des Jahres in Euro, jede Buchung zum EZB-Referenzkurs ihres Tages umgerechnet (Datum wie im MT5-Report).\n<b>Annahmen:</b> CFDs sind nicht verbriefte Derivate. Bei einem ausländischen Broker ohne Kapitalertragsteuer-Abzug gilt der normale Tarif, nicht 27,5 %. Die Performance Fee, die Kommission, der Swap und die Gebühren mindern deinen CFD-Gewinn. Das Abzugsverbot für Werbungskosten gilt bei Einkünften zum Tarif nicht.\n<b>Jahreswechsel:</b> Das Tool ordnet CFD-Buchungen nach der Zeit im MT5-Report (1 Stunde später als in Österreich) dem Jahr zu, Krypto-Vorgänge nach österreichischer Zeit. Eine feste Regel dazu gibt es nicht. Kläre große Beträge am Jahreswechsel mit deiner Steuerberatung.'},
+  'k-taxde':{t:'CFD',h:'Deine CFD-Ergebnisse des Jahres in Euro, jede Buchung zum EZB-Referenzkurs ihres Tages umgerechnet. Das passt zur gesetzlichen Regel.\n<b>Annahmen (Recherche Stand 2026):</b> CFDs sind Termingeschäfte. Gewinne und Verluste über einen ausländischen Broker ohne Steuerabzug gehören ab dem Steuerjahr 2025 saldiert in Zeile 19 der Anlage KAP. Die frühere Grenze von 20.000 € für Verluste aus Termingeschäften gilt in allen offenen Fällen nicht mehr. Einen nicht verrechneten Verlust trägt das Finanzamt ins nächste Jahr vor, wenn er in deiner Erklärung steht. Kommission und Swap mindern den Gewinn, die Performance Fee nicht (Sicherheit ca. 60 bis 75 %).\n<b>Steuererklärung:</b> Kapitalerträge ohne Steuerabzug musst du erklären. Frist ohne Steuerberatung: 31. Juli des Folgejahres. Fällt er auf ein Wochenende oder einen Feiertag, gilt der nächste Werktag. Mit Steuerberatung: Ende Februar des übernächsten Jahres. Liegt dein Steuersatz unter 25 %, beantrage die Günstigerprüfung in Zeile 4 der Anlage KAP.'},
   // Ab 0.73 (2.1): Begriffe auf den Posten der Jahresabrechnung (vorher Spalten „Erklärung“ und „Wo eintragen“). Mit Zusatz aus den Daten: tx-salcfd, tx-salcx, tx-gv (glSet)
   'tx-gain':{t:'Gewinne aus Trades',h:'Summe aller Trades mit Gewinn (vor Kosten).',de:'Summe aller Trades mit Gewinn.'},
   'tx-loss':{t:'Verluste aus Trades',h:'Summe aller Trades mit Verlust (vor Kosten).',de:'Summe aller Trades mit Verlust.'},
@@ -16187,13 +16219,15 @@ function renderTax(rows){
   // Andere Jahre bleiben nutzbar. Vorläufige Kurse (Schonfrist) sperren nicht, darüber steht dann der Hinweis dazu.
   // Ab 0.72 (1.7, 1.8): ruhigerer Text; für Krypto zählen auch Tage früherer Jahre (missingRates mit tax)
   const mr=missingRates({year:y,tax:1}),lock=mr.n>0;
-  $('tax-miss').innerHTML=lock?`<div class="card"><div class="sigl y">${taxMissTxt(mr,y)}${rlBtns('tax-rlm',true,true)}</div><div id="tax-rlm"></div></div>`:mr.prov.length?`<p class="sigl noprint">${provTxt(mr)}</p>`:'';
+  // Ab 0.195 (Florians Auftrag 0.195, Teil D): fehlende Kurse als gelbe Fläche mit den Knöpfen darin, bis 0.194 mit gelbem Strich
+  $('tax-miss').innerHTML=lock?`<div class="card"><div class="msg warn">${taxMissTxt(mr,y)}${rlBtns('tax-rlm',true,true)}</div><div id="tax-rlm"></div></div>`:mr.prov.length?`<p class="sigl noprint">${provTxt(mr)}</p>`:'';
   // Ab 0.73 (1.5): behalten bei Sperre ihren Platz, damit die Konten-Tabelle darunter nicht springt
   for(const id of ['btn-printsum','btn-xlsxyear','btn-print','tax-give'])$(id).style.visibility=lock?'hidden':'';
   if(lock){$('tax-body').style.display='none';$('tax-de').style.display='none';return}
   if(DE)return renderTaxDE(rows,y);
   const R=taxYR(rows,y);const T=agg(R);
-  $('tax-title').textContent=`Jahresabrechnung ${y} (Österreich)`;
+  // Ab 0.195 (Florians Auftrag 0.195, Teil A): zwei Karten „CFD {Jahr}“ und „Krypto {Jahr}“, bis 0.194 „Jahresabrechnung {Jahr} (Österreich)“
+  $('tax-title').textContent=`CFD ${y}`;
   // Hinweise
   // Ab 0.72 (1.1): Hinweise je ein kurzer Satz, Erklärungen im (i) bzw. in Begriffen; die Annahmen stehen im (i) der Karte
   const notes=[];
@@ -16205,18 +16239,26 @@ function renderTax(rows){
   const lastD=taxDs(y);notes.push(...taxDsNotes(y,lastD));
   // Ab 0.73 (2.6): „Der Saldo ist negativ“ steht im Begriff auf „Saldo CFD“, die grauen Zeilen (taxDsGone) in der Konten-Karte; Sätze mit schmalem Rand statt Fläche
   glSet('tx-salcfd','Trag den Saldo aus allen CFD-Gewinnen und CFD-Verlusten in Kennzahl 857 ein. Die Kennzahl heißt „Sonstige tarifsteuerpflichtige Einkünfte aus Kapitalvermögen“. Jede Buchung ist zum EZB-Kurs ihres Tages umgerechnet.'+(T.tax<0?'\nDein CFD-Saldo ist negativ. Diesen Verlust kannst du nur mit anderen Kapitaleinkünften zum Tarif aus demselben Jahr ausgleichen. Mit Krypto-Gewinnen, Aktien-Gewinnen oder Lohn geht das nicht. Ein Vortrag ins nächste Jahr ist nicht möglich.':''));
-  $('taxnotes').innerHTML=notes.map(n=>`<p class="sigl y">${n}</p>`).join('')+(hasFiat()?`<p class="sigl">${gl('bankeur','Einzahlungen in Euro per Bank')}: Einen möglichen Kursgewinn auf das USD-Guthaben rechnet das Tool nicht.</p>`:'');
+  $('taxnotes').innerHTML=notes.map(taxNoteH).join('')+(hasFiat()?`<p class="sigl">${gl('bankeur','Einzahlungen in Euro per Bank')}: Einen möglichen Kursgewinn auf das USD-Guthaben rechnet das Tool nicht.</p>`:'');
   // Krypto
   const C=cryptoCalc('AT');const CY=Object.assign({gain:0,loss:0,n:0,gainK:0,lossK:0,nK:0,kest:0,fee:0},C.byY[y]);const hasCxData=C.n>0;const cxIncl=S.ui.cxIncl!==false;const hasCx=hasCxData&&cxIncl;const cxs=hasCx?CY.gain+CY.loss:0;
   // Ab 0.38: Verkäufe mit KESt-Abzug einer österreichischen Börse getrennt (Kennzahl 173/175, abgezogene KESt 899)
   const K=hasCx&&CY.nK>0,kestPaid=K?CY.kest:0;
   $('opt-l').style.display=hasCx?'':'none';
   // Ab 0.73 (2.1): Krypto in derselben Tabelle wie die CFD. (i) der Karte mit den Krypto-Annahmen (2.6: auch der Satz zu Zahlungen mit Coins)
+  // Ab 0.195 (Florians Auftrag 0.195, Teil A, und Freigabe A3): je Karte eine Tabelle aus taxRows. Das (i) der Karte „CFD“ ist k-taxat ohne Krypto-Teil,
+  // die Karte „Krypto“ hat k-atcx mit dem Satz zu Zahlungen mit Coins (bis 0.194 nach „Krypto:“ an k-taxat angehängt; Wortlaut sonst gleich).
   glSet('tx-salcx',`Aus ${CY.n===1?'1 Verkauf':fI.format(CY.n)+' Verkäufen'} (Einzahlungen bei Tag, Verkäufe, Zahlungen).`);
-  glSet('k-taxat',hasCxData?'<b>Krypto:</b> '+GL['k-atcx'].h+(payBN(C,y)?'\n'+PAY_ANN.AT:''):'');
-  $('t-taxparts').innerHTML=taxTabH({c:{y,cfd:R.length>0,cx:hasCx,opt:!!S.ui.opt},T,R,cy:CY,DE:false},hasCxData,cxIncl);
+  glSet('k-atcx',payBN(C,y)?PAY_ANN.AT:'');
+  const XT={c:{y,cfd:R.length>0,cx:hasCx,opt:!!S.ui.opt},T,R,cy:CY,DE:false};
+  $('t-taxparts').innerHTML=taxTabH(XT,'cfd');
   // Ab 0.193: Hinweis „noch unklar“ für das Steuerjahr, direkt unter der Tabelle
   $('tax-unklar').innerHTML=unklarSteuerH(y);
+  // Ab 0.195: Karte „Krypto {Jahr}“ nur mit Krypto-Daten; ist Krypto aus (Häkchen oder „Krypto-Steuer ausschalten“, derselbe Schalter), bleiben Titel,
+  // Häkchen und der Satz dazu, die Tabelle fällt weg (Florians Freigabe 0.195, A1 und A2)
+  $('tx-cx').style.display=hasCxData?'':'none';$('tax-cx-title').textContent=`Krypto ${y}`;
+  $('tax-cx-tick').innerHTML=hasCxData?taxCxTickH(cxIncl):'';
+  const cxTab=hasCx?taxTabH(XT,'cx'):'';$('t-taxcx').innerHTML=cxTab;$('tax-cx-tab').style.display=cxTab?'':'none';
   // Ab 0.120: Jahressumme „Bezahlungen in Coins erhalten“ (grau, nur über 0) nach dem Satz zum Herausnehmen
   $('taxcx-warn').innerHTML=(hasCxData&&!cxIncl?'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung, Excel und Steuerschätzung). Krypto-Gewinne sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>':hasCxData?taxCxNote(C,y):'')+(hasCxData?bzLine(C,y):'');
   $('tx-not-l').innerHTML=taxNotList('AT');
@@ -16288,8 +16330,9 @@ function renderTaxAcc(){const G=taxAccGroups(),accs=G.flatMap(g=>g.accs),many=G.
   // Darunter, in dieser Reihenfolge: nicht enthalten, Fragen zum Datenstand, bestätigte Reports (bleibt beim Neuzeichnen offen), graue Zeilen, verschiedene Namen
   const lab=a=>S.accounts[a].name?`Konto ${esc(S.accounts[a].name)} (${esc(a)})`:`Konto ${esc(a)}`,ex=accs.filter(a=>!taxIn(a)),inn=accs.filter(taxIn);
   const bOpen=!!qBox.querySelector('details[open]'),ja=inn.filter(a=>D[a].ja),qs=inn.filter(a=>D[a].q);
+  // Ab 0.195 (Florians Antwort 8 zur Freigabe 0.195): die Frage zum Datenstand („… Ja“) als gelbe Fläche, bis 0.194 mit gelbem Strich
   qBox.innerHTML=(ex.length?`<div class="taxx"><p><b>Nicht enthalten in Steuer, Zusammenfassung und Excel:</b></p>${ex.map(a=>`<div class="taxxr"><span>${esc(S.accounts[a].name||a)}</span><input type="text" data-taxwhy="${esc(a)}" value="${esc(S.accounts[a].taxEx.why)}" placeholder="Grund (optional)" aria-label="Grund für Konto ${esc(a)}"></div>`).join('')}</div>`:'')+
-    qs.map(a=>`<p class="sigl y">${lab(a)}: Die letzte Buchung ist vom ${fD(D[a].last)}, der Report vom ${fD(D[a].rd)}. Enthält der Report alle Buchungen bis ${fD(D[a].rd)}? <button type="button" class="btn sm" data-dsja="${esc(a)}">Ja</button></p>`).join('')+
+    qs.map(a=>`<div class="msg warn">${lab(a)}: Die letzte Buchung ist vom ${fD(D[a].last)}, der Report vom ${fD(D[a].rd)}. Enthält der Report alle Buchungen bis ${fD(D[a].rd)}? <button type="button" class="btn sm" data-dsja="${esc(a)}">Ja</button></div>`).join('')+
     (ja.length?`<details class="taxja"${bOpen?' open':''}><summary>Bestätigte Reports (${fI.format(ja.length)})</summary>${ja.map(a=>`<p class="small">${lab(a)}: Report vom ${fD(D[a].rd)} enthält alle Buchungen bis zu diesem Tag (von dir bestätigt). <button type="button" class="btn sm" data-dsno="${esc(a)}">zurücknehmen</button></p>`).join('')}</details>`:'')+
     (y?taxDsGone(y):'')+
     (new Set(taxHolders().map(taxNameKey)).size>1?'<p class="small">Deine Konten laufen auf verschiedene Namen. Gib den Namen ein, der in den Dateien stehen soll.</p>':'')}
@@ -16306,14 +16349,19 @@ $('tx-acc').addEventListener('change',e=>{const t=e.target;
   else if(t.dataset.taxwhy!=null){const A=S.accounts[t.dataset.taxwhy];if(A&&A.taxEx){A.taxEx.why=t.value;save()}}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-dsja],[data-dsno],[data-taxacc]');if(!b)return;
   // Ab 0.73 (1.6): springt zur Frage, die unter der Tabelle steht
-  if(b.dataset.taxacc!=null){const c=$('tx-acc');unfold(c);(c.querySelector('#tax-acc-q [data-dsja]')||c).closest('p,.card').scrollIntoView({block:'center',behavior:'smooth'});return}
+  if(b.dataset.taxacc!=null){const c=$('tx-acc');unfold(c);(c.querySelector('#tax-acc-q [data-dsja]')||c).closest('p,.msg,.card').scrollIntoView({block:'center',behavior:'smooth'});return}
   const a=b.dataset.dsja||b.dataset.dsno,A=S.accounts[a];if(!A)return;if(b.dataset.dsja!=null)A.dsJa=A.repDate;else delete A.dsJa;save();render()});
-// Ab 0.72 (2.3): Sätze zum Datenstand in der Jahresabrechnung (AT und DE): Jahr unvollständig, offene Nachfrage in „Konten für die Steuer“
+// Ab 0.72 (2.3): Sätze zum Datenstand in der Jahresabrechnung (AT und DE): Jahr unvollständig, offene Nachfrage in „Konten für die Steuer“.
+// Ab 0.195 in der Karte „CFD {Jahr}“. Der Satz zur Frage ist eine Aufgabe im Tool (Florians Antwort 8 zur Freigabe 0.195): {t, tun} statt Text, er steht
+// als gelbe Fläche (taxNoteH); toString gibt den Satz, damit join() wie bis 0.194 Text ergibt.
 function taxDsNotes(y,ds){const o=[];
   if(ds&&ds<`${y}-12-31`)o.push(`Die Daten reichen nur bis ${fD(ds)}. Für die endgültige Jahresabrechnung brauchst du Reports bis zum Jahresende.`);
   const q=taxAccs().filter(a=>accDs(a).q);
-  if(q.length)o.push(`Zum Datenstand von ${q.length===1?'Konto '+esc(q[0]):'Konto '+q.slice(0,-1).map(esc).join(', ')+' und '+esc(q[q.length-1])} gibt es eine Frage in „Konten für die Steuer“. <button type="button" class="btn sm noprint" data-taxacc>Zur Frage</button>`);
+  if(q.length)o.push({tun:1,t:`Zum Datenstand von ${q.length===1?'Konto '+esc(q[0]):'Konto '+q.slice(0,-1).map(esc).join(', ')+' und '+esc(q[q.length-1])} gibt es eine Frage in „Konten für die Steuer“. <button type="button" class="btn sm noprint" data-taxacc>Zur Frage</button>`,toString(){return this.t}});
   return o}
+// Ab 0.195 (Florians Regel 0.195, GESTALTUNG Abschnitt 4): ein Satz unter der Tabelle der Karte „CFD {Jahr}“. Muss man im Tool etwas tun (n.tun), steht er
+// als gelbe Fläche, sonst als gelber Strich (Anmerkung zu den Zahlen). Wortlaut unverändert. Für Österreich und Deutschland.
+const taxNoteH=n=>n&&n.tun?`<div class="msg warn">${n.t}</div>`:`<p class="sigl y">${n}</p>`;
 // Ab 0.72 (1.7): Text bei fehlenden Kursen im Reiter Steuer (Sperre und Gelb bleiben). Tage vor dem Jahr kommen aus der Krypto-Rechnung (1.8).
 function taxMissTxt(mr,y){const d=mr.days,pre=d.filter(x=>x.slice(0,4)<y),ys=[...new Set(pre.map(x=>x.slice(0,4)))];
   return `Für die Steuer ${y} fehlen noch Wechselkurse an ${fI.format(d.length)} ${d.length===1?'Tag':'Tagen'}, z. B. am ${fD(d[d.length-1])}. Sobald sie geladen sind, rechnet das Tool das Jahr.`+
@@ -16356,14 +16404,17 @@ let DECX=null;
 function renderTaxDE(rows,y){
   const R=rows.filter(r=>r.y===y);const T=agg(R);const L22=lossDE(R);
   renderTaxDECx(y);
-  $('de-title').textContent=`Jahresabrechnung ${y} (Deutschland)`;
-  $('t-de-parts').innerHTML=taxTabH({c:{y,cfd:R.length>0,cx:DECX.on,opt:false},T,R,cy:DECX.Y,DE:true},DECX.has,S.ui.cxIncl!==false);
+  // Ab 0.195 (Florians Auftrag 0.195, Teil A): zwei Karten „CFD {Jahr}“ und „Krypto {Jahr}“, bis 0.194 „Jahresabrechnung {Jahr} (Deutschland)“
+  $('de-title').textContent=`CFD ${y}`;
+  const XT={c:{y,cfd:R.length>0,cx:DECX.on,opt:false},T,R,cy:DECX.Y,DE:true};
+  $('t-de-parts').innerHTML=taxTabH(XT,'cfd');
+  const cxTab=DECX.on?taxTabH(XT,'cx'):'';$('t-de-cx').innerHTML=cxTab;$('de-cx-tab').style.display=cxTab?'':'none';
   // Ab 0.193: Hinweis „noch unklar“ für das Steuerjahr, direkt unter der Tabelle
   $('de-unklar').innerHTML=unklarSteuerH(y);
   const notes=[...nyNotes(rows,y)];const lastD=taxDs(y);notes.push(...taxDsNotes(y,lastD));   // ab 0.72 Datenstand (2.3), ab Nachtrag 1 je Jahr
   // Ab 0.73 (2.6): wie in Österreich; Fristen und Annahmen im (i) der Karte (k-taxde)
   glSet('tx-salcfd','Anlage KAP, Zeile 19: ausländische Kapitalerträge ohne Steuerabzug, Gewinne und Verluste aus CFDs saldiert. Jede Buchung ist zum EZB-Kurs ihres Tages umgerechnet.'+(T.res<0?'\nDer Saldo ist negativ. In Deutschland wird ein Verlust aus Kapitalvermögen, der nicht verrechnet werden kann, ins nächste Jahr vorgetragen. Dafür muss er in der Steuererklärung stehen.':''));
-  $('de-notes').innerHTML=notes.map(n=>`<p class="sigl y">${n}</p>`).join('')+(hasFiat()?`<p class="sigl">${gl('bankeur','Einzahlungen in Euro per Bank')}: Einen möglichen Kursgewinn auf das USD-Guthaben rechnet das Tool nicht.</p>`:'');
+  $('de-notes').innerHTML=notes.map(taxNoteH).join('')+(hasFiat()?`<p class="sigl">${gl('bankeur','Einzahlungen in Euro per Bank')}: Einen möglichen Kursgewinn auf das USD-Guthaben rechnet das Tool nicht.</p>`:'');
   $('de-not-l').innerHTML=taxNotList('DE');
   if(document.activeElement!==$('de-pb'))$('de-pb').value=S.ui.dePb!=null?S.ui.dePb:'';
   $('de-kist').value=String(S.ui.deKist||0);
@@ -16386,19 +16437,24 @@ function renderTaxDE(rows,y){
 function renderTaxDECx(y){
   const X=DECX=deCx(y),{C,Y}=X,inc=S.ui.cxIncl!==false;
   // Ab 0.73 (2.1, 2.6): Krypto in der Tabelle der Jahresabrechnung (taxTabH); hier das Feld, die Sätze darunter und das (i) der Karte (auch „Eintragen: Anlage SO …“)
+  // Ab 0.195: Karte „Krypto {Jahr}“ (Titel, Häkchen; die Tabelle zeichnet renderTaxDE), nur mit Krypto-Daten, wie in Österreich
+  $('de-cx').style.display=X.has?'':'none';$('de-cx-title').textContent=`Krypto ${y}`;
+  $('de-cx-tick').innerHTML=X.has?taxCxTickH(inc):'';
   $('de-cx-body').style.display=X.has&&inc?'':'none';
   // Ab 0.120: Jahressumme „Bezahlungen in Coins erhalten“ (grau, nur über 0)
   $('de-cx-warn').innerHTML=!X.has?'':(inc?taxCxNote(C,y):'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung und Excel). Gewinne aus Coins, die du höchstens ein Jahr gehalten hast, sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>')+bzLine(C,y);
   const form=FORM_SO[y]?`Eintragen: Anlage SO, Abschnitt „Kryptowerte“ (Formular ${y}): ${FORM_SO[y].ja} „Ja“, ${FORM_SO[y].bez} Bezeichnung (z. B. „USDC/USDT, siehe Aufstellung“), ${FORM_SO[y].zeit} Zeitpunkte laut Aufstellung, ${FORM_SO[y].vp} bis ${FORM_SO[y].wk} die Summen oben, ${FORM_SO[y].g} Gewinn/Verlust, Übertrag in ${FORM_SO[y].zur}. Als gesonderte Aufstellung dient das Excel-Blatt „Verkäufe nach FIFO“. Ob alle Verkäufe in einer Zeile stehen dürfen oder in ${FORM_SO[y].weitere}, klärst du mit deiner Steuerberatung.`:
     `Trag Verkäufe von USDC und USDT im Abschnitt Kryptowerte der Anlage SO ein. Fass sie zusammen und leg eine Aufstellung bei. Prüf die Zeilennummern im aktuellen Formular. Als gesonderte Aufstellung dient das Excel-Blatt „Verkäufe nach FIFO“.`;
-  glSet('k-taxde',X.has?'<b>Krypto:</b> '+GL['k-decx'].h+(payBN(C,y)?'\n'+PAY_ANN.DE:'')+'\n'+form:'');
+  // Ab 0.195 (Freigabe A3): das (i) der Karte „Krypto“ ist k-decx mit dem Satz zu Zahlungen mit Coins und „Eintragen: …“ (bis 0.194 nach „Krypto:“ an k-taxde)
+  glSet('k-decx',(payBN(C,y)?PAY_ANN.DE+'\n':'')+form);
   // Ab 0.73 (2.2): Verlust-Satz und Zahl der Verkäufe im Begriff auf „Gewinn/Verlust“
   glSet('tx-gv',`Aus ${Y.n===1?'1 Verkauf':fI.format(Y.n)+' Verkäufen'}, davon ${fI.format(Y.nT)} mit steuerpflichtigem Teil (FIFO, Haltefrist).`+(X.g<0?'\nEin Verlust ist nur mit Gewinnen aus privaten Veräußerungsgeschäften verrechenbar, auch mit dem Vorjahr (Rücktrag) oder späteren Jahren (Vortrag). Damit er festgestellt wird, gib ihn in der Steuererklärung an.':''));
   if(!X.has||!inc)return;
   if(document.activeElement!==$('de-other'))$('de-other').value=S.ui.deOther;
   const fg=freiGrenze(y),oth=String(S.ui.deOther).trim()?parseDe(S.ui.deOther):null,sum=X.g+(oth>0||oth<0?oth:0),fgT=gl('freigrenze','Freigrenze');
   let t;
-  if(oth!=null&&isNaN(oth))t=`<p class="sigl y">Bei „Andere private Veräußerungsgewinne“ steht keine gültige Zahl. Schreibe z. B. 250 oder lass das Feld leer.</p>`;
+  // Ab 0.195 (Florians Auftrag 0.195, Teil D): die ungültige Zahl als gelbe Fläche wie alle Eingabefehler, bis 0.194 mit gelbem Strich
+  if(oth!=null&&isNaN(oth))t=`<div class="msg warn">Bei „Andere private Veräußerungsgewinne“ steht keine gültige Zahl. Schreibe z. B. 250 oder lass das Feld leer.</div>`;
   else if(oth==null)t=X.g<=0?'':X.g<fg?`<p class="sigl">Steuerfrei, wenn du keine anderen privaten Veräußerungsgewinne hast. Die ${fgT} liegt bei ${fE.format(fg)} im Jahr, für alle privaten Verkäufe zusammen.</p>`:
     `<p class="sigl y">Ab der ${fgT} von ${fE.format(fg)}: Der ganze Gewinn ist steuerpflichtig, zu deinem persönlichen Steuersatz.</p>`;
   else t=sum<fg?`<p class="sigl">Zusammen ${fE.format(sum)}: unter der ${fgT} von ${fE.format(fg)}, steuerfrei.</p>`:`<p class="sigl y">Zusammen ${fE.format(sum)}: nicht unter der ${fgT} von ${fE.format(fg)}. Alles ist steuerpflichtig, zu deinem persönlichen Steuersatz.</p>`;
@@ -16937,7 +16993,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.193',VDATE='24.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.195',VDATE='25.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -17380,7 +17436,9 @@ function fenBack(fn){const ok=()=>document.visibilityState!=='hidden'&&(!documen
   let done=false;const go=()=>{if(done)return;done=true;document.removeEventListener('visibilitychange',h);window.removeEventListener('focus',h);document.removeEventListener('pointerdown',go,true);fn()},h=()=>{if(ok())go()};
   document.addEventListener('visibilitychange',h);window.addEventListener('focus',h);document.addEventListener('pointerdown',go,true)}
 $('btn-don-go').innerHTML=HEART+' Zur Spende';
-function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let h='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)h=`<div class="msg warn">Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.</div>`}$('stale1').innerHTML=h;$('stale2').innerHTML=h}
+// „Deine Daten reichen bis …“ ab 35 Tagen: im Reiter Reports (#stale1) als gelbe Fläche, oben in der Auswertung (#stale2) ab 0.195 als gelber Strich in einer
+// Karte (Florians Auftrag 0.195, Teil C, Punkt 2, und Antwort 3 zur Freigabe: Reports bleibt eine Fläche). Bis 0.194 an beiden Stellen die Fläche.
+function renderStale(){const rows=window.__rows||[];const lastD=rows.length?rows[rows.length-1].d:'';let t='';if(lastD){const age=(Date.now()-new Date(lastD+'T12:00:00Z'))/864e5;if(age>35)t=`Deine Daten reichen bis ${fD(lastD)}. Für aktuelle Zahlen lade neue MT5-Reports.`}$('stale1').innerHTML=t?`<div class="msg warn">${t}</div>`:'';$('stale2').innerHTML=t?`<div class="card"><p class="sigl y" style="margin:0">${t}</p></div>`:''}
 // Klick auf einen Kartentitel klappt die Karte auf oder zu. Lag der Kartenanfang beim Zuklappen schon über der Filterzeile, rückt die Karte darunter, damit die nächste Karte im Blick ist.
 // Ab 0.50 (13): Die Karte klappt nur, wenn Drücken und Loslassen der Maus beide auf dem Titel waren (nicht in einem Feld, Knopf, Menü oder Begriff)
 // und dabei kein Text markiert wurde. Vorher klappte z. B. „Alle Vorgänge“ zu, wenn man im Suchfeld Text markierte und außerhalb losließ.
