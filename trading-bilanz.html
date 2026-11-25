@@ -2861,7 +2861,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <!-- Coin gilt für alle Zeilen dieses Einfügens, merkt sich den letzten Wert (S.defCoin).
          Ab 0.196 (Florians Auftrag 0.196, A6): Frage in einem sanften Rahmen (Rand --line, Fläche --bg wie das Feld zum Ziehen), direkt vor „Übernehmen“.
          Der Satz „Hast du USDC und USDT gemischt? …“ fällt weg. -->
-    <div class="tagcf"><p class="tagcq"><b id="tagcoin-q">Mit welchem <span class="gl" data-gl="tagcoin" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Coin</span> hast du ein- und ausgezahlt?</b> <select id="tagcoin" aria-labelledby="tagcoin-q"><option>USDC</option><option>USDT</option></select></p><p class="small">Gilt für alle Zeilen mit Krypto. Du kannst ihn danach bei jeder Zeile ändern.</p></div>
+    <div class="tagcf"><p class="tagcq"><b id="tagcoin-q">Mit welchem <span class="gl" data-gl="tagcoin" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Coin</span> hast du ein- und ausgezahlt?</b> <select id="tagcoin" aria-labelledby="tagcoin-q"><option>USDC</option><option>USDT</option><option value="ANDERER">Anderer Coin</option></select></p><p class="small">Gilt für alle Zeilen mit Krypto. Du kannst ihn danach bei jeder Zeile ändern.</p></div>
     <div class="row tagrow" data-act><button class="btn primary" id="btn-tagpaste">Übernehmen</button></div>
     <div id="tagmsg"></div>
     <!-- Vorschau vor dem Speichern (renderTagPrev) -->
@@ -3856,6 +3856,13 @@ function rateFor(d,cur,t){if(cur==='EUR')return 1;const o=rateInfo(d,t);return o
 function rateDateFor(d,cur,t){if(cur==='EUR')return '';const o=rateInfo(d,t);return o?o.rd:''}
 // Ab 0.40 in österreichischer Zeit (tagAT): Datum tagD und Zeitpunkt tagT einer Tag-Zeile für Kurse, Steuerjahr und Reihenfolge
 const tagD=t=>tagAT(t).date,tagT=t=>{const a=tagAT(t);return a.time?a.date+' '+a.time:''};
+// Ab 0.196 (Florians Auftrag 0.196, Teil C): „Anderer Coin“ bei Tag (Tag nimmt auch BTC, ETH, BNB und SOL). Gespeichert als Coin TAG_OC, gezeigt als
+// „anderer Coin“ (Florians Antwort F9: kein Feld für den Namen). Eine solche Zeile zählt für „Dein echtes Geld“ (geldZeilen nimmt jede durchgeführte Zeile,
+// unverändert), aber nicht in der Krypto-Rechnung: kein Verkauf oder Kauf, kein Bestand, keine Verknüpfung mit Bewegungen aus Wallet-Dateien, keine
+// Frage „Woher kamen die Coins?“, keine Wallet. Die eine Prüfung dafür: tagKx(t) = Tag-Zeile mit USDC oder USDT (nicht Bank, nicht anderer Coin).
+const TAG_OC='ANDERER',tagAnders=t=>!!t&&!t.fiat&&t.coin===TAG_OC,tagKx=t=>!!t&&!t.fiat&&t.coin!==TAG_OC;
+// Name des Coins einer Tag-Zeile für Anzeige und Excel
+const tagCoinT=t=>t.coin===TAG_OC?'anderer Coin':t.coin;
 function allDates(){const a=Object.values(S.deals).map(x=>dOf(x.t));for(const t of Object.values(S.tag))a.push(tagD(t));for(const c of S.cx)a.push(c.date);return a}
 function dealRange(){let mn=null,mx=null;for(const d of allDates()){if(!mn||d<mn)mn=d;if(!mx||d>mx)mx=d}return [mn,mx]}
 // Fehlende Kurse nach der Regel oben. o (optional): accs = Set der Konten, from/to = Zeitraum, year = Jahr, deals = nur MT5-Buchungen.
@@ -3876,7 +3883,8 @@ function missingRates(o){o=o||{};let n=0,provRd='';const days=new Set(),prov=new
   // Nicht für Steuer (o.tax) und das Excel mit allen Daten (dort ohne o.hy): Sie zeigen keine Handy-Zeilen.
   if(o.hy&&!o.tax)for(const x of hyDeals()){if(o.accs&&!o.accs.has(x.a))continue;const d=dOf(x.t);if(inR(d))chk0(d,x.t)}
   if(o.real)for(const t of Object.values(S.tag))if(t.status==='ok')chk0(tagD(t),tagT(t));
-  if(!o.deals&&!o.accs){for(const t of Object.values(S.tag)){if(t.status!=='ok'||!t.own)continue;chk(tagD(t),tagT(t),!t.fiat)}
+  // Ab 0.196: eine Zeile mit anderem Coin braucht wie Bank nur den Kurs des Tages, keinen der Krypto-Rechnung (tagKx)
+  if(!o.deals&&!o.accs){for(const t of Object.values(S.tag)){if(t.status!=='ok'||!t.own)continue;chk(tagD(t),tagT(t),tagKx(t))}
     for(const c of S.cx)if(c.cur==='USD'&&c.date)chk(c.date,'',1);
     // Ab 0.49 (5.1): auch die Tageswerte der Krypto-Rechnung (nur vollständige Einträge, nur wenn Krypto in der Abrechnung zählt): Gebühr in Coins,
     // Gebühr eines Übertrags („Menge angekommen“ kleiner), Rückerstattung zum Marktwert (ohne Zahlung im selben Jahr), „In anderen Coin getauscht“
@@ -6911,7 +6919,7 @@ function wLdMerge(S){let n=0;const W=S.wtx,CA=wCardSet(S),plain=c=>!!c&&c.src===
   return n}
 const W_WIN='Weiß ich nicht';
 function wqWin(S){let n=0;
-  for(const t of Object.values(S.tag)){if(t.wallet!==W_WIN||t.wk||t.hand||t.fiat||t.wq)continue;t.wallet='';t.wq='q';delete t.wok;n++}
+  for(const t of Object.values(S.tag)){if(t.wallet!==W_WIN||t.wk||t.hand||!tagKx(t)||t.wq)continue;t.wallet='';t.wq='q';delete t.wok;n++}
   const used=S.cx.some(c=>c.wallet===W_WIN||c.to===W_WIN)||Object.values(S.addr).some(a=>a&&a.wallet===W_WIN)||Object.values(S.tag).some(t=>t.wallet===W_WIN)||
     Object.values(S.bxOpen||{}).some(o=>o.w===W_WIN)||Object.values(S.bxW||{}).some(o=>o.w===W_WIN);
   if(S.wallets.includes(W_WIN)&&!used){S.wallets=S.wallets.filter(w=>w!==W_WIN);if(S.wmeta)delete S.wmeta[W_WIN];
@@ -7017,7 +7025,7 @@ function wExOutApply(S,k,c){const m=S.wtx[k];if(!m||m.st!=='open'||!c)return nul
 // Ab 0.49 (2.5): stiller Standard (Start-Wallet, S.w0); ohne S.w0 (ältere Stände in Tests) die erste Wallet
 const wW0=S=>typeof S.w0==='string'?S.w0:(S.wallets[0]||'');
 function wTagWSug(S){const out=[],W0=wW0(S);
-  for(const t of Object.values(S.tag)){if(t.kind!=='ein'||t.status!=='ok'||t.fiat||t.wk||t.wallet!==W0||(t.man&&t.man.w))continue;const d=tagAT(t).date;
+  for(const t of Object.values(S.tag)){if(t.kind!=='ein'||t.status!=='ok'||!tagKx(t)||t.wk||t.wallet!==W0||(t.man&&t.man.w))continue;const d=tagAT(t).date;
     const ws=[...new Set(S.cx.filter(c=>(c.kind==='eingang'||c.kind==='kauf')&&c.wallet!==W0&&c.date===d&&Math.abs(c.qty-t.qty)<=0.01+1e-9&&!(t.noW||[]).includes(c.wallet)).map(c=>c.wallet))];
     if(ws.length)out.push({t,ws})}
   return out}
@@ -7338,8 +7346,9 @@ function vgBuild(S){const V=[],used=new Set(),W=S.wtx,r8=x=>+(+x).toFixed(8),own
   // Ab 0.47 (1.5): Tag-Zeile ohne Wallet (wq): „Wallet offen“ bzw. Geschenk. Ab 0.48 (3.3): Name der Person (pn), sonst „Geschenk von jemandem“ bzw. „Geschenk an jemanden“
   // Ab 0.47 (Nachtrag 2, 2): Datum und Uhrzeit in österreichischer Zeit (tagAT), auch für Reihenfolge, Suche, Zeitraum und „Rundherum“
   // Ab 0.51 (3): Bank-Zeilen zeigen „Bank → Tag“ bzw. „Tag → Bank“
-  for(const t of Object.values(S.tag)){const ein=t.kind==='ein',ta=tagAT(t),tw=t.fiat?'Bank':t.wq==='q'?'Wallet offen':t.wq==='g'&&!t.fiat?(t.pn||(ein?'Geschenk von jemandem':'Geschenk an jemanden')):t.wallet,v={id:'t:'+t.id,k:ein?'tagein':'tagaus',art:ein?'Einzahlung zu Tag':'Auszahlung von Tag',d:ta.date,tm:ta.time||'',
-      from:ein?tw:'Tag',to:ein?'Tag':tw,coin:t.coin||'',qOut:t.qty,qIn:t.qty,fee:0,feeW:'',cx:[],tag:[t.id],mv:[]};if(t.fiat)v.bank=1;add(v,t.wk);V.push(v)}
+  // Ab 0.196: anderer Coin zeigt „anderer Coin → Tag“ bzw. „Tag → anderer Coin“ und als Menge den Betrag laut Tag in USD
+  for(const t of Object.values(S.tag)){const ein=t.kind==='ein',ta=tagAT(t),oc=tagAnders(t),tw=t.fiat?'Bank':oc?'anderer Coin':t.wq==='q'?'Wallet offen':t.wq==='g'&&!t.fiat?(t.pn||(ein?'Geschenk von jemandem':'Geschenk an jemanden')):t.wallet,v={id:'t:'+t.id,k:ein?'tagein':'tagaus',art:ein?'Einzahlung zu Tag':'Auszahlung von Tag',d:ta.date,tm:ta.time||'',
+      from:ein?tw:'Tag',to:ein?'Tag':tw,coin:oc?'USD':t.coin||'',qOut:oc?t.usd:t.qty,qIn:oc?t.usd:t.qty,fee:0,feeW:'',cx:[],tag:[t.id],mv:[]};if(t.fiat)v.bank=1;if(oc)v.oc=1;add(v,t.wk);V.push(v)}
   // Ab 0.46 (2.2, 3.3a): offene Zugänge und Abgänge einer Börse (Zeile aus der Börsen-Datei ohne Gegenstück bzw. ohne Ziel)
   for(const [id,o] of Object.entries(S.bxOpen||{})){const ein=o.dir==='ein';V.push({id:'b:'+id,k:ein?'bxein':'bxaus',art:ein?'Einzahlung bei '+o.w:'Auszahlung von '+o.w,d:o.date,tm:o.time||'',
       from:ein?'':o.w,to:ein?o.w:'',coin:o.coin,qOut:o.qty,qIn:ein?o.qty:(o.qi>0?o.qi:o.qty),fee:0,feeW:'',cx:[],tag:[],mv:[],bxo:id})}
@@ -8250,7 +8259,8 @@ const wNet=n=>W_NET[n]?W_NET[n].n:n;
 const wCoinH=m=>wCardTok(m)?`${gl('kartenguthaben','Kartenguthaben')} <span class="small">(${esc(W_CONTRACTS[m.contract].card.sym)})</span>`:
   m.tok?`${m.coin} <span class="small">(${esc(m.tok.sym)}, ${gl('unbtoken','unbekannter Token')})</span>`:W_CONTRACTS[m.contract]&&W_CONTRACTS[m.contract].sym?`${m.coin} <span class="small">(${esc(W_CONTRACTS[m.contract].sym)})</span>`:m.bridged?`${m.bridged} <span class="small">(${gl('ueberbrueckt','überbrückt')})</span>`:m.coin;
 // Ab 0.40 als Kopien mit österreichischem Datum und Uhrzeit (tagCp). Verknüpft wird immer über S.tag[t.id].
-const wTagsFree=()=>Object.values(S.tag).filter(t=>t.status==='ok'&&!t.fiat&&!t.wk).map(tagCp);
+// Ab 0.196: ohne Zeilen mit anderem Coin (tagKx), die Wallet-Datei enthält nur USDC und USDT
+const wTagsFree=()=>Object.values(S.tag).filter(t=>t.status==='ok'&&tagKx(t)&&!t.wk).map(tagCp);
 const wOpenN=()=>Object.values(S.wtx).filter(m=>m.st==='open').length;
 const tagRef=t=>`${t.kind==='aus'?'Auszahlung':'Einzahlung'} bei Tag vom ${fD(tagAT(t).date)}, ${usd(t.usd)} (Tag-ID ${esc(t.id)})`;
 // Übertrag, der mit einer Bewegung verknüpft ist und wegfällt (Zusammenführen, „X → X“): Bewegung wieder offen (dann „intern“), Gebühren aus
@@ -10042,6 +10052,10 @@ $('wtodo').addEventListener('click',e=>{
   {const tb=e.target.closest('[data-tdbal]');if(tb){kbOpen(tb.dataset.tdbal||'');return}}
   // Ab 0.48 (1.3): „Verstanden“ beim grauen Punkt zu den Kursen, der Punkt kommt erst mit einem neuen Stand wieder
   {const ro=e.target.closest('[data-rateok]');if(ro){S.rateOk=ro.dataset.rateok;save();render();return}}
+  // Ab 0.196 (Teil C): gelber Punkt „… mit einem anderen Coin“: „Verstanden“ merkt es an der Zeile (t.ocOk), „Coin ändern“ öffnet die Tag-Zeile über
+  // „Noch offen“ (tdOver, Rückweg wie bei jeder Aufgabe)
+  {const oo=e.target.closest('[data-tocok]');if(oo){const t=S.tag[oo.dataset.tocok];if(t){t.ocOk=1;save();render()}return}}
+  {const oe=e.target.closest('[data-tocedit]');if(oe){tdOver();openTg(oe.dataset.tocedit);return}}
   const wq=e.target.closest('[data-wcq]');if(wq){const [w,v]=wq.dataset.wcq.split('|');S.wmeta=S.wmeta||{};S.wmeta[w]=Object.assign({},S.wmeta[w],{card:v==='1'});save();render()}});
 // Einfügen in zwei Schritten (ab 0.36): „Übernehmen“ liest den Text und zeigt eine Vorschau (TAGP), erst „Speichern“ schreibt in S.tag.
 // tagMerge spielt das Speichern an einer Kopie von S.tag durch: Dieselbe Auszahlung steht auf beiden Tag-Seiten (Transaction History
@@ -10126,7 +10140,8 @@ function tagPRows(){const D=TAGP,src=D.P.page==='wd'?'wd':'hist';
 const TAG_PAGE={ein:'Transaction History',aus:'Withdrawals'};
 // Ab 0.47 (1.5): in der Vorschau je neuer Krypto-Zeile „Woher kamen die Coins?“ bzw. „Wohin gingen die Coins?“ (freiwillig, Vorgabe „weiß ich noch nicht“).
 // Zeilen, die eine Zeile von Hand ersetzen, behalten deren Wallet und fragen nicht.
-function tagPrevW(D,M){const rep=new Set(M.hand.filter(([h])=>D.rep[h]!==false).map(([,r])=>r)),L=M.add.filter(r=>!r.fiat&&!rep.has(r.id));if(!L.length)return '';
+// Ab 0.196 (Teil C): mit „Anderer Coin“ im Rahmen keine Frage nach Woher und Wohin (keine Wallet, keine Krypto-Rechnung)
+function tagPrevW(D,M){const rep=new Set(M.hand.filter(([h])=>D.rep[h]!==false).map(([,r])=>r)),L=TAGC_OC?[]:M.add.filter(r=>!r.fiat&&!rep.has(r.id));if(!L.length)return '';
   // Ab 0.50 (1.4): am Handy je Zeile ein Block: „15.07.26 · Einzahlung · 1.129,86 USD“, darunter die Frage und die Auswahl in voller Breite (CSS #tagprev)
   const q=r=>r.kind==='ein'?'Woher kamen die Coins?':'Wohin gingen die Coins?';
   // Ab 0.55 (1): bei „Geschenk“ darunter der Baustein „Geschenk“ (tpg; Eingaben in TAGP.wgift, damit sie beim Neuzeichnen bleiben)
@@ -10135,6 +10150,9 @@ function tagPrevW(D,M){const rep=new Set(M.hand.filter(([h])=>D.rep[h]!==false).
 // Ab 0.51 (2): nach dem Neuzeichnen die Marken fehlender Entscheidungen wieder setzen
 // Ab 0.155 (E6): Beginnt oder endet das Warten der Tag-Vorschau, zeichnet das Tool Kacheln, Reiter „Wallet“ und Knopf „＋ Daten“ neu („!“)
 let TAGP_W=false;
+// Ab 0.196 (Florians Antwort F10 zur Freigabe 0.196): „Anderer Coin“ im Rahmen gilt nur für dieses eine Einfügen (nicht gespeichert); der Rahmen merkt
+// sich nur USDC oder USDT (S.defCoin)
+let TAGC_OC=false;
 function renderTagPrev(){tagPrevH();needRe($('tagprev'));pzUpd();if(!!TAGP!==TAGP_W){TAGP_W=!!TAGP;setTimeout(dtRe)}}
 function tagPrevH(){
   const box=$('tagprev');if(!TAGP){box.innerHTML='';return}
@@ -10216,14 +10234,15 @@ function saveTag(){
     if(tagMethLk(o)){const k=o.wk;if(S.wtx[k])bkL.push(Object.assign({},S.wtx[k]));naRec(S,'unl','',()=>wUnlink(k))}o.fiat=true;o.coin='EUR';if(r.meth)o.meth=r.meth;bkM.push(r.meth||'')}}
   for(const [a,t] of M.times)if(S.tag[a]&&!S.tag[a].time){S.tag[a].time=t;S.tag[a].tz='tag'}
   for(const m of tagMethNew(D))S.tagMeth[m]=tagMethBank(D,m)?'bank':'crypto';
-  const coin=$('tagcoin').value==='USDT'?'USDT':'USDC';S.defCoin=coin;
+  // Ab 0.196 (Teil C): mit „Anderer Coin“ (TAGC_OC) Coin TAG_OC, keine Wallet und keine Frage „Woher/Wohin“; S.defCoin bleibt USDC oder USDT
+  const oc=TAGC_OC,coin=oc?TAG_OC:$('tagcoin').value==='USDT'?'USDT':'USDC';if(!oc)S.defCoin=coin;
   if(M.add.length)S.tagBatch=(S.tagBatch||0)+1;
   // Ab 0.47 (1.5): keine stille Wallet mehr. Wahl in der Vorschau (D.wsel[id]): Wallet, '~g' (Geschenk) oder nichts = weiß ich noch nicht (wq 'q').
   // Bank-Zeilen haben keine Wallet-Frage (sie zählen nicht in der Krypto-Rechnung).
   // Ab 0.51 (3): „Bank“ in der Vorschau ('~b') macht die Zeile zur Bank-Zahlung, von Hand gewählt (man.b, man.w), die Menge merkt sich qPre
   // Ab 0.85 (Fund 1 aus 0.84): Eine Wallet aus der Vorschau gilt als Wahl der Person (man.w), auch die erste Wallet. Die Person hat sie gesehen und
   // gespeichert. Vorher galt „Meine Wallet“ danach als „vom Tool gewählt“ (tagSilent, W-49)
-  for(const r of M.add){const q=r.net>0?r.net:r.usd;delete r.net;const v=r.fiat?'':(D.wsel&&D.wsel[r.id])||'~q',bk=v==='~b',wv=S.wallets.includes(v);if(bk)r.fiat=true;
+  for(const r of M.add){const q=r.net>0?r.net:r.usd;delete r.net;const v=r.fiat||oc?'':(D.wsel&&D.wsel[r.id])||'~q',bk=v==='~b',wv=S.wallets.includes(v);if(bk)r.fiat=true;
     S.tag[r.id]=Object.assign(r,{coin:r.fiat?'EUR':coin,qty:q,own:true,wallet:wv?v:'',batch:S.tagBatch,man:bk?{w:1,b:1}:wv?{w:1}:{}},bk?{qPre:q}:{},r.time?{tz:'tag'}:{},v==='~q'||v==='~g'?{wq:v.slice(1)}:{});
     // Ab 0.55 (1): Angaben zum Geschenk wie im Fenster der Tag-Zeile (gEur, gd, gEurU, gdU, pn)
     const g=v==='~g'&&GP[r.id];if(g){const t=S.tag[r.id];if(g.v.pn)t.pn=g.v.pn;if(g.ein){if(g.v.unkp)t.gEurU=1;else t.gEur=g.C.eur;if(g.v.unkd)t.gdU=1;else t.gd=g.C.gd}}}
@@ -10236,7 +10255,7 @@ function saveTag(){
     if(o.wk&&S.wtx[o.wk]&&S.wtx[o.wk].ref===h){S.wtx[o.wk].ref=rid;t.wk=o.wk}delete S.tag[h];nRep++}
   const a=M.add.length;if(a)S.ui.lastLoad=new Date().toISOString();
   const ign=D.P.skip.prop+D.P.skip.other+D.dec.filter(x=>x==='skip').length;
-  const t0=tagLinkedK(),wn=wSync();nwMark(n0);TAGP=null;save();$('tagpaste').value='';
+  const t0=tagLinkedK(),wn=wSync();nwMark(n0);TAGP=null;TAGC_OC=false;save();$('tagpaste').value='';
   msg('tagmsg','ok',`${a-nRep} ${(a-nRep)===1?'neuer Vorgang':'neue Vorgänge'} übernommen${nRep?`, ${nRep} ${nRep===1?'Eintrag':'Einträge'} von Hand ersetzt`:''}${M.dup?`, ${M.dup} ${M.dup===1?'war':'waren'} schon da`:''}${M.times.length?`, bei ${M.times.length===1?'einer Auszahlung':M.times.length+' Auszahlungen'} die Uhrzeit ergänzt`:''}${ign?`, ${ign} ${ign===1?'Zeile':'Zeilen'} weggelassen`:''}.${a?a===1?' Der neue Vorgang ist mit ● markiert.':' Neue Vorgänge sind mit ● markiert.':''}${wn?` ${wn===1?'Ein Vorgang wurde':fI.format(wn)+' Vorgänge wurden'} mit ${tagLinkedF(t0)} verknüpft.`:''}${tagBankTxt(bkM,bkL)} Prüfe unten Art, Coin und „Mein Geld“.`);
   render();if(a)autoRates();
 }
@@ -10345,7 +10364,8 @@ function kxEvents(tag,cx,rf,bo){
   // jemanden, ohne Wallet dazwischen (Topf '@g:ID'): Einzahlung = Geschenk erhalten (Preis und Kaufdatum unbekannt, Tageswert, geschätzt) und
   // gleich danach die Einzahlung; Auszahlung = Auszahlung von Tag und gleich danach „Verschenkt“.
   for(const t of Object.values(tag)){
-    if(t.status!=='ok'||!t.own||t.fiat)continue;const wq=t.wq==='q'||t.wq==='g'?t.wq:'';if(wq==='q'&&t.kind==='aus')continue;
+    // Ab 0.196: Bank und anderer Coin zählen hier nicht (tagKx)
+    if(t.status!=='ok'||!t.own||!tagKx(t))continue;const wq=t.wq==='q'||t.wq==='g'?t.wq:'';if(wq==='q'&&t.kind==='aus')continue;
     const r=rf(t.date,t.time?t.date+' '+t.time:''),q=Math.abs(t.qty),b={d:t.date,tm:t.time||'',w:wq?'@'+wq+':'+t.id:t.wallet,coin:t.coin,q,src:'tag',id:t.id};
     // Ab 0.48 (1.4): Einkaufswert (gEur) und Kaufdatum (gd) der schenkenden Person wie beim Geschenk von Hand; ohne sie Tageswert und Geschenktag (geschätzt).
     // Ab 0.48 (1.1): aux = Hilfsschritt, zählt nicht in der Euro-Spalte der Liste (dort nur der Schritt der Tag-Zeile)
@@ -10668,7 +10688,8 @@ function renderWallet(){
   // Ab 0.43: wFix lief bis 0.42 in renderWf (jede Anzeige), die Bewegungen stehen jetzt in „Alle Vorgänge“
   renderTagPrev();renderWfPrev();if(Object.keys(S.wtx).length)wFix();renderWfTok();if(DT.open)dtRender();
   const L=cxLand(),DEw=L==='DE',rg=wRange(),today=todayLocal();
-  $('tagcoin').value=S.defCoin==='USDT'?'USDT':'USDC';
+  // Ab 0.196: „Anderer Coin“ bleibt bis zum Speichern dieses Einfügens stehen (TAGC_OC)
+  $('tagcoin').value=TAGC_OC?TAG_OC:S.defCoin==='USDT'?'USDT':'USDC';
   const has=Object.keys(S.tag).length>0;
   // Ohne Tag-Daten: Anleitungs-Knopf groß, danach klein. Ab 0.50 (1.1): der Knopf ist immer blau. Ab 0.196 siehe unten.
   // Ab 0.67 (Florians Wunsch): Feld immer 4 Zeilen hoch, mit und ohne Tag-Daten (bis 0.65 4 bzw. 2, in 0.66 8 bzw. 4)
@@ -10892,7 +10913,8 @@ const vgOrig=v=>vgOrigL(v).join(' + ');
 // Wallets eines Vorgangs (Filter, Fokus): von und nach, bei einer einzelnen Bewegung die eigene Seite
 function vgWs(v){if((v.k==='open'||v.k==='ign'||v.k==='int'||v.k==='dfx')&&v.mv.length===1){const w=wOwnW(wMv(v.mv[0]))||S.wtx[v.mv[0]].wFrom||S.wtx[v.mv[0]].wTo;return w?[w]:[]}
   // Ab 0.51 (3): „Bank“ einer Bank-Zeile ist keine Wallet
-  return [...new Set([v.from,v.to].filter(w=>w&&w!=='Tag'&&!(v.bank&&w==='Bank')))]}
+  // Ab 0.196: „anderer Coin“ einer Tag-Zeile mit anderem Coin ist keine Wallet
+  return [...new Set([v.from,v.to].filter(w=>w&&w!=='Tag'&&!(v.bank&&w==='Bank')&&!(v.oc&&w==='anderer Coin')))]}
 const vgFiltOn=()=>Object.values(S.ui.cf.vg||{}).some(a=>a.length)||!!S.ui.vgNew;
 // Ab 0.48 (3.9): neu = durch das Einlesen einer Datei entstanden (Tag, Wallet, Börse, Karte). Ein Vorgang ist neu, wenn alle seine Teile (Bewegungen,
 // Einträge, Tag-Zeilen, offene Börsen-Zeile) neu sind; so macht eine neue Datei alte Vorgänge nicht wieder neu. Von Hand ist nie neu.
@@ -11087,7 +11109,7 @@ function vgMvTab(ks,PM,o){const L=ks.filter(k=>S.wtx[k]).sort((a,b)=>S.wtx[a].ts
 function vgTagH(id){const t=S.tag[id];if(!t)return '';const a=tagAT(t),dis=t.status!=='ok';
   return `<div class="vgt" data-tid="${esc(id)}"><div class="row"><span>${tagDT(t,a)}</span><span>Tag-ID ${esc(t.id)}</span>
     <span>${t.kind==='ein'?'Einzahlung':'Auszahlung'} bei Tag${dis?' <span class="small">nicht durchgeführt</span>':''}</span><span>${gl('tagbetrag','Betrag')} ${usd(t.usd)}</span>
-    <span>${t.fiat?'<span class="small">Bank/Euro, kein Krypto</span>':`${gl('tagmenge','Menge')} ${fmtNum(t.qty)} ${t.coin}`}</span><span>${t.wq==='g'&&!t.fiat?`${t.kind==='ein'?'Woher':'Wohin'}: <b>${esc(tagWN(t))}</b>`:t.fiat?`${t.kind==='ein'?'Woher':'Wohin'}: <b>Bank</b>`:`${gl('tagwallet','Wallet')} ${esc(tagWN(t))}`}</span>
+    <span>${t.fiat?'<span class="small">Bank/Euro, kein Krypto</span>':tagAnders(t)?`${gl('tagcoin','Coin')}: anderer Coin <span class="small">(ohne Krypto-Rechnung)</span>`:`${gl('tagmenge','Menge')} ${fmtNum(t.qty)} ${t.coin}`}</span>${tagAnders(t)?'':`<span>${t.wq==='g'&&!t.fiat?`${t.kind==='ein'?'Woher':'Wohin'}: <b>${esc(tagWN(t))}</b>`:t.fiat?`${t.kind==='ein'?'Woher':'Wohin'}: <b>Bank</b>`:`${gl('tagwallet','Wallet')} ${esc(tagWN(t))}`}</span>`}
     ${t.kind==='ein'?`<span>${gl('meingeld','Mein Geld')}: ${t.own?'ja':'nein'}</span>`:''}<span class="small">${gl('herkunft','Herkunft')}: ${srcH(t.hand?'von Hand':'Tag-Daten')}${t.wk&&S.wtx[t.wk]?' + '+srcH('Datei '+vgMvW(t.wk)):''}</span></div>${tagNaH(t)}${tagGiftEst(t)?`<div class="msg info">${giftHint(!tagGE(t))}</div>`:''}</div>`}
 // Euro-Wert eines Eintrags (wie bis 0.42 in „Woher kamen deine Coins?“)
 function vgCxEuro(c){const money=v=>c.cur==='USD'?usd(v):fE.format(v),feeM=v=>kxGebUsd(c)?usd(v):fE.format(v);
@@ -11369,7 +11391,10 @@ let TG_ID=null;
 function openTg(id){const t=S.tag[id];if(!t)return;if(t.hand){openCxTag(id);return}TG_ID=id;const a=tagAT(t),m=t.wk&&S.wtx[t.wk];
   $('tg-t').textContent=t.kind==='ein'?'Einzahlung bei Tag':'Auszahlung von Tag';
   $('tg-info').innerHTML=`Tag-ID ${esc(t.id)} · ${tagDT(t,a)} · ${gl('tagbetrag','Betrag')} ${usd(t.usd)}${t.status!=='ok'?' · <span class="small">nicht durchgeführt</span>':''}`;
-  $('tg-kind').value=t.kind;$('tg-coin').value=t.coin==='USDT'?'USDT':t.fiat?(S.defCoin==='USDT'?'USDT':'USDC'):'USDC';
+  // Ab 0.196 (Florians Auftrag 0.196, Teil C): auch „Anderer Coin“, außer die Zeile ist mit einer Bewegung aus einer Wallet-Datei verknüpft (die Datei
+  // zeigt USDC oder USDT)
+  $('tg-coin').innerHTML='<option>USDC</option><option>USDT</option>'+(m?'':`<option value="${TAG_OC}">Anderer Coin</option>`);
+  $('tg-kind').value=t.kind;$('tg-coin').value=t.coin==='USDT'?'USDT':tagAnders(t)&&!m?TAG_OC:t.fiat?(S.defCoin==='USDT'?'USDT':'USDC'):'USDC';
   // Ab 0.47 (1.5): dieselbe Wahl wie beim Einfügen (weiß ich noch nicht · eine meiner Wallets · Geschenk). Ab 0.51 (3) auch bei Bank-Zeilen sichtbar,
   // mit „Bank“; Coin und Menge bzw. „Euro laut Kontoauszug“ blendet tgUI je nach Wahl um. Menge einer Bank-Zeile: die gemerkte (qPre), sonst der Betrag.
   // Ab 0.51: mit mehr als 2 Nachkommastellen genau (sonst übernahm „Speichern“ die gerundete Menge als von Hand geändert)
@@ -11385,11 +11410,12 @@ function openTg(id){const t=S.tag[id];if(!t)return;if(t.hand){openCxTag(id);retu
 // Ab 0.48 (3.3): Feld „Von wem?“ bzw. „An wen?“ bei jedem Geschenk (frei, mit Vorschlägen aus schon getippten Namen)
 // Ab 0.51 (3): je nach Wahl Coin und Menge (Krypto) oder „Euro laut Kontoauszug“ (Bank), dazu der Satz darunter
 // Ab 0.55 (1, 2): Woher/Wohin und die abhängigen Felder zeigt tagWUI (Baustein), hier nur Coin, Menge und der Satz darunter
-function tgUI(){const t=S.tag[TG_ID],R=$('tg-wf'),v=R.querySelector('[data-tw="w"]').value,b=v==='~b',m=t&&t.wk&&S.wtx[t.wk];tagWUI(R);
-  $('tg-coin-l').style.display=b?'none':'';$('tg-qty-l').style.display=b?'none':'';if(!t)return;
-  $('tg-link').innerHTML=b?`Per Bank${t.meth?' („'+esc(t.meth)+'“)':''}: keine Krypto-Steuer, keine Wallet. Zählt für „Dein echtes Geld“. ${(e=>e?`Ohne Angabe rechnet das Tool mit dem EZB-Kurs: ${fE.format(e)} (geschätzt).`:'Ohne Angabe rechnet das Tool mit dem EZB-Kurs, sobald er da ist.')(tagBankEur(t,true))}`:
+// Ab 0.196 (Teil C): „Anderer Coin“ (oc) blendet Menge und Woher/Wohin aus, wie Bank keine Krypto-Rechnung und keine Wallet
+function tgUI(){const t=S.tag[TG_ID],R=$('tg-wf'),v=R.querySelector('[data-tw="w"]').value,b=v==='~b',m=t&&t.wk&&S.wtx[t.wk],oc=!b&&$('tg-coin').value===TAG_OC;tagWUI(R);
+  $('tg-coin-l').style.display=b?'none':'';$('tg-qty-l').style.display=b||oc?'none':'';R.style.display=oc?'none':'';if(!t)return;
+  $('tg-link').innerHTML=oc?'Anderer Coin: keine Krypto-Rechnung, keine Wallet. Zählt für „Dein echtes Geld“.':b?`Per Bank${t.meth?' („'+esc(t.meth)+'“)':''}: keine Krypto-Steuer, keine Wallet. Zählt für „Dein echtes Geld“. ${(e=>e?`Ohne Angabe rechnet das Tool mit dem EZB-Kurs: ${fE.format(e)} (geschätzt).`:'Ohne Angabe rechnet das Tool mit dem EZB-Kurs, sobald er da ist.')(tagBankEur(t,true))}`:
     m?`Verknüpft mit der Bewegung aus der Wallet-Datei vom ${dm(m.date)} ${m.time.slice(0,5)}. Menge und Coin kommen von dort, außer du änderst sie hier. Die Wallet kommt aus dem Adressbuch.`:''}
-$('tg-form').addEventListener('change',e=>{if(e.target.matches('[data-tw="w"],#tg-kind'))tgUI()});
+$('tg-form').addEventListener('change',e=>{if(e.target.matches('[data-tw="w"],#tg-kind,#tg-coin'))tgUI()});
 // Ab 0.56 (1): „In der Liste zeigen“ unter Woher/Wohin einer verknüpften Zeile: Fenster zu, Bewegung aufgeklappt in „Alle Vorgänge“
 $('tg-modal').addEventListener('click',e=>{const j=e.target.closest('[data-tgmv]');if(!j)return;const k=j.dataset.tgmv;closeModal();wJump(k)});
 // Ab 0.48 (3.3): Vorschläge für „Von wem?“ / „An wen?“: alle schon getippten Namen (Einträge und Tag-Zeilen), nicht aus dem Adressbuch
@@ -11398,6 +11424,10 @@ function pnFill(){const N=[...new Set([...S.cx.map(c=>c.pn),...Object.values(S.t
 // Ab 0.51 (3): Die Wahl „Bank“ (b) bestimmt, welche Felder gelten. go = nach der Rückfrage „Bank wählen“ (Verknüpfung gelöst)
 // Ab 0.55 (1, 2): Woher/Wohin, „Euro laut Kontoauszug“ und Geschenk prüft und schreibt der Baustein (tagWCheck, tagWPut), wie in „Noch offen“
 function tgSave(go,z0){const t=S.tag[TG_ID];if(!t)return;const R=$('tg-wf'),k=$('tg-kind').value,w=R.querySelector('[data-tw="w"]').value,b=w==='~b';
+  // Ab 0.196 (Teil C): „Anderer Coin“: keine Menge, keine Wallet, kein Geschenk; „Mein Geld“ bleibt. Zurück auf USDC oder USDT gilt wieder Woher/Wohin.
+  if(!b&&$('tg-coin').value===TAG_OC){delete t.nw;const man=t.man=t.man||{};if(k!==t.kind)man.k=1;t.kind=k;if(t.coin!==TAG_OC){t.coin=TAG_OC;man.c=1}
+    t.wallet='';delete t.wq;delete t.wok;delete t.gEur;delete t.gd;delete t.gEurU;delete t.gdU;if(man.w)delete man.w;
+    if(t.kind==='ein')t.own=$('tg-own').checked;t.chk=1;wSync();save();closeModal();render();toast('Gespeichert.');return}
   if(!askDots(b?[[R.querySelector('[data-tw="eur"]'),'Euro laut Kontoauszug']]:[[$('tg-qty'),'Menge'],[giftEl(giftOf(R),'eur'),GIFT_T.eur]],$('tgmsg'),()=>tgSave(go)))return;
   // Ab 0.51 (2): Der Satz darunter (tgmsg) bleibt, das Feld wird zusätzlich markiert; bei „+ Neue Wallet …“ ohne OK das Namensfeld
   const V=tagWCheck(t,R,k,'tgmsg');if(!V)return;
@@ -11414,6 +11444,8 @@ function tgSave(go,z0){const t=S.tag[TG_ID];if(!t)return;const R=$('tg-wf'),k=$(
   tagWPut(t,V);
   if(!b){if($('tg-coin').value!==t.coin){t.coin=$('tg-coin').value;man.c=1}
     if(Math.abs(q-t.qty)>1e-12){t.qty=q;man.q=1}}
+  // Ab 0.196: von „Anderer Coin“ zurück auf USDC oder USDT ohne eigene Wahl bei Woher/Wohin: „weiß ich noch nicht“ (Frage in „Noch offen“)
+  if(!b&&t.coin!==TAG_OC&&!t.fiat&&!t.wallet&&!t.wq)t.wq='q';
   if(t.kind==='ein')t.own=$('tg-own').checked;
   t.chk=1;wSync();save();closeModal();render();toast('Gespeichert.')}
 $('btn-tg').onclick=()=>tgSave();
@@ -12082,6 +12114,15 @@ function todoItems(C){
   for(const r of wRest(S,C.pots).filter(r=>!S.cxKeep.includes(restK(r))))I.push({id:'r:'+r.w+'|'+r.coin,lv:'y',kind:'rest',t:0,eur:0,ref:'',big:`Rest bei ${esc(r.w)}: ${fmtNum(r.q)} ${r.coin}. Gebühren?`,why:gl('restgeb','Was heißt das?'),
     body:`<div class="row"><button type="button" class="btn" data-rsplit="${esc(r.w)}">Auf ${r.xs.length===1?'den Übertrag':'die '+fI.format(r.xs.length)+' Überträge'} verteilen</button><button type="button" class="btn" data-rfee="${esc(r.w)}">Als eine Gebühr buchen</button><button type="button" class="btn" data-keep="${esc(restK(r))}">So lassen</button></div>`,
     li:{d:'',w:r.w,what:'Rest ohne Datei',q:fmtNum(r.q)+' '+r.coin}});
+  // Ab 0.196 (Florians Auftrag 0.196, Teil C, Wortlaut mit Florians Antwort F11 zur Freigabe): gelber Punkt je durchgeführter Tag-Zeile mit anderem Coin,
+  // bis „Verstanden“ (t.ocOk, an der Zeile gemerkt). Bei einer Einzahlung ohne „Mein Geld“ ohne den Satz zu „Dein echtes Geld“ (sie zählt dort nicht).
+  // Kein Punkt zu einer fehlenden Bewegung: die Zeile hat keine Wallet und keine Frage „Woher kamen die Coins?“.
+  for(const t of Object.values(S.tag))if(tagAnders(t)&&t.status==='ok'&&!t.ocOk){const a=tagAT(t),ein=t.kind==='ein';
+    I.push({id:'oc:'+t.id,lv:'y',kind:'tagoc',t:wSec(a.date,a.time||''),eur:0,ref:'t:'+t.id,hdS:tdHdTag(t),
+      big:`${ein?'Einzahlung zu Tag':'Auszahlung von Tag'} mit einem anderen Coin: ${usd(t.usd)}`,
+      why:`${ein&&!t.own?'':'Sie zählt für „Dein echtes Geld“. '}Die Krypto-Steuer dafür rechnet das Tool nicht.`,
+      body:`<div class="row"><button type="button" class="btn" data-tocedit="${esc(t.id)}">Coin ändern</button><button type="button" class="btn primary" data-tocok="${esc(t.id)}">Verstanden</button></div>`,
+      li:{d:a.date,w:'Tag',what:'anderer Coin',q:usd(t.usd)}})}
   // Gefälschte Token, die schon als USDC zählen (1.10)
   for(const x of wTokFake(S))I.push({id:'f:'+x.k,lv:'y',kind:'tokfake',t:0,eur:0,ref:'',big:`Gefälschter Token? „${esc(wNormName(x.sym))}“ (${esc(x.name||'')}) sieht aus wie USDC oder USDT.`,
     why:`Er kommt nicht vom echten Vertrag. Bisher zählt er als USDC (${x.n===1?'1 Bewegung':fI.format(x.n)+' Bewegungen'}).`,body:`<div class="row"><button type="button" class="btn primary" data-tokd="${esc(x.k)}">nicht mehr zählen</button></div>`,li:{d:'',w:'',what:'gefälschter Token?',q:''}});
@@ -12099,7 +12140,8 @@ function todoItems(C){
   for(const it of I){const ks=it.mv?[it.mv]:it.sug?it.sug.ks:[];for(const k of ks)if(EXK['m:'+k])it.kids=(it.kids||[]).concat(EXK['m:'+k])}
 
   // Ab 0.46 (2.7, 2.7a): Ohne Steuer oder Krypto-Steuer aus: nur die Punkte zum Bestand, alle gelb
-  let J=I;if(taxOff()){const TX=new Set(['gap','typo','order','bxein','bxaus','tagq','tagw','cfee','swapest','swapland']);J=I.filter(x=>!TX.has(x.kind)&&!(x.kind==='inc'&&x.valOnly)).map(x=>x.lv==='r'?Object.assign(x,{lv:'y',eur:0}):x)}
+  // Ab 0.196: auch der Punkt „… mit einem anderen Coin“ (tagoc), er sagt nur etwas zur Krypto-Steuer
+  let J=I;if(taxOff()){const TX=new Set(['gap','typo','order','bxein','bxaus','tagq','tagw','cfee','swapest','swapland','tagoc']);J=I.filter(x=>!TX.has(x.kind)&&!(x.kind==='inc'&&x.valOnly)).map(x=>x.lv==='r'?Object.assign(x,{lv:'y',eur:0}):x)}
   // Ab 0.50 Nachtrag 2 (4.2): Datei „später zuordnen“: gelber Punkt mit „Datei zuordnen“. Bestand der vorläufigen Wallet und offene Bewegungen zwischen
   // ihr und einer echten Wallet sind Folgefehler, sie stehen darunter und zählen nicht
   for(const [w,x] of Object.entries(S.wlater||{})){if(!S.wallets.includes(w))continue;
@@ -12736,6 +12778,11 @@ function cxHelp(){
   $('cx-esthint').textContent=pay?' · ≈ = abgebuchter Betrag minus Gebühr, wenn du keinen Beleg hast.':' · ≈ = Tageswert schätzen, wenn du den genauen Euro-Wert nicht kennst.';
   $('btn-estval').title=card?'Abgebuchter Betrag minus Kartengebühr, in USD':pay?'Ohne Beleg: abgebuchter Betrag minus Gebühr, in USD':'Tageswert eintragen (Schätzung): Menge ÷ EZB-Kurs an diesem Tag, Annahme 1 Coin = 1 USD';$('btn-estval').setAttribute('aria-label',card?'Wert berechnen':pay?'Wert ohne Beleg: abgebuchter Betrag minus Gebühr':'Tageswert schätzen');
   sh('cx-fee-l',f.fee||f.feeIn);$('cx-fee-t').textContent=card?'Gebühr (USD, laut Karten-App)':f.tag?'Gebühr (Coins)':(f.feeIn?'davon Gebühr (':'Gebühr (')+(f.cur&&$('cx-cur').value==='USD'?'USD':'€')+')';
+  // Ab 0.196 (Florians Auftrag 0.196, Teil C): bei Einzahlung zu Tag und Auszahlung von Tag auch „Anderer Coin“ (nicht bei einer Bewegung aus einer
+  // Wallet-Datei); dann ohne Wallet und Gebühr, „Menge“ heißt „Betrag in USD“ (wie Tag ihn zeigt)
+  {const C=$('cx-coin'),o=C.querySelector(`option[value="${TAG_OC}"]`),et=EDIT_TAG&&S.tag[EDIT_TAG],ok=f.tag&&!(CX_META&&CX_META.wk)&&!(et&&et.wk);
+   if(ok&&!o)C.insertAdjacentHTML('beforeend',`<option value="${TAG_OC}">Anderer Coin</option>`);else if(!ok&&o){if(C.value===TAG_OC)C.value='USDC';o.remove()}
+   const oc=ok&&C.value===TAG_OC;sh('cx-wallet-l',!oc);if(oc)sh('cx-fee-l',false);$('cx-qty-l').firstChild.textContent=oc?'Betrag in USD':'Menge';$('cx-qty').placeholder=oc?'in USD':'Menge'}
   sh('cx-feein-h',!!f.feeIn);sh('cx-feep-w',!f.tag);$('cx-feep').setAttribute('aria-label',pay?'Gebühr in Prozent vom abgebuchten Betrag':'Gebühr in Prozent vom Wert');
   sh('cx-kest-l',f.kest&&!DE);sh('cx-kestv-l',$('cx-kest').checked);
   sh('cx-nft-l',f.recv&&!DE);sh('cx-recv-l',f.recv&&(DE||$('cx-nft').checked));
@@ -12904,31 +12951,33 @@ function endEdit(){EDIT=null;CX_META=null;EDIT_TAG=null;CX_PROV=null;$('cx-sug')
 // Ab 0.45 (1.11): Ein- oder Auszahlung zu Tag von Hand als Tag-Zeile (id h1, h2 …, hand). Menge = Betrag laut Tag (usd), Gebühr = Unterschied
 // zur Wallet: Einzahlung qty = Menge + Gebühr (aus der Wallet weg), Auszahlung qty = Menge − Gebühr (in der Wallet angekommen). tz 'at' = Uhrzeit
 // schon österreichisch. Rechnet wie eine Zeile aus den Tag-Daten.
-async function saveTagHand(k,d,w,c,q){const fs0=$('cx-fee').value.trim(),fee=fs0?parseDe(fs0):0,tm=cxTimeIn(),note=$('cx-note').value.trim();
+// Ab 0.196 (Teil C): Coin „Anderer Coin“ (TAG_OC): keine Wallet, keine Gebühr, Menge = Betrag laut Tag; die Zeile zählt nur für „Dein echtes Geld“
+async function saveTagHand(k,d,w,c,q){const oc=c===TAG_OC,fs0=oc?'':$('cx-fee').value.trim(),fee=fs0?parseDe(fs0):0,tm=cxTimeIn(),note=$('cx-note').value.trim();if(oc)w='';
   // Ab 0.51 (2): Felder zusätzlich markiert
   const nd=(...L)=>needMark($('cx-form'),L.map(x=>[x,'']));
   const miss=[],ms=[];if(!d){miss.push('Datum');ms.push('#cx-date')}if(!(q>0)){miss.push('Menge');ms.push('#cx-qty')}if(miss.length){msg('cxmsg','bad','Es fehlt: '+miss.join(', ')+'. Trage es ein.');return nd(...ms)}
   if(!(fee>=0)){msg('cxmsg','bad','Gebühr: Das ist keine gültige Zahl. Schreibe z. B. 0,50 oder lass das Feld leer.');return nd('#cx-fee')}
   const ein=k==='tagein',qty=+(ein?q+fee:q-fee).toFixed(8);if(!(qty>0)){msg('cxmsg','bad','Die Gebühr ist nicht kleiner als die Menge. Prüfe die beiden Zahlen.');return nd('#cx-fee','#cx-qty')}
-  if(!S.wallets.includes(w)){msg('cxmsg','bad','Wähle eine Wallet oder lege mit „+ Neue Wallet …“ bzw. „+ Neue Karte …“ eine an.');return nd('#cx-wallet')}
+  if(!oc&&!S.wallets.includes(w)){msg('cxmsg','bad','Wähle eine Wallet oder lege mit „+ Neue Wallet …“ bzw. „+ Neue Karte …“ eine an.');return nd('#cx-wallet')}
   // Ab 0.57 Nachtrag: aus einer offenen Bewegung der Wallet-Datei (Punkt in „Noch offen“) wie bei jedem anderen Eintrag: die eigene Adresse geht ins
   // Adressbuch (Rückfrage wie in addCx, eine vorläufige Wallet geht in der gewählten auf), die neue Tag-Zeile ist gleich mit der Bewegung verknüpft.
   // Bisher entstand eine lose Tag-Zeile, die Bewegung blieb offen und die Datei ohne Wallet.
-  const wk=!EDIT_TAG&&CX_META&&CX_META.wk&&S.wtx[CX_META.wk]&&cxMetaSt(S.wtx[CX_META.wk])?CX_META.wk:'',AS=wk?cxAddrPlan(k,w,''):[];
+  const wk=!oc&&!EDIT_TAG&&CX_META&&CX_META.wk&&S.wtx[CX_META.wk]&&cxMetaSt(S.wtx[CX_META.wk])?CX_META.wk:'',AS=wk?cxAddrPlan(k,w,''):[];
   {const Q=AS.filter(x=>x.ask).map(x=>addrMvTxt(S,x.a,x.w));if(Q.length&&!(await askBox({title:'Adresse zuordnen',text:Q.join('\n\n'),ok:'Zuordnen'})))return}
   for(const x of AS)addrAssign(S,x.a,x.w,addrOwnFor(x.a,x.w),()=>true);
   let id=EDIT_TAG;if(!id||!S.tag[id]){let n=1;while(S.tag['h'+n])n++;id='h'+n}
   const o=S.tag[id]||{},t=Object.assign(o,{id,hand:1,src:'hand',kind:ein?'ein':'aus',date:d,usd:q,qty,coin:c,wallet:w,status:'ok',own:o.own!=null?o.own:true,fiat:false,man:{q:1,c:1,w:1},chk:1});
   if(tm){t.time=tm;t.tz='at'}else{delete t.time;delete t.tz}if(note)t.note=note;else delete t.note;
+  if(oc){delete t.wq;delete t.wok}
   S.tag[id]=t;const was=!!EDIT_TAG;if(wk){wTagLink(wk,t,true);CX_META=null}wSync();save();
   const pvTxt=AS.map(x=>` Die Adresse ${wShort(x.a)} gehört jetzt zu „${x.w}“.`).join('')+provMsg();
   // Ab 0.196 (Florians Auftrag 0.196, A4): nur „Speichern und nächster“ bleibt im Fenster. „Speichern“ nach einer Reihe nimmt den Eintrag in die Reihe,
   // schließt das Fenster, und alle Einträge der Reihe leuchten auf (cxSessEnde, wie beim Schließen). Bis 0.195 blieb auch „Speichern“ im Modus
   // „nächster“, sobald die Reihe begonnen hatte (CX_NEXT||CX_SESS.length).
-  const txS=(ein?'Einzahlung zu Tag':'Auszahlung von Tag')+' '+fD(d)+', '+fmtNum(q)+' '+c;
+  const cn=oc?'USD (anderer Coin)':c,txS=(ein?'Einzahlung zu Tag':'Auszahlung von Tag')+' '+fD(d)+', '+fmtNum(q)+' '+cn;
   if(CX_NEXT){cxSessAdd('t:'+id,txS);cxNextReset();msg('cxmsg','ok',(was?'Gespeichert: ':'Eingetragen: ')+txS+'. Nächster Eintrag:');render();return true}
   if(CX_SESS.length&&!CX_EMB){cxSessEnde('t:'+id,txS,pvTxt);return true}
-  const tx=(was?'Gespeichert: ':'Eingetragen: ')+(ein?'Einzahlung zu Tag':'Auszahlung von Tag')+', '+fmtNum(q)+' '+c+(fee>0?' (Gebühr '+fmtNum(fee)+')':'')+'.'+pvTxt;
+  const tx=(was?'Gespeichert: ':'Eingetragen: ')+(ein?'Einzahlung zu Tag':'Auszahlung von Tag')+', '+fmtNum(q)+' '+cn+(fee>0?' (Gebühr '+fmtNum(fee)+')':'')+'.'+pvTxt;
   // Ab 0.57 Nachtrag: im Punkt von „Noch offen“ zurück zum Durchgang wie in addCx (bisher schloss das Speichern das ganze Fenster)
   if(CX_EMB){cxEmbBack();endEdit();TD_KIND='';TD_DIRTY='';render();toast(tx,3500);return true}
   endEdit();closeModal();
@@ -12964,7 +13013,8 @@ async function addCx(){
   if(!k){msg('cxmsg','bad','Wähle zuerst bei „Was?“, was es war.');return nd('#cx-kind')}
   const F=CX_FIELDS[k],DE=cxLand()==='DE',usdIn=F.cur&&$('cx-cur').value==='USD',other=$('cx-other').value.trim();
   // Ab 0.51 (2): „+ Neue Wallet …“ ohne OK: das Namensfeld daneben (bisher wurde „+“ als Wallet gespeichert)
-  {const wv=[['cx-wallet',w],['cx-to',to]].filter(([id,v])=>W_NEWV(v)&&(id==='cx-wallet'||F.to||F.to2)),wn=wv.map(([id])=>$(id).nextElementSibling).filter(x=>x&&x.classList.contains('wnew')).map(x=>x.querySelector('input'));
+  // Ab 0.196: bei „Anderer Coin“ (Tag) gibt es kein Feld „Wallet“
+  {const wv=[['cx-wallet',w],['cx-to',to]].filter(([id,v])=>W_NEWV(v)&&(id==='cx-wallet'||F.to||F.to2)&&!(F.tag&&c===TAG_OC)),wn=wv.map(([id])=>$(id).nextElementSibling).filter(x=>x&&x.classList.contains('wnew')).map(x=>x.querySelector('input'));
     if(wn.length){msg('cxmsg','','');return needMark($('cx-form'),wn.map((x,i)=>[x,i?'':W_NEED(wv[0][1])]))}}
   if(F.tag)return (await saveTagHand(k,d,w,c,q))===true;
   // Ab 0.55 (1): Geschenk über den Baustein (giftCheck, gleich wie an der Tag-Zeile)
@@ -13304,7 +13354,8 @@ function xlTagBroker(tags,o){const ST=!!o.steuer,HW=Object.keys(S.wtx).length>0,
     // Steuer-Excel, „Zeit bei Tag (Zypern)“ im Excel mit allen Daten); in der Steuer-Excel für Deutschland „Zeit (Deutschland)“, dieselbe Zeit
     // (Florians Antwort 7 zur Freigabe 0.184)
     ...(TZ?[['Zypern-Zeit',11,t=>t.tz==='datei'?'':t.time||''],[ST&&o.DE?'Zeit (Deutschland)':'Zeit (Österreich)',11,(t,a)=>a.time]]:[['Zeit',8,t=>t.time]]),
-    ['Art',11,t=>t.kind==='ein'?'Einzahlung':'Auszahlung'],['Betrag USD',11,t=>X.N(t.usd)],['Coin',6,t=>t.coin],['Menge',11,t=>X.N(t.qty)],['Wallet',14,t=>ST?tw(t):tagWN(t)],
+    // Ab 0.196 (Teil C): Coin „anderer Coin“, ohne Menge und Wallet (das Tool rechnet die Zeile nur für „Dein echtes Geld“)
+    ['Art',11,t=>t.kind==='ein'?'Einzahlung':'Auszahlung'],['Betrag USD',11,t=>X.N(t.usd)],['Coin',6,t=>tagCoinT(t)],['Menge',11,t=>tagAnders(t)?'':X.N(t.qty)],['Wallet',14,t=>tagAnders(t)?'':ST?tw(t):tagWN(t)],
     ...(ST?[]:[['Mein Geld',9,t=>t.kind==='ein'?(t.own?'ja':'nein'):'ja']]),['Status',15,t=>t.status==='ok'?'durchgeführt':'nicht durchgeführt'],
     ['Kurs vom',11,t=>X.D(rateDateFor(tagD(t),'USD',tagT(t)))],['Kurs USD je EUR',10,(t,a,r)=>r?X.R(r):''],['Euro-Wert',12,(t,a,r,n)=>r?X.F(`${sp('Betrag USD')}${n}/${sp('Kurs USD je EUR')}${n}`,t.usd/r,2):''],
     ...(HW?[['verknüpft mit (Hash)',68,t=>t.wk&&S.wtx[t.wk]?S.wtx[t.wk].hash:'']]:[])];
@@ -13711,6 +13762,11 @@ function taxBlocks(c){const DE=c.L==='DE',f=c.f,y=c.y,ann=[],est=[],q=[],not=[],
     if(!DE&&c.kest!=null)Q('q-kest',`Verkäufe mit KESt-Abzug einer österreichischen Börse stehen in Kennzahl 173 und 175, die abgezogene KESt von ${f.E(c.kest)} in Kennzahl 899. Wird die KESt so angerechnet, oder ist eine Korrektur über die Veranlagung nötig?`);
     if(DE&&c.lost.length)Q('q-lost','Verloren oder gestohlen, ohne Verlust gerechnet: '+und(c.lost.map(x=>`${f.N(x.q)} ${x.coin} am ${f.D(x.d)} (Anschaffungskosten ${f.E(x.ak)})`))+'. Ist der Verlust absetzbar?');
   }
+  // Ab 0.196 (Florians Auftrag 0.196, Teil C, Antwort F13 mit Florians Schluss „Steuerlich können sie … sein. Bitte prüfen.“): Ein- und Auszahlungen beim
+  // Broker mit anderen Coins, die diese Aufstellung nicht rechnet (Broker statt „Tag“, GESTALTUNG Abschnitt 13)
+  if(c.oc&&c.oc.length){const ein=c.oc.filter(t=>t.kind==='ein'),aus=c.oc.filter(t=>t.kind==='aus'),sum=L=>L.reduce((a,t)=>a+t.usd,0),
+      tx=(L,a,b)=>L.length===1?`1\u00a0${a} über ${f.U(L[0].usd)}`:`${L.length}\u00a0${b} über zusammen ${f.U(sum(L))}`;
+    Q('q-oc',`Ein- und Auszahlungen beim Broker mit anderen Coins (z. B. BTC) sind in dieser Abrechnung nicht enthalten: ${[ein.length?tx(ein,'Einzahlung','Einzahlungen'):'',aus.length?tx(aus,'Auszahlung','Auszahlungen'):''].filter(Boolean).join(', ')}. Steuerlich können sie ein Verkauf bzw. Kauf dieser Coins sein. Bitte prüfen.`)}
   if(c.usd.on||c.usd.bank)Q('q-usd',`Das USD-Guthaben beim Broker ist unverzinst. Kursgewinne zwischen Euro und US-Dollar auf dieses Guthaben sind nicht gerechnet${c.usd.bank?', auch nicht bei Einzahlungen per Bank in Euro':''}. Sind sie steuerpflichtig?`);
   // Ab 0.181: Uhrzeit in Österreich bzw. Deutschland (la, lb) aus nyData (Wurzel ab 0.183 MT5_VORAUS, bis 0.182 MT5_WINTER), „Serverzeit des Brokers“ (Florians Regel, GESTALTUNG Abschnitt 7)
   for(const n of c.ny){const at=n.a===n.b?`um ${n.a} Uhr`:`zwischen ${n.a} und ${n.b} Uhr`,lt=n.a===n.b?`${n.la} Uhr`:`zwischen ${n.la} und ${n.lb} Uhr`;
@@ -13751,6 +13807,8 @@ function taxCtx(y){const L=S.ui.country==='DE'?'DE':'AT',DE=L==='DE',rows=(windo
     frei:DE?{g:cy.gain+cy.loss,o:os?parseDe(os):NaN,fg:freiGrenze(y)}:null,est,short,
     janFee:!DE&&jf?jf:null,tok:Object.values(tok),variants,payN:payBN(C,y),card:(L=>({n:L.length,usd:L.reduce((a,x)=>a+x.usd,0),eur:L.reduce((a,x)=>a+cxEur(x),0)}))(cx?S.cx.filter(x=>x.date&&yr(x.date)===y&&payWeg1(S,x)&&!cxEst(x)&&!cxMissing(x).length&&x.usd>0):[]),refund:{n:rf.length,late:rf.some(c=>{const p=cxById(c.of);return p&&p.date&&yr(p.date)!==y})},
     kest:!DE&&cy.nK?cy.kest:null,lost:DE?fl.filter(f=>f.k==='verloren').map(f=>({d:f.d,q:-f.q,coin:f.coin,ak:f.ak})):[],
+    // Ab 0.196 (Teil C): Tag-Zeilen mit anderem Coin im Steuerjahr (nur mit Krypto in der Abrechnung), für die offene Frage q-oc
+    oc:S.ui.cxIncl!==false?tagOcJahr(y):[],
     usd:{on:Object.values(S.tag).some(t=>t.status==='ok'&&yr(tagD(t))===y),bank:Object.values(S.tag).some(t=>t.fiat&&t.kind==='ein'&&yr(tagD(t))<=y)},
     ny:nyData(rows,y),cxSaldo:cy.gain+cy.loss,not:taxNotItems(L),f:{E:v=>fE.format(v).replace(' €',' €'),D:fD,N:v=>fN.format(v),U:v=>usd(v).replace(' USD',' USD')}};
   return {c,B:taxBlocks(c),rows,R,T,C,cy,DE,ds:taxDs(y),name:taxNameUse()}}
@@ -16353,11 +16411,14 @@ function renderTax(rows){
   $('tax-unklar').innerHTML=unklarSteuerH(y);
   // Ab 0.195: Karte „Krypto {Jahr}“ nur mit Krypto-Daten; ist Krypto aus (Häkchen oder „Krypto-Steuer ausschalten“, derselbe Schalter), bleiben Titel,
   // Häkchen und der Satz dazu, die Tabelle fällt weg (Florians Freigabe 0.195, A1 und A2)
-  $('tx-cx').style.display=hasCxData?'':'none';$('tax-cx-title').textContent=`Krypto ${y}`;
+  // Ab 0.196 (Teil C, Florians Antwort F12): auch ohne andere Krypto-Vorgänge, wenn es im Steuerjahr Tag-Zeilen mit anderem Coin gibt (Krypto an); dann nur
+  // Titel und der Satz dazu, ohne Häkchen und Tabelle
+  const ocY=cxIncl&&!hasCxData&&tagOcJahr(y).length>0;
+  $('tx-cx').style.display=hasCxData||ocY?'':'none';$('tax-cx-title').textContent=`Krypto ${y}`;
   $('tax-cx-tick').innerHTML=hasCxData?taxCxTickH(cxIncl):'';
   const cxTab=hasCx?taxTabH(XT,'cx'):'';$('t-taxcx').innerHTML=cxTab;$('tax-cx-tab').style.display=cxTab?'':'none';
   // Ab 0.120: Jahressumme „Bezahlungen in Coins erhalten“ (grau, nur über 0) nach dem Satz zum Herausnehmen
-  $('taxcx-warn').innerHTML=(hasCxData&&!cxIncl?'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung, Excel und Steuerschätzung). Krypto-Gewinne sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>':hasCxData?taxCxNote(C,y):'')+(hasCxData?bzLine(C,y):'');
+  $('taxcx-warn').innerHTML=ocY?tagOcNoteH(y):(hasCxData&&!cxIncl?'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung, Excel und Steuerschätzung). Krypto-Gewinne sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>':hasCxData?taxCxNote(C,y):'')+(hasCxData?bzLine(C,y):'');
   $('tx-not-l').innerHTML=taxNotList('AT');
   // Schätzung
   if(document.activeElement!==$('other'))$('other').value=S.ui.other;
@@ -16467,6 +16528,13 @@ function taxMissTxt(mr,y){const d=mr.days,pre=d.filter(x=>x.slice(0,4)<y),ys=[..
 // wOpenHint, wIncHint, „Unvollständig“), dazu der Satz zu „So lassen“ (keptText). Nicht in Zusammenfassung und Excel.
 // Ab 0.73 (4.2): Es zählen nur Punkte mit Steuerwirkung: fehlender Einkauf bei Verkauf, Zahlung, Einzahlung beim Broker, Gebühr in Coins, in DE auch Tausch (Typ v und tv, Regel von e-short).
 // Offene Bewegungen zählen weiter, weil noch unklar ist, was sie sind. Unvollständige Einträge zählen, außer Übertrag, Verschenkt, Verloren und in AT Tausch.
+// Ab 0.196 (Florians Auftrag 0.196, Teil C): Tag-Zeilen mit anderem Coin im Steuerjahr (durchgeführt, eigenes Geld bzw. Auszahlung; Jahr in
+// österreichischer Zeit wie die Krypto-Rechnung). Eine Wurzel für den Satz in der Karte „Krypto {Jahr}“ und den Satz der Zusammenfassung.
+function tagOcJahr(y){return Object.values(S.tag).filter(t=>tagAnders(t)&&t.status==='ok'&&(t.kind!=='ein'||t.own)&&tagD(t).slice(0,4)===y)}
+// Satz in der Karte „Krypto {Jahr}“ (Florians Wortlaut mit Antwort F12: „das Tool“), gelber Strich (Anmerkung zu den Zahlen, GESTALTUNG Abschnitt 4),
+// nach dem Satz „Diese Werte können sich noch ändern …“ und vor den grauen Sätzen
+const TAG_OC_STEUER='Ein- und Auszahlungen bei Tag mit anderen Coins (z. B. BTC) rechnet das Tool nicht. Sie sind steuerlich wahrscheinlich ein Verkauf bzw. Kauf dieses Coins. Nutze dafür ein Tool für Krypto-Steuern oder frag deine Steuerberatung.';
+const tagOcNoteH=y=>tagOcJahr(y).length?`<p class="sigl y">${TAG_OC_STEUER}</p>`:'';
 function taxCxNote(C,y){const L=S.ui.country==='DE'?'DE':'AT',fx=s=>s.e.t==='v'||s.e.t==='tv',op=cxOpenF(C),sho=C.short.filter(s=>s.e.d.slice(0,4)===y&&fx(s)&&op(s)).length,mv=wOpenN(),
     inc=S.cx.filter(c=>c.date&&c.date.slice(0,4)===y&&cxMissing(c).length&&!['u','w','t0','x'].includes((KX_ART[c.kind]||{})[L])).length,kt=keptText(C,y,fx),p=[];
   if(mv)p.push(mv===1?'1 offene Bewegung':fI.format(mv)+' offene Bewegungen');
@@ -16474,7 +16542,7 @@ function taxCxNote(C,y){const L=S.ui.country==='DE'?'DE':'AT',fx=s=>s.e.t==='v'|
   if(sho)p.push(sho===1?'1 fehlender Einkauf':fI.format(sho)+' fehlende Einkäufe');
   const l=p.length>1?p.slice(0,-1).join(', ')+' und '+p[p.length-1]:p[0];
   return (p.length?`<p class="sigl ${sho||inc?'r':'y'} noprint">Diese Werte können sich noch ändern: In „Noch offen“ ${p.length===1&&/^1 /.test(l)?'steht':'stehen'} ${l}. <button type="button" class="btn sm" data-wfgo>Zu „Noch offen“</button></p>`:'')+
-    (kt?`<p class="sigl">${kt}</p>`:'')}
+    tagOcNoteH(y)+(kt?`<p class="sigl">${kt}</p>`:'')}
 // Ab 0.72 (1.6, 3.10): Punkte von „Was das Tool nicht rechnet“ (Karte im Reiter; ohne tab die Liste für Zusammenfassung und Excel, ohne „Steuer geschätzt“)
 function taxNotItems(L,tab){const o=[{id:'n-coins',t:'andere Kryptowährungen als USDC und USDT (z. B. BTC, ETH)'},{id:'n-netfee',t:'Netzwerkgebühren, die in anderen Coins bezahlt wurden (z. B. ETH, BNB)'},
     {id:'n-kap',t:'andere Kapitalerträge (z. B. Zinsen, Dividenden) und der Verlustausgleich mit ihnen'}];
@@ -16535,11 +16603,13 @@ function renderTaxDECx(y){
   const X=DECX=deCx(y),{C,Y}=X,inc=S.ui.cxIncl!==false;
   // Ab 0.73 (2.1, 2.6): Krypto in der Tabelle der Jahresabrechnung (taxTabH); hier das Feld, die Sätze darunter und das (i) der Karte (auch „Eintragen: Anlage SO …“)
   // Ab 0.195: Karte „Krypto {Jahr}“ (Titel, Häkchen; die Tabelle zeichnet renderTaxDE), nur mit Krypto-Daten, wie in Österreich
-  $('de-cx').style.display=X.has?'':'none';$('de-cx-title').textContent=`Krypto ${y}`;
+  // Ab 0.196 (Teil C): wie in Österreich auch nur mit Tag-Zeilen mit anderem Coin (Titel und Satz)
+  const ocY=inc&&!X.has&&tagOcJahr(y).length>0;
+  $('de-cx').style.display=X.has||ocY?'':'none';$('de-cx-title').textContent=`Krypto ${y}`;
   $('de-cx-tick').innerHTML=X.has?taxCxTickH(inc):'';
   $('de-cx-body').style.display=X.has&&inc?'':'none';
   // Ab 0.120: Jahressumme „Bezahlungen in Coins erhalten“ (grau, nur über 0)
-  $('de-cx-warn').innerHTML=!X.has?'':(inc?taxCxNote(C,y):'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung und Excel). Gewinne aus Coins, die du höchstens ein Jahr gehalten hast, sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>')+bzLine(C,y);
+  $('de-cx-warn').innerHTML=!X.has?(ocY?tagOcNoteH(y):''):(inc?taxCxNote(C,y):'<p class="sigl y">Krypto ist aus dieser Abrechnung herausgenommen (auch aus Zusammenfassung und Excel). Gewinne aus Coins, die du höchstens ein Jahr gehalten hast, sind trotzdem steuerpflichtig. Nimm sie nur heraus, wenn du sie anders erklärst, z. B. mit einem eigenen Krypto-Steuertool oder über deine Steuerberatung.</p>')+bzLine(C,y);
   const form=FORM_SO[y]?`Eintragen: Anlage SO, Abschnitt „Kryptowerte“ (Formular ${y}): ${FORM_SO[y].ja} „Ja“, ${FORM_SO[y].bez} Bezeichnung (z. B. „USDC/USDT, siehe Aufstellung“), ${FORM_SO[y].zeit} Zeitpunkte laut Aufstellung, ${FORM_SO[y].vp} bis ${FORM_SO[y].wk} die Summen oben, ${FORM_SO[y].g} Gewinn/Verlust, Übertrag in ${FORM_SO[y].zur}. Als gesonderte Aufstellung dient das Excel-Blatt „Verkäufe nach FIFO“. Ob alle Verkäufe in einer Zeile stehen dürfen oder in ${FORM_SO[y].weitere}, klärst du mit deiner Steuerberatung.`:
     `Trag Verkäufe von USDC und USDT im Abschnitt Kryptowerte der Anlage SO ein. Fass sie zusammen und leg eine Aufstellung bei. Prüf die Zeilennummern im aktuellen Formular. Als gesonderte Aufstellung dient das Excel-Blatt „Verkäufe nach FIFO“.`;
   // Ab 0.195 (Freigabe A3): das (i) der Karte „Krypto“ ist k-decx mit dem Satz zu Zahlungen mit Coins und „Eintragen: …“ (bis 0.194 nach „Krypto:“ an k-taxde)
@@ -16733,7 +16803,8 @@ $('file').onchange=e=>{zoneFiles(e.target.files,'rep',loadFiles);e.target.value=
 $('drop').addEventListener('drop',e=>zoneFiles(e.dataTransfer.files,'rep',loadFiles));
 $('btn-rates').onclick=()=>loadRates();
 $('btn-tagpaste').onclick=()=>pasteTag();
-$('tagcoin').onchange=e=>{S.defCoin=e.target.value==='USDT'?'USDT':'USDC';save()};
+// Ab 0.196: „Anderer Coin“ merkt das Tool nicht (F10), die Vorschau zeichnet neu (ohne bzw. mit Woher/Wohin)
+$('tagcoin').onchange=e=>{const v=e.target.value;TAGC_OC=v===TAG_OC;if(!TAGC_OC){S.defCoin=v==='USDT'?'USDT':'USDC';save()}renderTagPrev()};
 // Ab 0.46: Gehört das Formular zu einer Bewegung, belegt ein Wechsel der Art Wallet und „nach Wallet“ passend neu (z. B. Übertrag in die eigene Wallet)
 // Ab 0.47: ohne Bewegung aus der Datei (z. B. „Einkauf fehlt“, offene Zeile der Börse) richtet sich der Übertrag nach dem Zusammenhang (CX_CTX):
 // hinein = „nach Wallet“ ist die Wallet des Punkts, heraus = „von Wallet“ ist sie
@@ -16748,6 +16819,8 @@ $('cx-fee').addEventListener('input',()=>{$('cx-feep').value=''});
 document.addEventListener('keydown',e=>{const t=e.target;if(!t||!t.matches||!t.matches('input.pct')||(e.key!=='ArrowUp'&&e.key!=='ArrowDown')||e.altKey||e.ctrlKey||e.metaKey)return;
   e.preventDefault();const v=parseFloat(String(t.value).replace(',','.'));const n=Math.max(0,Math.min(50,(isFinite(v)?v:0)+(e.key==='ArrowUp'?1:-1)));
   t.value=String(+n.toFixed(2));t.dispatchEvent(new Event('input',{bubbles:true}))});
+// Ab 0.196 (Teil C): „Anderer Coin“ bei Einzahlung zu Tag und Auszahlung von Tag blendet Wallet und Gebühr aus (cxHelp)
+$('cx-coin').addEventListener('change',()=>cxHelp());
 $('cx-kind').onchange=()=>{const k=$('cx-kind').value,hasO=v=>[...$('cx-to').options].some(o=>o.value===v),oth=w=>S.wallets.find(x=>x!==w)||'';
   if(CX_META&&CX_META.wk&&S.wtx[CX_META.wk]&&k){const P=decPre(CX_META.wk,k);if(S.wallets.includes(P.wallet))$('cx-wallet').value=P.wallet;if(P.to&&hasO(P.to))$('cx-to').value=P.to}
   else if(CX_CTX&&k==='uebertrag'){const w=CX_CTX.w;if(CX_CTX.dir==='in'){if(hasO(w))$('cx-to').value=w;if($('cx-wallet').value===w)$('cx-wallet').value=oth(w)}else{if(S.wallets.includes(w))$('cx-wallet').value=w;if($('cx-to').value===w||!$('cx-to').value){const o=oth(w);if(hasO(o))$('cx-to').value=o}}}
