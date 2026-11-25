@@ -427,8 +427,11 @@ a[href^="https://www.ecb.europa.eu/"]:hover,a[href^="https://www.metatrader5.com
 #s-support button#fb-fehler-k:hover{text-decoration:underline}
 #s-support button#fb-fehler-k::before{content:"▸ "}
 #s-support button#fb-fehler-k[aria-expanded="true"]::before{content:"▾ "}
-/* Ab 0.192 (Punkt 5): „So machst du einen Screenshot“ verliert nur den Unterstrich, auch beim Darüberfahren. */
-#s-support details.rsauf>summary,#s-support details.rsauf>summary:hover{text-decoration:none}
+/* Ab 0.192 (Punkt 5): „So machst du einen Screenshot“ verliert nur den Unterstrich.
+   Ab 0.197 (Florians Auftrag 0.197, Punkt 1): beim Darüberfahren unterstrichen wie die Knöpfe mit .zlink (Strichstärke und Abstand wie dort),
+   sonst wie bisher (Farbe --link). 0.192 bis 0.196: auch beim Darüberfahren ohne Unterstrich. */
+#s-support details.rsauf>summary{text-decoration:none}
+#s-support details.rsauf>summary:hover{text-decoration:underline;text-underline-offset:auto}
 /* Ab 0.192 (Punkt 6): „Mehr dazu“ und „QR-Code zeigen“ / „QR-Code ausblenden“ (Reiter „Resonanz“ und „Wertschätzung teilen“) wie die Knöpfe mit .zlink */
 :is(#s-support,.jrs3) button.zlink:is([data-rsqr],[data-rsmehr]):not(#fb-fehler-k){color:var(--accent);text-decoration:none;text-underline-offset:auto}
 :is(#s-support,.jrs3) button.zlink:is([data-rsqr],[data-rsmehr]):not(#fb-fehler-k):hover{text-decoration:underline}
@@ -16993,7 +16996,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.195',VDATE='25.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.197',VDATE='25.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
