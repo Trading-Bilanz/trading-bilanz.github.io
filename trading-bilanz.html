@@ -921,8 +921,32 @@ button.dtt.dtk{display:flex;flex-direction:column;justify-content:space-between;
 .dtk .dtts{overflow-wrap:normal;word-break:normal}
 #wf-adv{border-left:3px solid var(--line);padding:8px 12px;margin:8px 0}#wf-adv[hidden]{display:none}#wf-adv p{margin:0 0 8px}
 /* Ab 0.45: Bereich „Von Hand eintragen“, „Gerade eingetragen“ */
-.dhl{padding-left:22px}.dhl>li{margin:12px 0}.dhl .row{margin-top:6px}
-details.dhc{margin:4px 0}details.dhc summary{cursor:pointer;color:var(--accent)}
+/* Ab 0.196 (Florians Auftrag 0.196, A3): kompakte Liste, je Schritt eine Zeile: Nummer im Kreis, Titel mit grauer Unterzeile, Knöpfe rechts daneben.
+   Bis 700 px (wie überall im Tool) stehen die Knöpfe unter dem Titel, der Link „Statt abtippen: …“ in einer eigenen Zeile, bündig mit den Knöpfen
+   (Florians Korrektur zur Freigabe 0.196). Schritt 6 (Kontostand, freiwillig) grau. Bis 0.195: nummerierte Liste mit Sätzen in Befehlsform. */
+.dhl{list-style:none;margin:2px 0 0;padding:0}
+.dhl>li{display:grid;grid-template-columns:26px minmax(0,1fr) auto;grid-template-areas:"n t b";align-items:center;gap:0 12px;padding:6px 0;border-top:1px solid var(--line);margin:0}
+.dhl>li:first-child{border-top:0}
+.dhl .dhn{grid-area:n;box-sizing:border-box;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:var(--fs-xs);font-weight:600}
+.dhl .dht{grid-area:t;min-width:0}.dhl .dht>b,.dhl .dht>.small{display:block}
+.dhl .dhb{grid-area:b;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.dhl .dhx{white-space:nowrap}
+.dhl>li.dhfrei .dhn,.dhl>li.dhfrei .dht>b{color:var(--muted)}
+@media(max-width:700px){.dhl>li{grid-template-columns:26px minmax(0,1fr);grid-template-areas:"n t" ". b";gap:6px 12px}.dhl .dhb{justify-content:flex-start}.dhl .dhx{flex-basis:100%;text-align:left;white-space:normal}}
+/* Ab 0.196 (Florians Antwort F15 zur Freigabe 0.196): Titel des Bereichs mit dem Knopf „So …“ rechts daneben, bis 700 px darunter */
+.dthd{display:flex;align-items:center;justify-content:space-between;gap:6px 16px;margin:12px 0 8px}
+.dthd>h3{margin:0;min-width:0}
+.dthd .dtgb{white-space:nowrap}.dthd>span,.dthd>.dtgb{flex:0 0 auto}
+@media(max-width:700px){.dthd{display:block}.dthd>h3{margin:0 0 8px}.dthd .dtgb{white-space:normal}}
+/* Ab 0.196 (A6): Frage nach dem Coin in einem sanften Rahmen (Rand --line, Fläche --bg wie das Feld zum Ziehen) */
+.tagcf{border:1px solid var(--line);border-radius:var(--radius);background:var(--bg);padding:8px 12px;margin:8px 0}
+.tagcf .tagcq{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0}.tagcf>p.small{margin:4px 0 0}
+/* Ab 0.196 (A5, A7): „Schon eingelesen …“ und „Ohne Datei:“ unter dem Feld; „Geht auch überall im Tool.“ im Feld nur mit Maus (wie bis 0.195 .dhint) */
+p.dtein{margin:6px 0 0}p.dtein[hidden]{display:none}p.bxoh{margin:12px 0 2px}
+.dhin{display:none}
+@media (hover:hover) and (pointer:fine){.dhin{display:inline}}
+/* Ab 0.196 (Florians Antwort F5): Titel von „So trägst du die Karte von Hand ein“ in normaler Schrift (bis 0.195 fett über summary) */
+details.dhc{margin:4px 0}details.dhc summary{cursor:pointer;color:var(--accent);font-weight:400}
 #cx-sess{flex:1 0 100%;max-height:26vh;overflow:auto;margin:-4px 0 2px}#cx-sess[hidden]{display:none}#cx-sess p{margin:0}#cx-sess ul.cxsl{margin:2px 0;padding-left:18px}#cx-sess li{margin:2px 0}
 td.wbc .small{display:block}
 /* Ab 0.52 (1): Fenster „Wallets“ wie die Auswertung. Bis 960 px breit, Kopfleiste mit × steht (wie „Alle Vorschläge“), darunter stehen Titel und
@@ -2660,6 +2684,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <li>Optimism: optimistic.etherscan.io</li>
     <li>Linea: lineascan.build</li>
   </ul>
+  <!-- Ab 0.196 (Florians Auftrag 0.196, A8): aus dem (i) „Wallet-Datei einlesen“ hierher, „Tron“ ohne „(kommt später)“ -->
+  <p>Noch nicht möglich: Tron, Solana, Bitcoin, Avalanche.</p>
   <p class="small">Tippe die Adresse selbst in die Adresszeile deines Browsers. Folge keinem Link aus einer Nachricht.</p>
   <!-- Ab 0.42 -->
   <p><b>Krypto-Karte mit eigenem Konto</b></p>
@@ -2667,15 +2693,42 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <!-- Ab 0.44: Anleitung Krypto-Karte, WUSD zählt fest als Kartenguthaben -->
   <p>Deine Karte hat zwei Adressen: die <span class="gl" data-gl="ladeadresse" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Ladeadresse</span>, an die du Geld schickst, und das Kartenkonto, von dem du bezahlst. Ordne beide derselben Wallet zu (z. B. „Karte“) und lies für beide die Datei ein. Nur dann stimmt der Bestand deiner Karte.</p>
   <p>Lade die Datei deines Kartenkontos (Netzwerk Base). Die Adresse findest du so: Buche einen kleinen Betrag von der Karte zurück in deine Wallet. Er kommt von der Adresse deines Kartenkontos.</p>
-  <details class="dhc"><summary>So trägst du die Karte von Hand ein</summary><p><b>Aufladung:</b> als Übertrag zur Karte, mit „Menge angekommen“ so, wie deine Karten-App sie zeigt. <b>Jede Kartenzahlung:</b> als Zahlung mit der USDC-Menge, die abgezogen wurde (mit Gebühr), nicht nur mit dem Euro-Betrag. <b>Rückbuchung:</b> als Übertrag von der Karte zurück. Trage am Ende den Kontostand aus der Karten-App ein (freiwillig), dann prüft das Tool, ob etwas fehlt.</p></details>
+  <!-- Ab 0.196 (Florians Antwort F5 zur Freigabe 0.196): „So trägst du die Karte von Hand ein“ aus einer Quelle (#kh-src im Fenster „So trägst du von
+       Hand ein“), beim Start hierher kopiert (khandInit), Titel in normaler Schrift -->
+  <div data-khand></div>
   <p class="small">Das Tool rechnet das Guthaben der Karte (WUSD) wie USDC. <span class="gl" data-gl="kartenguthaben" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Warum steht dein Kartenguthaben als WUSD da?</span></p>
   <p><b>Gut zu wissen</b></p>
+  <!-- Ab 0.196 (A8): „Nur USDC und USDT …“ und „Gebühren des Netzwerks …“ wörtlich aus dem (i) „Wallet-Datei einlesen“. „Die Datei bleibt in deinem
+       Browser“ und „Pro Netzwerk eine eigene Datei“ standen hier schon und kommen nicht doppelt. -->
   <ul>
     <li>Pro Netzwerk eine eigene Datei. Dieselbe Adresse auf mehreren Netzwerken ist im Tool dieselbe Wallet.</li>
+    <li><b>Nur USDC und USDT</b> zählen. Das Tool ignoriert alle anderen Token. Es erkennt echte USDC und USDT an der Vertragsadresse, nicht am Namen.</li>
+    <li><b>Gebühren des Netzwerks</b> (in ETH, BNB usw.) stehen nicht in der Datei. Das Tool rechnet sie nicht.</li>
     <li>Du kannst die Datei jederzeit neu laden. Das Tool erkennt, was schon da ist.</li>
     <li>Am Computer geht es am einfachsten.</li>
     <li>Die Datei bleibt in deinem Browser. Das Tool schickt sie nirgendwohin.</li>
   </ul>
+</div></div>
+<!-- Ab 0.196 (Florians Auftrag 0.196, A2 und A3, Antworten F4 und F5): „So trägst du von Hand ein“, Knopf im Bereich „Von Hand“ von „＋ Daten“.
+     Oben der Link zur Anleitung (bis 0.195 im Bereich), dann die Absätze, die bis 0.195 über der Liste standen, und der Satz zum Kontostand. -->
+<div class="modal noprint" id="hg-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="hg-t"><button type="button" class="mx" aria-label="Schließen">×</button>
+  <h2 id="hg-t">So trägst du von Hand ein</h2>
+  <p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#von-hand" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
+  <p>Du tippst ab, was deine Apps zeigen. Gehe am besten in der Reihenfolge der Liste vor.</p>
+  <p>Mit „Speichern und nächster“ trägst du mehrere Einträge hintereinander ein.</p>
+  <p>Die Punkte in „Noch offen“ kannst du liegen lassen, bis du alles eingetragen hast.</p>
+  <p>Trage am Ende den Kontostand aus jeder App ein (freiwillig). Dann prüft das Tool, ob etwas fehlt.</p>
+  <details class="dhc" id="kh-src"><summary>So trägst du die Karte von Hand ein</summary><p><b>Aufladung:</b> als Übertrag zur Karte, mit „Menge angekommen“ so, wie deine Karten-App sie zeigt. <b>Jede Kartenzahlung:</b> als Zahlung mit der USDC-Menge, die abgezogen wurde (mit Gebühr), nicht nur mit dem Euro-Betrag. <b>Rückbuchung:</b> als Übertrag von der Karte zurück. Trage am Ende den Kontostand aus der Karten-App ein (freiwillig), dann prüft das Tool, ob etwas fehlt.</p></details>
+</div></div>
+<!-- Ab 0.196 (Florians Auftrag 0.196, A2 und A5, Antwort F6): „So bekommst du die Datei deiner Börse“, Knopf im Bereich „Börsen“ von „＋ Daten“.
+     Oben der Link zur Anleitung (#boerse-datei, dort stehen Bitvavo und DFX.swiss), die Einleitung aus dem Bereich („ins Tool“ statt „hierher“), dann
+     der Satz zu den Formaten und je Börse eine Zeile, beides aus BX_FMT (bxFmtInit). -->
+<div class="modal noprint" id="bg-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="bg-t"><button type="button" class="mx" aria-label="Schließen">×</button>
+  <h2 id="bg-t">So bekommst du die Datei deiner Börse</h2>
+  <p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#boerse-datei" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
+  <p>Lade bei deiner Börse die Datei mit deinen Transaktionen herunter (CSV) und ziehe sie ins Tool. Das Tool übernimmt Käufe, Verkäufe und Überträge zu deinen Wallets und erkennt, was schon da ist.</p>
+  <p id="bx-fmts"></p>
+  <ul id="bx-fmtl"></ul>
 </div></div>
 <!-- Formular „Woher kamen deine Coins?“ (openCx): „+ Eintrag“ leer, ✎ und die Knöpfe beim fehlenden Einkauf vorausgefüllt -->
 <div class="modal noprint" id="cx-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="cx-t"><button type="button" class="mx" aria-label="Schließen">×</button>
@@ -2784,31 +2837,32 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <p class="small dtsm"><button type="button" class="zlink" id="dt-files" aria-expanded="false" aria-controls="df-pane">Eingelesene Dateien</button></p>
   <div id="dt-panes">
   <!-- Ab 0.45 (2.1, 2.2): Von Hand eintragen, eine kurze Liste in der Reihenfolge, in der man abtippt -->
+  <!-- Ab 0.196 (Florians Auftrag 0.196, A3): kompakte Liste, je Schritt eine Zeile mit Nummer im Kreis, kurzem Titel, grauer Unterzeile und den
+       Knöpfen rechts daneben (bis 700 px darunter). Die Erklärungen und der Link zur Anleitung stehen im Fenster „So trägst du von Hand ein“ (hg-modal).
+       Bis 0.195: Link, zwei Absätze und Schritte in Befehlsform mit „Tag-Daten einfügen“ und „Zum Bestand“ als Knopf. -->
   <div class="wpan" id="dh-pane" hidden>
-    <h3>Von Hand eintragen</h3>
-    <!-- Ab 0.53: Link in die Anleitung, Abschnitt „Von Hand eintragen“. Ab 0.64 direkt unter dem Titel -->
-    <p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#von-hand" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
-    <p class="small">Du tippst ab, was deine Apps zeigen. Gehe am besten in dieser Reihenfolge vor. Mit „Speichern und nächster“ trägst du mehrere Einträge hintereinander ein.</p>
-    <p class="small">Die Punkte in „Noch offen“ kannst du liegen lassen, bis du alles eingetragen hast.</p>
-    <!-- Ab 0.50 (4.2): Reihenfolge Tag, Börse, Überträge, Karte, andere Arten, Kontostand. Ab 0.53 (B7) in Befehlsform, Kontostand erst, wenn „Noch offen“ erledigt ist -->
+    <div class="dthd"><h3>Von Hand eintragen</h3><button type="button" class="btn dtgb" data-hguide>So trägst du von Hand ein</button></div>
     <ol class="dhl">
-      <li><b>Füge die Tag-Daten ein (oder trage Ein- und Auszahlungen bei Tag von Hand ein).</b><div class="row"><button type="button" class="btn" data-dhk="tagein">Einzahlung zu Tag</button><button type="button" class="btn" data-dhk="tagaus">Auszahlung von Tag</button><button type="button" class="zlink" data-dhp="tag">Tag-Daten einfügen</button></div></li>
-      <li><b>Trage Käufe und Verkäufe bei der Börse ein.</b><div class="row"><button type="button" class="btn" data-dhk="kauf">Kauf</button><button type="button" class="btn" data-dhk="verkauf">Verkauf</button></div></li>
-      <li><b>Trage Überträge zwischen deinen Wallets ein.</b><div class="row"><button type="button" class="btn" data-dhk="uebertrag">Übertrag</button></div></li>
-      <li><b>Trage die Karte ein.</b><details class="dhc"><summary>So trägst du die Karte von Hand ein</summary><p><b>Aufladung:</b> als Übertrag zur Karte, mit „Menge angekommen“ so, wie deine Karten-App sie zeigt. <b>Jede Kartenzahlung:</b> als Zahlung mit der USDC-Menge, die abgezogen wurde (mit Gebühr), nicht nur mit dem Euro-Betrag. <b>Rückbuchung:</b> als Übertrag von der Karte zurück. Trage am Ende den Kontostand aus der Karten-App ein (freiwillig), dann prüft das Tool, ob etwas fehlt.</p></details><div class="row"><button type="button" class="btn" data-dhk="aufladung">Aufladung</button><button type="button" class="btn" data-dhk="kzahl">(Karten-)Zahlung</button></div></li>
-      <li><b>Trage andere Arten ein</b> <span class="small">(Geschenk, Gebühr, Tausch und mehr)</span>.<div class="row"><button type="button" class="btn" data-dhk="">Neuer Eintrag</button></div></li>
-      <li><b>Trage am Ende den Kontostand aus jeder App&nbsp;ein</b> <span style="color:var(--muted)">(freiwillig)</span>.<p class="small">Am besten, wenn „Noch offen“ erledigt ist. Dann prüft das Tool, ob etwas fehlt.</p><div class="row"><button type="button" class="btn" data-dhbal>Zum Bestand</button></div></li>
+      <li><span class="dhn">1</span><div class="dht"><b>Tag</b><span class="small">Ein- und Auszahlungen</span></div><div class="dhb"><button type="button" class="btn" data-dhk="tagein">Einzahlung</button><button type="button" class="btn" data-dhk="tagaus">Auszahlung</button><button type="button" class="zlink dhx" data-dhp="tag">Statt abtippen: aus Tag kopieren&nbsp;›</button></div></li>
+      <li><span class="dhn">2</span><div class="dht"><b>Börse</b><span class="small">Käufe und Verkäufe</span></div><div class="dhb"><button type="button" class="btn" data-dhk="kauf">Kauf</button><button type="button" class="btn" data-dhk="verkauf">Verkauf</button></div></li>
+      <li><span class="dhn">3</span><div class="dht"><b>Überträge</b><span class="small">zwischen deinen Wallets</span></div><div class="dhb"><button type="button" class="btn" data-dhk="uebertrag">Übertrag</button></div></li>
+      <li><span class="dhn">4</span><div class="dht"><b>Karte</b><span class="small">Aufladungen und Zahlungen</span></div><div class="dhb"><button type="button" class="btn" data-dhk="aufladung">Aufladung</button><button type="button" class="btn" data-dhk="kzahl">(Karten-)Zahlung</button></div></li>
+      <li><span class="dhn">5</span><div class="dht"><b>Anderes</b><span class="small">Geschenk, Gebühr, Tausch und mehr</span></div><div class="dhb"><button type="button" class="btn" data-dhk="">Neuer Eintrag</button></div></li>
+      <li class="dhfrei"><span class="dhn">6</span><div class="dht"><b>Kontostand <span class="small">(freiwillig)</span></b><span class="small">am Ende, wenn „Noch offen“ erledigt ist</span></div><div class="dhb"><button type="button" class="zlink dhx" data-dhbal>Zum Bestand&nbsp;›</button></div></li>
     </ol>
   </div>
   <div class="wpan" id="tw-paste" hidden>
-    <h3>Ein- und Auszahlungen bei Tag <button type="button" class="ib" data-gl="k-tagin" aria-expanded="false" aria-controls="glpop" aria-label="Erklärung: Ein- und Auszahlungen bei Tag">i</button></h3>
-    <!-- Anleitung als Fenster (gt-modal, guideOpen('tag')). Ohne Tag-Daten groß und blau, danach klein (renderGuideBtns) -->
-    <div class="row gbtns" id="tag-guide-btns"><button type="button" class="btn primary" data-guide="tag">So kopierst du die Daten aus Tag</button></div>
+    <!-- Anleitung als Fenster (gt-modal, guideOpen('tag')). Ab 0.196 (Florians Antwort F2 zur Freigabe 0.196): rechts neben dem Titel (bis 700 px
+         darunter), ohne Tag-Daten blau, sobald es Tag-Daten gibt grau wie die Knöpfe „So …“ der anderen drei Bereiche (renderWallet). Bis 0.195 immer
+         blau, mit Tag-Daten klein. -->
+    <div class="dthd"><h3>Ein- und Auszahlungen bei Tag <button type="button" class="ib" data-gl="k-tagin" aria-expanded="false" aria-controls="glpop" aria-label="Erklärung: Ein- und Auszahlungen bei Tag">i</button></h3><span id="tag-guide-btns"><button type="button" class="btn dtgb primary" data-guide="tag">So kopierst du die Daten aus Tag</button></span></div>
     <p class="small" id="tagpaste-l" style="margin:10px 0 2px"><b>Hier einfügen:</b></p>
     <textarea id="tagpaste" rows="4" placeholder="Hier den kopierten Text aus der Tag Wallet einfügen"></textarea>
-    <!-- Coin gilt für alle Zeilen dieses Einfügens, merkt sich den letzten Wert (S.defCoin) -->
-    <div class="row tagrow" data-act><label for="tagcoin"><span class="gl" data-gl="tagcoin" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Coin</span></label><select id="tagcoin"><option>USDC</option><option>USDT</option></select><button class="btn primary" id="btn-tagpaste">Übernehmen</button></div>
-    <p class="small" style="margin:4px 0 0">Hast du USDC und USDT gemischt? Kein Problem, du kannst den Coin danach bei jeder Zeile ändern.</p>
+    <!-- Coin gilt für alle Zeilen dieses Einfügens, merkt sich den letzten Wert (S.defCoin).
+         Ab 0.196 (Florians Auftrag 0.196, A6): Frage in einem sanften Rahmen (Rand --line, Fläche --bg wie das Feld zum Ziehen), direkt vor „Übernehmen“.
+         Der Satz „Hast du USDC und USDT gemischt? …“ fällt weg. -->
+    <div class="tagcf"><p class="tagcq"><b id="tagcoin-q">Mit welchem <span class="gl" data-gl="tagcoin" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">Coin</span> hast du ein- und ausgezahlt?</b> <select id="tagcoin" aria-labelledby="tagcoin-q"><option>USDC</option><option>USDT</option></select></p><p class="small">Gilt für alle Zeilen mit Krypto. Du kannst ihn danach bei jeder Zeile ändern.</p></div>
+    <div class="row tagrow" data-act><button class="btn primary" id="btn-tagpaste">Übernehmen</button></div>
     <div id="tagmsg"></div>
     <!-- Vorschau vor dem Speichern (renderTagPrev) -->
     <div id="tagprev"></div>
@@ -2817,30 +2871,32 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
       <table id="tm-table"></table><div id="tmmsg"></div></div>
   </div>
   <!-- Ab 0.44: Börsen (Börsen-Datei, sonst von Hand). Ab 0.51 (1): Namen der Börsen aus BX_FMT (#bx-fmts setzt das Skript) -->
+  <!-- Ab 0.196 (Florians Auftrag 0.196, A5): Links zur Anleitung, Einleitung und der Satz zu den Formaten stehen im Fenster „So bekommst du die Datei
+       deiner Börse“ (bg-modal). Im Bereich: Feld, „Schon eingelesen“, „Ohne Datei:“ mit den Knöpfen, danach Meldung und Vorschau (Florians Freigabe
+       0.196). Bis 0.195: zwei Links (Bitvavo, DFX.swiss), Einleitung, Formate, Feld, Hinweis, Meldung, Vorschau, „Andere Börse oder etwas fehlt?“. -->
   <div class="wpan" id="bx-load" hidden>
-    <h3>Börsen</h3>
-    <!-- Ab 0.53: wie man die Datei bei Bitvavo bekommt, steht in der Anleitung (Abschnitt „Börsen-Datei laden“). Ab 0.64 direkt unter dem Titel.
-         Ab 0.168 (Florians Antwort 5 zum Plan): darunter die Zeile zu DFX.swiss (Anleitung #dfx) -->
-    <p class="gimg"><a href="https://trading-bilanz.github.io/anleitung.html#boerse-datei" target="_blank" rel="noopener">So bekommst du die Datei bei Bitvavo: Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a><br><a href="https://trading-bilanz.github.io/anleitung.html#dfx" target="_blank" rel="noopener">So bekommst du die Datei bei DFX.swiss: Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a></p>
-    <p class="small">Lade bei deiner Börse die Datei mit deinen Transaktionen herunter (CSV) und ziehe sie hierher. Das Tool übernimmt Käufe, Verkäufe und Überträge zu deinen Wallets und erkennt, was schon da ist.</p>
-    <p class="small" id="bx-fmts"></p>
+    <div class="dthd"><h3>Börsen</h3><button type="button" class="btn dtgb" data-bguide>So bekommst du die Datei deiner Börse</button></div>
     <div class="drop" id="bxdrop" role="button" tabindex="0"><b id="bxdrop-t">Börsen-Datei (.csv) hierher ziehen</b><span class="small" id="bxdrop-s">oder klicken, um sie auszuwählen</span></div>
     <input type="file" id="bxfile" accept=".csv,text/csv" multiple hidden>
-    <p class="small dhint">Du kannst Dateien auch an jeder anderen Stelle ins Tool ziehen.</p>
+    <p class="small dtein" id="bx-ein" hidden></p>
+    <p class="small bxoh"><b>Ohne Datei:</b></p>
+    <div class="row bxk"><button type="button" class="btn" data-bxk="kauf">Kauf</button><button type="button" class="btn" data-bxk="verkauf">Verkauf</button><button type="button" class="btn" data-bxk="gebuehr">Gebühr</button><button type="button" class="btn" data-bxk="tausch">Tausch</button><button type="button" class="btn" data-bxk="eingang">Geschenk</button></div>
     <div id="bxmsg"></div>
     <div id="bxprev"></div>
-    <p class="small" style="margin:12px 0 2px"><b>Andere Börse oder etwas fehlt?</b> Trage es von Hand ein:</p>
-    <div class="row bxk"><button type="button" class="btn" data-bxk="kauf">Kauf</button><button type="button" class="btn" data-bxk="verkauf">Verkauf</button><button type="button" class="btn" data-bxk="gebuehr">Gebühr</button><button type="button" class="btn" data-bxk="tausch">Tausch</button><button type="button" class="btn" data-bxk="eingang">Geschenk</button></div>
   </div>
   <!-- Ab 0.39: Wallet-Datei aus dem Block-Explorer (CSV „Token Transfers“), wird nur im Browser gelesen. Vorschau wfprev, dann Übernehmen. -->
   <div class="wpan" id="wf-load" hidden>
-    <h3>Wallet-Datei einlesen <button type="button" class="ib" data-gl="k-wfload" aria-expanded="false" aria-controls="glpop" aria-label="Erklärung: Wallet-Datei einlesen">i</button></h3>
+    <!-- Ab 0.196 (Florians Antwort F15 zur Freigabe 0.196): der Knopf „So lädst du die Datei aus dem Block-Explorer“ rechts neben dem Titel
+         (bis 700 px darunter), wie in den anderen drei Bereichen; vor „Verstanden“ unsichtbar (wfAdv). Ein Link zur Anleitung fehlt im Fenster, bis die
+         Anleitung einen Abschnitt zu Wallet-Dateien hat (Florians Antwort F3, OFFEN „Anleitung“). -->
+    <div class="dthd"><h3>Wallet-Datei einlesen <button type="button" class="ib" data-gl="k-wfload" aria-expanded="false" aria-controls="glpop" aria-label="Erklärung: Wallet-Datei einlesen">i</button></h3><span id="wf-guide-btns"><button type="button" class="btn dtgb" id="btn-wfguide">So lädst du die Datei aus dem Block-Explorer</button></span></div>
     <!-- Ab 0.46 (3.2): vor dem ersten Einlesen, „Verstanden“ wird gemerkt (S.ui.wfOk) -->
     <div id="wf-adv" hidden><p><b>Für Fortgeschrittene.</b> Mit Wallet-Dateien liest das Tool jede einzelne Bewegung auf der Blockchain ein und fragt bei allem nach, was es nicht selbst erkennt, auch bei Gebühren und Zwischenstationen. Das erspart einiges an Handarbeit und macht die Rechnung genauer, aber auch deutlich komplexer. Für die Steuer reicht es meistens, Käufe, Verkäufe und Überträge von Hand einzutragen.</p><p>Hast du eine Bix-Card, erkennt das Tool damit auch Aufladungen, Kartenzahlungen und Rückbuchungen. Dafür muss die Adresse deines Kartenkontos bei deiner Karte stehen, nicht bei der Wallet, aus der du auflädst. Bei einer Kartenzahlung beantwortest du dann nur noch die Frage nach der Kartengebühr.</p><div class="row" data-act><button type="button" class="btn primary" id="btn-wfok">Verstanden</button></div></div>
-    <div class="row gbtns" id="wf-guide-btns"><button type="button" class="btn" id="btn-wfguide">So lädst du die Datei aus dem Block-Explorer</button></div>
     <div class="drop" id="wdrop" role="button" tabindex="0"><b id="wdrop-t">Wallet-Datei (.csv) hierher ziehen</b><span class="small" id="wdrop-s">oder klicken, um Dateien auszuwählen (mehrere gleichzeitig möglich)</span></div>
     <input type="file" id="wfile" accept=".csv,text/csv" multiple hidden>
-    <p class="small dhint" id="wdrop-h">Du kannst Dateien auch an jeder anderen Stelle ins Tool ziehen.</p>
+    <!-- Ab 0.196 (A7): „Schon eingelesen: N Dateien › ansehen“, nur bei N > 0 (dtEinH). Der Satz „Du kannst Dateien auch an jeder anderen Stelle ins
+         Tool ziehen.“ steht ab 0.196 als „Geht auch überall im Tool.“ im Feld (initDeviceHelp, Florians Auftrag 0.196, A5). -->
+    <p class="small dtein" id="wf-ein" hidden></p>
     <div id="wf-tok"></div>
     <div id="wfmsg"></div>
     <div id="wfprev"></div>
@@ -3377,10 +3433,16 @@ function initDeviceHelp(){
   if($('drop-t'))$('drop-t').textContent=mob?'Hier tippen, um eine Report-Datei auszuwählen':'Report-Dateien hierher ziehen';
   if($('drop-s'))$('drop-s').textContent=mob?'(mehrere gleichzeitig möglich)':'oder klicken, um Dateien auszuwählen (mehrere gleichzeitig möglich)';
   $('wdrop-t').textContent=mob?'Hier tippen, um eine Wallet-Datei (.csv) auszuwählen':'Wallet-Datei (.csv) hierher ziehen';
-  $('wdrop-s').textContent=mob?'(mehrere gleichzeitig möglich, am Computer geht es einfacher)':'oder klicken, um Dateien auszuwählen (mehrere gleichzeitig möglich)';
+  // Ab 0.196 (Florians Auftrag 0.196, A5): am PC im Feld „Geht auch überall im Tool.“, nur mit Maus (.dhin), statt des Satzes „Du kannst Dateien auch an
+  // jeder anderen Stelle ins Tool ziehen.“ unter dem Feld (Börsen und Wallet-Dateien; Reports und EZB-Datei bleiben, wie sie sind)
+  const DHIN='<span class="dhin">. Geht auch überall im Tool.</span>';
+  $('wdrop-s').innerHTML=mob?'(mehrere gleichzeitig möglich, am Computer geht es einfacher)':'oder klicken, um Dateien auszuwählen (mehrere gleichzeitig möglich)'+DHIN;
   // Ab 0.70: auch EZB- und Börsen-Feld am Handy „Hier tippen, …“, ohne Unterzeile (eine Datei)
   $('rdrop-t').textContent=mob?'Hier tippen, um eine EZB-Datei auszuwählen':'EZB-Datei hierher ziehen';$('rdrop-s').hidden=mob;
   $('bxdrop-t').textContent=mob?'Hier tippen, um eine Börsen-Datei (.csv) auszuwählen':'Börsen-Datei (.csv) hierher ziehen';$('bxdrop-s').hidden=mob;
+  $('bxdrop-s').innerHTML='oder klicken, um sie auszuwählen'+DHIN;
+  // Ab 0.196 (Florians Antwort F5 zur Freigabe 0.196): „So trägst du die Karte von Hand ein“ aus einer Quelle in beide Fenster
+  for(const e of document.querySelectorAll('[data-khand]')){const c=$('kh-src').cloneNode(true);c.removeAttribute('id');e.replaceWith(c)}
 }
 
 /* ---------------- Report einlesen ---------------- */
@@ -7616,7 +7678,9 @@ const BV_NEED=['timezone','date','time','type','currency','amount','received / p
 // Ab 0.51 (1): Liste der Börsen-Formate. Erkennung (is), Leser (parse) und Vorschlag für die Wallet (w). Alle Texte, die Börsen nennen, nehmen
 // den Namen aus dieser Liste (bxNames: „Bitvavo“, „Bitvavo und Kraken“, „A, B und C“).
 // Ab 0.117: DFX.swiss (dx = eigener Weg in Vorschau und Übernehmen, keine Wallet der Börse)
-const BX_FMT=[{n:'Bitvavo',is:bvIs,parse:parseBitvavo,w:S=>bvWallet(S)},{n:'DFX.swiss',is:t=>dxIs(t),parse:t=>parseDfx(t),w:(S,P)=>dxWallet(S,P),dx:1}];
+// Ab 0.196 (Florians Auftrag 0.196, A5, „Eine Wurzel“): ex = Name des Exports bei der Börse, typ = Dateityp. Daraus kommen der Satz zu den Formaten und
+// die Liste im Fenster „So bekommst du die Datei deiner Börse“ (bxFmtInit); bis 0.195 standen die Namen der Exporte fest im Satz.
+const BX_FMT=[{n:'Bitvavo',ex:'Transaktionsverlauf',typ:'CSV',is:bvIs,parse:parseBitvavo,w:S=>bvWallet(S)},{n:'DFX.swiss',ex:'CoinTracking-Export',typ:'CSV',is:t=>dxIs(t),parse:t=>parseDfx(t),w:(S,P)=>dxWallet(S,P),dx:1}];
 const bxNames=()=>{const L=BX_FMT.map(f=>f.n);return L.length<2?L.join(''):L.slice(0,-1).join(', ')+' und '+L[L.length-1]};
 const bxFmt=t=>BX_FMT.find(f=>f.is(t))||null;
 const BV_BAD=`Das Tool kennt dieses Format noch nicht. Bisher ${BX_FMT.length<2?'geht':'gehen'} ${bxNames()}.`;
@@ -8952,7 +9016,12 @@ let BXP=null;
 // Ab 0.61: weitere Börsen-Dateien {name, text}, die nach der offenen Vorschau drankommen (nach „Übernehmen“ oder „Abbrechen“ die nächste)
 let BX_Q=[];
 // Ab 0.117: mit DFX.swiss (CoinTracking-Export)
-$('bx-fmts').textContent=`Bisher kann das Tool Dateien von ${bxNames()} lesen (Bitvavo: Transaktionsverlauf, DFX.swiss: CoinTracking-Export, beide als CSV).`;
+// Ab 0.196 (A5): im Fenster „So bekommst du die Datei deiner Börse“ der Satz mit Doppelpunkt und darunter je Börse eine Zeile „Name: Export (Typ)“, beides
+// aus BX_FMT. Bis 0.195 im Bereich „Börsen“: „Bisher kann das Tool Dateien von Bitvavo und DFX.swiss lesen (Bitvavo: Transaktionsverlauf, DFX.swiss:
+// CoinTracking-Export, beide als CSV).“
+function bxFmtInit(){$('bx-fmts').textContent=`Bisher kann das Tool Dateien von ${bxNames()} lesen:`;
+  $('bx-fmtl').innerHTML=BX_FMT.map(f=>`<li><b>${esc(f.n)}</b>: ${esc(f.ex)} (${esc(f.typ)})</li>`).join('')}
+bxFmtInit();
 // Ab 0.61: pre = Meldung davor, wenn die Datei aus der Warteschlange kommt (Ergebnis von „Übernehmen“, nach „Abbrechen“ ''). Eine Datei mit Fehler
 // nennt die Meldung, dann kommt gleich die nächste aus BX_Q. Warten danach noch Dateien, sagt die Meldung, wie viele.
 function bxLoadText(name,t,pre){const M=pre?[pre]:[];let bad=0;BXP=null;needReset($('bxprev'));
@@ -10556,10 +10625,17 @@ function walletOpts(sel,v,neu){return S.wallets.filter(w=>!wProv(w)||w===v).map(
 // Reiter Wallet (ab 0.38): ein Zeitraum für die ganze Seite (wRange, Leiste unter den Reitern), dazu je Karte ein Filter (S.ui.cf).
 // Gerechnet wird immer mit allen Einträgen, Zeitraum und Filter ändern nur die Anzeige. „Ergebnis“ zeigt den Bestand am Ende des Zeitraums.
 // Datum und Uhrzeit einer Tag-Zeile in österreichischer Zeit, im title die Zeit, wie Tag sie zeigt, oder „Uhrzeit aus der Wallet-Datei“
-function tagDT(t,a){if(!a.time)return fD(a.date);
-  const tt=t.tz==='datei'?'Uhrzeit aus der Wallet-Datei':`Tag zeigt: ${a.date!==t.date?fD(t.date)+' ':''}${t.time.slice(0,5)} (Zypern-Zeit)`;
-  // Ab 0.44: die Herkunft der Uhrzeit beim Antippen (vorher nur im title)
-  return `${fD(a.date)} <button type="button" class="adb small" data-tip="${esc(tt)}" aria-expanded="false" aria-label="Uhrzeit ${a.time.slice(0,5)}: Herkunft zeigen">${a.time.slice(0,5)}</button>`}
+// Ab 0.196 (Florians Auftrag 0.196, Teil B, Antwort F8): Die Uhrzeit ist ein Begriff „Uhrzeit“ (tagzeit) wie jeder andere: am PC beim Darüberfahren
+// offen, beim Klick gehalten, am Handy beim Tippen. Sein Text hängt an der Zeile (data-glh, glOpen). Bei einer Uhrzeit, die die Person selbst eingetragen
+// hat (tz 'at', Tag-Zeile von Hand), steht die Zeit ohne Begriff (bis 0.195 stand dort fälschlich „Tag zeigt: …“). Bis 0.195 ein blauer Knopf (adb,
+// data-tip), der sich nur beim Klick öffnete. Genutzt an drei Stellen: aufgeklappte Tag-Zeile in „Alle Vorgänge“, Fenster der Tag-Zeile, Kopfzeile der
+// Karten in „Noch offen“ (tdHdTag); nicht in der Liste und nicht unter „Warum:“ (Florians Antwort F8).
+function tagZeitH(t,a){if(!a.time)return '';const z=a.time.slice(0,5);if(t.tz==='at')return z;
+  const h=t.tz==='datei'?'Uhrzeit aus der Wallet-Datei':`Tag zeigt: ${a.date!==t.date?fD(t.date)+' ':''}${t.time.slice(0,5)} (Zypern-Zeit). Tag zeigt die Zypern-Zeit, das ganze Jahr 1 Stunde später als in Österreich und Deutschland. Das Tool rechnet sie um.`;
+  return `<span class="gl" data-gl="tagzeit" data-glh="${esc(h)}" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">${z}</span>`}
+function tagDT(t,a){if(!a.time)return fD(a.date);return `${fD(a.date)} ${tagZeitH(t,a)}`}
+// Kopfzeile einer Karte in „Noch offen“ zu einer Tag-Zeile: Datum · Uhrzeit (als Begriff)
+const tdHdTag=t=>{const a=tagAT(t);return [a.date?fD(a.date):'',tagZeitH(t,a)].filter(Boolean).join(' · ')};
 // Ab 0.45 (1.13): Einkaufswert unbekannt, weil der Kurs eines Tages fehlt (nanD aus kxRun)
 // Ab 0.45 (4.6): je Coin eine fette Zeile „Summe USDC“ über alle Wallets
 // Ab 0.121 (Phase 4): Reihenfolge in „Bestand jetzt“ (nur die Anzeige; C.pots und damit Excel bleiben, wie sie sind): Coins USDC, USDT, dann andere
@@ -10594,10 +10670,12 @@ function renderWallet(){
   const L=cxLand(),DEw=L==='DE',rg=wRange(),today=todayLocal();
   $('tagcoin').value=S.defCoin==='USDT'?'USDT':'USDC';
   const has=Object.keys(S.tag).length>0;
-  // Ohne Tag-Daten: Anleitungs-Knopf groß, danach klein. Ab 0.50 (1.1): der Knopf ist immer blau.
+  // Ohne Tag-Daten: Anleitungs-Knopf groß, danach klein. Ab 0.50 (1.1): der Knopf ist immer blau. Ab 0.196 siehe unten.
   // Ab 0.67 (Florians Wunsch): Feld immer 4 Zeilen hoch, mit und ohne Tag-Daten (bis 0.65 4 bzw. 2, in 0.66 8 bzw. 4)
   $('tagpaste').rows=4;
-  $('tag-guide-btns').classList.toggle('lite',has);$('tag-guide-btns').querySelector('.btn').classList.add('primary');
+  // Ab 0.196 (Florians Antwort F2 zur Freigabe 0.196): ohne Tag-Daten blau, sobald es Tag-Daten gibt grau wie die anderen Knöpfe „So …“, immer gleich
+  // groß. Bis 0.195 immer blau, mit Tag-Daten klein (lite).
+  $('tag-guide-btns').querySelector('.btn').classList.toggle('primary',!has);
   // Ab 0.48 (3.9): der Knopf „● N neu ▾“ ist weg; neu steht als Punkt vor dem Datum, der Filter im Menü „Status“
   // Formular (im Fenster cx-modal): Wallet-Listen auffrischen, gewählte Werte behalten, ab 0.43 mit „+ Neue Wallet …“
   const cw=$('cx-wallet').value,ct=$('cx-to').value,phw=CX_PH.test($('cx-wallet').innerHTML),pht=CX_PH.test($('cx-to').innerHTML);
@@ -11846,7 +11924,7 @@ function todoItems(C){
       li:{d:m.date,w:w||'',what:im==='sus'?'verdächtig':q?(askNm(q)?'Vorschlag: '+askNm(q):'Vorschlag'):m.side==='in'?'Eingang offen':m.side==='out'?'Ausgang offen':'offen',q:mq(m)}})}
   for(const s of SG)if(s.ty!=='tq'&&(!s.ks.length||s.ks.some(fW))){const m0=s.ks[0]&&S.wtx[s.ks[0]],t0=s.tid&&S.tag[s.tid],self=m0?(vgBuild(S).find(v=>v.mv.includes(s.ks[0]))||{}).id||'':'';
     I.push({id:'s:'+s.id,lv:'y',kind:'sug',t:m0?mt(m0):s.t,eur:0,ref:s.ks.length?'m:'+s.ks[0]:s.tid?'t:'+s.tid:'',sug:s,hk:m0?s.ks[0]:'',sugH:sugH(s,1)+(m0?tdPrevH(s.ks[0],'top'):''),
-      hdS:t0?tdHdL(tagAT(t0).date,tagAT(t0).time):'',big:(sugInfo(s)||{}).frage||(t0?`${t0.kind==='ein'?'Einzahlung bei Tag':'Auszahlung von Tag'}, ${usd(t0.usd)}`:''),ar:m0?{t:mt(m0),self,w:''}:null,
+      hdS:t0?tdHdTag(t0):'',big:(sugInfo(s)||{}).frage||(t0?`${t0.kind==='ein'?'Einzahlung bei Tag':'Auszahlung von Tag'}, ${usd(t0.usd)}`:''),ar:m0?{t:mt(m0),self,w:''}:null,
       li:{d:m0?m0.date:t0?tagAT(t0).date:'',w:m0?(m0.wFrom||m0.wTo||''):t0?t0.wallet:'',what:'Vorschlag: '+sugNm(s),q:m0?mq(m0):t0?usd(t0.usd):''}})}
   for(const x of tagAmbig())I.push({id:'a:'+x.k,lv:'y',kind:'tagamb',t:wSec(x.d,''),eur:0,body:tagAskHTML([x]),ref:'',hdS:tdHdL(x.d),li:{d:x.d,w:'Tag',what:'Auszahlung doppelt?',q:usd(x.usd)}});
   // Kartenzahlungen ohne Eintrag: je Zahlung ein Punkt, Vorschlag „Als Zahlung anlegen“ mit Kartengebühr in % (gemerkt je Wallet, anfangs 3 %)
@@ -11932,7 +12010,7 @@ function todoItems(C){
   {const SQ=new Map(SG.filter(s=>s.ty==='tq').map(s=>[s.tid,s])),twIds=new Set(SG.filter(s=>s.ty==='tw').map(s=>s.tid));
    const tq=(t,lv,silent)=>{const a=tagAT(t),P=tagQParts(t,silent),s=silent?null:SQ.get(t.id)||null;
      return Object.assign({id:(silent?'tw:':'tq:')+t.id,lv:s?'y':lv,kind:silent?'tagw':'tagq',tax:s?1:0,t:wSec(a.date,a.time||''),eur:silent?0:tdEur(Math.abs(t.qty),a.date),ref:'t:'+t.id,kids:silent?[]:EXK['tq:'+t.id]||[],
-       ar:{t:wSec(a.date,a.time||'12:00:00'),self:'t:'+t.id,w:''},hdS:tdHdL(a.date,a.time),li:{d:a.date,w:silent?t.wallet:'Tag',what:silent?'Wallet vom Tool gewählt':s?'Vorschlag: '+sugNm(s):t.kind==='ein'?'Herkunft offen':'Ziel offen',q:usd(t.usd)}},P,s?{sug:s,sugH:sugH(s,0)}:{})};
+       ar:{t:wSec(a.date,a.time||'12:00:00'),self:'t:'+t.id,w:''},hdS:tdHdTag(t),li:{d:a.date,w:silent?t.wallet:'Tag',what:silent?'Wallet vom Tool gewählt':s?'Vorschlag: '+sugNm(s):t.kind==='ein'?'Herkunft offen':'Ziel offen',q:usd(t.usd)}},P,s?{sug:s,sugH:sugH(s,0)}:{})};
    for(const t of TQ)I.push(tq(t,'r',false));
    for(const t of Object.values(S.tag))if(tagSilent(t)&&!twIds.has(t.id))I.push(tq(t,'y',true))}
   for(const c of S.cx){const ms=cxMissing(c);if(!ms.length)continue;
@@ -12743,6 +12821,10 @@ function cxSessRender(){const b=$('cx-sess');b.hidden=!CX_SESS.length;
   b.innerHTML=CX_SESS.length?`<p class="small"><b>Gerade eingetragen (${fI.format(CX_SESS.length)})</b></p><ul class="cxsl">${CX_SESS.map(x=>`<li>${esc(x.txt)} <button type="button" class="btn sm" data-cxse="${esc(x.ref)}" aria-label="Bearbeiten: ${esc(x.txt)}">✎</button></li>`).join('')}</ul>`:''}
 function cxNextReset(){EDIT=null;EDIT_TAG=null;CX_META=null;$('cx-feep').value='';for(const id of ['cx-qty','cx-qin','cx-time','cx-eur','cx-fee','cx-note','cx-qty2','cx-other','cx-recv','cx-kestv'])$(id).value='';delete $('cx-eur').dataset.est;delete $('cx-recv').dataset.est;cxSwReset();
   $('cx-t').textContent='Neuer Eintrag';cxHelp();$('cx-qty').focus()}
+// Ab 0.196 (A4): „Speichern“ beendet eine Reihe: Eintrag in die Reihe, Fenster zu (closeModal zeigt nach dem nächsten Bild alle Einträge der Reihe in der
+// Liste, wenn bis dahin kein Fenster offen ist; Regel „Späte Schritte nach dem Schließen“). Einen Toast gibt es nur, wenn das Speichern selbst etwas
+// meldet (z. B. „Die Adresse … gehört jetzt zu …“), wie beim Schließen nach einer Reihe bisher kein Toast kam.
+function cxSessEnde(ref,txt,pv){cxSessAdd(ref,txt);endEdit();closeModal();if(pv&&pv.trim())toast(pv.trim(),3500)}
 function cxSessFlash(refs){if(!refs.length)return;vgJump(refs[0]);for(const r of refs.slice(1)){const el=$('vg-list').querySelector(`[data-vg="${CSS.escape(r)}"] .vgb`)||$('vg-list').querySelector(`[data-vg="${CSS.escape(r)}"]`);if(el){el.classList.remove('hl');void el.offsetWidth;el.classList.add('hl')}}}
 // Ab 0.45: Uhrzeit aus dem Feld als HH:MM:SS ('' = keine)
 const cxTimeIn=()=>{const v=$('cx-time').value.trim();return /^\d\d:\d\d$/.test(v)?v+':00':/^\d\d:\d\d:\d\d$/.test(v)?v:''};
@@ -12840,7 +12922,12 @@ async function saveTagHand(k,d,w,c,q){const fs0=$('cx-fee').value.trim(),fee=fs0
   if(tm){t.time=tm;t.tz='at'}else{delete t.time;delete t.tz}if(note)t.note=note;else delete t.note;
   S.tag[id]=t;const was=!!EDIT_TAG;if(wk){wTagLink(wk,t,true);CX_META=null}wSync();save();
   const pvTxt=AS.map(x=>` Die Adresse ${wShort(x.a)} gehört jetzt zu „${x.w}“.`).join('')+provMsg();
-  if(CX_NEXT||CX_SESS.length){const tx=(ein?'Einzahlung zu Tag':'Auszahlung von Tag')+' '+fD(d)+', '+fmtNum(q)+' '+c;cxSessAdd('t:'+id,tx);cxNextReset();msg('cxmsg','ok',(was?'Gespeichert: ':'Eingetragen: ')+tx+'. Nächster Eintrag:');render();return true}
+  // Ab 0.196 (Florians Auftrag 0.196, A4): nur „Speichern und nächster“ bleibt im Fenster. „Speichern“ nach einer Reihe nimmt den Eintrag in die Reihe,
+  // schließt das Fenster, und alle Einträge der Reihe leuchten auf (cxSessEnde, wie beim Schließen). Bis 0.195 blieb auch „Speichern“ im Modus
+  // „nächster“, sobald die Reihe begonnen hatte (CX_NEXT||CX_SESS.length).
+  const txS=(ein?'Einzahlung zu Tag':'Auszahlung von Tag')+' '+fD(d)+', '+fmtNum(q)+' '+c;
+  if(CX_NEXT){cxSessAdd('t:'+id,txS);cxNextReset();msg('cxmsg','ok',(was?'Gespeichert: ':'Eingetragen: ')+txS+'. Nächster Eintrag:');render();return true}
+  if(CX_SESS.length&&!CX_EMB){cxSessEnde('t:'+id,txS,pvTxt);return true}
   const tx=(was?'Gespeichert: ':'Eingetragen: ')+(ein?'Einzahlung zu Tag':'Auszahlung von Tag')+', '+fmtNum(q)+' '+c+(fee>0?' (Gebühr '+fmtNum(fee)+')':'')+'.'+pvTxt;
   // Ab 0.57 Nachtrag: im Punkt von „Noch offen“ zurück zum Durchgang wie in addCx (bisher schloss das Speichern das ganze Fenster)
   if(CX_EMB){cxEmbBack();endEdit();TD_KIND='';TD_DIRTY='';render();toast(tx,3500);return true}
@@ -12983,7 +13070,9 @@ async function addCx(){
   wSync(PVR?{imp:1}:undefined);save();
   // Ab 0.55 (5): Satz zur aufgelösten vorläufigen Wallet (auch wenn wSync sie über den Eintrag selbst aufgelöst hat)
   const pvTxt=AS.map(x=>` Die Adresse ${wShort(x.a)} gehört jetzt zu „${x.w}“.`).join('')+(PVR?` Die Datei „${PVR.name}“ gehört jetzt zu „${PVR.w}“.`:'')+provMsg();
-  if(CX_NEXT||CX_SESS.length){cxSessAdd('c:'+entry.id,KIND[k]+' '+(d?fD(d)+', ':'')+valTxt);cxNextReset();msg('cxmsg','ok',(wasEdit?'Gespeichert: ':'Eingetragen: ')+KIND[k]+', '+valTxt+'. Nächster Eintrag:');render();return true}
+  // Ab 0.196 (A4): wie bei der Tag-Zeile von Hand oben, nur „Speichern und nächster“ bleibt im Fenster
+  if(CX_NEXT){cxSessAdd('c:'+entry.id,KIND[k]+' '+(d?fD(d)+', ':'')+valTxt);cxNextReset();msg('cxmsg','ok',(wasEdit?'Gespeichert: ':'Eingetragen: ')+KIND[k]+', '+valTxt+'. Nächster Eintrag:');render();return true}
+  if(CX_SESS.length&&!CX_EMB){cxSessEnde('c:'+entry.id,KIND[k]+' '+(d?fD(d)+', ':'')+valTxt,pvTxt);return true}
   // Ab 0.45 (3.2): Formular im Punkt von „Noch offen“: zurück zum Durchgang (der Punkt ist erledigt, der nächste kommt)
   // Ab 0.50 (1.2): addCx gibt true zurück, wenn gespeichert wurde (für die Rückfrage beim Verlassen einer Karte)
   if(CX_EMB){cxEmbBack();endEdit();TD_KIND='';TD_DIRTY='';render();toast('Eingetragen: '+KIND[k]+', '+valTxt+'.'+pvTxt,3000);return true}
@@ -14721,7 +14810,9 @@ const GL={
 <b>Quellenangabe:</b> ${ECB_CITE}`},
   'k-kurstab':{t:'Alle Kurse',h:`Alle Kurse, die das Tool kennt, neueste zuerst. Mit „nur verwendete Kurse zeigen“ siehst du nur die, mit denen Buchungen umgerechnet wurden. Eigene Kurse kannst du mit ✎ ändern und mit × löschen.
 ${ECB_CITE}`},
-  'k-tagin':{t:'Ein- und Auszahlungen bei Tag',h:'Wenn du bei Tag USDC einzahlst, tauscht Tag sie sofort in USD: steuerlich ein <b>Verkauf</b>. Bei einer Auszahlung in USDC ist es umgekehrt ein <b>Kauf</b>. Diese Version kann USDC und USDT.\n<b>Uhrzeit:</b> Tag zeigt die Zypern-Zeit, das ganze Jahr 1 Stunde später als in Österreich und Deutschland. Das Tool rechnet sie in österreichische Zeit um, so wie die Wallet-Datei. Ein Klick auf die Uhrzeit zeigt, was Tag zeigt.'},
+  // Ab 0.196 (Florians Auftrag 0.196, A6): nur der steuerliche Kern; der Absatz „Uhrzeit“ steht im Begriff an der Uhrzeit (tagzeit), „Diese Version kann
+  // USDC und USDT.“ fällt weg
+  'k-tagin':{t:'Ein- und Auszahlungen bei Tag',h:'Wenn du bei Tag USDC oder USDT einzahlst, tauscht Tag sie sofort in USD: steuerlich ein <b>Verkauf</b>. Bei einer Auszahlung in USDC oder USDT ist es umgekehrt ein <b>Kauf</b>. Ein- und Auszahlungen per Bank zählen nur für „Dein echtes Geld“.'},
   // Ab 0.40: neue Karten im Reiter Wallet
   'k-todo':{t:'Noch offen',h:'Hier steht alles, was das Tool nicht selbst entscheiden kann, ein Punkt nach dem anderen, der älteste zuerst.\n<b>Rot, fehlt für die Steuer:</b> Ohne diese Angaben stimmt die Steuer nicht, z. B. eine Ein- oder Auszahlung bei Tag ohne Wallet, eine Bewegung an eine unbekannte Adresse oder ein fehlender Einkauf.\n<b>Gelb, bitte prüfen:</b> Vorschläge des Tools, auch zu Tag-Zeilen (zählt ein Vorschlag für die Steuer, steht „betrifft ca.“ dabei), „Doppelt?“, „Vertippt?“, „Reihenfolge“ und Bestände, die nicht passen.\n<b>Grau, gut zu wissen:</b> Folgen eines Fehlers, Betrugsversuche, Lockadressen.\n<a href="https://trading-bilanz.github.io/anleitung.html#abarbeiten" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a>'},
   intern:{t:'intern',h:'Beide Seiten der Bewegung gehören zur selben Wallet, z. B. zwei Adressen derselben Wallet-App. Die Coins bleiben in deiner Wallet. Die Bewegung zählt deshalb nicht und ist kein offener Punkt.'},
@@ -14743,14 +14834,17 @@ ${ECB_CITE}`},
   // Ab 0.42
   unbtoken:{t:'unbekannter Token',h:'Ein Token, dessen Vertrag das Tool nicht kennt, mit „USD“ im Namen. Das Tool zählt ihn nur als USDC, wenn du es bestätigst. Mache das nur, wenn du weißt, woher er kommt, z. B. das Guthaben deiner Krypto-Karte. Betrüger verschicken gefälschte Token mit ähnlichen Namen.\nIn der Steuer zählt er wie USDC. Der Tausch von USDC in diesen Token ist dann kein Verkauf. Deine Entscheidung siehst und änderst du im Fenster „Adressen“ unter „Token“.'},
   // Ab 0.39: Wallet-Datei aus dem Block-Explorer
-  'k-wfload':{t:'Wallet-Datei einlesen',h:'Im Block-Explorer deines Netzwerks (z. B. etherscan.io) lädst du die Liste aller Token-Bewegungen deiner Wallet als Datei. Das Tool liest daraus nur die echten USDC und USDT und sortiert jede Bewegung ein:\n<b>Zu Tag:</b> Passt sie zu einer Ein- oder Auszahlung bei Tag, setzt das Tool dort genaue Menge, Coin, Wallet und Uhrzeit.\n<b>Übertrag:</b> Geht sie zwischen zwei deiner Wallets, entsteht ein Übertrag.\n<b>Vorschlag:</b> Passt sie zu einem Eintrag, den du selbst gemacht hast, fragt das Tool nach.\n<b>Offen:</b> Den Rest entscheidest du, wann du willst.\n<b>Wozu?</b> Genaue Mengen und Gebühren, der richtige Coin (Tag zeigt ihn nicht), Uhrzeiten für die Reihenfolge und genaue Daten für die Haltefrist in Deutschland. Vergessene Abgänge fallen auf, sie sind steuerlich wichtig.\n<b>Netzwerke:</b> Für jedes Netzwerk lädst du eine eigene Datei. Möglich sind Ethereum, BNB Chain, Polygon, Arbitrum, Base, Optimism, Linea. Noch nicht möglich: Tron (kommt später), Solana, Bitcoin, Avalanche.\n<b>Nur USDC und USDT</b> zählen. Das Tool ignoriert alle anderen Token. Es erkennt echte USDC und USDT an der Vertragsadresse, nicht am Namen.\n<b>Gebühren des Netzwerks</b> (in ETH, BNB usw.) stehen nicht in der Datei. Das Tool rechnet sie nicht.\nDie Datei bleibt in deinem Browser.'},
+  // Ab 0.196 (Florians Auftrag 0.196, A8): „Netzwerke“, „Nur USDC und USDT“, „Gebühren des Netzwerks“ und „Die Datei bleibt in deinem Browser“ stehen im
+  // Fenster „So lädst du die Datei aus dem Block-Explorer“ (wg-modal); im (i) bleiben Einleitung, „Zu Tag“, „Übertrag“, „Vorschlag“, „Offen“ und „Wozu?“
+  'k-wfload':{t:'Wallet-Datei einlesen',h:'Im Block-Explorer deines Netzwerks (z. B. etherscan.io) lädst du die Liste aller Token-Bewegungen deiner Wallet als Datei. Das Tool liest daraus nur die echten USDC und USDT und sortiert jede Bewegung ein:\n<b>Zu Tag:</b> Passt sie zu einer Ein- oder Auszahlung bei Tag, setzt das Tool dort genaue Menge, Coin, Wallet und Uhrzeit.\n<b>Übertrag:</b> Geht sie zwischen zwei deiner Wallets, entsteht ein Übertrag.\n<b>Vorschlag:</b> Passt sie zu einem Eintrag, den du selbst gemacht hast, fragt das Tool nach.\n<b>Offen:</b> Den Rest entscheidest du, wann du willst.\n<b>Wozu?</b> Genaue Mengen und Gebühren, der richtige Coin (Tag zeigt ihn nicht), Uhrzeiten für die Reihenfolge und genaue Daten für die Haltefrist in Deutschland. Vergessene Abgänge fallen auf, sie sind steuerlich wichtig.'},
   netzwerk:{t:'Netzwerk',h:'Die Blockchain, auf der deine Coins liegen, z. B. Ethereum oder BNB Chain. Dieselbe Adresse kann auf mehreren Netzwerken Coins haben. Im Tool ist sie dieselbe Wallet.'},
   ueberbrueckt:{t:'überbrückt',h:'USDC.e (auf Base USDbC) sind USDC, die über eine ältere Brücke auf ein anderes Netzwerk gebracht wurden. Circle hat sie nicht selbst ausgegeben. Sie sind praktisch 1 zu 1 USDC wert. Das Tool zählt sie als USDC. Deine Steuerberatung bekommt dazu eine Frage in der Zusammenfassung.'},
   verdaechtig:{t:'verdächtig',h:'Echte USDC oder USDT unter 0,01. Solche winzigen Beträge sind oft ein Betrugsversuch mit Lockadressen. Ignoriere sie, außer du weißt, woher sie kommen.\n'+'Lockadressen: Betrüger schicken winzige Beträge oder gefälschte Token von Adressen, die deinen echten zum Verwechseln ähnlich sehen. Sie hoffen, dass du die Adresse später aus deinem Verlauf kopierst und dein Geld an sie schickst. Kopiere Adressen nie aus dem Verlauf, immer aus der Quelle.'},
   gegenseite:{t:'Gegenseite',h:'Die andere Adresse einer Bewegung: woher die Coins kamen oder wohin sie gingen. <button type="button" class="zlink" data-addrguide>Wem gehört diese Adresse?</button> Zum Zuordnen klickst du direkt auf die Gegenseite.'},
   psp:{t:'PSP',h:'Filter bei Tag: zeigt nur Einzahlungen von außen, nicht die Überträge zwischen Tag Wallet und deinen Trading-Konten.'},
   tagbetrag:{t:'Betrag',h:'Was Tag in USD gebucht hat, inklusive aller Gebühren. Bei einer Auszahlung ist er dein Einkaufswert. Bei einer Einzahlung zählt als Erlös der Wert der Coins, die weggegangen sind (Menge), der Unterschied zum Betrag ist die Gebühr. Das Tool rechnet zum EZB-Kurs des Tages in Euro um.'},
-  tagcoin:{t:'Coin',h:'Tag zeigt nicht an, mit welchem Coin du ein- oder ausgezahlt hast. Prüfe ihn hier.'},
+  // Ab 0.196 (Florians Auftrag 0.196, A6): neuer Text mit „Anderer Coin“
+  tagcoin:{t:'Coin',h:'Tag zeigt den Coin nicht an. Ein- und Auszahlungen per Bank erkennt das Tool selbst aus dem Text. Bei einem anderen Coin (z. B. BTC) zählt die Zeile nur für „Dein echtes Geld“, die Krypto-Steuer dafür rechnet das Tool nicht.'},
   tagmenge:{t:'Menge',h:'Wie viele Coins wirklich bewegt wurden: bei einer Auszahlung, was in deiner Wallet angekommen ist, bei einer Einzahlung, was aus deiner Wallet weggegangen ist. Du siehst es im Verlauf deiner Wallet. Optional, für genaue Bestände.'},
   tagwallet:{t:'Wallet',h:'Wohin die Coins gingen bzw. woher sie kamen.'},
   meingeld:{t:'Mein Geld',h:'Nimm das Häkchen weg, wenn eine Einzahlung nicht dein Geld war (z. B. geborgt oder für jemand anderen). Sie zählt dann nirgends.'},
@@ -14948,6 +15042,8 @@ GL.vgwas={t:'Was',h:'Die Farbe zeigt die Familie, das Zeichen die genaue Art.\n'
 // Ab 0.48 (Nachtrag 1, 4.2): Jeder Begriff erklärt nur sich selbst: Uhrzeiten am Spaltenkopf „Datum“, „geschätzt“ bei einer Uhrzeit als eigener Begriff
 GL.vgdatum={t:'Datum',h:'Uhrzeiten in mitteleuropäischer Zeit (wie in Wien und Berlin).'};
 GL.tmgesch={t:'geschätzt',h:'Ohne Uhrzeit eingetragen. Das Tool hat die Stelle im Tag bestimmt.'};
+// Ab 0.196 (Teil B): Uhrzeit einer Tag-Zeile; der Text steht je Zeile am Begriff (data-glh, tagZeitH)
+GL.tagzeit={t:'Uhrzeit',h:''};
 // Begriff ausgeben: k = Schlüssel in GL, html = sichtbarer Text
 // Ab 0.58 (1): als Funktion (gehoben), weil SMH und SMF ihn schon beim Laden brauchen
 function gl(k,html){return `<span class="gl" data-gl="${k}" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">${html}</span>`}
@@ -14958,7 +15054,8 @@ function glOpen(el,pin){
   if(GP&&GP.el!==el)glClose();
   if(!GP){
     // ab 0.167 über glText (im Jahresrückblick mit der Einstellung jr)
-    const p=$('glpop'),h=glText(x,!!(el.closest&&el.closest('#jr-modal')));
+    // Ab 0.196: ein Begriff mit eigenem Text je Stelle (data-glh, z. B. die Uhrzeit einer Tag-Zeile) zeigt diesen Text
+    const p=$('glpop'),h=el.dataset.glh!=null?esc(el.dataset.glh):glText(x,!!(el.closest&&el.closest('#jr-modal')));
     $('glpop-t').textContent=x.t;$('glpop-h').innerHTML=h.split('\n').map(t=>/^<ul/.test(t)?t:`<p>${t}</p>`).join('');
     p.hidden=false;p.scrollTop=0;GP={el,pin,up:null};el.setAttribute('aria-expanded','true');
   }else if(pin)GP.pin=true;
@@ -16993,7 +17090,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.195',VDATE='25.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.196',VDATE='25.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
@@ -17732,7 +17829,8 @@ function closeModal(){if(!MODAL)return;const was=MODAL;modalOn(MODAL,false);MODA
 const DT={open:false,pane:''};let DT_PX=[];
 // Ab 0.46 (3.1): vier Kacheln vom Einfachen zum Aufwendigen. „Offenes zuordnen“ fällt weg, das steht oben als „Noch offen“.
 // n = Nummer in S.ui.wz.st und wzOk (1 Tag-Daten, 2 Börsen, 3 Wallet-Dateien, 5 Von Hand). DT_STEPS = Reihenfolge der Bereiche mit Dateien (Nummer der Kachel, wartende Dateien).
-const DT_K=[{p:'tag',n:1,t:'Tag-Daten'},{p:'hand',n:5,t:'Von Hand',sub:'empfohlen'},{p:'bx',n:2,t:'Börsen'},{p:'wf',n:3,t:'Wallet-Dateien',sub:'für Fortgeschrittene'}];
+// Ab 0.196 (Florians Auftrag 0.196, A1): jede Kachel mit Untertitel („einfügen“, „einfach“ statt „empfohlen“, „Datei laden“, „für Fortgeschrittene“)
+const DT_K=[{p:'tag',n:1,t:'Tag-Daten',sub:'einfügen'},{p:'hand',n:5,t:'Von Hand',sub:'einfach'},{p:'bx',n:2,t:'Börsen',sub:'Datei laden'},{p:'wf',n:3,t:'Wallet-Dateien',sub:'für Fortgeschrittene'}];
 const DT_STEPS=['tag','bx','wf'];
 // Erledigt: 1 Tag-Daten da, 2 Einträge da oder „Weiter“, 3 Bewegungen da, 5 Einträge von Hand
 // Ab 0.45: Einträge von Hand (Einträge nicht aus einer Datei, Tag-Zeilen von Hand)
@@ -17769,9 +17867,16 @@ const dtRe=()=>{render();if(DT.open)dtRender()};
 function dtStat(n){const pl=(x,a,b)=>`${fI.format(x)}\u00a0${x===1?a:b}`;
   if(n===1){const x=Object.keys(S.tag).length;return x?pl(x,'Zeile','Zeilen'):''}
   if(n===2){const x=S.cx.filter(c=>c.kind!=='uebertrag'&&!c.wk).length;return x?pl(x,'Eintrag','Einträge'):''}
-  if(n===3){const x=wFileList(S).length;return x?pl(x,'Datei','Dateien'):''}
+  if(n===3){const x=dtDateiN('wf');return x?pl(x,'Datei','Dateien'):''}
   if(n===5){const x=dtHandN();return x?pl(x,'Eintrag','Einträge'):''}
   return ''}
+// Ab 0.196 (Florians Auftrag 0.196, A7): Zahl der eingelesenen Dateien je Bereich, eine Zählung für Kachel und Zeile „Schon eingelesen“:
+// 'bx' die Börsen-Dateien (S.bxF), 'wf' die Wallet-Dateien wie die Kachel (wFileList, ohne Dateien ohne Zuordnung)
+function dtDateiN(p){return p==='bx'?(S.bxF||[]).length:p==='wf'?wFileList(S).length:0}
+// Zeile „Schon eingelesen: N Dateien › ansehen“ unter dem Feld zum Ziehen, nur bei N > 0; bei den Wallet-Dateien erst nach „Verstanden“ (wie das Feld)
+function dtEinUpd(){for(const [p,id] of [['bx','bx-ein'],['wf','wf-ein']]){const n=dtDateiN(p),e=$(id),ok=p!=='wf'||!!S.ui.wfOk;
+  const h=n&&ok?`Schon eingelesen: ${fI.format(n)}\u00a0${n===1?'Datei':'Dateien'} <button type="button" class="zlink" data-dtein>›\u00a0ansehen</button>`:'';
+  if(e.innerHTML!==h)e.innerHTML=h;e.hidden=!h}}
 // Ab 0.120 (Regel „Sprung nach dem Einlesen“, GESTALTUNG Abschnitt 11): In „＋ Daten“ zählt pzUpd die Einträge der offenen Vorschau, die auf eine
 // Entscheidung warten (data-pz: Zeilen mit „ersetzen / behalten / beide“, Abweichungen oder Prüfhinweis, unbeantwortete Fragen „Woher kamen …“,
 // „Als Dienst „DFX.swiss“ führen?“, Wallet oder Netzwerk einer Wallet-Datei nicht gewählt, unbekannter Token ohne Antwort; nicht: freiwillige
@@ -17783,7 +17888,9 @@ const PZ_SEEN=new WeakSet();
 // Zahlungsmethode („Stimmt das?“), „Schon von Hand eingetragen“ und Summen, die nicht zu Tag passen. Im üblichen Fall wartet nichts.
 function pzPane(){if(!DT.open)return null;const id={bx:'bxprev',wf:'wfprev',tag:'tagprev'}[DT.pane],cur=DT.pane==='bx'?BXP:DT.pane==='wf'?WFP:DT.pane==='tag'?TAGP:null;return id&&cur?{box:$(id),cur}:null}
 function pzUpd(){const el=$('dt-pz');if(!el)return;const P=pzPane(),n=P?P.box.querySelectorAll('[data-pz]').length:0;
-  const h=n?`<p class="sigl y pzl"><b>${n===1?'1 Eintrag wartet':fI.format(n)+' Einträge warten'} auf deine Prüfung.</b> <button type="button" class="zlink" data-pzgo>${n===1?'Dorthin':'Zum ersten'}&nbsp;↓</button></p>`:'';
+  // Ab 0.196 (Florians Antwort F14 zur Freigabe 0.196, OFFEN „Aus 0.195“): als gelbe Fläche (.msg.warn), weil man im Tool etwas tun soll (Regel
+  // „Gelbe Fläche und Strich nach Bedeutung“, GESTALTUNG Abschnitt 4). Bis 0.195 mit gelbem Strich (p.sigl.y).
+  const h=n?`<div class="msg warn pzl"><b>${n===1?'1 Eintrag wartet':fI.format(n)+' Einträge warten'} auf deine Prüfung.</b> <button type="button" class="zlink" data-pzgo>${n===1?'Dorthin':'Zum ersten'}&nbsp;↓</button></div>`:'';
   if(el.innerHTML!==h)el.innerHTML=h;
   if(P&&P.box.innerHTML&&!PZ_SEEN.has(P.cur)){PZ_SEEN.add(P.cur);requestAnimationFrame(()=>{if(pzPane()&&pzPane().cur===P.cur)pzGo()})}}
 function pzGo(again){const P=pzPane();if(!P)return;const bx=$('dt-modal').querySelector('.box');let t=P.box.querySelector('[data-pz]')||P.box.querySelector('.tprev')||P.box;if(!bx||!t)return;
@@ -17808,9 +17915,10 @@ function dtRender(){dtWaitClean();
   for(const [p,id] of [['tag','tw-paste'],['bx','bx-load'],['wf','wf-load'],['files','df-pane'],['hand','dh-pane']])$(id).hidden=DT.pane!==p;
   $('dt-files').setAttribute('aria-expanded',String(DT.pane==='files'));
   if(DT.pane==='files')renderFiles();if(DT.pane==='bx')renderBxPrev();if(DT.pane==='wf')wfAdv();if(DT.pane==='tag')renderTagMeth();
-  pzUpd();dtFoot()}
+  dtEinUpd();pzUpd();dtFoot()}
 // Ab 0.46 (3.2): Vor dem ersten Einlesen einer Wallet-Datei der Hinweis „Für Fortgeschrittene“ mit „Verstanden“ (S.ui.wfOk)
-function wfAdv(){const ok=!!S.ui.wfOk;$('wf-adv').hidden=ok;for(const id of ['wf-guide-btns','wdrop','wdrop-h'])$(id).hidden=!ok}
+// Ab 0.196: ohne den Hinweis unter dem Feld (wdrop-h), „Schon eingelesen“ folgt in dtEinUpd
+function wfAdv(){const ok=!!S.ui.wfOk;$('wf-adv').hidden=ok;for(const id of ['wf-guide-btns','wdrop'])$(id).hidden=!ok;dtEinUpd()}
 // Feste Knopfleiste: Knöpfe der letzten sichtbaren Zeile [data-act] als Stellvertreter, dazu Weiter/Fertig
 function dtFoot(){const f=$('dt-foot');if(!DT.open){f.innerHTML='';DT_PX=[];return}
   for(const b of $('dt-panes').querySelectorAll('.actin'))b.classList.remove('actin');
@@ -17897,7 +18005,12 @@ $('dh-pane').addEventListener('click',e=>{
     if(kind==='aufladung'||kind==='kzahl'){openCx(null,cxCardPre(kind,$('cx-wallet').value));$('cx-t').textContent='Neuer Eintrag';const q=$('cx-date');if(q)q.focus();return}
     openCx(null,{kind,date:'',wallet:kind==='kauf'||kind==='verkauf'?(bxPreW()||S.wallets[0]):$('cx-wallet').value||S.wallets[0],coin:'USDC'});$('cx-t').textContent='Neuer Eintrag';const q=$('cx-date');if(q)q.focus();return}
   const p=e.target.closest('[data-dhp]');if(p){DT.pane=p.dataset.dhp;render();dtRender();return}
+  // Ab 0.196 (A2, A3): Knopf „So trägst du von Hand ein“ öffnet sein Fenster über „＋ Daten“
+  if(e.target.closest('[data-hguide]')){openModal('hg-modal');return}
   if(e.target.closest('[data-dhbal]'))kbOpen('')});
+// Ab 0.196 (A2, A5): Knopf „So bekommst du die Datei deiner Börse“; ab 0.196 (A7) „› ansehen“ bei „Schon eingelesen“ in Börsen und Wallet-Dateien
+$('dt-panes').addEventListener('click',e=>{if(e.target.closest('[data-bguide]')){openModal('bg-modal');return}
+  if(e.target.closest('[data-dtein]')){DT.pane='files';render();dtRender()}});
 $('wb-dt').addEventListener('click',()=>dtOpen(''));
 // Ab 0.51 (6): gezogene Wallet-Dateien, die auf „Verstanden“ warten (WF_PEND), liest das Tool danach ein
 $('btn-wfok').addEventListener('click',()=>{S.ui.wfOk=1;save();wfAdv();dtFoot();$('wdrop').focus();if(WF_PEND){const L=WF_PEND;WF_PEND=null;msg('wfmsg','','');wfLoad(L)}});
