@@ -10121,9 +10121,10 @@ const tagMethNew=D=>[...new Set(D.P.rows.filter(r=>r.meth&&!/crypto|krypto/i.tes
 const tagMethRows=m=>Object.values(S.tag).filter(t=>t&&!t.hand&&t.meth===m);
 // Ab 0.202 (Florians Auftrag 0.202, Teil 2): die Wörter der beiden Antworten an einer Stelle (Vorschau beim Einfügen, Liste, Rückfrage, Knöpfe, Toast)
 const TM_ART={bank:'per Bank',crypto:'mit Krypto'},tmArtG=v=>TM_ART[v][0].toUpperCase()+TM_ART[v].slice(1);
-// Ab 0.202 (Florians Antwort zum Nachtrag der Freigabe 0.202): „Anderer Coin“, im Fenster der Tag-Zeile selbst gewählt (man.c), gilt als eigene Wahl
-// und bleibt beim Umstellen; „Anderer Coin“ aus dem Rahmen beim Einfügen wird umgestellt wie jede Krypto-Zeile
-const tagMethOwn=t=>!!(t.man&&(t.man.w||t.man.b||(t.man.c&&t.coin===TAG_OC)))||t.wq==='g';
+// Ab 0.201 (Florians Freigabe 0.201, Antwort F3): auch „Anderer Coin“ zählt als eigene Wahl; die Zeile bleibt beim Umstellen, wie sie ist
+// (bis 0.200 wurde sie beim Umstellen auf Bank und zurück USDC bzw. USDT mit „weiß ich noch nicht“). Beim Zusammenführen mit 0.202 von Florian
+// bestätigt (seine Antwort: „Wie 0.201: alle bleiben“, ersetzt seine Antwort „Nach Herkunft“ zum Nachtrag der Freigabe 0.202).
+const tagMethOwn=t=>!!(t.man&&(t.man.w||t.man.b))||t.wq==='g'||tagAnders(t);
 const tagMethLk=t=>{const m=!t.fiat&&t.wk&&S.wtx[t.wk];return !!(m&&m.st==='tag'&&m.ref===t.id)};
 // Ab 0.202 (Florians Antwort 4 zur Freigabe 0.202): oq = Zeilen, die nach Bank → Krypto als Frage in „Noch offen“ stehen (wie TQ in todoItems:
 // durchgeführt und „Mein Geld“); umgestellt werden weiter alle (ch). Bis 0.201 zusätzlich eb („Euro laut Kontoauszug“ für einen Satz der Rückfrage).
@@ -10168,7 +10169,9 @@ function tagPrevW(D,M){const rep=new Set(M.hand.filter(([h])=>D.rep[h]!==false).
   // Ab 0.50 (1.4): am Handy je Zeile ein Block: „15.07.26 · Einzahlung · 1.129,86 USD“, darunter die Frage und die Auswahl in voller Breite (CSS #tagprev)
   const q=r=>r.kind==='ein'?'Woher kamen die Coins?':'Wohin gingen die Coins?';
   // Ab 0.55 (1): bei „Geschenk“ darunter der Baustein „Geschenk“ (tpg; Eingaben in TAGP.wgift, damit sie beim Neuzeichnen bleiben)
-  return `<p style="margin-top:10px"><b>Woher und wohin?</b> <span class="small">(optional)</span></p><div class="bxw"><table class="bxt tpw"><tr class="tph"><th class="l">Datum</th><th>Art</th><th>Betrag</th><th>Woher / Wohin</th></tr>${L.map((r,i)=>`<tr><td class="l">${dS(r.date)}${r.time?`<span class="tpt"> ${r.time.slice(0,5)}</span>`:''}</td><td>${r.kind==='ein'?'Einzahlung':'Auszahlung'}<span class="tpq"><br><span class="small">${q(r)}</span></span></td><td>${usd(r.usd)}</td><td><span class="tpm">${q(r)}</span>${tagWSel(r.kind,`data-tpw="${esc(r.id)}"`,(D.wsel||{})[r.id]||'~q')}<div class="tpg" data-tpg="${esc(r.id)}"${(D.wsel||{})[r.id]==='~g'?'':' hidden'}>${giftH('tp'+i,r.kind)}</div></td></tr>`).join('')}</table></div>
+  // Ab 0.201 (Florians Entscheidung zu Bericht 0.200): Datum und Uhrzeit umgerechnet (tagPrevAT), die Uhrzeit als Begriff „Uhrzeit“ (tagZeitH) wie an den
+  // anderen Stellen; bis 0.200 die Zeit, wie Tag sie zeigt (Zypern-Zeit). Am Handy steht in dieser Tabelle wie bisher nur das Datum (.tpt, ab 0.50).
+  return `<p style="margin-top:10px"><b>Woher und wohin?</b> <span class="small">(optional)</span></p><div class="bxw"><table class="bxt tpw"><tr class="tph"><th class="l">Datum</th><th>Art</th><th>Betrag</th><th>Woher / Wohin</th></tr>${L.map((r,i)=>`<tr><td class="l">${(a=>dS(a.date)+(a.time?`<span class="tpt"> ${tagZeitH(r,a)}</span>`:''))(tagPrevAT(r))}</td><td>${r.kind==='ein'?'Einzahlung':'Auszahlung'}<span class="tpq"><br><span class="small">${q(r)}</span></span></td><td>${usd(r.usd)}</td><td><span class="tpm">${q(r)}</span>${tagWSel(r.kind,`data-tpw="${esc(r.id)}"`,(D.wsel||{})[r.id]||'~q')}<div class="tpg" data-tpg="${esc(r.id)}"${(D.wsel||{})[r.id]==='~g'?'':' hidden'}>${giftH('tp'+i,r.kind)}</div></td></tr>`).join('')}</table></div>
     <p class="small">„weiß ich noch nicht“ steht danach als Frage in „Noch offen“. Findet das Tool die Bewegung in einer Wallet-Datei, ordnet es sie selbst zu.</p>`}
 // Ab 0.51 (2): nach dem Neuzeichnen die Marken fehlender Entscheidungen wieder setzen
 // Ab 0.155 (E6): Beginnt oder endet das Warten der Tag-Vorschau, zeichnet das Tool Kacheln, Reiter „Wallet“ und Knopf „＋ Daten“ neu („!“)
@@ -10181,7 +10184,8 @@ function tagPrevH(){
   const box=$('tagprev');if(!TAGP){box.innerHTML='';return}
   const D=TAGP,P=D.P,rows=tagPRows(),M=tagMerge(rows);
   const n=k=>rows.filter(r=>r.kind===k).length,nn=k=>M.add.filter(r=>r.kind===k).length;
-  const ds=[...rows.map(r=>r.date),...D.unk.map(u=>u.date)].filter(Boolean).sort();
+  // Ab 0.201 (Florians Freigabe 0.201, Antwort F2): Zeitraum in der Kopfzeile aus den umgerechneten Daten (tagPrevAT); nicht erkannte Zeilen wie bisher
+  const ds=[...rows.map(r=>tagPrevAT(r).date),...D.unk.map(u=>u.date)].filter(Boolean).sort();
   const part=(k,one,many)=>{const a=n(k);return a?`${a} ${a===1?one:many}, davon ${nn(k)} neu`:''};
   const head=[part('ein','Einzahlung','Einzahlungen'),part('aus','Auszahlung','Auszahlungen'),ds.length?dS(ds[0])+(ds[ds.length-1]!==ds[0]?' - '+dS(ds[ds.length-1]):''):''].filter(Boolean).join(' · ');
   // Kontrolle mit den Summen oben auf der Tag-Seite: alle durchgeführten Vorgänge der Art im Tool nach dem Speichern
@@ -10218,7 +10222,10 @@ function tagPrevH(){
   for(const P of box.querySelectorAll('[data-tpg]'))giftFill(giftOf(P),(D.wgift||{})[P.dataset.tpg]);if(box.querySelector('[data-tpg]:not([hidden])'))pnFill();
 }
 // Ab 0.55 (1): Geschenk-Zeile der Vorschau: Prüfen wie überall (giftCheck), Geschenktag = Tag laut Tag-Daten in österreichischer Zeit
-const tpGiftDay=r=>tagAT(Object.assign({},r,r.time?{tz:'tag'}:{})).date;
+// Ab 0.201 (Florians Entscheidung zu Bericht 0.200): Datum und Uhrzeit einer Zeile der Vorschau in österreichischer Zeit (Zeilen aus Tag, Zypern-Zeit),
+// eine Rechnung für Kopfzeile, Tabelle „Woher und wohin?“ und den Tag des Geschenks
+const tagPrevAT=r=>tagAT(Object.assign({},r,r.time?{tz:'tag'}:{}));
+const tpGiftDay=r=>tagPrevAT(r).date;
 $('tagprev').addEventListener('change',e=>{if(TAGP&&e.target.dataset.tpw){const id=e.target.dataset.tpw,P=$('tagprev').querySelector(`[data-tpg="${CSS.escape(id)}"]`);if(P){P.hidden=e.target.value!=='~g';if(!P.hidden)pnFill()}
     if(W_NEWV(e.target.value))return;(TAGP.wsel||(TAGP.wsel={}))[id]=e.target.value;return}
   if(TAGP&&e.target.dataset.tm){TAGP.meth[e.target.dataset.tm]=e.target.value;renderTagPrev();return}
@@ -10673,6 +10680,7 @@ function walletOpts(sel,v,neu){return S.wallets.filter(w=>!wProv(w)||w===v).map(
 // hat (tz 'at', Tag-Zeile von Hand), steht die Zeit ohne Begriff (bis 0.195 stand dort fälschlich „Tag zeigt: …“). Bis 0.195 ein blauer Knopf (adb,
 // data-tip), der sich nur beim Klick öffnete. Genutzt an drei Stellen: aufgeklappte Tag-Zeile in „Alle Vorgänge“, Fenster der Tag-Zeile, Kopfzeile der
 // Karten in „Noch offen“ (tdHdTag); nicht in der Liste und nicht unter „Warum:“ (Florians Antwort F8).
+// Ab 0.201 (Florians Entscheidung zu Bericht 0.200): auch in der Vorschau der Tag-Daten, Tabelle „Woher und wohin?“ (tagPrevW).
 function tagZeitH(t,a){if(!a.time)return '';const z=a.time.slice(0,5);if(t.tz==='at')return z;
   const h=t.tz==='datei'?'Uhrzeit aus der Wallet-Datei':`Tag zeigt: ${a.date!==t.date?fD(t.date)+' ':''}${t.time.slice(0,5)} (Zypern-Zeit). Tag zeigt die Zypern-Zeit, das ganze Jahr 1 Stunde später als in Österreich und Deutschland. Das Tool rechnet sie um.`;
   return `<span class="gl" data-gl="tagzeit" data-glh="${esc(h)}" tabindex="0" role="button" aria-expanded="false" aria-controls="glpop">${z}</span>`}
@@ -14936,8 +14944,9 @@ const GL={
   'k-real':{t:'Dein echtes Geld',h:'Was du bei Tag eingezahlt und ausgezahlt hast und was dein Geld seit Start gebracht hat.'},
   // Ab 0.80 (4): (i) der Karte „Buchungsarten“, Wortlaut von Florian
   // Ab 0.86 (AU-19)
-  // Ab 0.202 (Florians Auftrag 0.202, Teil 2.1, Text aus dem Plan, Antwort 2 zur Freigabe): Titel wie die Überschrift der Liste
-  'k-tagmeth':{t:'Per Bank oder mit Krypto?',h:'Tag nennt bei jeder Ein- und Auszahlung eine Methode. Kennt das Tool eine Methode noch nicht, fragt es beim Einfügen einmal, ob sie per Bank oder mit Krypto lief, und merkt sich die Antwort.\nHier kannst du die Antwort später ändern. Sie gilt dann für alle Buchungen mit dieser Methode, außer für die, die du schon selbst zugeordnet hast. Vorher fragt das Tool nach.\n<b>Per Bank</b> heißt: Überweisung in Euro, keine Wallet, keine Krypto-Steuer. <b>Mit Krypto</b> heißt: Die Buchung braucht eine Wallet und zählt für die Krypto-Steuer.'},
+  // Ab 0.202 (Florians Auftrag 0.202, Teil 2.1, Text aus dem Plan, Antwort 2 zur Freigabe): Titel wie die Überschrift der Liste; „Anderer Coin“ aus 0.201
+  // (bis 0.201 „… außer für Zeilen, bei denen du Woher/Wohin oder den Coin selbst gewählt hast.“)
+  'k-tagmeth':{t:'Per Bank oder mit Krypto?',h:'Tag nennt bei jeder Ein- und Auszahlung eine Methode. Kennt das Tool eine Methode noch nicht, fragt es beim Einfügen einmal, ob sie per Bank oder mit Krypto lief, und merkt sich die Antwort.\nHier kannst du die Antwort später ändern. Sie gilt dann für alle Buchungen mit dieser Methode, außer für die, die du schon selbst zugeordnet hast, und die mit „Anderer Coin“. Vorher fragt das Tool nach.\n<b>Per Bank</b> heißt: Überweisung in Euro, keine Wallet, keine Krypto-Steuer. <b>Mit Krypto</b> heißt: Die Buchung braucht eine Wallet und zählt für die Krypto-Steuer.'},
   'k-buchungsarten':{t:'Buchungsarten',h:'Jede Buchung im MT5-Report, die kein Trade ist, braucht eine Bedeutung. Danach rechnet das Tool:\n• Einzahlung von Kapital (z. B. Deposit, Reinvestition): Geld, das auf dein MT5-Konto kommt, mit Trading Benefit. Die Investition steigt um Betrag ÷ Trading Benefit. Das ist kein Gewinn.\n• Kapitalabzug: Du nimmst eingesetztes Geld wieder vom Konto, zum Beispiel wenn du ein Konto verkleinerst oder auflöst. Die Investition sinkt. Das ist kein Verlust.\n• Gewinnauszahlung (Profit Withdrawal): Du hebst Gewinn vom MT5-Konto ab. Ergebnis und Investition bleiben gleich. Versteuert werden die Trades, nicht die Auszahlung.\n• Performance Fee / Gebühr (z. B. PF Deduction): Sie mindert deinen Gewinn. Ob sie auch die Steuer mindert, hängt vom Land ab. Das steht im Reiter Steuer.\n• Noch unklar: Die Buchung zählt vorerst nirgends, und das Tool zeigt einen Hinweis. Ordne sie zu, sobald du weißt, was sie ist.'},
   'k-konten':{t:'Deine Konten',h:'Alle Konten aus deinen Reports. Wähle bei jedem den Trading Benefit und, wenn du möchtest, einen Namen.'},
   'k-kurse':{t:'Wechselkurse',h:`Ohne Kurse funktioniert die Auswertung in USD vollständig. Für Euro und für die Steuer braucht das Tool den Kurs jedes Tages, an dem du eine Buchung hast. Es rechnet jede Buchung mit dem Referenzkurs der Europäischen Zentralbank (EZB) vom Tag der Buchung um. An Wochenenden und Feiertagen gilt der letzte Kurs davor.
