@@ -353,7 +353,10 @@ td.acc{white-space:normal;min-width:7em}
 .accn{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;width:calc(7em - 12px);overflow-wrap:break-word}
 .fee-d{color:var(--muted)}
 /* ⓘ am Kartentitel: kleiner runder Knopf, öffnet ein Popup mit einer kurzen Beschreibung der Karte (nur per Klick). Offen gefüllt. */
-.ib{display:inline-grid;place-items:center;box-sizing:border-box;width:18px;height:18px;padding:0;margin:0 0 0 2px;border:1.5px solid var(--accent);border-radius:50%;background:none;color:var(--accent);font:italic 700 12px/1 Georgia,"Times New Roman",serif;cursor:pointer;vertical-align:-3px;flex:none;user-select:none}
+/* Ab 0.202 (Florians Auftrag 0.202, Teil 4): vertical-align 1.5px statt -3px. Es wirkt nur im Fließtext (in Überschriften setzt die Flex-Zeile das (i)
+   mittig); dort saß der Kreis 4 bis 5,5 px unter der Mitte der Großbuchstaben, jetzt -0,5 bis +1 px wie in den Überschriften (gemessen mit Selawik,
+   Roboto und Inter). Stellen: „Rundherum in …“, „Was du hier machst“, die Überschriften in „＋ Daten“ und „Andere Adressen“. */
+.ib{display:inline-grid;place-items:center;box-sizing:border-box;width:18px;height:18px;padding:0;margin:0 0 0 2px;border:1.5px solid var(--accent);border-radius:50%;background:none;color:var(--accent);font:italic 700 12px/1 Georgia,"Times New Roman",serif;cursor:pointer;vertical-align:1.5px;flex:none;user-select:none}
 button.ib:hover{background:var(--accent-soft)}
 button.ib[aria-expanded=true]{background:var(--accent);color:var(--card)}
 button.ib:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -2870,8 +2873,9 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <div id="tagmsg"></div>
     <!-- Vorschau vor dem Speichern (renderTagPrev) -->
     <div id="tagprev"></div>
-    <!-- Ab 0.86 (AU-19): gemerkte Zahlungsmethoden (S.tagMeth) mit „per Bank“ · „mit Krypto“ zum Umstellen, Aufbau wie die Karte „Buchungsarten“ (renderTagMeth) -->
-    <div id="tm-box" hidden><h3>Zahlungsmethoden <button type="button" class="ib" data-gl="k-tagmeth" aria-expanded="false" aria-controls="glpop" aria-label="Erklärung: Zahlungsmethoden">i</button></h3>
+    <!-- Ab 0.86 (AU-19): gemerkte Zahlungsmethoden (S.tagMeth) mit „per Bank“ · „mit Krypto“ zum Umstellen, Aufbau wie die Karte „Buchungsarten“ (renderTagMeth).
+         Ab 0.202 (Florians Auftrag 0.202, Teil 2.1): Überschrift „Per Bank oder mit Krypto?“, bis 0.201 „Zahlungsmethoden“ -->
+    <div id="tm-box" hidden><h3>Per Bank oder mit Krypto? <button type="button" class="ib" data-gl="k-tagmeth" aria-expanded="false" aria-controls="glpop" aria-label="Erklärung: Per Bank oder mit Krypto?">i</button></h3>
       <table id="tm-table"></table><div id="tmmsg"></div></div>
   </div>
   <!-- Ab 0.44: Börsen (Börsen-Datei, sonst von Hand). Ab 0.51 (1): Namen der Börsen aus BX_FMT (#bx-fmts setzt das Skript) -->
@@ -4291,11 +4295,14 @@ function anaSetz(k){[CAP,CAPE,INV,CHAIN,PFCHK,PF_SRC]=k}
 // Ab 0.87 (0.1): Anteil, wenn noch kein Konto eine Performance Fee gebucht hat: fest 30 % des positiven Ergebnisses (wie bei Tag)
 const PF_FIX={u:0.3,t:'',a:''};
 // Ab 0.86 (AU-11): Satz zur geschätzten PF der laufenden Woche, wenn ein Konto darin keinen eigenen Anteil hat (PF_SRC), sonst ''.
-// accs = Konten mit Trades in der laufenden Woche. Ein Konto: „Anteil von Konto …, weil dieses Konto …“, mehrere: mit „Für Konto …“ davor.
-function pfSrcTxt(accs){const L=accs.filter(a=>a in PF_SRC).sort(),m=accs.length>1;
-  return L.map(a=>{const q=PF_SRC[a],dies=m?`Konto ${a}`:'dieses Konto';
-    return q?`${m?`Für Konto ${a}: `:''}Anteil von Konto ${q}, weil ${dies} noch keine abgeschlossene Woche hat.`:
-      `${m?`Für Konto ${a}: `:''}Anteil fest 30 %, weil noch kein Konto eine Abrechnung hat.`}).join('\n')}
+// accs = Konten mit Trades in der laufenden Woche.
+// Ab 0.202 (Florians Auftrag 0.202, Teil 1, und Antwort 1 zur Freigabe): ein Satz, die Kontonummer steht immer da. Alle Konten ohne eigene
+// Abrechnung nehmen denselben Anteil (PF_SRC: das Konto, das zuletzt eine PF gebucht hat, oder '' = keins, fest 30 %).
+// Bis 0.201: je Konto eine Zeile „Anteil von Konto …, weil dieses Konto noch keine abgeschlossene Woche hat.“ bzw. „Anteil fest 30 %, …“.
+const undL=L=>L.length>1?L.slice(0,-1).join(', ')+' und '+L[L.length-1]:L[0]||'';
+function pfSrcTxt(accs){const L=accs.filter(a=>a in PF_SRC).sort();if(!L.length)return '';const q=PF_SRC[L[0]];
+  if(!q)return 'Für keines deiner Konten gibt es schon eine Abrechnung der Performance Fee. Darum schätzt das Tool sie mit 30 % des Ergebnisses der Woche.';
+  return `Für ${L.length===1?'Konto '+L[0]:'die Konten '+undL(L)} gibt es noch keine Abrechnung der Performance Fee. Darum schätzt das Tool sie mit dem Anteil von Konto ${q}.`}
 const pfFloor=v=>Math.floor(v*100+1e-6)/100,PF_TOL=0.03,PF_NONE=0.05;
 function pfCheck(ck){
   const base=ck.filter(c=>c.nu>0&&!(c.loss<0)),su=base.reduce((s,c)=>s+c.u,0),sn=base.reduce((s,c)=>s+c.nu,0),rate=sn>0?su/sn:null;
@@ -10112,32 +10119,44 @@ const tagMethNew=D=>[...new Set(D.P.rows.filter(r=>r.meth&&!/crypto|krypto/i.tes
 // Bank → Krypto: Coin S.defCoin, Woher/Wohin „weiß ich noch nicht“ (wq 'q'), steht in „Noch offen“. Die Menge bleibt. „Euro laut Kontoauszug“ bleibt gespeichert.
 // Die Wahl des Tools bei einer Zeile ohne eigene Wahl wird nicht als eigene Wahl gemerkt (man bleibt), damit ein späteres Umstellen sie wieder erfasst.
 const tagMethRows=m=>Object.values(S.tag).filter(t=>t&&!t.hand&&t.meth===m);
-const tagMethOwn=t=>!!(t.man&&(t.man.w||t.man.b))||t.wq==='g';
+// Ab 0.202 (Florians Auftrag 0.202, Teil 2): die Wörter der beiden Antworten an einer Stelle (Vorschau beim Einfügen, Liste, Rückfrage, Knöpfe, Toast)
+const TM_ART={bank:'per Bank',crypto:'mit Krypto'},tmArtG=v=>TM_ART[v][0].toUpperCase()+TM_ART[v].slice(1);
+// Ab 0.202 (Florians Antwort zum Nachtrag der Freigabe 0.202): „Anderer Coin“, im Fenster der Tag-Zeile selbst gewählt (man.c), gilt als eigene Wahl
+// und bleibt beim Umstellen; „Anderer Coin“ aus dem Rahmen beim Einfügen wird umgestellt wie jede Krypto-Zeile
+const tagMethOwn=t=>!!(t.man&&(t.man.w||t.man.b||(t.man.c&&t.coin===TAG_OC)))||t.wq==='g';
 const tagMethLk=t=>{const m=!t.fiat&&t.wk&&S.wtx[t.wk];return !!(m&&m.st==='tag'&&m.ref===t.id)};
+// Ab 0.202 (Florians Antwort 4 zur Freigabe 0.202): oq = Zeilen, die nach Bank → Krypto als Frage in „Noch offen“ stehen (wie TQ in todoItems:
+// durchgeführt und „Mein Geld“); umgestellt werden weiter alle (ch). Bis 0.201 zusätzlich eb („Euro laut Kontoauszug“ für einen Satz der Rückfrage).
 function tagMethPlan(m,v){const bank=v==='bank',L=tagMethRows(m),own=L.filter(t=>tagMethOwn(t)&&!!t.fiat!==bank),ch=L.filter(t=>!tagMethOwn(t)&&!!t.fiat!==bank);
-  return {ch,own,lk:bank?ch.filter(tagMethLk):[],eb:bank?[]:ch.filter(t=>t.eurBank>0)}}
-function tagMethTxt(m,v,P){const pl=(n,a,b)=>`${fI.format(n)}\u00a0${n===1?a:b}`,n=P.ch.length,bank=v==='bank';
-  return [`„${m}“ ab jetzt ${bank?'per Bank':'mit Krypto'}?`,
-    [bank?`${pl(n,'Zeile wird','Zeilen werden')} damit Bank-${n===1?'Zahlung':'Zahlungen'}: keine Wallet, keine Krypto-Steuer, ${n===1?'zählt':'zählen'} für „Dein echtes Geld“.`:
-      `${pl(n,'Zeile wird','Zeilen werden')} damit Krypto-${n===1?'Zahlung':'Zahlungen'} mit ${S.defCoin||'USDC'}. Woher/Wohin ist dann „weiß ich noch nicht“, ${n===1?'die Zeile steht':'die Zeilen stehen'} in „Noch offen“.${Object.keys(S.wtx).length?` Findet das Tool ${n===1?'die Bewegung':'Bewegungen'} in einer Wallet-Datei, verknüpft es sie selbst.`:''}`,
-     P.lk.length?(P.lk.length===1?(n===1?'Sie':'1 davon')+` ist mit einer Bewegung aus ${mvDatei(P.lk.map(t=>S.wtx[t.wk]),'Wallet-Datei','einer Wallet-Datei')} verknüpft. Die Verknüpfung wird gelöst, die Bewegung ist danach wieder offen.`:
-       `${fI.format(P.lk.length)} davon sind mit Bewegungen aus ${mvDatei(P.lk.map(t=>S.wtx[t.wk]),'Wallet-Datei','Wallet-Dateien')} verknüpft. Die Verknüpfungen werden gelöst, die Bewegungen sind danach wieder offen.`):'',
-     P.eb.length?`„Euro laut Kontoauszug“ bei ${pl(P.eb.length,'Zeile','Zeilen')} bleibt gespeichert, zählt aber nur bei einer Bank-Zahlung.`:'',
-     P.own.length?`${pl(P.own.length,'Zeile','Zeilen')}, bei ${P.own.length===1?'der':'denen'} du Woher/Wohin selbst gewählt hast, ${P.own.length===1?'bleibt':'bleiben'}, wie ${P.own.length===1?'sie ist':'sie sind'}.`:'',
-     `Auch Zeilen mit „${m}“, die du später einfügst, gelten dann als ${bank?'per Bank':'mit Krypto'}.`].filter(Boolean).join(' ')].join('\n\n')}
+  return {ch,own,lk:bank?ch.filter(tagMethLk):[],oq:bank?[]:ch.filter(t=>t.status==='ok'&&t.own)}}
+// Ab 0.202 (Florians Auftrag 0.202, Teil 2, Wortlaut aus dem Auftrag, Antworten 3 bis 5 zur Freigabe): Die Frage ist der Titel (tagMethFrage), der
+// Text hat je Satz einen Absatz; jeder Satz steht nur, wenn es den Fall gibt. Coin bei Bank → Krypto: S.defCoin (zuletzt gewählter USDC oder USDT, sonst
+// USDC), auch wenn oben im Rahmen beim Einfügen gerade „Anderer Coin“ steht (Florians Antwort zum Nachtrag). Bis 0.201 Titel „Zahlungsmethode umstellen“,
+// erste Zeile „„…“ ab jetzt mit Krypto?“, Sätze mit „Zeilen“ und zu „Euro laut Kontoauszug“.
+const tagMethFrage=(m,v)=>`„${m}“ ${TM_ART[v]} statt ${TM_ART[v==='bank'?'crypto':'bank']}?`;
+function tagMethTxt(m,v,P){const pl=(n,a,b)=>`${fI.format(n)}\u00a0${n===1?a:b}`,n=P.ch.length,bank=v==='bank',q=P.oq.length,k=P.lk.length,o=P.own.length;
+  return [`Das Tool zählt dann alle Buchungen mit „${m}“ als ${bank?'Überweisung in Euro':`Krypto (${S.defCoin||'USDC'})`}, auch die, die später dazukommen.`,
+    bank?`${pl(n,'Buchung braucht','Buchungen brauchen')} dann keine Wallet und ${n===1?'zählt':'zählen'} nicht für die Krypto-Steuer.`:
+      q?`${pl(q,'Buchung braucht','Buchungen brauchen')} danach eine Wallet. Du findest sie in „Noch offen“.${Object.keys(S.wtx).length?` Findet das Tool ${q===1?'sie':'eine davon'} in deinen Wallet-Dateien, ordnet es sie selbst zu.`:''}`:'',
+    k?(k===1?`${n===1?'Sie gehört':'1 davon gehört'} zu einer Bewegung in ${mvDatei(P.lk.map(t=>S.wtx[t.wk]),'Wallet-Datei','einer Wallet-Datei')}. Diese Verbindung löst das Tool, die Bewegung steht danach wieder in „Noch offen“.`:
+      `${fI.format(k)} davon gehören zu Bewegungen in ${mvDatei(P.lk.map(t=>S.wtx[t.wk]),'Wallet-Datei','Wallet-Dateien')}. Diese Verbindungen löst das Tool, die Bewegungen stehen danach wieder in „Noch offen“.`):'',
+    o?`${pl(o,'Buchung','Buchungen')} hast du schon selbst zugeordnet. ${o===1?'Sie bleibt, wie sie ist.':'Sie bleiben, wie sie sind.'}`:''].filter(Boolean).join('\n\n')}
 function tagMethDo(m,v){const P=tagMethPlan(m,v),bank=v==='bank';S.tagMeth[m]=v;
   for(const t of P.ch){if(bank){if(tagMethLk(t)){const k=t.wk;naRec(S,'unl','',()=>wUnlink(k))}t.fiat=true;t.coin='EUR';t.wallet='';delete t.wq}
     else{t.fiat=false;t.coin=S.defCoin||'USDC';t.wallet='';t.wq='q'}}
   return P.ch.length}
 function tagMethSet(m,v){if(!S.tagMeth[m]||S.tagMeth[m]===v)return Promise.resolve(false);const P=tagMethPlan(m,v),snap=JSON.stringify(S);
   const go=()=>{const n=tagMethDo(m,v),t0=tagLinkedK(),wn=wSync();save();render();
-    toastUndo(`„${m}“ ist jetzt ${v==='bank'?'per Bank':'mit Krypto'}.${n?` ${fI.format(n)} ${n===1?'Zeile':'Zeilen'} umgestellt.`:''}${wn?` ${wn===1?'Ein Vorgang wurde':fI.format(wn)+' Vorgänge wurden'} mit ${tagLinkedF(t0)} verknüpft.`:''}`,snap);return true};
+    // Ab 0.202 (Florians Freigabe 0.202, Antwort 5): „Das Tool zählt „…“ jetzt als …“, „Buchungen“ statt „Zeilen“; bis 0.201 „„…“ ist jetzt mit Krypto.“
+    toastUndo(`Das Tool zählt „${m}“ jetzt als ${v==='bank'?'Überweisung in Euro':`Krypto (${S.defCoin||'USDC'})`}.${n?` ${fI.format(n)} ${n===1?'Buchung':'Buchungen'} umgestellt.`:''}${wn?` ${wn===1?'1 davon':fI.format(wn)+' davon'} hat das Tool in ${tagLinkedF(t0)} gefunden und zugeordnet.`:''}`,snap);return true};
   if(!P.ch.length)return Promise.resolve(go());
-  return askBox({title:'Zahlungsmethode umstellen',text:tagMethTxt(m,v,P),ok:'Umstellen'}).then(ok=>{if(!ok){renderTagMeth();return false}return go()})}
+  return askBox({title:tagMethFrage(m,v),text:tagMethTxt(m,v,P),ok:'Ja, '+TM_ART[v]}).then(ok=>{if(!ok){renderTagMeth();return false}return go()})}
+// Ab 0.202 (Florians Auftrag 0.202, Teil 2.1, Antwort 2 zur Freigabe): Spalten „Methode bei Tag“ · „Buchungen“ · „Zählt als“, Auswahl „Per Bank“ ·
+// „Mit Krypto“; bis 0.201 „Zeilen“ · „Per Bank?“ mit „Ja, per Bank“ · „Nein, mit Krypto“
 function renderTagMeth(){const box=$('tm-box'),M=Object.keys(S.tagMeth||{}).sort((a,b)=>a.localeCompare(b,'de'));box.hidden=!M.length;if(!M.length){$('tm-table').innerHTML='';return}
-  $('tm-table').innerHTML=`<thead><tr><th class="l">Methode bei Tag</th><th>Zeilen</th><th>Per Bank?</th></tr></thead><tbody>${M.map(m=>{const n=tagMethRows(m).length,b=S.tagMeth[m]==='bank';
-    return `<tr><td class="l tml"><b>${esc(m)}</b></td><td class="tmn">${fI.format(n)}<span class="tmm"> ${n===1?'Zeile':'Zeilen'}</span></td>`+
-      `<td class="tmc"><select data-tmeth="${esc(m)}" aria-label="Lief „${esc(m)}“ per Bank?"><option value="bank"${b?' selected':''}>Ja, per Bank</option><option value="crypto"${b?'':' selected'}>Nein, mit Krypto</option></select></td></tr>`}).join('')}</tbody>`}
+  $('tm-table').innerHTML=`<thead><tr><th class="l">Methode bei Tag</th><th>Buchungen</th><th>Zählt als</th></tr></thead><tbody>${M.map(m=>{const n=tagMethRows(m).length,b=S.tagMeth[m]==='bank';
+    return `<tr><td class="l tml"><b>${esc(m)}</b></td><td class="tmn">${fI.format(n)}<span class="tmm"> ${n===1?'Buchung':'Buchungen'}</span></td>`+
+      `<td class="tmc"><select data-tmeth="${esc(m)}" aria-label="„${esc(m)}“: ${TM_ART.bank} oder ${TM_ART.crypto}?"><option value="bank"${b?' selected':''}>${tmArtG('bank')}</option><option value="crypto"${b?'':' selected'}>${tmArtG('crypto')}</option></select></td></tr>`}).join('')}</tbody>`}
 $('tm-table').addEventListener('change',e=>{const s=e.target.closest&&e.target.closest('[data-tmeth]');if(s)tagMethSet(s.dataset.tmeth,s.value)});
 function tagPRows(){const D=TAGP,src=D.P.page==='wd'?'wd':'hist';
   return [...D.P.rows.map(r=>r.meth&&!/crypto|krypto/i.test(r.meth)?Object.assign({},r,{fiat:tagMethBank(D,r.meth)}):r),...D.unk.map((u,i)=>D.dec[i]==='ein'||D.dec[i]==='aus'?{id:u.id,date:u.date,time:u.time,kind:D.dec[i],usd:u.usd,status:'ok',src,fiat:false}:null).filter(Boolean)]}
@@ -10190,7 +10209,7 @@ function tagPrevH(){
   const open=D.dec.filter(x=>!x).length;
   box.innerHTML=`<div class="tprev"><p><b>Vorschau:</b> ${head||'keine Ein- oder Auszahlungen'}</p>${skipTxt?`<p class="small">${skipTxt}</p>`:''}${chk.join('')}
     ${M.hand.length?`<p style="margin-top:10px"><b>Schon von Hand eingetragen (${M.hand.length}):</b></p>${M.hand.map(([h,r])=>{const t=S.tag[h];return t?`<div class="tunk" data-pz><label class="fopt"><input type="checkbox" data-thr="${esc(h)}" ${D.rep[h]!==false?'checked':''}><span>${t.kind==='ein'?'Einzahlung':'Auszahlung'} vom ${fD(t.date)}, ${usd(t.usd)} (${esc(t.wallet)}${t.note?', „'+esc(t.note)+'“':''}) durch die Zeile ${esc(r)} aus den Tag-Daten ersetzen</span></label></div>`:''}).join('')}<p class="small">Ersetzen übernimmt Uhrzeit und Nummer von Tag. Wallet, Coin, Menge und deine Notiz bleiben.</p>`:''}
-    ${tagMethNew(D).map(m=>`<div class="tunk" data-pz><p><b>Methode „${esc(m)}“ erkannt.</b> Das Tool behandelt sie als Ein- oder Auszahlung per Bank. Stimmt das?</p><div><label class="fopt"><input type="radio" name="tm-${esc(m)}" value="bank" data-tm="${esc(m)}" ${tagMethBank(D,m)?'checked':''}><span>Ja, per Bank</span></label><label class="fopt"><input type="radio" name="tm-${esc(m)}" value="crypto" data-tm="${esc(m)}" ${tagMethBank(D,m)?'':'checked'}><span>Nein, mit Krypto</span></label></div><p class="small">Per Bank heißt: keine Krypto-Steuer, keine Wallet, zählt für „Dein echtes Geld“.</p></div>`).join('')}
+    ${tagMethNew(D).map(m=>`<div class="tunk" data-pz><p><b>Methode „${esc(m)}“ erkannt.</b> Das Tool behandelt sie als Ein- oder Auszahlung ${TM_ART.bank}. Stimmt das?</p><div><label class="fopt"><input type="radio" name="tm-${esc(m)}" value="bank" data-tm="${esc(m)}" ${tagMethBank(D,m)?'checked':''}><span>Ja, ${TM_ART.bank}</span></label><label class="fopt"><input type="radio" name="tm-${esc(m)}" value="crypto" data-tm="${esc(m)}" ${tagMethBank(D,m)?'':'checked'}><span>Nein, ${TM_ART.crypto}</span></label></div><p class="small">${tmArtG('bank')} heißt: keine Krypto-Steuer, keine Wallet, zählt für „Dein echtes Geld“.</p></div>`).join('')}
     ${tagPrevW(D,M)}
     ${D.unk.length?`<p style="margin-top:10px"><b>Nicht erkannt (${D.unk.length}):</b> Was ist das?</p>${un}`:''}
     <div class="row" data-act style="margin-top:10px"><button type="button" class="btn primary" id="btn-tagsave">Speichern</button><button type="button" class="btn" id="btn-tagcancel">Abbrechen</button></div>
@@ -11394,7 +11413,10 @@ $('vg-q').addEventListener('input',e=>{VG_Q=e.target.value;if(VG_R)renderVg(...V
 let TG_ID=null;
 function openTg(id){const t=S.tag[id];if(!t)return;if(t.hand){openCxTag(id);return}TG_ID=id;const a=tagAT(t),m=t.wk&&S.wtx[t.wk];
   $('tg-t').textContent=t.kind==='ein'?'Einzahlung bei Tag':'Auszahlung von Tag';
-  $('tg-info').innerHTML=`Tag-ID ${esc(t.id)} · ${tagDT(t,a)} · ${gl('tagbetrag','Betrag')} ${usd(t.usd)}${t.status!=='ok'?' · <span class="small">nicht durchgeführt</span>':''}`;
+  // Ab 0.202 (Florians Auftrag 0.202, Teil 2.4, Antwort 6 zur Freigabe): die Methode als blauer Textknopf, nur wenn sie in der Liste
+  // „Per Bank oder mit Krypto?“ steht (S.tagMeth); ein Klick öffnet die Liste bei dieser Methode (tmGo)
+  const tmL=t.meth&&S.tagMeth[t.meth]?` · Methode <button type="button" class="zlink" data-tmgo="${esc(t.meth)}" aria-label="„${esc(t.meth)}“: ${TM_ART.bank} oder ${TM_ART.crypto}">${esc(t.meth)}</button>`:'';
+  $('tg-info').innerHTML=`Tag-ID ${esc(t.id)} · ${tagDT(t,a)} · ${gl('tagbetrag','Betrag')} ${usd(t.usd)}${tmL}${t.status!=='ok'?' · <span class="small">nicht durchgeführt</span>':''}`;
   // Ab 0.200 (Florians Auftrag 0.200, Teil C): auch „Anderer Coin“, außer die Zeile ist mit einer Bewegung aus einer Wallet-Datei verknüpft (die Datei
   // zeigt USDC oder USDT)
   $('tg-coin').innerHTML='<option>USDC</option><option>USDT</option>'+(m?'':`<option value="${TAG_OC}">Anderer Coin</option>`);
@@ -11417,11 +11439,16 @@ function openTg(id){const t=S.tag[id];if(!t)return;if(t.hand){openCxTag(id);retu
 // Ab 0.200 (Teil C): „Anderer Coin“ (oc) blendet Menge und Woher/Wohin aus, wie Bank keine Krypto-Rechnung und keine Wallet
 function tgUI(){const t=S.tag[TG_ID],R=$('tg-wf'),v=R.querySelector('[data-tw="w"]').value,b=v==='~b',m=t&&t.wk&&S.wtx[t.wk],oc=!b&&$('tg-coin').value===TAG_OC;tagWUI(R);
   $('tg-coin-l').style.display=b?'none':'';$('tg-qty-l').style.display=b||oc?'none':'';R.style.display=oc?'none':'';if(!t)return;
-  $('tg-link').innerHTML=oc?'Anderer Coin: keine Krypto-Rechnung, keine Wallet. Zählt für „Dein echtes Geld“.':b?`Per Bank${t.meth?' („'+esc(t.meth)+'“)':''}: keine Krypto-Steuer, keine Wallet. Zählt für „Dein echtes Geld“. ${(e=>e?`Ohne Angabe rechnet das Tool mit dem EZB-Kurs: ${fE.format(e)} (geschätzt).`:'Ohne Angabe rechnet das Tool mit dem EZB-Kurs, sobald er da ist.')(tagBankEur(t,true))}`:
+  $('tg-link').innerHTML=oc?'Anderer Coin: keine Krypto-Rechnung, keine Wallet. Zählt für „Dein echtes Geld“.':b?`${tmArtG('bank')}: keine Krypto-Steuer, keine Wallet. Zählt für „Dein echtes Geld“. ${(e=>e?`Ohne Angabe rechnet das Tool mit dem EZB-Kurs: ${fE.format(e)} (geschätzt).`:'Ohne Angabe rechnet das Tool mit dem EZB-Kurs, sobald er da ist.')(tagBankEur(t,true))}`:
     m?`Verknüpft mit der Bewegung aus der Wallet-Datei vom ${dm(m.date)} ${m.time.slice(0,5)}. Menge und Coin kommen von dort, außer du änderst sie hier. Die Wallet kommt aus dem Adressbuch.`:''}
 $('tg-form').addEventListener('change',e=>{if(e.target.matches('[data-tw="w"],#tg-kind,#tg-coin'))tgUI()});
 // Ab 0.56 (1): „In der Liste zeigen“ unter Woher/Wohin einer verknüpften Zeile: Fenster zu, Bewegung aufgeklappt in „Alle Vorgänge“
 $('tg-modal').addEventListener('click',e=>{const j=e.target.closest('[data-tgmv]');if(!j)return;const k=j.dataset.tgmv;closeModal();wJump(k)});
+// Ab 0.202 (Florians Auftrag 0.202, Teil 2.4): Klick auf die Methode: Fenster zu wie bei „In der Liste zeigen“ (ohne Rückfrage, wie × und Esc), „＋ Daten“
+// → „Tag-Daten“ auf, die Zeile der Methode in die Mitte, einmal aufleuchten, Fokus in ihre Auswahl
+function tmGo(m){closeModal();dtOpen('tag');const s=[...$('tm-table').querySelectorAll('select[data-tmeth]')].find(x=>x.dataset.tmeth===m);if(!s)return;
+  const tr=s.closest('tr');tr.scrollIntoView({block:'center'});tr.classList.remove('hl');void tr.offsetWidth;tr.classList.add('hl');s.focus({preventScroll:true})}
+$('tg-modal').addEventListener('click',e=>{const j=e.target.closest('[data-tmgo]');if(!j)return;e.preventDefault();tmGo(j.dataset.tmgo)});
 // Ab 0.48 (3.3): Vorschläge für „Von wem?“ / „An wen?“: alle schon getippten Namen (Einträge und Tag-Zeilen), nicht aus dem Adressbuch
 function pnFill(){const N=[...new Set([...S.cx.map(c=>c.pn),...Object.values(S.tag).map(t=>t.pn)].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'de'));
   $('pn-list').innerHTML=N.map(n=>`<option value="${esc(n)}"></option>`).join('')}
@@ -11928,22 +11955,31 @@ function kxVis(C){const SH=C.short.filter(s=>s.e.w[0]!=='@'),EXT=kxExt(),FO=kxFo
 // Ab 0.71 (4.5), Wortlaut ab 0.71 Nachtrag 3: eine graue Zeile je Ursache (root = Schlüssel der Lücke oder der Ursache von außen; r = die Lücke, wenn
 // es eine ist; q = Teil als Text, w = Wallet des Punkts): was die Ursache brachte bzw. was offen ist, dann „Diese … verschwinden hier, wenn …“
 // Ab 0.89 (0.2): Kam der Teil über mehrere Überträge, nennt der Satz den Übertrag direkt in diese Wallet (via) und die Wallet mit der Ursache.
-function kxWhy(root,r,q,w,via){const W=`„${esc(w)}“`;
-  if(r){const e=r.e,A=`„${esc(e.w)}“`,fix=` Diese ${q} verschwinden hier, wenn du es in ${A} behebst.`;
-    if(e.k==='tausch'){const z=e.to2&&e.to2!==e.w?` nach „${esc(e.to2)}“`:'';return `Der Tausch am ${dm(e.d)} brachte ${q}${z}, aber in ${A} fehlt für die getauschten ${esc(e.coin)} der Einkauf.${fix}`}
-    if(via&&via!==e&&via.k==='uebertrag'&&via.to===w&&via.w!==e.w)return `Der Übertrag am ${dm(via.d)} von ${esc(via.w)} brachte ${q} nach ${W}. Für sie fehlt der Einkauf schon in ${A}.${fix}`;
-    if(e.k==='uebertrag'&&e.to)return `Der Übertrag am ${dm(e.d)} brachte ${q} nach „${esc(e.to)}“, aber in ${A} fehlt für sie der Einkauf.${fix}`;
-    return `${q} fehlen schon in ${A} (${esc(KIND[e.k]||e.label)} am ${dm(e.d)}).${fix}`}
+// Ab 0.202 (Florians Auftrag 0.202, Teil 3.3, Antwort 8 zur Freigabe): jede Zeile beginnt mit „{Menge} davon …“, Weg und Grund in einfachen Sätzen,
+// am Ende „…, verschwindet dieser Teil von selbst.“ Bis 0.201 z. B. „Der Übertrag am 06.08. von Exodus brachte 200,00 USDC nach „Ledger“. Für sie fehlt
+// der Einkauf schon in „Kraken“. Diese 200,00 USDC verschwinden hier, wenn du es in „Kraken“ behebst.“
+// Woher der Teil kam (Übertrag direkt aus der Wallet der Ursache oder über eine Wallet dazwischen), sonst ''; auch für die Zeile nach „So lassen“
+function kxHer(r,q,w,via){const e=r.e,A=esc(wDispW(e.w));
+  if(via&&via!==e&&via.k==='uebertrag'&&via.to===w&&via.w!==e.w)return `${q} davon kamen am ${dm(via.d)} von ${esc(wDispW(via.w))}, ursprünglich von ${A}.`;
+  if(e.k==='uebertrag'&&e.to)return e.to===w?`${q} davon kamen am ${dm(e.d)} von ${A}.`:`${q} davon kamen von ${A} (Übertrag am ${dm(e.d)} nach ${esc(wDispW(e.to))}).`;
+  return ''}
+function kxWhy(root,r,q,w,via){const W=`„${esc(w)}“`,ende=' verschwindet dieser Teil von selbst.';
+  if(r){const e=r.e,A=esc(wDispW(e.w)),fix=` Behebst du es bei ${A},${ende}`;
+    if(e.k==='tausch')return `${q} davon kamen am ${dm(e.d)} aus einem Tausch bei ${A}. Weil der Einkauf der getauschten ${esc(e.coin)} fehlt, fehlt er auch hier.${fix}`;
+    const h=kxHer(r,q,w,via);if(h)return `${h} Weil ihr Einkauf bei ${A} fehlt, fehlt er auch hier.${fix}`;
+    return `${q} davon fehlen schon bei ${A} (${esc(KIND[e.k]||e.label)} am ${dm(e.d)}). Behebst du es dort,${ende}`}
   const k=root.slice(root.indexOf(':')+1);
-  if(root[0]==='m'){const m=S.wtx[k];if(m)return `Ein Eingang in „${esc(rAW(S,m.to)||'')}“ vom ${dm(m.date)} ist noch offen. Diese ${q} verschwinden hier, wenn du einträgst, woher er kam.`}
-  if(root[0]==='x'){const o=(S.bxOpen||{})[k];if(o)return o.dir==='ein'?`Die Einzahlung bei „${esc(o.w)}“ vom ${dm(o.date)} ist noch offen. Diese ${q} verschwinden hier, wenn du einträgst, woher sie kam.`:
-    `Die Auszahlung von „${esc(o.w)}“ vom ${dm(o.date)} hat noch kein Ziel. Diese ${q} verschwinden hier, wenn du einträgst, dass sie nach ${W} ging.`}
-  if(root.startsWith('tq:')){const t=S.tag[k];if(t)return `Die Auszahlung von Tag vom ${dm(tagAT(t).date)} ist noch keiner Wallet zugeordnet. Diese ${q} verschwinden hier, wenn du ihr die Wallet ${W} gibst.`}
-  return `${q} fehlen vermutlich wegen einer offenen Ursache. Diese ${q} verschwinden hier, wenn du sie behebst.`}
+  if(root[0]==='m'){const m=S.wtx[k];if(m)return `${q} davon kamen über einen Eingang in „${esc(rAW(S,m.to)||'')}“ vom ${dm(m.date)}, der noch offen ist. Trägst du ein, woher er kam,${ende}`}
+  if(root[0]==='x'){const o=(S.bxOpen||{})[k];if(o)return o.dir==='ein'?`${q} davon kamen über die Einzahlung bei „${esc(o.w)}“ vom ${dm(o.date)}, die noch offen ist. Trägst du ein, woher sie kam,${ende}`:
+    `${q} davon kamen vielleicht über die Auszahlung von „${esc(o.w)}“ vom ${dm(o.date)}, die noch kein Ziel hat. Trägst du ein, dass sie nach ${W} ging,${ende}`}
+  if(root.startsWith('tq:')){const t=S.tag[k];if(t)return `${q} davon kamen vielleicht über die Auszahlung von Tag vom ${dm(tagAT(t).date)}, die noch keine Wallet hat. Gibst du ihr die Wallet ${W},${ende}`}
+  return `${q} davon fehlen vermutlich wegen einer offenen Ursache. Behebst du sie,${ende}`}
 // Ab 0.71 (4.5): graue Zeilen bei einem Punkt, der teils Folge ist: je Ursache ihr Teil, dann „Offen hier: …“ (die ganze Menge steht im großen Satz)
+// Ab 0.202 (Florians Auftrag 0.202, Teil 3.3): Ursache mit „So lassen“: „{Menge} davon kamen … Dort hast du den fehlenden Einkauf mit „So lassen“ erledigt,
+// damit auch diesen Teil.“; bis 0.201 „{Menge} davon fehlen schon in „{A}“. Diesen Fehlbetrag hast du mit „So lassen“ erledigt.“
 function kxPartH(V,s){const L=V.FO.share.get(s.key);if(!L||!L.length)return '';const c=esc(s.e.coin),own=V.FO.own.get(s.key)||0;
   const ln=L.map(y=>{const q=`${fN.format(y.q)} ${c}`,r=V.SH.find(z=>z.key===y.root);
-    if(r&&V.kept.has(r.key))return `${q} davon fehlen schon in „${esc(r.e.w)}“. Diesen Fehlbetrag hast du mit „So lassen“ erledigt. <button type="button" class="zlink" data-keepgo="${esc(keepPick(r._all||[r]).byS.get(r)||r.key)}">ansehen</button>`;
+    if(r&&V.kept.has(r.key))return `${kxHer(r,q,s.e.w,y.via)||`${q} davon kamen von ${esc(wDispW(r.e.w))}.`} Dort hast du den fehlenden Einkauf mit „So lassen“ erledigt, damit auch diesen Teil. <button type="button" class="zlink" data-keepgo="${esc(keepPick(r._all||[r]).byS.get(r)||r.key)}">ansehen</button>`;
     return kxWhy(y.root,r,q,s.e.w,y.via)});
   return `<p class="small tdwhy tdfp">${[...ln,`Offen hier: ${fN.format(own)} ${c}.`].join('<br>')}</p>`}
 function todoItems(C){
@@ -11996,32 +12032,52 @@ function todoItems(C){
   // Ab 0.95 (W5): mit Wallet, Tag-Zeilen mit „Tag-ID“ statt Nummer in Klammern
   const gapTxt=s=>{const e=s.e,lb=String(e.label||'').replace(/^((?:Einzahlung bei|Auszahlung von) Tag) \(([^()]+)\)$/,'$1, Tag-ID $2');return `Am ${fD(e.d)} gingen ${fN.format(-e.q)} ${e.coin} aus ${esc(wDispW(e.w))} weg (${esc(lb)}). Laut deinen Einträgen lagen dort nur ${fN.format(s.have)} ${e.coin}.`};
   // Ab 0.71 (4.5): Folge mit ihrem Teil („Bix: 100 USDC (von 130) …“), wenn sie nicht ganz von dieser Ursache kommt
-  const folH=(f,q)=>`<div class="wtd tdf">${esc(f.e.w)}: ${fN.format(q)} ${f.e.coin}${q<f.miss-0.01?` (von ${fN.format(f.miss)})`:''}. ${gapTxt(f)} ${jE(f.e,'ansehen')}</div>`;
+  // Ab 0.202 (Florians Wortlaut aus dem Auftrag 0.202, Teil 3.2): kürzer, „{Wallet}, {Tag}: {Menge} (von {Menge}) {Coin} ({Art}) ansehen“, ohne „Laut deinen
+  // Einträgen lagen dort nur …“ und ohne Tag-ID; bis 0.201 „{Wallet}: {Menge} (von {Menge}). Am … gingen … weg (…). Laut deinen Einträgen lagen dort nur …“
+  const folH=(f,q)=>{const lb=String(f.e.label||'').replace(/^((?:Einzahlung bei|Auszahlung von) Tag) \([^()]+\)$/,'$1');
+    return `<div class="wtd tdf">${esc(wDispW(f.e.w))}, ${dm(f.e.d)}: ${fN.format(q)}${q<f.miss-0.01?` von ${fN.format(f.miss)}`:''} ${f.e.coin} (${esc(lb)}) ${jE(f.e,'ansehen')}</div>`};
   const kidsOf=k=>(FO.fol.get(k)||[]).filter(y=>!V.hid.has(y.key)).map(y=>[SA.find(z=>z.key===y.key),y.q]).filter(a=>a[0]).map(([f,q])=>folH(f,q));
+  // Ab 0.202 (Florians Auftrag 0.202, Teil 3.2, Antworten 7 und 8 zur Freigabe): Satz im aufgeklappten Teil unter „n Folgen davon“, je Art des Punkts.
+  // folW = Wallets der Folgen in der Reihenfolge der Liste; folKette = Weg der Coins als Kette (jede Folge kennt den Übertrag in ihre Wallet, via), sonst null
+  const folW=k=>[...new Set((FO.fol.get(k)||[]).filter(y=>!V.hid.has(y.key)).map(y=>(SA.find(z=>z.key===y.key)||{e:{}}).e.w).filter(Boolean))];
+  const folEnde=n=>n===1?'verschwindet diese Folge von selbst':'verschwinden diese Folgen von selbst';
+  const folKette=s=>{const e=s.e;if(!(e.k==='uebertrag'&&e.to))return null;const E=new Map([[e.w,new Set([e.to])]]);
+    for(const y of (FO.fol.get(s.key)||[]).filter(y=>!V.hid.has(y.key))){const z=(FO.share.get(y.key)||[]).find(z=>z.root===s.key),v=z&&z.via;
+      if(!v||!(v.k==='uebertrag'&&v.to))return null;if(!E.has(v.w))E.set(v.w,new Set());E.get(v.w).add(v.to)}
+    const st=[];let cur=e.w;while(E.has(cur)){const n=[...E.get(cur)];if(n.length!==1||st.includes(n[0])||n[0]===e.w)return null;cur=n[0];st.push(cur)}
+    return folW(s.key).every(w=>st.includes(w))?st:null};
+  const wL=L=>undL(L.map(w=>esc(wDispW(w))));
+  const folSatz=(art,n,W,s)=>{if(!n)return '';const A=s&&esc(wDispW(s.e.w));
+    if(art==='gap'){const K=folKette(s);if(K)return `Die ${fN.format(s.miss)} ${esc(s.e.coin)} aus ${A} gingen weiter ${undL(K.map((w,i)=>(i?'von dort ':'')+'nach '+esc(wDispW(w))))}. Weil ihr Einkauf fehlt, fehlt er auch dort. Behebst du es bei ${A}, ${folEnde(n)}.`;
+      return `Weil der Einkauf bei ${A} fehlt, fehlt er auch bei ${wL(W)}. Behebst du es bei ${A}, ${folEnde(n)}.`}
+    if(art==='hier')return `Weil hier Coins fehlen, fehlen sie auch bei ${wL(W)}. Behebst du es hier, ${folEnde(n)}.`;
+    return `Solange das hier offen ist, fehlt der Einkauf auch bei ${wL(W)}. Trägst du es ein, ${folEnde(n)}.`};
   const fp=s=>kxPartH(V,s);
   const etm=e=>e.tm||e.tmE||'';
   // Doppelt? zuerst (1.6): Lücken, deren Abgang eines der beiden Duplikate ist, und ihre Folgen gehören zum Duplikat (1.9)
   const DU=wDupCands(S),dupOf=new Map();
   for(const x of DU){const ids=new Set([x.keep.id,x.del.id]);for(const s of SH){const c=s.e.cx!=null?S.cx[s.e.cx]:null;if(c&&ids.has(c.id)&&FO.own.has(s.key))dupOf.set(s.key,x)}}
-  for(const x of DU){const a=x.keep,b=x.del,ks=SH.filter(s=>dupOf.get(s.key)===x),kids=ks.flatMap(s=>[folH(s,s.miss),...kidsOf(s.key)]);
+  for(const x of DU){const a=x.keep,b=x.del,ks=SH.filter(s=>dupOf.get(s.key)===x),kids=ks.flatMap(s=>[folH(s,s.miss),...kidsOf(s.key)]),kw=folSatz('hier',kids.length,[...new Set(ks.flatMap(s=>[s.e.w,...folW(s.key)]))]);
     const ln=c=>`${fmtNum(c.qty)}${c.qtyIn>0?' → '+fmtNum(c.qtyIn):''} ${c.coin}${c.time?', '+c.time.slice(0,5):', ohne Uhrzeit'}, ${esc(cxOrigN(c))}${c.note?` („${esc(c.note)}“)`:''}`;
-    I.push({id:'d:'+b.id,lv:'y',kind:'dup',t:wSec(a.date,a.time||''),eur:0,ref:'c:'+b.id,kids,hdS:tdHdL(a.date,a.time),
+    I.push({id:'d:'+b.id,lv:'y',kind:'dup',t:wSec(a.date,a.time||''),eur:0,ref:'c:'+b.id,kids,kw,hdS:tdHdL(a.date,a.time),
       big:`Doppelt eingetragen? Der Übertrag ${esc(a.wallet)} → ${esc(a.to)} steht zweimal da.`,why:`${ln(a)} und ${ln(b)}. „einen löschen“ löscht ${b.wk||b.wkIn?'den jüngeren':'den von Hand'} (${ln(b)}).`,
       body:`<div class="row"><button type="button" class="btn" data-dupdel="${a.id}|${b.id}">einen löschen</button><button type="button" class="btn" data-dupkeep="${a.id}|${b.id}">beide behalten</button></div>`,
       li:{d:a.date,w:a.wallet,what:'doppelt?',q:fmtNum(a.qty)+' '+a.coin}})}
   // Folgen einer Ursache von außen (EXK[Schlüssel] = graue Zeilen), auch über Überträge weiter
-  const EXK={};for(const x of EXT){const L=kidsOf(x.key);if(L.length)EXK[x.key]=L}
+  // Ab 0.202: EXW = Wallets dieser Folgen (für den Satz unter dem Kopf)
+  const EXK={},EXW={};for(const x of EXT){const L=kidsOf(x.key);if(L.length){EXK[x.key]=L;EXW[x.key]=folW(x.key)}}
+  const exSatz=k=>EXK[k]?folSatz('extern',EXK[k].length,EXW[k]):'';
   // Ab 0.71 (4.3, 4.5): ein Punkt je Lücke mit eigenem Rest (own); ist ein Teil Folge, nennen graue Zeilen die Ursachen und „Offen hier“ (fp)
   for(const s of SH){if(!FO.own.has(s.key)||dupOf.has(s.key))continue;const e=s.e,od=kxOrder(C.flow,s),fo=kidsOf(s.key),own=FO.own.get(s.key);
     const li={d:e.d,w:e.w,q:fN.format(s.miss)+' '+e.coin};
     if(od){const lb=f=>f.k==='tagaus'?'Auszahlung von Tag':f.k==='tagein'?'Einzahlung bei Tag':esc(f.label),nt=od.ins.filter(f=>!f.tm);
       const txt=nt.length?`Am ${dm(e.d)} um ${e.tm.slice(0,5)} gingen ${fN.format(-e.q)} ${e.coin} aus „${esc(e.w)}“ weg. ${nt.length===1?`${lb(nt[0])} (${fN.format(nt[0].q)} ${nt[0].coin}) am selben Tag hat keine Uhrzeit. Deshalb weiß das Tool nicht, was zuerst war. Trage beim ${lb(nt[0])} die Uhrzeit ein.`:`Die ${fI.format(nt.length)} Einträge am selben Tag haben keine Uhrzeit. Deshalb weiß das Tool nicht, was zuerst war. Trage bei ihnen die Uhrzeit ein.`}`:
         `Am ${dm(e.d)} um ${e.tm.slice(0,5)} gingen ${fN.format(-e.q)} ${e.coin} weg, ${od.ins.map(f=>`um ${f.tm.slice(0,5)} kamen ${fN.format(f.q)} ${f.coin} an (${lb(f)})`).join(', ')}. Prüfe die Uhrzeiten.`;
-      I.push({id:'o:'+s.key,lv:'y',kind:'order',t:wSec(e.d,e.tm),eur:0,ref:refOf(nt[0]||e),kids:fo,fp:fp(s),hdS:tdHdL(e.d,e.tm),big:'Vermutlich nur die Reihenfolge.',why:txt,
+      I.push({id:'o:'+s.key,lv:'y',kind:'order',t:wSec(e.d,e.tm),eur:0,ref:refOf(nt[0]||e),kids:fo,kw:folSatz('hier',fo.length,folW(s.key)),fp:fp(s),hdS:tdHdL(e.d,e.tm),big:'Vermutlich nur die Reihenfolge.',why:txt,
         body:`<div class="row">${(nt.length?nt:od.ins).map(f=>jE(f,'Zugang in der Liste zeigen')).join('')}${jE(e,'Abgang in der Liste zeigen')}</div>`,li:Object.assign(li,{what:'Reihenfolge'})});continue}
     const fill=`${e.d}|${esc(e.w)}|${e.coin}|${s.miss}`,ty=wTypo(S,s);
     if(ty){const c=ty.c;
-      I.push({id:'v:'+s.key,lv:'y',kind:'typo',t:wSec(e.d,etm(e)),eur:0,ref:'c:'+c.id,kids:fo,fp:fp(s),hdS:tdHdL(c.date,c.time),
+      I.push({id:'v:'+s.key,lv:'y',kind:'typo',t:wSec(e.d,etm(e)),eur:0,ref:'c:'+c.id,kids:fo,kw:folSatz('hier',fo.length,folW(s.key)),fp:fp(s),hdS:tdHdL(c.date,c.time),
         big:`Vertippt? Vielleicht ${fN.format(ty.sug)} statt ${fN.format(ty.self?c.qty:c.qtyIn>0&&c.kind==='uebertrag'?c.qtyIn:c.qty)}.`,
         why:ty.self?`${esc(kindL(c)||c.kind)} am ${dm(c.date)}: ${fN.format(c.qty)} ${c.coin}. Laut deinen Einträgen lagen dort nur ${fN.format(s.have)} ${e.coin}.`:`${esc(kindL(c)||c.kind)} am ${dm(c.date)}: ${fN.format(c.qtyIn>0&&c.kind==='uebertrag'?c.qtyIn:c.qty)} ${c.coin}. ${ty.same?'Am selben Tag':`Am ${dm(e.d)}`} gingen ${fN.format(ty.out)} weg, es fehlen ${fN.format(s.miss)}.`,
         body:`<div class="row"><button type="button" class="btn primary" data-cxe2="${c.id}">✎ ${esc(kindL(c)||'Eintrag')} prüfen</button></div>`,
@@ -12029,12 +12085,14 @@ function todoItems(C){
         li:Object.assign(li,{what:'vertippt?'})});continue}
     // Ab 0.47 (2.3): sachlich, was fehlt und was das Tool ohne die Angabe macht; darunter die Erklärung in einer Zeile; Formular gleich offen
     I.push({id:'g:'+s.key,lv:'r',kind:'gap',t:wSec(e.d,etm(e)),eur:tdEur(own,e.d),ref:refOf(e),kids:fo,fp:fp(s),ar:{t:wSec(e.d,etm(e)||'12:00:00'),self:refOf(e),w:e.w},
-      hdS:tdHdL(e.d,etm(e)),big:`Für ${fN.format(s.miss)} ${e.coin} aus ${esc(e.w)} fehlt der Einkauf. Ohne ihn rechnet das Tool diesen Teil ohne Gewinn oder Verlust.`,why:`${gapTxt(s)} ${gl('cxmiss','Was heißt das?')}`,
+      hdS:tdHdL(e.d,etm(e)),big:`Für ${fN.format(s.miss)} ${e.coin} aus ${esc(e.w)} fehlt der Einkauf. Ohne ihn rechnet das Tool diesen Teil ohne Gewinn oder Verlust.`,why:gapTxt(s),
+      // Ab 0.202 (Florians Auftrag 0.202, Teil 3.1): der Begriff als kleine Überschrift über dem Formular „Was war das?“, bis 0.201 „Was heißt das?“ am Satz davor
+      lh:gl('cxmiss','So löst du das'),kw:folSatz('gap',fo.length,folW(s.key),s),
       form:{pre:{kind:'',date:e.d,wallet:e.w,coin:e.coin,qty:+s.miss.toFixed(8),dir:'in'}},
       alt:`<button type="button" class="btn sm" data-tdhatte>Hatte ich schon</button><button type="button" class="btn sm" data-keep="${esc(s.key)}">So lassen</button>`,li:Object.assign(li,{what:'Einkauf nicht bekannt'})})}
   // Ab 0.46 (2.2, 3.3a): offene Zugänge und Abgänge einer Börse (S.bxOpen). Ab 0.47 mit dem Formular in der Karte (Menü je nach Richtung).
   for(const [id,o] of BXO){const ein=o.dir==='ein',q=`${fN.format(o.qty)} ${o.coin}`;
-    I.push({id:'x:'+id,lv:'r',kind:ein?'bxein':'bxaus',t:wSec(o.date,o.time||''),eur:tdEur(o.qty,o.date),ref:'b:'+id,kids:EXK['x:'+id]||[],ar:{t:wSec(o.date,o.time||'12:00:00'),self:'b:'+id,w:o.w},
+    I.push({id:'x:'+id,lv:'r',kind:ein?'bxein':'bxaus',t:wSec(o.date,o.time||''),eur:tdEur(o.qty,o.date),ref:'b:'+id,kids:EXK['x:'+id]||[],kw:exSatz('x:'+id),ar:{t:wSec(o.date,o.time||'12:00:00'),self:'b:'+id,w:o.w},
       hdS:tdHdL(o.date,o.time),big:ein?`Einzahlung bei ${esc(o.w)}, ${q}: Woher kamen die Coins?`:`Auszahlung von ${esc(o.w)}, ${q}: Wohin gingen die Coins?`,
       why:ein?`Ohne diese Angabe zählt die Einzahlung in der Rechnung nicht. Trage ein, woher die Coins kamen, oder lies die Wallet-Datei ein, aus der du eingezahlt hast.`:`Die Coins sind aus ${esc(o.w)} weg, das Tool kennt das Ziel noch nicht. Ohne diese Angabe rechnet das Tool die Auszahlung ohne Gewinn oder Verlust.`,
       form:{pre:{kind:'',date:o.date,time:o.time||'',coin:o.coin,qty:o.qty,bxo:id,wallet:o.w,dir:ein?'in':'out'}},alt:(ein?'<button type="button" class="btn sm" data-bxwf>Wallet-Datei einlesen</button>':'')+((S.bxF||[]).some(f=>f.ids.includes(id))?`<button type="button" class="btn sm" data-dtfiles="${esc('b:'+id)}">Ganze Datei entfernen …</button>`:''),
@@ -12045,7 +12103,7 @@ function todoItems(C){
   // Frage fett über „Vorschlag:“, weil die Tag-Frage Kopf der Karte ist), und zeigt weiter „betrifft ca.“ (tax). Die Auswahl bleibt darunter.
   {const SQ=new Map(SG.filter(s=>s.ty==='tq').map(s=>[s.tid,s])),twIds=new Set(SG.filter(s=>s.ty==='tw').map(s=>s.tid));
    const tq=(t,lv,silent)=>{const a=tagAT(t),P=tagQParts(t,silent),s=silent?null:SQ.get(t.id)||null;
-     return Object.assign({id:(silent?'tw:':'tq:')+t.id,lv:s?'y':lv,kind:silent?'tagw':'tagq',tax:s?1:0,t:wSec(a.date,a.time||''),eur:silent?0:tdEur(Math.abs(t.qty),a.date),ref:'t:'+t.id,kids:silent?[]:EXK['tq:'+t.id]||[],
+     return Object.assign({id:(silent?'tw:':'tq:')+t.id,lv:s?'y':lv,kind:silent?'tagw':'tagq',tax:s?1:0,t:wSec(a.date,a.time||''),eur:silent?0:tdEur(Math.abs(t.qty),a.date),ref:'t:'+t.id,kids:silent?[]:EXK['tq:'+t.id]||[],kw:silent?'':exSatz('tq:'+t.id),
        ar:{t:wSec(a.date,a.time||'12:00:00'),self:'t:'+t.id,w:''},hdS:tdHdTag(t),li:{d:a.date,w:silent?t.wallet:'Tag',what:silent?'Wallet vom Tool gewählt':s?'Vorschlag: '+sugNm(s):t.kind==='ein'?'Herkunft offen':'Ziel offen',q:usd(t.usd)}},P,s?{sug:s,sugH:sugH(s,0)}:{})};
    for(const t of TQ)I.push(tq(t,'r',false));
    for(const t of Object.values(S.tag))if(tagSilent(t)&&!twIds.has(t.id))I.push(tq(t,'y',true))}
@@ -12141,7 +12199,8 @@ function todoItems(C){
     why:`${L.length===1?'Diese Adresse sieht':`Diese ${fI.format(L.length)} Adressen sehen`} aus wie <span class="nw">${wAdr(x.real)}${cpBtn(x.real)}</span>, mit der du Coins bewegt hast. ${LOOK_TXT}`,
     body:`<ul class="lkl">${L.map(l=>`<li><span class="nw">${wAdr(l)}${cpBtn(l)}</span> <button type="button" class="btn vgnb" data-lookno="${esc(l)}">Keine Lockadresse</button>${lookMvH(l)}</li>`).join('')}</ul><div class="row"><button type="button" class="btn primary" data-lookok="${esc(L.join(','))}">Verstanden</button></div>`,li:{d:'',w:'',what:'Lockadresse?',q:''}})}
   // Ab 0.47 (1.6): Folgen offener Bewegungen unter ihrem Punkt (auch unter einem Vorschlag, der die Bewegung enthält)
-  for(const it of I){const ks=it.mv?[it.mv]:it.sug?it.sug.ks:[];for(const k of ks)if(EXK['m:'+k])it.kids=(it.kids||[]).concat(EXK['m:'+k])}
+  for(const it of I){const ks=it.mv?[it.mv]:it.sug?it.sug.ks:[],W=[];for(const k of ks)if(EXK['m:'+k]){it.kids=(it.kids||[]).concat(EXK['m:'+k]);W.push(...EXW['m:'+k])}
+    if(W.length)it.kw=folSatz('extern',it.kids.length,[...new Set(W)])}
 
   // Ab 0.46 (2.7, 2.7a): Ohne Steuer oder Krypto-Steuer aus: nur die Punkte zum Bestand, alle gelb
   // Ab 0.200: auch der Punkt „… mit einem anderen Coin“ (tagoc), er sagt nur etwas zur Krypto-Steuer
@@ -12152,7 +12211,7 @@ function todoItems(C){
     const dep=J.filter(y=>(y.kind==='bal'&&y.li&&y.li.w===w)||(y.mv&&S.wtx[y.mv]&&S.wtx[y.mv].wFrom&&S.wtx[y.mv].wTo&&[S.wtx[y.mv].wFrom,S.wtx[y.mv].wTo].includes(w)));
     for(const y of dep)J.splice(J.indexOf(y),1);
     J.push({id:'wl:'+w,lv:'y',kind:'later',t:0,eur:0,ref:'',big:`Die Datei „${esc(x.name)}“ ist noch keiner Wallet zugeordnet.`,why:'Bis du sie zuordnest, zählen ihre Bewegungen vorläufig unter „Noch nicht zugeordnet“.',
-      body:`<div class="row"><button type="button" class="btn primary" data-wlater="${esc(w)}">Datei zuordnen</button></div>`,kids:dep.map(y=>`<div class="wtd tdf">${y.big||esc(y.li&&y.li.what||'')}</div>`),li:{d:'',w,what:'Datei nicht zugeordnet',q:''}})}
+      body:`<div class="row"><button type="button" class="btn primary" data-wlater="${esc(w)}">Datei zuordnen</button></div>`,kids:dep.map(y=>`<div class="wtd tdf">${y.big||esc(y.li&&y.li.what||'')}</div>`),kw:dep.length===1?'Dieser Punkt hängt an der Datei. Ordnest du sie zu, rechnet das Tool ihn neu.':'Diese Punkte hängen an der Datei. Ordnest du sie zu, rechnet das Tool sie neu.',li:{d:'',w,what:'Datei nicht zugeordnet',q:''}})}
   // Ab 0.48 (2.3): graue Punkte („Gut zu wissen“) am Ende
   return J.sort((a,b)=>(a.lv==='g')-(b.lv==='g')||(a.t?0:1)-(b.t?0:1)||a.t-b.t||(a.id<b.id?-1:1))}
 // Zahl in der Leiste: rote und gelbe Punkte (ohne Folgen). Rot, wenn es rote gibt, sonst gelb; nur graue: keine Zahl.
@@ -12266,7 +12325,7 @@ function tdCard(x){const P=x.mv&&S.wtx[x.mv]?tdMvParts(x,x.sug2):null;
   const ar=P?P.ar:x.ar?tdAround(x.ar):'',body=x.body!=null?x.body:!x.big&&!P?(x.h||''):'';
   // Ab 0.50 (3.1): ein späterer Punkt hat einen Vorschlag zur selben Bewegung oder zum selben Vorgang (sugAt aus renderTodo)
   const sga=x.sugAt>=0?`<p class="small tdsga">Dazu gibt es einen Vorschlag bei <button type="button" class="zlink" data-tdsg="${x.sugAt}">Punkt ${fI.format(x.sugAt+1)}</button>.</p>`:'';
-  return `<div class="tdc tdi-${x.lv}" data-tdi="${esc(x.id)}">${head}${naCardH(tdKs(x))}${sga}${why}${sug?`<div class="tdsug">${sug}</div>`:''}${ar}${show}${body}${slot}${alt?`<div class="row tdalt">${alt}</div>`:''}${P?P.adr:''}${eurT}${x.kids&&x.kids.length?`<details class="wfold"><summary>${x.kids.length===1?'Vermutlich eine Folge davon. Sie zählt nicht und verschwindet, wenn du das behebst.':`Vermutlich Folgen davon: ${fI.format(x.kids.length)}. Sie zählen nicht und verschwinden, wenn du das behebst.`}</summary>${x.kids.join('')}</details>`:''}</div>`}
+  return `<div class="tdc tdi-${x.lv}" data-tdi="${esc(x.id)}">${head}${naCardH(tdKs(x))}${sga}${why}${sug?`<div class="tdsug">${sug}</div>`:''}${ar}${show}${body}${x.lh&&slot?`<p class="small tdlh"><b>${x.lh}</b></p>`:''}${slot}${alt?`<div class="row tdalt">${alt}</div>`:''}${P?P.adr:''}${eurT}${x.kids&&x.kids.length?`<details class="wfold"><summary>${fI.format(x.kids.length)}\u00a0${x.kids.length===1?'Folge':'Folgen'} davon</summary>${x.kw?`<p class="small tdkw">${x.kw}</p>`:''}${x.kids.join('')}</details>`:''}</div>`}
 // Ab 0.55 (5): Punkt einer vorläufigen Wallet („Einkauf fehlt“, offene Bewegung usw.): ganz oben „Diese Wallet-Datei gehört zu:“ mit dem Menü
 // (nur eigene Wallets, Karten, Börsen). Die Wahl ordnet die Adresse der Datei zu (apAssign), wSync löst die vorläufige Wallet dann auf.
 function tdProvH(x){if(x.kind==='later')return '';const m=x.mv&&S.wtx[x.mv];
@@ -12560,11 +12619,15 @@ function landWarn(alt,neu){if(alt===neu||!['AT','DE'].includes(alt)||!['AT','DE'
 async function landOk(neu){const h=landWarn(S.ui.country,neu);if(!h)return true;return (await askBox({title:'Land wechseln?',html:h,ok:'Trotzdem wechseln'}))===true}
 // Ab 0.71 Nachtrag 2 (2): weicht die aktuelle fehlende Menge von der gemerkten ab, nennt die Zeile beide („130,00 USDC gemerkt, jetzt 30,00“)
 // Ab 0.72 Nachtrag 3 (1): „Menge stimmt“ (Bitvavo-Gebühr) steht hier als graue Zeile (g) mit „zurücknehmen“
-function keepItems(){const L=[],P=(S.cxKeep||[]).some(k=>!k.startsWith('rest|'))?keepPick(cryptoCalc().short):null;
+// Ab 0.202 (Florians Auftrag 0.202, Teil 3.3, Antwort 8 zur Freigabe; AU-51): hat ein fehlender Einkauf Folgen in anderen Wallets, nennt die Zeile sie
+// („Damit auch erledigt: die Folgen bei Exodus und Ledger.“); KV = Folgen wie in „Noch offen“ (kxVis), die Wallet der Ursache selbst zählt nicht mit
+function keepItems(){const L=[],C0=(S.cxKeep||[]).some(k=>!k.startsWith('rest|'))?cryptoCalc():null,P=C0?keepPick(C0.short):null,KV=C0?kxVis(C0):null;
+  const folBei=k=>{if(!KV)return '';const s0=KV.SH.find(z=>z.key===k),F=KV.FO.fol.get(k)||[],W=[...new Set(F.map(y=>(KV.SH.find(z=>z.key===y.key)||{e:{}}).e.w).filter(w=>w&&!(s0&&w===s0.e.w)))];
+    return W.length?` Damit auch erledigt: ${F.length===1?'die Folge':'die Folgen'} bei ${undL(W.map(w=>wDispW(w)))}.`:''};
   for(const k of S.cxKeep||[]){const p=k.split('|'),cur=P&&P.byK.get(k),g=+p[p.length-1];
-    if(p[0]!=='rest'&&p.length>=5&&cur&&Math.abs(cur.miss-g)>=0.005){L.push({v:'k:'+k,t:`Fehlender Einkauf: ${fN.format(g)} ${p[2]} gemerkt, jetzt ${fN.format(cur.miss)}, bei ${p[1]}, ${p.slice(3,-1).join('|')} vom ${dm(p[0])}`});continue}
+    if(p[0]!=='rest'&&p.length>=5&&cur&&Math.abs(cur.miss-g)>=0.005){L.push({v:'k:'+k,t:`Fehlender Einkauf: ${fN.format(g)} ${p[2]} gemerkt, jetzt ${fN.format(cur.miss)}, bei ${p[1]}, ${p.slice(3,-1).join('|')} vom ${dm(p[0])}${folBei(k)}`});continue}
     if(p[0]==='rest'&&p.length>=4)L.push({v:'k:'+k,t:`Rest bei ${p[1]}: ${fmtNum(+p[3])} ${p[2]}.`});
-    else if(p.length>=5)L.push({v:'k:'+k,t:`Fehlender Einkauf: ${fN.format(+p[p.length-1])} ${p[2]} bei ${p[1]}, ${p.slice(3,-1).join('|')} vom ${dm(p[0])}`})}
+    else if(p.length>=5)L.push({v:'k:'+k,t:`Fehlender Einkauf: ${fN.format(+p[p.length-1])} ${p[2]} bei ${p[1]}, ${p.slice(3,-1).join('|')} vom ${dm(p[0])}${folBei(k)}`})}
   for(const t of Object.values(S.tag))if(t.wok)L.push({v:'t:'+t.id,t:`${t.kind==='ein'?'Einzahlung bei Tag':'Auszahlung von Tag'} vom ${dm(tagAT(t).date)}, ${usd(t.usd)}: Wallet „${tagWN(t)}“ so gelassen.`});
   for(const a of S.cx)for(const id of a.dupOk||[])if(a.id<id){const b=cxById(id);if(b)L.push({v:'d:'+a.id+'|'+id,t:`Doppelt eingetragen? ${kindL(a)||a.kind} ${a.wallet}${a.to?' → '+a.to:''} vom ${dm(a.date)}: beide behalten.`})}
   for(const c of S.cx)if(c.bvFeeOk&&bvFeeM(c))L.push({v:'b:'+c.id,g:1,t:`Bitvavo-Gebühr vom ${fD(c.date)}: als geprüft markiert`});
@@ -14873,7 +14936,8 @@ const GL={
   'k-real':{t:'Dein echtes Geld',h:'Was du bei Tag eingezahlt und ausgezahlt hast und was dein Geld seit Start gebracht hat.'},
   // Ab 0.80 (4): (i) der Karte „Buchungsarten“, Wortlaut von Florian
   // Ab 0.86 (AU-19)
-  'k-tagmeth':{t:'Zahlungsmethoden',h:'Tag nennt bei jeder Ein- und Auszahlung eine Methode. Kennt das Tool eine Methode nicht, fragt es beim Einfügen einmal, ob sie per Bank oder mit Krypto ist, und merkt sich die Antwort für jedes spätere Einfügen.\nHier kannst du die Antwort ändern. Das gilt dann für alle eingefügten Zeilen mit dieser Methode, außer für Zeilen, bei denen du Woher/Wohin selbst gewählt hast. Vorher fragt das Tool nach.\n<b>Per Bank</b> heißt: keine Krypto-Steuer, keine Wallet, zählt für „Dein echtes Geld“.'},
+  // Ab 0.202 (Florians Auftrag 0.202, Teil 2.1, Text aus dem Plan, Antwort 2 zur Freigabe): Titel wie die Überschrift der Liste
+  'k-tagmeth':{t:'Per Bank oder mit Krypto?',h:'Tag nennt bei jeder Ein- und Auszahlung eine Methode. Kennt das Tool eine Methode noch nicht, fragt es beim Einfügen einmal, ob sie per Bank oder mit Krypto lief, und merkt sich die Antwort.\nHier kannst du die Antwort später ändern. Sie gilt dann für alle Buchungen mit dieser Methode, außer für die, die du schon selbst zugeordnet hast. Vorher fragt das Tool nach.\n<b>Per Bank</b> heißt: Überweisung in Euro, keine Wallet, keine Krypto-Steuer. <b>Mit Krypto</b> heißt: Die Buchung braucht eine Wallet und zählt für die Krypto-Steuer.'},
   'k-buchungsarten':{t:'Buchungsarten',h:'Jede Buchung im MT5-Report, die kein Trade ist, braucht eine Bedeutung. Danach rechnet das Tool:\n• Einzahlung von Kapital (z. B. Deposit, Reinvestition): Geld, das auf dein MT5-Konto kommt, mit Trading Benefit. Die Investition steigt um Betrag ÷ Trading Benefit. Das ist kein Gewinn.\n• Kapitalabzug: Du nimmst eingesetztes Geld wieder vom Konto, zum Beispiel wenn du ein Konto verkleinerst oder auflöst. Die Investition sinkt. Das ist kein Verlust.\n• Gewinnauszahlung (Profit Withdrawal): Du hebst Gewinn vom MT5-Konto ab. Ergebnis und Investition bleiben gleich. Versteuert werden die Trades, nicht die Auszahlung.\n• Performance Fee / Gebühr (z. B. PF Deduction): Sie mindert deinen Gewinn. Ob sie auch die Steuer mindert, hängt vom Land ab. Das steht im Reiter Steuer.\n• Noch unklar: Die Buchung zählt vorerst nirgends, und das Tool zeigt einen Hinweis. Ordne sie zu, sobald du weißt, was sie ist.'},
   'k-konten':{t:'Deine Konten',h:'Alle Konten aus deinen Reports. Wähle bei jedem den Trading Benefit und, wenn du möchtest, einen Namen.'},
   'k-kurse':{t:'Wechselkurse',h:`Ohne Kurse funktioniert die Auswertung in USD vollständig. Für Euro und für die Steuer braucht das Tool den Kurs jedes Tages, an dem du eine Buchung hast. Es rechnet jede Buchung mit dem Referenzkurs der Europäischen Zentralbank (EZB) vom Tag der Buchung um. An Wochenenden und Feiertagen gilt der letzte Kurs davor.
@@ -14962,7 +15026,8 @@ ${ECB_CITE}`},
   ersatzwert:{t:'Ersatzwert',h:'Das Tool nimmt den Wert, wenn du den echten nicht kennst. Bei „Aus anderem Coin getauscht“ ist das der Wert deiner USDC oder USDT am Tausch-Tag. In Österreich zählt eigentlich, was dich die hergegebenen Coins damals gekostet haben. Der Ersatzwert kann deshalb zu hoch oder zu niedrig sein. In „Alle Vorgänge“ steht dafür „geschätzt“.'},
   'k-oc':{t:'Andere Coins',h:'<b>In anderen Coin getauscht:</b> Den Einkaufswert deiner USDC oder USDT übernehmen die neuen Coins. Du brauchst ihn, wenn du sie später verkaufst.<br><b>Aus anderem Coin getauscht:</b> Der Einkaufswert der hergegebenen Coins geht auf deine USDC oder USDT über. Fehlt er, rechnet das Tool mit einem Ersatzwert: dem Wert deiner USDC oder USDT am Tausch-Tag. Er kann zu hoch oder zu niedrig sein, denn in Österreich zählt, was dich die hergegebenen Coins damals gekostet haben.\n<a href="https://trading-bilanz.github.io/anleitung.html#tausch" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a>',
     de:'<b>In anderen Coin getauscht:</b> steuerlich ein Verkauf deiner USDC oder USDT zum Wert am Tausch-Tag.<br><b>Aus anderem Coin getauscht:</b> steuerlich ein Kauf. Der Einkaufswert deiner USDC oder USDT ist ihr Wert am Tausch-Tag.\n<a href="https://trading-bilanz.github.io/anleitung.html#tausch" target="_blank" rel="noopener">Anleitung mit Bildern&nbsp;↗ (braucht Internet)</a>'},
-  cxmiss:{t:'Was heißt das?',h:'<b>Einkauf eintragen:</b> Du weißt, wo und wann du die Coins gekauft hast.\n<b>Hatte ich schon:</b> Die Coins waren schon vorher da, rechnerisch ein Kauf.\n<b>So lassen:</b> Das Tool rechnet diesen Teil ohne Gewinn oder Verlust. Deine Krypto-Zahlen können dann abweichen.'},
+  // Ab 0.202 (Florians Auftrag 0.202, Teil 3.1): Titel „So löst du das“, Text unverändert; bis 0.201 „Was heißt das?“
+  cxmiss:{t:'So löst du das',h:'<b>Einkauf eintragen:</b> Du weißt, wo und wann du die Coins gekauft hast.\n<b>Hatte ich schon:</b> Die Coins waren schon vorher da, rechnerisch ein Kauf.\n<b>So lassen:</b> Das Tool rechnet diesen Teil ohne Gewinn oder Verlust. Deine Krypto-Zahlen können dann abweichen.'},
   einkaufswert:{t:'Einkaufswert',h:'Was die Coins in diesem Topf zusammen gekostet haben, inklusive Kaufgebühren.',de:'Was die Coins gekostet haben, inklusive Kaufgebühren. Bei einem Geschenk: was die schenkende Person bezahlt hat.'},
   opreis:{t:'Ø-Preis',h:'Jede Wallet ist wie ein Topf: Das Tool merkt sich, wie viele Coins drin sind und was sie zusammen gekostet haben (Einkaufswert). Geteilt ergibt das den Ø-Preis. Gehen Coins raus, nehmen sie den Ø-Preis mit.'},
   restgeb:{t:'Rest bei einer Börse',h:'Bei dieser Wallet (meist eine Börse ohne Wallet-Datei) bleibt laut deinen Einträgen ein kleiner Rest, obwohl du alles weitergeschickt hast. Börsen ziehen beim Abheben oft eine feste Gebühr ab, z. B. 1,10 USDC je Abhebung. Die siehst du nicht in der Wallet-Datei, nur in der Abrechnung der Börse.\n<b>Auf die Überträge verteilen:</b> Je Kauf wird der Rest gleichmäßig auf die Überträge danach verteilt. Abgebucht ist dann etwas mehr, als ankam, der Unterschied ist die Gebühr.\n<b>Als eine Gebühr buchen:</b> ein Eintrag „Gebühr“ mit dem ganzen Rest.\nSteuerlich ist eine Gebühr in Coins ein Verkauf zum Tageswert, meist geht es um Cents. Liegt bei der Börse wirklich noch etwas, lass es so.'},
@@ -17178,7 +17243,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.200',VDATE='25.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.202',VDATE='25.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
