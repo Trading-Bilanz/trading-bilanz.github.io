@@ -1722,7 +1722,10 @@ button.zlink.jrka{color:var(--accent);font-weight:600;padding:0}
    Der aufgeklappte Teil (#fb-fehler) steht darunter in voller Breite. Passt die Zeile nicht (am PC unter etwa 860 px Fensterbreite), rutscht nur
    „Fehler gefunden? …“ in eine eigene Zeile darunter; „E-Mail schreiben“, Adresse und „Adresse kopieren“ bleiben zusammen (.fbgrp). Bis 560 px
    alles untereinander. Bis 0.175: .fbrow mit Adresse und „Adresse kopieren“ unter dem Mail-Knopf. */
-.fbaddr{font-family:ui-monospace,Consolas,monospace;font-size:14px;overflow-wrap:anywhere}
+/* Ab 0.205 (Florians Auftrag 0.205, Punkt 4, und Antwort 2 zur Freigabe): die Mail-Adresse (.fbaddr, Feedback-Karte und leise Zeile der Karte „Was
+   vielleicht noch kommt“) in der Schrift und Größe des Textes drumherum, halbfett (in der Feedback-Karte 15 px, in der leisen Zeile 14 px), Farbe wie
+   dort. Bis 0.204 Schreibmaschinenschrift in 14 px (font-family:ui-monospace,Consolas,monospace;font-size:14px). */
+.fbaddr{font-weight:600;overflow-wrap:anywhere}
 /* Ab 0.177 (Florians Auftrag 0.177, Phase 1): eine normale Karte wie in den anderen Reitern (.card: weiße Fläche, Titel als h2 in 18 px), Inhalt
    und Anordnung wie in 0.176 (bis 0.176 .rsk.lt: nur Rahmen, Titel 16 px) */
 .rsfb>p{margin:0}
@@ -2475,7 +2478,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <h2>Anregungen, Fehler, Feedback</h2>
     <p>Ich freue mich über jede Rückmeldung und lese alles selbst.</p>
     <div class="fbzeile">
-      <div class="fbgrp"><a class="btn lt" id="btn-fbmail" href="mailto:florian@weltenwandel.at">E-Mail schreiben</a><span class="fbaddr" id="fb-addr">florian@weltenwandel.at</span><span class="fbkop"><button type="button" class="btn" id="btn-fbcopy">Adresse kopieren</button><span id="fbcopymsg" class="small"></span></span></div>
+      <div class="fbgrp"><a class="btn lt" id="btn-fbmail" href="mailto:florian@weltenwandel.at" target="_blank" rel="noopener">E-Mail schreiben</a><span class="fbaddr" id="fb-addr">florian@weltenwandel.at</span><span class="fbkop"><button type="button" class="btn" id="btn-fbcopy">Adresse kopieren</button><span id="fbcopymsg" class="small"></span></span></div>
       <button type="button" class="zlink" id="fb-fehler-k" data-rsmehr aria-expanded="false" aria-controls="fb-fehler">Fehler gefunden? So hilfst du mir</button>
     </div>
     <div id="fb-fehler" hidden>
@@ -2495,9 +2498,10 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <!-- Ab 0.204 (Florians Freigabe 0.204, Punkt 2): „Schreib mir“ öffnet die Wunsch-Mail (Adresse vom Skript, renderKommt). Unter der Liste eine leise
        Zeile mit der Mail-Adresse, darunter „Text kopieren“ und „Adresse kopieren“ mit der Meldung daneben (addrCopy und .fbaddr wie in der Karte
        „Anregungen, Fehler, Feedback“). Der Text der Mail (#kommt-txt) ist versteckt; addrCopy zeigt und markiert ihn, wenn die Zwischenablage gesperrt ist. -->
-  <div class="card fold closed" data-fold="kommt-card" id="kommt-card" style="display:none">
+  <!-- Ab 0.205 (Florians Auftrag 0.205, Punkt 1): beim ersten Öffnen aufgeklappt (ohne closed); ein gespeicherter Zustand bleibt (initFolds, S.ui.fold) -->
+  <div class="card fold" data-fold="kommt-card" id="kommt-card" style="display:none">
     <h2>Was vielleicht noch kommt</h2>
-    <p>Kein Versprechen, eher ein Blick in meine Werkstatt. <a id="kommt-mail" href="mailto:florian@weltenwandel.at">Schreib mir</a>, was dir am wichtigsten ist.</p>
+    <p>Kein Versprechen, eher ein Blick in meine Werkstatt. <a id="kommt-mail" href="mailto:florian@weltenwandel.at" target="_blank" rel="noopener">Schreib mir</a>, was dir am wichtigsten ist.</p>
     <ul id="kommt-list"></ul>
     <p class="small">Die Mail ist schon vorbereitet, du kreuzt nur an. Öffnet sich nichts, kopier den Text und schick ihn an <span class="fbaddr" id="kommt-addr">florian@weltenwandel.at</span>.</p>
     <div class="fbkop kmk"><button type="button" class="btn" id="btn-kommt-txt">Text kopieren</button><button type="button" class="btn" id="btn-kommt-addr">Adresse kopieren</button><span id="kommt-msg" class="small"></span></div>
@@ -2545,7 +2549,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
      hält zusammen (span.nw, Florians Antwort 6 zur Freigabe), damit der Satz am Handy auf einer neuen Zeile beginnt. Zeile 2 Datenschutz, Impressum, Mail,
      nur in der heruntergeladenen Datei dazu „Neueste Version ↗“ (span.offl, online ausgeblendet; Link über DL_URL wie bisher). Gestrichen: die Sätze zu den
      Kryptowährungen und zu Ein- und Auszahlungen per Bank (stehen in der Begrüßung, oben im Reiter Wallet und im (i) „Ein- und Auszahlungen bei Tag“). -->
-<footer>Trading-Bilanz · Version <span class="ver"></span> · <span class="nw">Keine Steuer- oder Finanzberatung,</span> Steuerangaben <span class="nw">KI-recherchiert</span> und ohne Gewähr.<br><button type="button" class="zlink" id="btn-privacy">Datenschutz</button> · <a href="https://weltenwandel.at/impressum.html" target="_blank" rel="noopener">Impressum&nbsp;↗</a> · <a href="mailto:florian@weltenwandel.at">florian@weltenwandel.at</a><span class="offl" id="dl-link"></span></footer>
+<footer>Trading-Bilanz · Version <span class="ver"></span> · <span class="nw">Keine Steuer- oder Finanzberatung,</span> Steuerangaben <span class="nw">KI-recherchiert</span> und ohne Gewähr.<br><button type="button" class="zlink" id="btn-privacy">Datenschutz</button> · <a href="https://weltenwandel.at/impressum.html" target="_blank" rel="noopener">Impressum&nbsp;↗</a> · <a href="mailto:florian@weltenwandel.at" target="_blank" rel="noopener">florian@weltenwandel.at</a><span class="offl" id="dl-link"></span></footer>
 
 <!-- Ab 0.77 (Teil 1): Begrüßung ohne roten Kasten und ohne „Gelesen und verstanden“. Land über drei Knöpfe (#intro-land), unten zwei Wege:
      „Erste Schritte“ öffnet das Fenster, „Ohne Einführung starten“ lässt den Knopf „Erste Schritte“ oben kurz aufleuchten. Ohne Wahl wie bisher
@@ -2648,10 +2652,10 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <li>Der Aufruf der Online-Version und „Für offline herunterladen“. Dabei speichert GitHub deine IP-Adresse aus Sicherheitsgründen (<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub&nbsp;↗</a>).</li>
     <li>Das Laden der Wechselkurse: von selbst, sobald Kurse fehlen, und wenn du auf „Kurse laden“ klickst. Das Laden von selbst schaltest du im Reiter „Kurse“ aus (Häkchen „Fehlende Kurse automatisch laden“). Dabei sieht die EZB deine IP-Adresse. Antwortet sie nicht, fragt das Tool beim Dienst Frankfurter. Dann sieht dieser Dienst deine IP-Adresse. Liest du stattdessen die Datei der EZB ein, geht das Tool nicht ins Internet.</li>
     <li>Links, die du anklickst (Anleitung, weltenwandel.at, PayPal), öffnen andere Seiten mit ihren eigenen Regeln.</li>
-    <li>„E-Mail schreiben“ öffnet dein Mail-Programm. Das Tool verschickt nichts. In der Mail stehen nur Version, Browser, Gerät und Ansicht, nichts aus deinen Daten.</li>
+    <li>„E-Mail schreiben“ und „Schreib mir“ öffnen dein Mail-Programm. Das Tool verschickt nichts. In den Mails steht nichts aus deinen Daten: bei „E-Mail schreiben“ Version, Browser, Gerät und Ansicht, bei „Schreib mir“ die Version und die Liste der Ideen.</li>
   </ul>
   <p>Technisch abgesichert: Eine Regel am Anfang der Datei erlaubt dem Tool nur die Verbindung zu den Wechselkurs-Diensten und zur eigenen Adresse (für „Für offline herunterladen“). Dein Browser verhindert jede andere Verbindung. Lade das Tool nur von trading-bilanz.github.io, damit diese Regel nicht verändert ist.</p>
-  <p>Verantwortlich: Florian Painsipp, siehe <a href="https://weltenwandel.at/impressum.html" target="_blank" rel="noopener">Impressum&nbsp;↗</a>. Fragen: <a href="mailto:florian@weltenwandel.at">florian@weltenwandel.at</a></p>
+  <p>Verantwortlich: Florian Painsipp, siehe <a href="https://weltenwandel.at/impressum.html" target="_blank" rel="noopener">Impressum&nbsp;↗</a>. Fragen: <a href="mailto:florian@weltenwandel.at" target="_blank" rel="noopener">florian@weltenwandel.at</a></p>
 </div></div>
 <!-- Nach „Für offline herunterladen“ (offlineDL/offShow): wie öffnen, Daten mit Sicherung mitnehmen (Knopf nur mit Daten) oder Fehler -->
 <div class="modal noprint" id="off-modal"><div class="box hx" role="dialog" aria-modal="true" aria-labelledby="off-t"><button type="button" class="mx" aria-label="Schließen">×</button>
@@ -17289,19 +17293,20 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.204',VDATE='26.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.205',VDATE='26.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar.
    Ab 0.204 (Florians Auftrag 0.204, Teil 1, und Freigabe 0.204, Punkt 3): neun Punkte in Florians Wortlaut und Reihenfolge. Dieselben Punkte stehen
-   in der Wunsch-Mail („Schreib mir“, kommtZeilen), je Punkt eine Zeile „[ ] Punkt“. */
+   in der Wunsch-Mail („Schreib mir“, kommtZeilen), je Punkt eine Zeile „[ ] Punkt“.
+   Ab 0.205 (Florians Auftrag 0.205, Punkt 2): Punkt 6 heißt „Verbesserte Rückgängig-Funktion im Reiter Wallet“ (bis 0.204 „Rückgängig-Funktion im Reiter Wallet“). */
 const KOMMT=[
   'Tabellen fürs Handy: Spalten selbst wählen und sortieren',
   'Ranglisten: deine besten Wochen, Tage und Trades, auch wenn mehrere gleich gut waren',
   '„Hochs und Tiefs“ als Bild zum Speichern und Teilen',
   'Neue Tage schnell vom Handy nachtragen, wenn du gerade nicht am Computer bist',
   'Reports vieler Konten auf einmal holen, am Windows-PC, wenn es die Technik erlaubt',
-  'Rückgängig-Funktion im Reiter Wallet',
+  'Verbesserte Rückgängig-Funktion im Reiter Wallet',
   'Dateien weiterer Börsen einlesen (schreib mir, welche du nutzt)',
   'Anleitung mit Bildern zu Wallet-Dateien und zur Krypto-Bezahlkarte',
   'Ein kleines Hilfstool, das deine Wallet-Dateien für dein Archiv verständlich benennt'];
@@ -17577,6 +17582,8 @@ function fbBody(zeilen){const kopf=`Trading-Bilanz ${VERSION} vom ${VDATE}`;if(z
   /^https?:$/.test(location.protocol)?'Online-Version':'Heruntergeladene Datei','','Was hast du gemacht?','','','Was ist passiert?','','','Was hast du erwartet?','',''].join('\r\n')}
 function fbMail(o){o=o||{};return `mailto:${FB_MAIL}?subject=${encodeURIComponent(o.betreff||`Trading-Bilanz ${VERSION}: Rückmeldung`)}&body=${encodeURIComponent(fbBody(o.zeilen))}`}
 // Die Adresse der Mail entsteht beim Klick (Breite und hell/dunkel von jetzt)
+// Ab 0.205 (Florians Regel, GESTALTUNG Abschnitt 6): Jeder Link, der eine Mail öffnet, öffnet sie in einem neuen Tab (target="_blank", rel="noopener"),
+// ohne „↗“: „E-Mail schreiben“, „Schreib mir“, die Adresse in der Fußzeile und im Fenster „Datenschutz“ (im HTML)
 $('btn-fbmail').addEventListener('click',()=>{$('btn-fbmail').href=fbMail()});$('btn-fbmail').href=fbMail();
 /* Ab 0.175 (Florians Auftrag 0.175, Phase 2): Baustein „Spenden“ mit einer Quelle, genutzt im Reiter „Resonanz“ (#don-bau) und im
    Jahresrückblick in „Wertschätzung teilen“ (jrS3H). Texte in RES_TXT, Adresse, QR-Code und PayPal hier. Ab 0.176 (Florians Auftrag 0.176) gibt er
