@@ -848,6 +848,8 @@ ul.tdl{margin:2px 0 6px;padding-left:20px}ul.tdl li{margin:2px 0}ul.tdl li.on>bu
 .tdback .tdbx{position:static;width:32px;height:32px}
 @media(max-width:520px){.tdkt{grid-template-columns:1fr}.tdcs{font-size:1.05rem}}
 #wtodo-line{margin:10px 0 4px}
+/* Ab 0.206: Kasten „Im Tool fehlen Coins“ über der Tabelle in „Bestand jetzt“ (gelbe Fläche, GESTALTUNG Abschnitt 4) */
+#wfc .fcbox{margin:10px 0 8px}#wfc .fcbox p{margin:6px 0}#wfc .fcbox p:first-child{margin-top:0}#wfc .fcbox p:last-child{margin-bottom:0}
 /* Ab 0.44: „＋ Daten“: vier Kacheln, Fortschritt im geführten Weg, Bereiche darunter */
 /* Ab 0.51 (5): bis 960 px breit (vorher wirkte 860 px nicht, .modal .box war stärker), Ablagefelder etwa doppelt so hoch; am Handy unverändert */
 .modal .box.dtbox{max-width:960px}
@@ -900,7 +902,6 @@ table.tpw .tpm{display:none}
   #tagprev table.tpw td:nth-child(4) select,#tagprev table.tpw td:nth-child(4) input{width:100%;max-width:none;box-sizing:border-box}
 }
 /* Ab 0.50 (2.1, 2.2): ✗ im Abgleich gelb; Sätze „Automatik aus“ in der aufgeklappten Bewegung */
-button.wbx{color:var(--sig-y-txt);font-weight:700}
 .vgna{margin:2px 0}.vgna .btn{margin-left:6px}
 /* Ab 0.50 Nachtrag 1 (4.1, 4.4): großer Satz im Vorschlag; Fenster „Alle Vorschläge“ mit stehender Kopfzeile, ohne seitlichen Balken */
 .sgq{margin:2px 0 6px}
@@ -954,7 +955,6 @@ p.dtein{margin:6px 0 0}p.dtein[hidden]{display:none}p.bxoh{margin:12px 0 2px}
 /* Ab 0.200 (Florians Antwort F5): Titel von „So trägst du die Karte von Hand ein“ in normaler Schrift (bis 0.195 fett über summary) */
 details.dhc{margin:4px 0}details.dhc summary{cursor:pointer;color:var(--accent);font-weight:400}
 #cx-sess{flex:1 0 100%;max-height:26vh;overflow:auto;margin:-4px 0 2px}#cx-sess[hidden]{display:none}#cx-sess p{margin:0}#cx-sess ul.cxsl{margin:2px 0;padding-left:18px}#cx-sess li{margin:2px 0}
-td.wbc .small{display:block}
 /* Ab 0.52 (1): Fenster „Wallets“ wie die Auswertung. Bis 960 px breit, Kopfleiste mit × steht (wie „Alle Vorschläge“), darunter stehen Titel und
    Spaltenkopf jeder Karte (--wlh = Höhe der Kopfleiste, gemessen über einen ResizeObserver an #wl-t). Bis 0.102 scrollten die Tabellen nie seitlich (.tscroll hier ohne overflow).
    Spalten „Andere Adressen“: Name · Adresse ⧉ (Netzwerke klein darunter) · Bewegungen · ✎. „Deine Wallets“ bis 700 px: Art klein unter dem Namen. */
@@ -1139,7 +1139,6 @@ button.adb[data-apw]{white-space:normal;text-align:inherit}
 .vgbtns{display:inline-flex;gap:6px;flex:none;white-space:nowrap}
 .wpq{align-items:center;gap:6px 10px;margin:2px 0}
 .kbrow{margin:2px 0 6px}.kbrow[hidden]{display:none}#btn-kb[hidden]{display:none}
-td.wbc{white-space:nowrap}td.wbc.nil{color:var(--muted)}
 table.kbt td .small{display:block}
 /* Ab 0.47 (Nachtrag 2, 6): „Kontostände prüfen“: Das Fenster ist eine Spalte, die Tabelle scrollt in ihrem eigenen Bereich (auch seitlich am Handy),
    die Spaltenköpfe bleiben oben stehen */
@@ -2180,6 +2179,8 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <!-- Ab 0.45 (4.1): Titel und Spaltenköpfe des Bestands stehen (Kopie der Kopfzeile wie in der Auswertung).
          Ab 0.48 (4.1): Die Karte heißt „Bestand jetzt“ (bzw. „Bestand am …“), mit (i) und rechts dem blauen Knopf „Kontostände prüfen“ wie in der Auswertung -->
     <div class="sthd"><h2 class="hx"><span id="pots-h">Bestand jetzt</span> <button type="button" class="ib" data-gl="k-cxres" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Bestand jetzt">i</button><span class="tbtns"><button type="button" class="btn h2btn noprint" id="btn-kb">Kontostände prüfen</button></span></h2><div class="hclip"><table class="hcopy"></table></div><div class="hbar"><div></div></div></div>
+    <!-- Ab 0.206 (Florians Auftrag 0.206, Phase 2): Kasten „Im Tool fehlen Coins“ über der Tabelle, nur wenn Coins fehlen (fcBox) -->
+    <div id="wfc"></div>
     <div class="tscroll"><table id="t-pots"></table></div>
     <!-- Ab 0.117: Coins, die bei DFX.swiss ausstehen (zählen nicht zum Bestand der Wallet) -->
     <div id="wdfx"></div>
@@ -10726,7 +10727,7 @@ const POT_CO=c=>c==='USDC'?'0':c==='USDT'?'1':'2'+c;
 const potOrd=L=>L.slice().sort((p,q)=>POT_CO(p.c)<POT_CO(q.c)?-1:POT_CO(p.c)>POT_CO(q.c)?1:p.w.localeCompare(q.w,'de',{sensitivity:'base'})||(p.w<q.w?-1:p.w>q.w?1:0));
 function potGroups(P,extra){const R=potOrd([...P,...extra]),G=[];for(const p of R){const g=G[G.length-1];if(g&&g.c===p.c)g.L.push(p);else G.push({c:p.c,L:[p]})}return G}
 function potSum(P,end,DE,cs){return (cs||['USDC','USDT']).filter(c=>['USDC','USDT'].includes(c)&&P.some(p=>p.c===c)).map(c=>{const L=P.filter(p=>p.c===c),q=L.reduce((s,p)=>s+p.q,0),ak=L.reduce((s,p)=>s+p.ak,0);
-  return `<tr class="psum"><td class="l"><b>Summe ${c}</b></td><td class="pcn">${c}</td>${DE?'<td></td>':''}<td><b>${fmtNum(q)}</b></td>${end?'':'<td></td>'}<td><b>${eur(ak,false)}</b></td><td>${q>1e-9?fDec(ak/q,4):'–'}</td>${DE?'<td></td>':''}</tr>`}).join('')}
+  return `<tr class="psum"><td class="l"><b>Summe ${c}</b></td><td class="pcn">${c}</td>${DE?'<td></td>':''}<td><b>${fmtNum(q)}</b></td><td><b>${eur(ak,false)}</b></td><td>${q>1e-9?fDec(ak/q,4):'–'}</td>${DE?'<td></td>':''}</tr>`}).join('')}
 const potNan=p=>p&&p.nanD&&!isFinite(p.ak)?`<br><span class="small">Kurs vom ${fD(p.nanD)} fehlt</span>`:'';
 // Ab 0.46 (2.9): Bestand zum Stichtag end: Überträge, die bis dahin weggingen (sie zählen schon beim Ziel), aber erst danach ankamen
 // Ab 0.131: uwList = diese Überträge als Liste (auch für die Blätter „Bestand zum Jahresende“ in beiden Excel). Eine Rückbuchung von DFX.swiss zählt
@@ -10781,27 +10782,16 @@ function renderWallet(){
   // Ab 0.48 (1.3): Fehlen Kurse nach dem letzten geladenen, steht statt des grünen Satzes grau, warum der Einkaufswert offen ist
   $('wtodo-line').innerHTML=taxOff()?'<p>Krypto-Steuer ist aus. Das Tool prüft nur deine Bestände.</p>':TD.rg&&TD.rg.n?`<p class="small">Einkaufswert offen, weil Kurse ab ${fD(TD.rg.from)} noch nicht geladen sind.</p>`:TD.gap||!C.flow.some(r=>r.q<0)?'':'<p class="wtok"><span aria-hidden="true">✓</span> Alle Abgänge sind durch Einkäufe gedeckt.</p>';
   // Ab 0.50 Nachtrag 6 Zusatz: der grüne Satz nur, wenn es Abgänge gibt (jede abgehende Menge in C.flow: Verkauf, Zahlung, Geschenk, Gebühr, Tausch, Übertrag)
-  // Bestand am Ende des Zeitraums (BMF Rn. 104: zum 31.12.). Endet der Zeitraum heute oder später: Bestand jetzt, mit Kontrolle „Laut deiner Wallet“
-  // und (ab 0.40 mit ✓ oder Unterschied) „laut Datei“.
+  // Bestand am Ende des Zeitraums (BMF Rn. 104: zum 31.12.). Endet der Zeitraum heute oder später: Bestand jetzt (bis 0.205 mit der Spalte „Abgleich“).
   const end=rg.to&&!rg.bad&&rg.to<today?rg.to:null,CE=end?cryptoCalc(L,end):C,ref=end||today;
   $('pots-h').textContent=end?`Bestand am ${fD(end)}`:'Bestand jetzt';
-  // Ab 0.46 (5.1): statt „Laut deiner Wallet“ mit Eingabefeld eine schmale Spalte „Abgleich“: ✓ (passt zur Datei bzw. zum Stand in deiner App),
-  // „weicht ab“ (öffnet „Kontostände prüfen“ bei dieser Wallet) oder „–“ (nichts zu vergleichen). Die Eingabe steht im Fenster „Kontostände prüfen“.
-  const WB=wBal();
-  // Ab 0.50 (2.1): gelbes ✗ statt „weicht ab“, Begriff mit dem Unterschied samt Richtung (GL je Zeile 'wx:…'), Klick öffnet „Kontostände prüfen“; Grenze BAL_TOL
-  // Ab 0.122 (Phase 2): Begriff am ✗ mit den genauen Zahlen (balCmp), dazu unter der Zeile grau dieselbe Zeile und der Satz (balL, über die ganze Breite)
-  // Ab 0.124: Vergleich am Stichtag (balCtx); graue Zeile auch bei ✓, wenn es nach dem Stichtag Einträge gibt („Seit dem Stand …“)
-  const BX=end?null:balCtx(C),BC=new Map(),bcm=k=>BC.get(k)||(BC.set(k,balCmp(k,BX)),BC.get(k));
-  const chk=p=>{if(end)return '';const k=p.w+'|'+p.c;if(S.wbal[k]==null&&!WB[k])return '<td class="wbc nil">–</td>';
-    const B=bcm(k);if(!B.bad)return '<td class="wbc"><span class="ok" role="img" aria-label="passt">✓</span></td>';
-    const t=B.lines.join('\n')+(B.hint?'\n'+B.hint:'')+(B.since.length?'\n'+B.since.join('\n'):'');GL['wx:'+k]={t:'Abgleich',h:t+'\nEin Klick öffnet „Kontostände prüfen“.'};
-    return `<td class="wbc"><button type="button" class="zlink gl glk wbx" data-gl="wx:${esc(k)}" data-kb="${esc(k)}" aria-expanded="false" aria-label="Abgleich: ${esc(t.replace(/\n/g,' '))}">✗</button></td>`};
-  const balL=(p,n)=>{if(end)return '';const k=p.w+'|'+p.c;if(S.wbal[k]==null&&!WB[k])return '';const B=bcm(k),T=[...(B.bad?B.lines:[]),...(B.bad&&B.hint?[B.hint]:[]),...B.since];if(!T.length)return '';
-    return `<tr class="wbl"><td colspan="${n}" class="l small" style="white-space:normal;padding-top:0"><div style="width:0;min-width:100%">${T.join('<br>')}</div></td></tr>`};
-  // Zeile mit Menge 0, wenn das Tool keinen Bestand kennt: laut Datei liegt etwas in der Wallet, oder (ab 0.50, 2.1) ein Stand aus der App ist eingetragen
-  const extra=end?[]:[...new Set([...Object.entries(WB).filter(([,x])=>Math.abs(x.q)>=BAL_TOL).map(([k])=>k),...Object.keys(S.wbal||{}).filter(k=>S.wallets.includes(k.slice(0,k.lastIndexOf('|'))))])]
-    .filter(k=>!CE.pots.some(p=>p.w+'|'+p.c===k)).map(k=>{const i=k.lastIndexOf('|');return {w:k.slice(0,i),c:k.slice(i+1),q:0}});
-  const kh=end?'':`<th class="wbc">${gl('wabgl','Ab&shy;gleich')}</th>`;
+  // Ab 0.206 (Florians Auftrag 0.206, Phase 2): Die Karte ist reine Information. Die Spalte „Abgleich“ (ab 0.46: ✓, gelbes ✗, „–“), ihr Begriff, die
+  // Begriffe am ✗ und die grauen Zeilen des Vergleichs unter einer Wallet (ab 0.122 und 0.124) sind weg, ebenso die Zeilen mit Menge 0 für eine Wallet,
+  // zu der es nur eine Wallet-Datei oder einen abgelesenen Wert gibt. Verglichen wird im Fenster „Kontostände prüfen“ und im Punkt „Bestand passt nicht“.
+  // Fehlen Coins, steht über der Tabelle der Kasten „Im Tool fehlen Coins“ (fcBox), und jede Wallet darin hat eine Zeile mit Menge 0,00. Kasten und
+  // Zeilen kommen und gehen zusammen, auch bei „Bestand am …“; nach „So lassen“ sind beide weg (Florians Freigabe 0.206, Antwort F3).
+  const FC=fcBox(TD.fc||[],end);$('wfc').innerHTML=FC.h;$('cxres-card').classList.toggle('fcon',!!FC.h);
+  const extra=FC.rows.filter(k=>!CE.pots.some(p=>p.w+'|'+p.c===k)).map(k=>{const i=k.lastIndexOf('|');return {w:k.slice(0,i),c:k.slice(i+1),q:0}});
   $('btn-kb').hidden=!!end;
   // Ab 0.117: ausstehend bei DFX.swiss als eigene Zeile (nicht im Bestand, kein steuerlicher Vorgang)
   // Ab 0.122: „Ausstehend bei <Name>“ mit dem aktuellen Namen des Diensts aus dem Adressbuch (wSvcName der Adressen, an die die Coins gingen)
@@ -10814,14 +10804,14 @@ function renderWallet(){
   const pw=p=>`<td class="l">${esc(p.w)}<span class="small pcm">${p.c}</span></td>`;
   // Ab 0.121 (Phase 4): je Coin seine Zeilen (Bestand und Zeilen mit Menge 0), darunter gleich seine Summe (potGroups, potSum mit dem einen Coin)
   const PG=potGroups(CE.pots,extra),isX=p=>extra.includes(p);
-  if(!DEw)$('t-pots').innerHTML=`<tr><th class="l">Wallet</th><th class="pcn">Coin</th><th>Menge</th>${kh}<th>${gl('einkaufswert','Einkaufs&shy;wert')}</th><th>${gl('opreis','Ø-Preis')}${smx('€ je Coin')}</th></tr>`+(CE.pots.length||extra.length?PG.map(g=>g.L.map(p=>isX(p)?
-    `<tr>${pw(p)}<td class="pcn">${p.c}</td><td>${fmtNum(0)}</td>${chk(p)}<td>–</td><td>–</td></tr>${balL(p,BAL_MOB.matches?5:6)}`:
-    `<tr>${pw(p)}<td class="pcn">${p.c}</td><td>${fmtNum(p.q)}${potUw(p,end)}</td>${chk(p)}<td>${eur(p.ak)}${potNan(p)}</td><td>${p.q?fDec(p.ak/p.q,4):'–'}</td></tr>${balL(p,BAL_MOB.matches?5:6)}`).join('')+potSum(CE.pots,end,false,[g.c])).join(''):`<tr><td colspan="${end?5:6}" class="small">Kein Bestand.</td></tr>`);
+  if(!DEw)$('t-pots').innerHTML=`<tr><th class="l">Wallet</th><th class="pcn">Coin</th><th>Menge</th><th>${gl('einkaufswert','Einkaufs&shy;wert')}</th><th>${gl('opreis','Ø-Preis')}${smx('€ je Coin')}</th></tr>`+(CE.pots.length||extra.length?PG.map(g=>g.L.map(p=>isX(p)?
+    `<tr>${pw(p)}<td class="pcn">${p.c}</td><td>${fmtNum(0)}</td><td>–</td><td>–</td></tr>`:
+    `<tr>${pw(p)}<td class="pcn">${p.c}</td><td>${fmtNum(p.q)}${potUw(p,end)}</td><td>${eur(p.ak)}${potNan(p)}</td><td>${p.q?fDec(p.ak/p.q,4):'–'}</td></tr>`).join('')+potSum(CE.pots,end,false,[g.c])).join(''):`<tr><td colspan="5" class="small">Kein Bestand.</td></tr>`);
   // DE: je Wallet und Coin eine Summenzeile, darunter die offenen Posten
-  else $('t-pots').innerHTML=`<tr><th class="l">Wallet</th><th class="pcn">Coin</th><th>${gl('kaufdatum','Kaufdatum')}</th><th>Menge</th>${kh}<th>${gl('einkaufswert','Einkaufswert')}</th><th>je Coin${smx('€')}</th><th>${gl('freiab','steuerfrei ab')}</th></tr>`+(CE.pots.length||extra.length?PG.map(g=>g.L.map(p=>isX(p)?
-    `<tr class="pp">${pw(p)}<td class="pcn">${p.c}</td><td></td><td>${fmtNum(0)}</td>${chk(p)}<td>–</td><td>–</td><td></td></tr>${balL(p,BAL_MOB.matches?7:8)}`:
-    `<tr class="pp">${pw(p)}<td class="pcn">${p.c}</td><td class="small">${p.lots.length===1?'1 '+gl('posten','Posten'):p.lots.length+' '+gl('posten','Posten')}</td><td>${fmtNum(p.q)}${potUw(p,end)}</td>${chk(p)}<td>${eur(p.ak)}${potNan(p)}</td><td>${p.q?fDec(p.ak/p.q,4):'–'}</td><td></td></tr>${balL(p,BAL_MOB.matches?7:8)}`+
-    p.lots.map(l=>`<tr class="pl"><td class="l"></td><td class="pcn"></td><td>${fD(l.kd)}</td><td>${fmtNum(l.q)}</td>${end?'':'<td></td>'}<td>${eur(l.ak)}${potNan(l)}</td><td>${l.q?fDec(l.ak/l.q,4):'–'}</td><td>${fD(l.frei)}${l.frei<=ref?' <span class="small">✓ schon steuerfrei</span>':''}</td></tr>`).join('')).join('')+potSum(CE.pots,end,true,[g.c])).join(''):`<tr><td colspan="${end?7:8}" class="small">Kein Bestand.</td></tr>`);
+  else $('t-pots').innerHTML=`<tr><th class="l">Wallet</th><th class="pcn">Coin</th><th>${gl('kaufdatum','Kaufdatum')}</th><th>Menge</th><th>${gl('einkaufswert','Einkaufswert')}</th><th>je Coin${smx('€')}</th><th>${gl('freiab','steuerfrei ab')}</th></tr>`+(CE.pots.length||extra.length?PG.map(g=>g.L.map(p=>isX(p)?
+    `<tr class="pp">${pw(p)}<td class="pcn">${p.c}</td><td></td><td>${fmtNum(0)}</td><td>–</td><td>–</td><td></td></tr>`:
+    `<tr class="pp">${pw(p)}<td class="pcn">${p.c}</td><td class="small">${p.lots.length===1?'1 '+gl('posten','Posten'):p.lots.length+' '+gl('posten','Posten')}</td><td>${fmtNum(p.q)}${potUw(p,end)}</td><td>${eur(p.ak)}${potNan(p)}</td><td>${p.q?fDec(p.ak/p.q,4):'–'}</td><td></td></tr>`+
+    p.lots.map(l=>`<tr class="pl"><td class="l"></td><td class="pcn"></td><td>${fD(l.kd)}</td><td>${fmtNum(l.q)}</td><td>${eur(l.ak)}${potNan(l)}</td><td>${l.q?fDec(l.ak/l.q,4):'–'}</td><td>${fD(l.frei)}${l.frei<=ref?' <span class="small">✓ schon steuerfrei</span>':''}</td></tr>`).join('')).join('')+potSum(CE.pots,end,true,[g.c])).join(''):`<tr><td colspan="7" class="small">Kein Bestand.</td></tr>`);
   if($('kb-modal').classList.contains('on'))kbRender();
   // Ab 0.47 (2.8): Rest bei Wallets ohne eigene Datei steht als Punkt in „Noch offen“ (Regel 3), nicht mehr im Überblick
   $('wrest').innerHTML='';
@@ -10895,6 +10885,10 @@ $('kb-body').addEventListener('change',e=>{const el=e.target.closest('[data-wb]'
   const k=el.dataset.wb,s=el.value.trim();if(!s){delete S.wbal[k];if(S.wbalD)delete S.wbalD[k]}else{const v=parseDe(s);if(!(v>=0)){msg('kbmsg','bad','Das ist keine gültige Menge. Schreibe eine Zahl, z. B. 2,519387.');return needMark($('kb-body'),[[el,'']])}if(S.wbal[k]!==v){S.wbal[k]=v;S.wbalD=Object.assign({},S.wbalD,{[k]:todayLocal()})}}
   msg('kbmsg','','');save();render();const n=$('kb-body').querySelector(`[data-wb="${CSS.escape(k)}"]`);if(n)n.focus({preventScroll:true})});
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-kb],#btn-kb');if(!b)return;e.preventDefault();kbOpen(b.dataset.kb||'')});
+// Ab 0.206: Sprünge aus dem Kasten „Im Tool fehlen Coins“: „Zu „Noch offen“ ›“ öffnet genau den Punkt der Ursache mit aufgeklapptem „n Folgen davon“,
+// „und {n} weitere ›“ öffnet „Noch offen“ mit der Liste „Alle Punkte“
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-fcgo],[data-fcall]');if(!t)return;e.preventDefault();
+  if(t.dataset.fcgo!=null){TD_FOL=t.dataset.fcgo;todoOpen(TD_FOL)}else{TD_FOL='';TD_ALL=true;todoOpen()}});
 // Ab 0.48 (4.1): Der Knopf steht im Titel: ein Klick darauf klappt die Karte nicht zu
 $('btn-kb').addEventListener('click',e=>{e.stopPropagation();e.preventDefault();kbOpen('')});
 /* ---------------- Ab 0.43: Liste „Alle Vorgänge“ (ersetzt die Tag-Tabelle, „Bewegungen aus der Wallet-Datei“, „Woher kamen deine Coins?“ und
@@ -11671,8 +11665,8 @@ function sugInfo(s){
     // Ab 0.70 Nachtrag 1 (1.2): Fehlbetrag später (x.gap): „Übertrag nach „Meine Karte“, 100 USDC gehen aus „Meine Wallet“ weg, dort fehlen 100 USDC (von Hand)“
     const gc=x=>x.key[0]==='c'?S.cx.find(c=>'c:'+c.id===x.key):null;
     const gWas=x=>{const c=gc(x);if(!c)return 'Einzahlung zu Tag';return c.kind==='uebertrag'?`Übertrag nach „${esc(c.to)}“`:esc(kindL(c)||c.kind)};
-    const gFuer=x=>{const c=gc(x);if(!c)return x.key[0]==='g'?' für die Einzahlung zu Tag':'';if(c.kind==='uebertrag')return wKindOf(c.to)==='karte'?' für die Aufladung':` für den Übertrag nach „${esc(c.to)}“`;
-      return c.kind==='bezahlung'?' für die Zahlung':c.kind==='verkauf'?' für den Verkauf':''};
+    // Ab 0.206: der Zusatz „für …“ kommt aus fuerWas (eine Wurzel mit dem Kasten „Im Tool fehlen Coins“)
+    const gFuer=x=>fuerWas(gc(x),x.key[0]==='g');
     const ln=x=>{if(x.key[0]==='m'){const m=S.wtx[x.key.slice(2)];if(m){const r=mvLine(m);return [tl(m.date,m.time),r[1]]}}
       if(x.gap!=null){const c=gc(x);return [tl(x.d,x.tm),`${gWas(x)}, ${fmtNum(x.q)} ${cn} gehen aus „${esc(x.w)}“ weg, dort fehlen ${fmtNum(x.gap)} ${cn}${c?' ('+esc(cxOrigN(c))+')':''}`]}
       const c=S.cx.find(c=>'c:'+c.id===x.key);if(!c)return [tl(x.d,x.tm),`${fmtNum(x.q)} ${cn} (${ein?'in':'aus'} ${esc(x.w)})`];const o=esc(cxOrigN(c)),k=esc(kindL(c)||c.kind);
@@ -11985,6 +11979,31 @@ function kxExt(){const EXT=[],ts8=(d,tm)=>d+' '+(tm?(tm+':00').slice(0,8):'00:00
   for(const [id,o] of Object.entries(S.bxOpen||{}))EXT.push(Object.assign({key:'x:'+id,coin:o.coin,t:ts8(o.date,o.time)},o.dir==='ein'?{w:o.w,q:o.qty}:{w:'*',not:o.w,q:o.qi>0?o.qi:o.qty}));
   for(const t of Object.values(S.tag))if(t.wq==='q'&&t.status==='ok'&&!t.fiat&&t.own&&t.kind==='aus'){const a=tagAT(t);EXT.push({key:'tq:'+t.id,w:'*',coin:t.coin,q:Math.abs(t.qty),t:ts8(a.date,a.time)})}
   return EXT}
+// Ab 0.206 (Florians Auftrag 0.206, Phase 2): wofür Coins fehlen, als Zusatz im Satz („… fehlen 100,00 USDC für die Aufladung.“). Eine Wurzel für den
+// Vorschlag zur Tag-Zeile (bis 0.205 gFuer dort) und den Kasten „Im Tool fehlen Coins“. c = Eintrag des Abgangs (oder null), tagEin = Einzahlung zu Tag.
+function fuerWas(c,tagEin){if(!c)return tagEin?' für die Einzahlung zu Tag':'';if(c.kind==='uebertrag')return wKindOf(c.to)==='karte'?' für die Aufladung':` für den Übertrag nach „${esc(c.to)}“`;
+  return c.kind==='bezahlung'?' für die Zahlung':c.kind==='verkauf'?' für den Verkauf':''}
+// Ab 0.206 (Florians Auftrag 0.206, Phase 2, Wortlaut aus seiner Freigabe, Antwort F2): Kasten „Im Tool fehlen Coins“ über der Tabelle in „Bestand jetzt“.
+// Je Punkt in „Noch offen“, der Coins fehlen lässt, ein Absatz. Die Lücken G eines Punkts kommen aus todoItems (fcOf: dieselbe Rechnung wie
+// „n Folgen davon“, kxVis und kxFollow), hier entstehen nur die Sätze:
+//   Zeile 1: „{Wallet}: Am {TT.MM.} fehlen {Menge} {Coin} für …“ (die erste Lücke; ein Übertrag und seine Gebühr zählen zusammen; „für …“ aus fuerWas)
+//   Zeile 2: „Dadurch fehlen sie auch bei „B“ und von dort bei „C“.“ (Weg über Überträge), „… zum Teil auch bei …“ (vor dem Abgang lag ein Teil da),
+//            sonst „Auch bei B und C fehlen Coins.“; ohne andere Wallet keine zweite Zeile
+// end = Stichtag („Bestand am …“): nur Lücken bis dahin. rows = Wallet|Coin aller Lücken und der Wallets, in die ein Übertrag mit Lücke ging: Sie
+// bekommen in der Tabelle eine Zeile mit Menge 0,00, solange der Punkt offen ist (Florians Freigabe 0.206, Antwort F3).
+function fcAbs(G0,end){const G=end?G0.filter(g=>g.d<=end):G0;if(!G.length)return null;const tk=g=>g.d+' '+(g.tm||'99');
+  const g0=G[0].own?G[0]:G.slice().sort((a,b)=>tk(a)<tk(b)?-1:tk(a)>tk(b)?1:0)[0];
+  const grp=G.filter(g=>g===g0||(g0.cx!=null&&g.cx===g0.cx&&g.w===g0.w&&g.c===g0.c)),m=grp.find(g=>!g.xfee)||g0,sum=k=>grp.reduce((a,g)=>a+g[k],0);
+  const l1=`${esc(wDispW(g0.w))}: Am ${dm(g0.d)} fehlen ${fmtNum(sum('q'))} ${esc(g0.c)}${m.fuer}.`;
+  const E=new Map(),ed=(a,b)=>{if(!E.has(a))E.set(a,new Set());E.get(a).add(b)};for(const g of G){if(g.to)ed(g.w,g.to);if(g.via)ed(g.via[0],g.via[1])}
+  const K=[];let cur=g0.w,okK=true;while(E.has(cur)){const n=[...E.get(cur)];if(n.length!==1||K.includes(n[0])||n[0]===g0.w){okK=false;break}cur=n[0];K.push(cur)}
+  const rows=[...new Set(G.flatMap(g=>[g.w+'|'+g.c,...(g.to?[g.to+'|'+g.c]:[])]))],OW=[...new Set(G.flatMap(g=>[g.w,...(g.to?[g.to]:[])]))].filter(w=>w!==g0.w);
+  const ket=okK&&K.length>0&&OW.every(w=>K.includes(w)),teil=m.k==='uebertrag'&&sum('miss')<sum('out')-0.005,Q=w=>`„${esc(wDispW(w))}“`;
+  const l2=ket?`Dadurch fehlen sie ${teil?'zum Teil ':''}auch bei ${K.map((w,i)=>(i?(K.length>2&&i<K.length-1?', ':' und ')+'von dort bei ':'')+Q(w)).join('')}.`:OW.length?`Auch bei ${undL(OW.map(w=>esc(wDispW(w))))} fehlen Coins.`:'';
+  return {l1,l2,rows}}
+function fcBox(P,end){const A=[];for(const p of P){const a=fcAbs(p.G,end);if(a)A.push(Object.assign(a,{id:p.id}))}
+  if(!A.length)return {h:'',rows:[],n:0};const more=A.length-3;
+  return {n:A.length,rows:[...new Set(A.flatMap(a=>a.rows))],h:`<div class="msg warn fcbox"><p><b>Im Tool fehlen Coins</b></p>${A.slice(0,3).map(a=>`<p>${a.l1}${a.l2?'<br>'+a.l2:''}<br><button type="button" class="zlink" data-fcgo="${esc(a.id)}">Zu „Noch offen“&nbsp;›</button></p>`).join('')}${more>0?`<p><button type="button" class="zlink" data-fcall>und ${fI.format(more)} weitere&nbsp;›</button></p>`:''}</div>`}}
 // Ab 0.71 (4.1): Folgen für „Noch offen“, den Punkt am Reiter und die Steuer. Gemerkte Lücken („So lassen“) gehen in kxFollow mit hinein und geben ihr
 // Budget weiter wie jede Ursache. hid = Lücken, die nicht erscheinen: gemerkt, oder ganz Folge nur gemerkter Ursachen (kein eigener Rest).
 // Lücken in '@q:…' (Tag-Einzahlung mit offener Herkunft) zählen hier nicht, die Frage zur Tag-Zeile ersetzt sie.
@@ -12093,12 +12112,19 @@ function todoItems(C){
     return `Solange das hier offen ist, fehlt der Einkauf auch bei ${wL(W)}. Trägst du es ein, ${folEnde(n)}.`};
   const fp=s=>kxPartH(V,s);
   const etm=e=>e.tm||e.tmE||'';
+  // Ab 0.206 (Florians Auftrag 0.206, Phase 2): Lücken einer Ursache für den Kasten „Im Tool fehlen Coins“ in „Bestand jetzt“ (fcAbs, fcBox). k = Schlüssel
+  // der Ursache (Lücke oder Ursache von außen), s = ihre eigene Lücke (zählt mit ihrem eigenen Rest, „Offen hier“), dazu ihre sichtbaren Folgen mit ihrem
+  // Teil und dem Übertrag in ihre Wallet (via). Dieselbe Rechnung wie „n Folgen davon“ (V = kxVis, FO = kxFollow), keine zweite.
+  const fcG=(s,q,via,own)=>{const e=s.e;return {own:!!own,d:e.d,tm:etm(e),w:e.w,c:e.coin,q,miss:s.miss,out:-e.q,cx:e.cx!=null?e.cx:null,xfee:!!e.xfee,k:e.k,to:e.k==='uebertrag'&&e.to?e.to:'',
+    fuer:fuerWas(e.cx!=null?S.cx[e.cx]:null,e.k==='tagein'),via:via&&via.k==='uebertrag'&&via.to?[via.w,via.to]:null}};
+  const fcOf=(k,s)=>[...(s?[fcG(s,FO.own.get(s.key)||s.miss,null,1)]:[]),...(FO.fol.get(k)||[]).filter(y=>!V.hid.has(y.key)&&!(s&&y.key===s.key)).map(y=>{const f=SA.find(z=>z.key===y.key),z=(FO.share.get(y.key)||[]).find(z=>z.root===k);
+    return f?fcG(f,y.q,z&&z.via):null}).filter(Boolean)];
   // Doppelt? zuerst (1.6): Lücken, deren Abgang eines der beiden Duplikate ist, und ihre Folgen gehören zum Duplikat (1.9)
   const DU=wDupCands(S),dupOf=new Map();
   for(const x of DU){const ids=new Set([x.keep.id,x.del.id]);for(const s of SH){const c=s.e.cx!=null?S.cx[s.e.cx]:null;if(c&&ids.has(c.id)&&FO.own.has(s.key))dupOf.set(s.key,x)}}
   for(const x of DU){const a=x.keep,b=x.del,ks=SH.filter(s=>dupOf.get(s.key)===x),kids=ks.flatMap(s=>[folH(s,s.miss),...kidsOf(s.key)]),kw=folSatz('hier',kids.length,[...new Set(ks.flatMap(s=>[s.e.w,...folW(s.key)]))]);
     const ln=c=>`${fmtNum(c.qty)}${c.qtyIn>0?' → '+fmtNum(c.qtyIn):''} ${c.coin}${c.time?', '+c.time.slice(0,5):', ohne Uhrzeit'}, ${esc(cxOrigN(c))}${c.note?` („${esc(c.note)}“)`:''}`;
-    I.push({id:'d:'+b.id,lv:'y',kind:'dup',t:wSec(a.date,a.time||''),eur:0,ref:'c:'+b.id,kids,kw,hdS:tdHdL(a.date,a.time),
+    I.push({id:'d:'+b.id,lv:'y',kind:'dup',t:wSec(a.date,a.time||''),eur:0,ref:'c:'+b.id,kids,kw,fc:ks.flatMap(s=>fcOf(s.key,s)),hdS:tdHdL(a.date,a.time),
       big:`Doppelt eingetragen? Der Übertrag ${esc(a.wallet)} → ${esc(a.to)} steht zweimal da.`,why:`${ln(a)} und ${ln(b)}. „einen löschen“ löscht ${b.wk||b.wkIn?'den jüngeren':'den von Hand'} (${ln(b)}).`,
       body:`<div class="row"><button type="button" class="btn" data-dupdel="${a.id}|${b.id}">einen löschen</button><button type="button" class="btn" data-dupkeep="${a.id}|${b.id}">beide behalten</button></div>`,
       li:{d:a.date,w:a.wallet,what:'doppelt?',q:fmtNum(a.qty)+' '+a.coin}})}
@@ -12112,18 +12138,18 @@ function todoItems(C){
     if(od){const lb=f=>f.k==='tagaus'?'Auszahlung von Tag':f.k==='tagein'?'Einzahlung bei Tag':esc(f.label),nt=od.ins.filter(f=>!f.tm);
       const txt=nt.length?`Am ${dm(e.d)} um ${e.tm.slice(0,5)} gingen ${fN.format(-e.q)} ${e.coin} aus „${esc(e.w)}“ weg. ${nt.length===1?`${lb(nt[0])} (${fN.format(nt[0].q)} ${nt[0].coin}) am selben Tag hat keine Uhrzeit. Deshalb weiß das Tool nicht, was zuerst war. Trage beim ${lb(nt[0])} die Uhrzeit ein.`:`Die ${fI.format(nt.length)} Einträge am selben Tag haben keine Uhrzeit. Deshalb weiß das Tool nicht, was zuerst war. Trage bei ihnen die Uhrzeit ein.`}`:
         `Am ${dm(e.d)} um ${e.tm.slice(0,5)} gingen ${fN.format(-e.q)} ${e.coin} weg, ${od.ins.map(f=>`um ${f.tm.slice(0,5)} kamen ${fN.format(f.q)} ${f.coin} an (${lb(f)})`).join(', ')}. Prüfe die Uhrzeiten.`;
-      I.push({id:'o:'+s.key,lv:'y',kind:'order',t:wSec(e.d,e.tm),eur:0,ref:refOf(nt[0]||e),kids:fo,kw:folSatz('hier',fo.length,folW(s.key)),fp:fp(s),hdS:tdHdL(e.d,e.tm),big:'Vermutlich nur die Reihenfolge.',why:txt,
+      I.push({id:'o:'+s.key,lv:'y',kind:'order',t:wSec(e.d,e.tm),eur:0,ref:refOf(nt[0]||e),kids:fo,kw:folSatz('hier',fo.length,folW(s.key)),fp:fp(s),fc:fcOf(s.key,s),hdS:tdHdL(e.d,e.tm),big:'Vermutlich nur die Reihenfolge.',why:txt,
         body:`<div class="row">${(nt.length?nt:od.ins).map(f=>jE(f,'Zugang in der Liste zeigen')).join('')}${jE(e,'Abgang in der Liste zeigen')}</div>`,li:Object.assign(li,{what:'Reihenfolge'})});continue}
     const fill=`${e.d}|${esc(e.w)}|${e.coin}|${s.miss}`,ty=wTypo(S,s);
     if(ty){const c=ty.c;
-      I.push({id:'v:'+s.key,lv:'y',kind:'typo',t:wSec(e.d,etm(e)),eur:0,ref:'c:'+c.id,kids:fo,kw:folSatz('hier',fo.length,folW(s.key)),fp:fp(s),hdS:tdHdL(c.date,c.time),
+      I.push({id:'v:'+s.key,lv:'y',kind:'typo',t:wSec(e.d,etm(e)),eur:0,ref:'c:'+c.id,kids:fo,kw:folSatz('hier',fo.length,folW(s.key)),fp:fp(s),fc:fcOf(s.key,s),hdS:tdHdL(c.date,c.time),
         big:`Vertippt? Vielleicht ${fN.format(ty.sug)} statt ${fN.format(ty.self?c.qty:c.qtyIn>0&&c.kind==='uebertrag'?c.qtyIn:c.qty)}.`,
         why:ty.self?`${esc(kindL(c)||c.kind)} am ${dm(c.date)}: ${fN.format(c.qty)} ${c.coin}. Laut deinen Einträgen lagen dort nur ${fN.format(s.have)} ${e.coin}.`:`${esc(kindL(c)||c.kind)} am ${dm(c.date)}: ${fN.format(c.qtyIn>0&&c.kind==='uebertrag'?c.qtyIn:c.qty)} ${c.coin}. ${ty.same?'Am selben Tag':`Am ${dm(e.d)}`} gingen ${fN.format(ty.out)} weg, es fehlen ${fN.format(s.miss)}.`,
         body:`<div class="row"><button type="button" class="btn primary" data-cxe2="${c.id}">✎ ${esc(kindL(c)||'Eintrag')} prüfen</button></div>`,
         alt:`<button type="button" class="btn sm" data-fill="|${fill}">Eintragen, woher sie kamen</button><button type="button" class="btn sm" data-fill="hatte|${fill}">Hatte ich schon</button><button type="button" class="btn sm" data-keep="${esc(s.key)}">So lassen</button>`,
         li:Object.assign(li,{what:'vertippt?'})});continue}
     // Ab 0.47 (2.3): sachlich, was fehlt und was das Tool ohne die Angabe macht; darunter die Erklärung in einer Zeile; Formular gleich offen
-    I.push({id:'g:'+s.key,lv:'r',kind:'gap',t:wSec(e.d,etm(e)),eur:tdEur(own,e.d),ref:refOf(e),kids:fo,fp:fp(s),ar:{t:wSec(e.d,etm(e)||'12:00:00'),self:refOf(e),w:e.w},
+    I.push({id:'g:'+s.key,lv:'r',kind:'gap',t:wSec(e.d,etm(e)),eur:tdEur(own,e.d),ref:refOf(e),kids:fo,fp:fp(s),fc:fcOf(s.key,s),ar:{t:wSec(e.d,etm(e)||'12:00:00'),self:refOf(e),w:e.w},
       hdS:tdHdL(e.d,etm(e)),big:`Für ${fN.format(s.miss)} ${e.coin} aus ${esc(e.w)} fehlt der Einkauf. Ohne ihn rechnet das Tool diesen Teil ohne Gewinn oder Verlust.`,why:gapTxt(s),
       // Ab 0.202 (Florians Auftrag 0.202, Teil 3.1): der Begriff als kleine Überschrift über dem Formular „Was war das?“, bis 0.201 „Was heißt das?“ am Satz davor
       lh:gl('cxmiss','So löst du das'),kw:folSatz('gap',fo.length,folW(s.key),s),
@@ -12131,7 +12157,7 @@ function todoItems(C){
       alt:`<button type="button" class="btn sm" data-tdhatte>Hatte ich schon</button><button type="button" class="btn sm" data-keep="${esc(s.key)}">So lassen</button>`,li:Object.assign(li,{what:'Einkauf nicht bekannt'})})}
   // Ab 0.46 (2.2, 3.3a): offene Zugänge und Abgänge einer Börse (S.bxOpen). Ab 0.47 mit dem Formular in der Karte (Menü je nach Richtung).
   for(const [id,o] of BXO){const ein=o.dir==='ein',q=`${fN.format(o.qty)} ${o.coin}`;
-    I.push({id:'x:'+id,lv:'r',kind:ein?'bxein':'bxaus',t:wSec(o.date,o.time||''),eur:tdEur(o.qty,o.date),ref:'b:'+id,kids:EXK['x:'+id]||[],kw:exSatz('x:'+id),ar:{t:wSec(o.date,o.time||'12:00:00'),self:'b:'+id,w:o.w},
+    I.push({id:'x:'+id,lv:'r',kind:ein?'bxein':'bxaus',t:wSec(o.date,o.time||''),eur:tdEur(o.qty,o.date),ref:'b:'+id,kids:EXK['x:'+id]||[],kw:exSatz('x:'+id),fc:fcOf('x:'+id,null),ar:{t:wSec(o.date,o.time||'12:00:00'),self:'b:'+id,w:o.w},
       hdS:tdHdL(o.date,o.time),big:ein?`Einzahlung bei ${esc(o.w)}, ${q}: Woher kamen die Coins?`:`Auszahlung von ${esc(o.w)}, ${q}: Wohin gingen die Coins?`,
       why:ein?`Ohne diese Angabe zählt die Einzahlung in der Rechnung nicht. Trage ein, woher die Coins kamen, oder lies die Wallet-Datei ein, aus der du eingezahlt hast.`:`Die Coins sind aus ${esc(o.w)} weg, das Tool kennt das Ziel noch nicht. Ohne diese Angabe rechnet das Tool die Auszahlung ohne Gewinn oder Verlust.`,
       form:{pre:{kind:'',date:o.date,time:o.time||'',coin:o.coin,qty:o.qty,bxo:id,wallet:o.w,dir:ein?'in':'out'}},alt:(ein?'<button type="button" class="btn sm" data-bxwf>Wallet-Datei einlesen</button>':'')+((S.bxF||[]).some(f=>f.ids.includes(id))?`<button type="button" class="btn sm" data-dtfiles="${esc('b:'+id)}">Ganze Datei entfernen …</button>`:''),
@@ -12142,7 +12168,7 @@ function todoItems(C){
   // Frage fett über „Vorschlag:“, weil die Tag-Frage Kopf der Karte ist), und zeigt weiter „betrifft ca.“ (tax). Die Auswahl bleibt darunter.
   {const SQ=new Map(SG.filter(s=>s.ty==='tq').map(s=>[s.tid,s])),twIds=new Set(SG.filter(s=>s.ty==='tw').map(s=>s.tid));
    const tq=(t,lv,silent)=>{const a=tagAT(t),P=tagQParts(t,silent),s=silent?null:SQ.get(t.id)||null;
-     return Object.assign({id:(silent?'tw:':'tq:')+t.id,lv:s?'y':lv,kind:silent?'tagw':'tagq',tax:s?1:0,t:wSec(a.date,a.time||''),eur:silent?0:tdEur(Math.abs(t.qty),a.date),ref:'t:'+t.id,kids:silent?[]:EXK['tq:'+t.id]||[],kw:silent?'':exSatz('tq:'+t.id),
+     return Object.assign({id:(silent?'tw:':'tq:')+t.id,lv:s?'y':lv,kind:silent?'tagw':'tagq',tax:s?1:0,t:wSec(a.date,a.time||''),eur:silent?0:tdEur(Math.abs(t.qty),a.date),ref:'t:'+t.id,kids:silent?[]:EXK['tq:'+t.id]||[],kw:silent?'':exSatz('tq:'+t.id),fc:silent?[]:fcOf('tq:'+t.id,null),
        ar:{t:wSec(a.date,a.time||'12:00:00'),self:'t:'+t.id,w:''},hdS:tdHdTag(t),li:{d:a.date,w:silent?t.wallet:'Tag',what:silent?'Wallet vom Tool gewählt':s?'Vorschlag: '+sugNm(s):t.kind==='ein'?'Herkunft offen':'Ziel offen',q:usd(t.usd)}},P,s?{sug:s,sugH:sugH(s,0)}:{})};
    for(const t of TQ)I.push(tq(t,'r',false));
    for(const t of Object.values(S.tag))if(tagSilent(t)&&!twIds.has(t.id))I.push(tq(t,'y',true))}
@@ -12238,7 +12264,7 @@ function todoItems(C){
     why:`${L.length===1?'Diese Adresse sieht':`Diese ${fI.format(L.length)} Adressen sehen`} aus wie <span class="nw">${wAdr(x.real)}${cpBtn(x.real)}</span>, mit der du Coins bewegt hast. ${LOOK_TXT}`,
     body:`<ul class="lkl">${L.map(l=>`<li><span class="nw">${wAdr(l)}${cpBtn(l)}</span> <button type="button" class="btn vgnb" data-lookno="${esc(l)}">Keine Lockadresse</button>${lookMvH(l)}</li>`).join('')}</ul><div class="row"><button type="button" class="btn primary" data-lookok="${esc(L.join(','))}">Verstanden</button></div>`,li:{d:'',w:'',what:'Lockadresse?',q:''}})}
   // Ab 0.47 (1.6): Folgen offener Bewegungen unter ihrem Punkt (auch unter einem Vorschlag, der die Bewegung enthält)
-  for(const it of I){const ks=it.mv?[it.mv]:it.sug?it.sug.ks:[],W=[];for(const k of ks)if(EXK['m:'+k]){it.kids=(it.kids||[]).concat(EXK['m:'+k]);W.push(...EXW['m:'+k])}
+  for(const it of I){const ks=it.mv?[it.mv]:it.sug?it.sug.ks:[],W=[];for(const k of ks)if(EXK['m:'+k]){it.kids=(it.kids||[]).concat(EXK['m:'+k]);W.push(...EXW['m:'+k]);it.fc=(it.fc||[]).concat(fcOf('m:'+k,null))}
     if(W.length)it.kw=folSatz('extern',it.kids.length,[...new Set(W)])}
 
   // Ab 0.46 (2.7, 2.7a): Ohne Steuer oder Krypto-Steuer aus: nur die Punkte zum Bestand, alle gelb
@@ -12259,6 +12285,8 @@ const tdQuiet=()=>DT.open||CX_SESS.length>0;
 // Ab 0.48 (2.3): auch graue Punkte zählen; Farbe rot, sonst gelb, sonst grau
 function todoCount(I){if(tdQuiet())return {n:0,r:0,y:0,g:0,lv:''};const r=I.filter(x=>x.lv==='r').length,y=I.filter(x=>x.lv==='y').length,g=I.filter(x=>x.lv==='g').length;return {n:r+y+g,r,y,g,lv:r?'r':y?'y':g?'g':''}}
 let TD_ITEMS=[],TD_POS=0,TD_CUR='',TD_KIND='',TD_ALL=false,TD_BACK=false;
+// Ab 0.206: Punkt, bei dem „n Folgen davon“ aufgeklappt erscheint (Sprung aus dem Kasten „Im Tool fehlen Coins“)
+let TD_FOL='';
 // Ab 0.46 (4.2): keine Kacheln mehr. Das Formular steht gleich in der Karte („Was war das?“), dazu die Knöpfe „Gehört zu einem Eintrag“ und
 // „Zählt nicht (ignorieren)“. TD_KIND = '' (Formular), 'pairs' oder 'ign'.
 // Vorbelegung des Formulars für eine Bewegung k und eine Art (wie „Eintragen“ unter „Entscheiden“). Ab 0.46 auch ohne Art (kind ''): Wallet = eigene
@@ -12364,7 +12392,7 @@ function tdCard(x){const P=x.mv&&S.wtx[x.mv]?tdMvParts(x,x.sug2):null;
   const ar=P?P.ar:x.ar?tdAround(x.ar):'',body=x.body!=null?x.body:!x.big&&!P?(x.h||''):'';
   // Ab 0.50 (3.1): ein späterer Punkt hat einen Vorschlag zur selben Bewegung oder zum selben Vorgang (sugAt aus renderTodo)
   const sga=x.sugAt>=0?`<p class="small tdsga">Dazu gibt es einen Vorschlag bei <button type="button" class="zlink" data-tdsg="${x.sugAt}">Punkt ${fI.format(x.sugAt+1)}</button>.</p>`:'';
-  return `<div class="tdc tdi-${x.lv}" data-tdi="${esc(x.id)}">${head}${naCardH(tdKs(x))}${sga}${why}${sug?`<div class="tdsug">${sug}</div>`:''}${ar}${show}${body}${x.lh&&slot?`<p class="small tdlh"><b>${x.lh}</b></p>`:''}${slot}${alt?`<div class="row tdalt">${alt}</div>`:''}${P?P.adr:''}${eurT}${x.kids&&x.kids.length?`<details class="wfold"><summary>${fI.format(x.kids.length)}\u00a0${x.kids.length===1?'Folge':'Folgen'} davon</summary>${x.kw?`<p class="small tdkw">${x.kw}</p>`:''}${x.kids.join('')}</details>`:''}</div>`}
+  return `<div class="tdc tdi-${x.lv}" data-tdi="${esc(x.id)}">${head}${naCardH(tdKs(x))}${sga}${why}${sug?`<div class="tdsug">${sug}</div>`:''}${ar}${show}${body}${x.lh&&slot?`<p class="small tdlh"><b>${x.lh}</b></p>`:''}${slot}${alt?`<div class="row tdalt">${alt}</div>`:''}${P?P.adr:''}${eurT}${x.kids&&x.kids.length?`<details class="wfold"${TD_FOL&&TD_FOL===x.id?' open':''}><summary>${fI.format(x.kids.length)}\u00a0${x.kids.length===1?'Folge':'Folgen'} davon</summary>${x.kw?`<p class="small tdkw">${x.kw}</p>`:''}${x.kids.join('')}</details>`:''}</div>`}
 // Ab 0.55 (5): Punkt einer vorläufigen Wallet („Einkauf fehlt“, offene Bewegung usw.): ganz oben „Diese Wallet-Datei gehört zu:“ mit dem Menü
 // (nur eigene Wallets, Karten, Börsen). Die Wahl ordnet die Adresse der Datei zu (apAssign), wSync löst die vorläufige Wallet dann auf.
 function tdProvH(x){if(x.kind==='later')return '';const m=x.mv&&S.wtx[x.mv];
@@ -12430,7 +12458,7 @@ function renderTodo(C){
   // Ab 0.55 (2): Tag-Zeile: Woher/Wohin mit „Euro laut Kontoauszug“ und Geschenk füllen (wie im Fenster der Tag-Zeile)
   {const R=$('wtodo').querySelector('.tdc [data-tq]');if(R&&S.tag[R.dataset.tq])tagWFill(R,S.tag[R.dataset.tq])}
   LAST_TODO={n:K.n,nH:0,nW:K.r,lv:K.lv};tdBack();tdFitH();
-  return {n:K.n,parts,gap:V.filter(x=>['gap','typo','order','tagq','bxein','bxaus'].includes(x.kind)).length,rg:TD_RG}}
+  return {n:K.n,parts,gap:V.filter(x=>['gap','typo','order','tagq','bxein','bxaus'].includes(x.kind)).length,rg:TD_RG,fc:V.filter(x=>x.fc&&x.fc.length).map(x=>({id:x.id,G:x.fc}))}}
 // Ab 0.48 (2.5): „Noch offen“ immer gleich hoch. Die Karte ist so hoch wie die höchste Karte der Liste (jede in einem unsichtbaren Behälter gleicher
 // Breite gemessen, Karten mit Formular plus dessen Höhe TD_FH), höchstens so hoch, dass das Fenster in den sichtbaren Platz passt (92 % wie max-height).
 // Neu gemessen, wenn sich die Liste der Punkte, die Breite oder die Höhe des Formulars ändert; der sichtbare Platz bei jedem Aufbau.
@@ -12475,7 +12503,7 @@ function cxEmbBack(keep){const box=$('cx-modal').querySelector('.box'),help=$('c
 function tdKind(v){const x=TD_ITEMS[TD_POS];if(!x||!x.id.startsWith('m:'))return;
   TD_KIND=v&&TD_KIND!==v?v:'';if(TD_KIND&&CX_EMB){cxEmbBack();endEdit();CX_EMB=null}
   render();const b=$('wtodo').querySelector(TD_KIND?`[data-tdk="${TD_KIND}"]`:'#cx-kind');if(b)b.focus()}
-function tdGo(i){if(CX_EMB){cxEmbBack();endEdit()}TD_DIRTY='';CF_EDIT=null;CF_MARK=null;cfReset();TD_MK='';TD_POS=Math.max(0,Math.min(TD_ITEMS.length-1,i));TD_CUR=TD_ITEMS[TD_POS]?TD_ITEMS[TD_POS].id:'';TD_KIND='';render();$('wtodo').scrollIntoView({block:'start'});const b=$('td-modal').querySelector('.box');if(b)b.scrollTop=0}
+function tdGo(i){TD_FOL='';if(CX_EMB){cxEmbBack();endEdit()}TD_DIRTY='';CF_EDIT=null;CF_MARK=null;cfReset();TD_MK='';TD_POS=Math.max(0,Math.min(TD_ITEMS.length-1,i));TD_CUR=TD_ITEMS[TD_POS]?TD_ITEMS[TD_POS].id:'';TD_KIND='';render();$('wtodo').scrollIntoView({block:'start'});const b=$('td-modal').querySelector('.box');if(b)b.scrollTop=0}
 // Rückweg aus der Liste (3.3): Leiste „← Zurück zu „Noch offen“ (n offen)“ im stehenden Titel von „Alle Vorgänge“, mit ×
 function tdBack(){const b=$('tdback');if(!b)return;const n=(LAST_TODO||{}).n||0;b.hidden=!TD_BACK||!n;
   b.innerHTML=TD_BACK&&n?`<button type="button" class="btn golist back" data-tdbk>← Zurück zu „Noch offen“ (${fI.format(n)} offen)</button><button type="button" class="mx tdbx" data-tdbx aria-label="Leiste ausblenden">×</button>`:''}
@@ -14979,7 +15007,6 @@ const GL={
   // Ab 0.181 (Florians Wortlaut, Antwort 2 zur Freigabe): Satz zu „–“ am Ende (Monate vor dem Kontobeginn, Wurzel kontoBeginn)
   'k-matrix':{t:'Netto pro Konto und Monat',h:'Der Netto-Gewinn jedes Kontos in jedem Monat. Bei „PF laut MT5“ zählt die PF im Monat der Abbuchung, bei „PF verteilt“ im Monat des Gewinns. Deshalb ändern sich die Monate beim Umschalten. „–“: Das Konto gab es in diesem Monat noch nicht.'},
   bankfx:{t:'Ein- und Auszahlungen per Bank',de:'Tag tauscht deine Euro sofort in USD. Das ist kein Krypto-Vorgang. Tauschst du das USD-Guthaben innerhalb eines Jahres zurück in Euro, kann ein Kursgewinn steuerpflichtig sein. Kläre das mit deiner Steuerberatung.\n'+BANKFX_KA,h:'Tag tauscht deine Euro sofort in USD. Das ist kein Krypto-Vorgang. Tauschst du das USD-Guthaben innerhalb eines Jahres zurück in Euro, kann ein Kursgewinn steuerpflichtig sein. In Österreich gilt dafür eine Freigrenze von 440 € im Jahr. Kläre das mit deiner Steuerberatung.\nDen Euro-Betrag trägst du bei der Zeile mit ✎ ein („Euro laut Kontoauszug“). Ohne Angabe rechnet das Tool mit dem EZB-Kurs und markiert den Wert als geschätzt.'},
-  wabgl:{t:'Abgleich',h:'✓: Der Bestand laut deinen Einträgen passt zur Wallet-Datei bzw. zu dem Stand, den du aus deiner App eingetragen hast. Ein Unterschied unter 0,01 zählt nicht.\n✗: Es gibt einen Unterschied. Fahre mit der Maus über das ✗, dann siehst du ihn mit Richtung. Ein Klick öffnet „Kontostände prüfen“ bei dieser Zeile.\n„–“: Es gibt nichts zum Vergleichen.'},
   'k-real':{t:'Dein echtes Geld',h:'Was du bei Tag eingezahlt und ausgezahlt hast und was dein Geld seit Start gebracht hat.'},
   // Ab 0.80 (4): (i) der Karte „Buchungsarten“, Wortlaut von Florian
   // Ab 0.86 (AU-19)
@@ -15067,8 +15094,8 @@ ${ECB_CITE}`},
   wkind:{t:'Börse oder eigene Wallet?',h:'Das Merkmal: Wer hat die Schlüssel?\n<b>Börse</b> (z. B. Bitvavo, Kraken): Die Börse verwahrt deine Coins. Du hast keine Wiederherstellungsphrase. Die Börse zieht Gebühren beim Auszahlen selbst ab. Dein Bestand kommt aus der Börsen-Datei oder aus deinen Einträgen von Hand (Käufe, Verkäufe).\nAlle Adressen der Börse kommen unter die Börse: deine Einzahlungsadresse (sie gehört zu deinem Konto) und die Adresse, von der die Börse auszahlt. Das ist eine Sammeladresse. Mit ihr erkennt das Tool z. B. „Bitvavo → Bix“ als Übertrag.\n<b>Eigene Wallet</b> (z. B. eine Hardware-Wallet): Du hast die Wiederherstellungsphrase und zahlst die Netzwerkgebühr selbst. Das gilt auch, wenn die Wallet in der App eines Anbieters liegt (z. B. Bix: Phrase vorhanden, in anderen Apps zu öffnen). Dein Bestand kommt aus dem Explorer-Export.\n<b>Karte</b> (z. B. Bix-Card): deine Krypto-Karte. Du lädst sie aus einer eigenen Wallet auf und zahlst mit ihr. Zu ihr gehören zwei Adressen: die Ladeadresse, an die du zum Aufladen schickst, und das Kartenkonto, von dem du bezahlst.\n<b>Andere</b> (z. B. Tag, Dienste, Personen und Händler): Du schickst ihnen Coins oder bekommst Coins von ihnen.\nSo hängt es zusammen: Du kaufst bei Bitvavo (Börse), schickst die Coins an Bix (eigene Wallet) und lädst damit die Bix-Card (Karte) auf.\n„Bestand jetzt“ zeigt jede Wallet, auch Börsen und Karten. „Kontostände prüfen“ vergleicht deinen Bestand mit dem Kontostand aus einer eingelesenen Datei oder mit dem Stand, den du aus deiner App einträgst. Das Tool prüft die Sammeladresse einer Börse nie.'},
   wallet:{t:'Wallet',h:'Eine Wallet im Tool ist eine Netzwerk-Adresse (z. B. 0xea01…) oder ein Konto bei einer Börse. Nutzt du dieselbe Netzwerk-Adresse in mehreren Apps, zum Beispiel in Bix und in einer Hardware-Wallet, lege sie hier nur einmal an.'},
   'k-rund':{t:'Rundherum',h:'Alles aus deinen Wallets innerhalb von 2 Stunden. Ist da wenig, zeigt das Tool bis zu 3 Bewegungen davor und danach, höchstens einen Tag entfernt.'},
-  'k-cxres':{t:'Bestand jetzt',h:'Wie viele Coins laut deinen Einträgen am Ende des gewählten Zeitraums in jeder Wallet liegen (bei einem Jahr zum 31.12.) und was sie zusammen gekostet haben (Einkaufswert). Rechnest du deine Kryptos mit einem anderen Tool, schalte die Krypto-Steuer im Reiter Steuer aus.',
-    de:'Wie viele Coins laut deinen Einträgen am Ende des gewählten Zeitraums in jeder Wallet liegen (bei einem Jahr zum 31.12.) und was sie zusammen gekostet haben (Einkaufswert). Darunter die offenen Posten mit Kaufdatum, Menge, Einkaufswert und dem Tag, ab dem ein Verkauf steuerfrei ist. Rechnest du deine Kryptos mit einem anderen Tool, schalte die Krypto-Steuer im Reiter Steuer aus.'},
+  'k-cxres':{t:'Bestand jetzt',h:'Wie viele Coins im Tool am Ende des gewählten Zeitraums in jeder Wallet stehen (bei einem Jahr zum 31.12.) und was sie zusammen gekostet haben (Einkaufswert). Fehlen Coins, steht die Wallet mit 0,00 da, und über der Tabelle steht, wo sie fehlen. Ob der Bestand zu deiner App passt, prüfst du mit „Kontostände prüfen“. Rechnest du deine Kryptos mit einem anderen Tool, schalte die Krypto-Steuer im Reiter Steuer aus.',
+    de:'Wie viele Coins im Tool am Ende des gewählten Zeitraums in jeder Wallet stehen (bei einem Jahr zum 31.12.) und was sie zusammen gekostet haben (Einkaufswert). Darunter die offenen Posten mit Kaufdatum, Menge, Einkaufswert und dem Tag, ab dem ein Verkauf steuerfrei ist. Fehlen Coins, steht die Wallet mit 0,00 da, und über der Tabelle steht, wo sie fehlen. Ob der Bestand zu deiner App passt, prüfst du mit „Kontostände prüfen“. Rechnest du deine Kryptos mit einem anderen Tool, schalte die Krypto-Steuer im Reiter Steuer aus.'},
   // Ab 0.74 (5.2)
   ocstatus:{t:'Status',de:'<b>fertig:</b> Der Wert steht fest.\n<b>offen:</b> Es fehlt noch etwas, z. B. der Einkauf deiner USDC oder USDT, oder der Wert stammt aus Österreich. Dazu steht ein gelber Punkt in „Noch offen“.\n<b>Kurs fehlt:</b> Für diesen Tag ist noch kein Kurs geladen.',h:'<b>fertig:</b> Der Wert steht fest.\n<b>offen:</b> Ersatzwert, du hast noch nicht entschieden. Trag den echten Wert ein oder bestätige den Ersatzwert. Dazu steht ein gelber Punkt in „Noch offen“.\n<b>Ersatzwert bestätigt:</b> Du hast entschieden, den Ersatzwert zu behalten.\n<b>mit Ersatzwert:</b> Der Wert selbst ist richtig gerechnet. In seine Rechnung fließt aber ein Ersatzwert aus einem anderen Eintrag ein. Klärst du diesen Eintrag, wird er von selbst „fertig“. Ist der Ersatzwert bestätigt, bleibt er „mit Ersatzwert“.\n<b>Kurs fehlt:</b> Für diesen Tag ist noch kein Kurs geladen.'},
   ersatzwert:{t:'Ersatzwert',h:'Das Tool nimmt den Wert, wenn du den echten nicht kennst. Bei „Aus anderem Coin getauscht“ ist das der Wert deiner USDC oder USDT am Tausch-Tag. In Österreich zählt eigentlich, was dich die hergegebenen Coins damals gekostet haben. Der Ersatzwert kann deshalb zu hoch oder zu niedrig sein. In „Alle Vorgänge“ steht dafür „geschätzt“.'},
@@ -17802,7 +17829,9 @@ function hcFix(c,retry){
   if(c.closest('#s-stats')&&!c.classList.contains('closed')&&sc.offsetWidth)tpFit(c,tpIn(sc,tb));
   if(c.id==='oc-card')ocFit(); // ab 0.101: „In der Liste zeigen“, bei Platzmangel „In Liste zeigen“, dann zweizeilig
   const head=tb.rows[0];
-  if(!c.classList.contains('nohc')&&!c.classList.contains('closed')&&sc.offsetWidth&&head){
+  // Ab 0.206: mit dem Kasten „Im Tool fehlen Coins“ (Klasse fcon an „Bestand jetzt“) keine Kopie: Der Kasten steht zwischen Titel und Spaltenköpfen,
+  // die Spaltenköpfe sind dann die normale Kopfzeile der Tabelle und scrollen mit ihr; der Titel bleibt stehen
+  if(!c.classList.contains('nohc')&&!c.classList.contains('fcon')&&!c.classList.contains('closed')&&sc.offsetWidth&&head){
     // Ab 0.50 (1.5): in „Bestand jetzt“ ist am Handy die Spalte „Coin“ versteckt; versteckte Zellen bilden keine Spalte und bekommen kein <col>
     // Ab 0.52 (1): ebenso in „Deine Wallets“ die Spalte „Art“ bis 700 px (Karten .wlc)
     const ws=[...head.cells].filter(x=>(c.id!=='cxres-card'&&c.id!=='oc-card'&&!c.classList.contains('wlc'))||x.getClientRects().length).map(x=>x.getBoundingClientRect().width),sum=ws.reduce((a,b)=>a+b,0);
