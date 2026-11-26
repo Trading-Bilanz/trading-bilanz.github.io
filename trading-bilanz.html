@@ -1813,6 +1813,16 @@ details.rsauf ul{margin:6px 0 0;padding-left:20px}
 /* Ab 0.177 (Florians Auftrag 0.177, Phase 1, und seine Antwort 7 zur Freigabe): Hinweis zum Original in einer normalen weißen Karte ohne Titel,
    normale Schriftgröße und Schriftfarbe, linksbündig (bis 0.176 klein, grau, mittig unter einer feinen Linie) */
 .rsorig>p{margin:0}
+/* Ab 0.204 (Florians Auftrag und Freigabe 0.204): Karte „Was vielleicht noch kommt“. 3 px Abstand zwischen den Punkten (bis 0.203 keiner).
+   „Schreib mir“ öffnet die Wunsch-Mail und ist unterstrichen wie die anderen Textlinks im Reiter (die Mail-Adressen im Reiter bleiben ohne Unterstrich).
+   Darunter die leise Zeile (.small) mit der Adresse (.fbaddr wie in der Feedback-Karte) und eine Zeile mit „Text kopieren“, „Adresse kopieren“ und
+   der Meldung (.fbkop wie dort). Der Text der Mail (#kommt-txt) erscheint nur, wenn die Zwischenablage gesperrt ist. */
+#kommt-list li{margin:3px 0}
+#s-support a#kommt-mail{text-decoration-line:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+#s-support a#kommt-mail:hover{text-decoration-line:underline;text-decoration-thickness:2px}
+#kommt-card>p.small{margin:12px 0 0}
+#kommt-card>.kmk{margin-top:10px}
+#kommt-txt{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:var(--fs-s);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:10px 0 0}
 /* Heller Link-Knopf („Mehr von mir“, „E-Mail schreiben“): wie die grauen Knöpfe (button.btn), nicht blau */
 a.btn.lt{background:var(--card);border-color:var(--line);color:var(--ink)}
 a.btn.lt:hover,a.btn.lt:focus-visible{background:var(--card);border-color:var(--accent)}
@@ -2482,10 +2492,16 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     </div>
   </div>
   <!-- Ab 0.134: unsichtbar, solange die Liste KOMMT im Skript leer ist (renderKommt) -->
+  <!-- Ab 0.204 (Florians Freigabe 0.204, Punkt 2): „Schreib mir“ öffnet die Wunsch-Mail (Adresse vom Skript, renderKommt). Unter der Liste eine leise
+       Zeile mit der Mail-Adresse, darunter „Text kopieren“ und „Adresse kopieren“ mit der Meldung daneben (addrCopy und .fbaddr wie in der Karte
+       „Anregungen, Fehler, Feedback“). Der Text der Mail (#kommt-txt) ist versteckt; addrCopy zeigt und markiert ihn, wenn die Zwischenablage gesperrt ist. -->
   <div class="card fold closed" data-fold="kommt-card" id="kommt-card" style="display:none">
     <h2>Was vielleicht noch kommt</h2>
-    <p>Kein Versprechen, eher ein Blick in meine Werkstatt. Schreib mir, was dir am wichtigsten ist.</p>
+    <p>Kein Versprechen, eher ein Blick in meine Werkstatt. <a id="kommt-mail" href="mailto:florian@weltenwandel.at">Schreib mir</a>, was dir am wichtigsten ist.</p>
     <ul id="kommt-list"></ul>
+    <p class="small">Die Mail ist schon vorbereitet, du kreuzt nur an. Öffnet sich nichts, kopier den Text und schick ihn an <span class="fbaddr" id="kommt-addr">florian@weltenwandel.at</span>.</p>
+    <div class="fbkop kmk"><button type="button" class="btn" id="btn-kommt-txt">Text kopieren</button><button type="button" class="btn" id="btn-kommt-addr">Adresse kopieren</button><span id="kommt-msg" class="small"></span></div>
+    <pre id="kommt-txt" hidden></pre>
   </div>
   <!-- Ab 0.175: Hinweis zum Original als leiser Hinweis ganz unten, ohne blauen Kasten (Text aus ORIG_HTML, bis 0.174 .msg.info in der Danke-Karte).
        Ab 0.177 (Florians Auftrag 0.177, Phase 1) in einer normalen Karte ohne Titel, normale Schrift, linksbündig (bis 0.176 klein, grau, mittig). -->
@@ -17135,7 +17151,9 @@ $('btn-don-fb').onclick=()=>{fenClose();fbGo()};
 // „Link kopieren“ (Art Weitersagen) ist ab 0.167 entfernt (Florians Antwort 8 zur Freigabe 0.167; der Text steht in TEXTE-FASSUNGEN.md)
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!e.defaultPrevented&&$('don-modal').classList.contains('on')){e.preventDefault();fenNo()}});
 // Ab 0.134: ein Weg für beide Adressen im Reiter „Resonanz“ (Spendenadresse und Mail-Adresse). Ist die Zwischenablage gesperrt, markiert das Tool die Adresse.
-async function addrCopy(el,out,okT){const a=el.textContent.trim();try{await navigator.clipboard.writeText(a);out.innerHTML=herzH(okT)}catch(e){const r=document.createRange();r.selectNodeContents(el);const sl=getSelection();sl.removeAllRanges();sl.addRange(r);out.innerHTML=OS==='mobile'?'Markiert. Tippe auf „Kopieren“.':`Markiert, jetzt mit ${OS==='mac'?'<kbd>⌘ Cmd</kbd>+<kbd>C</kbd>':'<kbd>Strg</kbd>+<kbd>C</kbd>'} kopieren.`}}
+// Ab 0.204 (Florians Freigabe 0.204, Punkt 2b): mit txt kopiert er genau diesen Text, ungekürzt („Text kopieren“ in der Karte „Was vielleicht noch
+// kommt“). Ist die Zwischenablage gesperrt, zeigt er ein verstecktes Feld el (dort steht derselbe Text) und markiert es.
+async function addrCopy(el,out,okT,txt){const a=txt!=null?txt:el.textContent.trim();try{await navigator.clipboard.writeText(a);out.innerHTML=herzH(okT)}catch(e){el.hidden=false;const r=document.createRange();r.selectNodeContents(el);const sl=getSelection();sl.removeAllRanges();sl.addRange(r);out.innerHTML=OS==='mobile'?'Markiert. Tippe auf „Kopieren“.':`Markiert, jetzt mit ${OS==='mac'?'<kbd>⌘ Cmd</kbd>+<kbd>C</kbd>':'<kbd>Strg</kbd>+<kbd>C</kbd>'} kopieren.`}}
 // Ab 0.175 bekommt „Adresse kopieren“ im Reiter seinen Klick beim Baustein (donBauH), weil der Knopf erst dort entsteht.
 // Ab 0.167 (Florians Auftrag 0.167, Abschnitt 5): „Ich habe schon gespendet“ im Reiter „Resonanz“ und in „Wertschätzung teilen“ (derselbe Baustein,
 // data-schon): Datum und 12 Monate Ruhe (donSchon), darunter an Ort und Stelle ein Dank aus der Danke-Auswahl (dankeWahl, data-dank). Der Link bleibt;
@@ -17271,11 +17289,22 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.203',VDATE='26.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.204',VDATE='26.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
-   z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
-const KOMMT=[];
+   z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar.
+   Ab 0.204 (Florians Auftrag 0.204, Teil 1, und Freigabe 0.204, Punkt 3): neun Punkte in Florians Wortlaut und Reihenfolge. Dieselben Punkte stehen
+   in der Wunsch-Mail („Schreib mir“, kommtZeilen), je Punkt eine Zeile „[ ] Punkt“. */
+const KOMMT=[
+  'Tabellen fürs Handy: Spalten selbst wählen und sortieren',
+  'Ranglisten: deine besten Wochen, Tage und Trades, auch wenn mehrere gleich gut waren',
+  '„Hochs und Tiefs“ als Bild zum Speichern und Teilen',
+  'Neue Tage schnell vom Handy nachtragen, wenn du gerade nicht am Computer bist',
+  'Reports vieler Konten auf einmal holen, am Windows-PC, wenn es die Technik erlaubt',
+  'Rückgängig-Funktion im Reiter Wallet',
+  'Dateien weiterer Börsen einlesen (schreib mir, welche du nutzt)',
+  'Anleitung mit Bildern zu Wallet-Dateien und zur Krypto-Bezahlkarte',
+  'Ein kleines Hilfstool, das deine Wallet-Dateien für dein Archiv verständlich benennt'];
 /* FENSTER: alle Texte der Fenster, die nach einem Anlass kommen. Je Eintrag:
      anlass  nach welchen Anlässen der Eintrag kommen darf: 'export' (Drucken, Excel, CSV), 'sicherung' („Sicherung speichern“), 'bild' (Bild einer Grafik
              gespeichert oder geteilt). Ab 0.136 ist der Steuer-Export (Zusammenfassung, Steuer-Excel, „Diese Seite drucken“ im Reiter „Steuer“) ein eigener
@@ -17540,9 +17569,13 @@ function fbGeraet(){const ua=navigator.userAgent||'';
   if(/Android/i.test(ua))return 'Android';if(/iPhone|iPod/i.test(ua))return 'iPhone';if(/iPad/i.test(ua)||(/Macintosh/i.test(ua)&&navigator.maxTouchPoints>1))return 'iPad';
   if(/Windows/i.test(ua))return 'Windows';if(/Macintosh|Mac OS X/i.test(ua))return 'Mac';if(/Linux|X11|CrOS/i.test(ua))return 'Linux';return 'unbekannt'}
 function fbDark(){const t=document.documentElement.dataset.theme;return t==='dark'||(t!=='light'&&!!(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))}
-function fbBody(){return [`Trading-Bilanz ${VERSION} vom ${VDATE}`,`Browser: ${fbBrowser()}`,`Gerät: ${fbGeraet()}`,`Ansicht: ${window.innerWidth} px breit, ${fbDark()?'dunkel':'hell'}`,
+// Ab 0.204 (Florians Freigabe 0.204, Punkt 2a): Einstellung für eine andere Mail. fbBody(zeilen): die erste Zeile ist immer Version und Datum; ohne
+// zeilen der Text der Rückmeldung wie bis 0.203, mit zeilen eine leere Zeile und danach diese Zeilen. fbMail(o): ohne o die Rückmeldung wie bis 0.203,
+// mit o.betreff und o.zeilen die andere Mail (Wunsch-Mail der Karte „Was vielleicht noch kommt“).
+function fbBody(zeilen){const kopf=`Trading-Bilanz ${VERSION} vom ${VDATE}`;if(zeilen)return [kopf,'',...zeilen].join('\r\n');
+  return [kopf,`Browser: ${fbBrowser()}`,`Gerät: ${fbGeraet()}`,`Ansicht: ${window.innerWidth} px breit, ${fbDark()?'dunkel':'hell'}`,
   /^https?:$/.test(location.protocol)?'Online-Version':'Heruntergeladene Datei','','Was hast du gemacht?','','','Was ist passiert?','','','Was hast du erwartet?','',''].join('\r\n')}
-function fbMail(){return `mailto:${FB_MAIL}?subject=${encodeURIComponent(`Trading-Bilanz ${VERSION}: Rückmeldung`)}&body=${encodeURIComponent(fbBody())}`}
+function fbMail(o){o=o||{};return `mailto:${FB_MAIL}?subject=${encodeURIComponent(o.betreff||`Trading-Bilanz ${VERSION}: Rückmeldung`)}&body=${encodeURIComponent(fbBody(o.zeilen))}`}
 // Die Adresse der Mail entsteht beim Klick (Breite und hell/dunkel von jetzt)
 $('btn-fbmail').addEventListener('click',()=>{$('btn-fbmail').href=fbMail()});$('btn-fbmail').href=fbMail();
 /* Ab 0.175 (Florians Auftrag 0.175, Phase 2): Baustein „Spenden“ mit einer Quelle, genutzt im Reiter „Resonanz“ (#don-bau) und im
@@ -17603,8 +17636,18 @@ document.addEventListener('click',e=>{const b=e.target&&e.target.closest&&e.targ
 document.addEventListener('click',async e=>{const b=e.target&&e.target.closest&&e.target.closest('[data-rslink]');if(!b)return;e.preventDefault();
   try{await navigator.clipboard.writeText(DL_URL);toast(RES_TXT.linkOk)}catch(x){toast(RES_TXT.linkNo)}});
 // Karte „Was vielleicht noch kommt“: Punkte aus KOMMT, unsichtbar, solange die Liste leer ist
-function renderKommt(){const L=KOMMT.filter(x=>String(x||'').trim());$('kommt-card').style.display=L.length?'':'none';$('kommt-list').innerHTML=L.map(x=>`<li>${esc(x)}</li>`).join('')}
+// Ab 0.204 (Florians Freigabe 0.204, Punkt 2): „Schreib mir“ öffnet die Wunsch-Mail an FB_MAIL (fbMail mit Einstellung, Betreff KOMMT_BETREFF). Ihr Text:
+// Version und Datum wie bei der Rückmeldung, leere Zeile, die Bitte zum Ankreuzen, je Punkt aus KOMMT eine Zeile „[ ] Punkt“, leere Zeile, „Was fehlt
+// dir sonst?“ und zwei leere Zeilen. Derselbe Text steht versteckt in #kommt-txt; „Text kopieren“ kopiert genau ihn (addrCopy mit txt).
+const KOMMT_BETREFF='Trading-Bilanz: Wünsche';
+const kommtListe=()=>KOMMT.filter(x=>String(x||'').trim());
+function kommtZeilen(){return ['Setz ein x bei dem, was du dir wünschst:',...kommtListe().map(x=>'[ ] '+x),'','Was fehlt dir sonst?','','']}
+function kommtText(){return fbBody(kommtZeilen())}
+function renderKommt(){const L=kommtListe();$('kommt-card').style.display=L.length?'':'none';$('kommt-list').innerHTML=L.map(x=>`<li>${esc(x)}</li>`).join('');
+  $('kommt-mail').href=fbMail({betreff:KOMMT_BETREFF,zeilen:kommtZeilen()});$('kommt-txt').textContent=kommtText()}
 renderKommt();
+$('btn-kommt-txt').onclick=()=>addrCopy($('kommt-txt'),$('kommt-msg'),'Text kopiert.',kommtText());
+$('btn-kommt-addr').onclick=()=>addrCopy($('kommt-addr'),$('kommt-msg'),'Adresse kopiert.');
 // Satz zum Vergleichen der Spendenadresse, nur in der heruntergeladenen Datei (.offl): die Adresse als lesbarer Text und zugleich Sprung-Link
 // Ab 0.177 (Florians Antwort 4 zur Freigabe 0.177) führt der Link zur goldenen Karte (#spenden, bis 0.176 #resonanz)
 $('don-cmp').innerHTML=`Vergleiche die Adresse mit der Online-Version: <a class="nw" href="${JUMP_G_URL}" target="_blank" rel="noopener">${esc(DL_URL.replace(/^https?:\/\//,''))}</a>, Reiter „Resonanz“.`;
