@@ -6,7 +6,8 @@
 #
 # Neues Motiv: icons/quelle/icon-trading-bilanz-original.png ersetzen und den Befehl starten. Das Original darf
 # jedes Format haben, muss aber ein PNG mit durchsichtigem Hintergrund sein. Das Skript schneidet selbst auf das
-# Motiv zu (alle Pixel ab SCHWELLE_DECKKRAFT). Alle Dateien in icons/ werden neu geschrieben, und das Skript setzt
+# Motiv zu (alle Pixel ab SCHWELLE_DECKKRAFT). Alle Dateien in icons/ werden neu geschrieben (ab 0.203 auch
+# icon-trading-bilanz.ico mit 16, 32, 48 und 256 px für Verknüpfungen unter Windows), und das Skript setzt
 # die eingebetteten Bilder im Tool neu ein (trading-bilanz.html bzw. index.html: Favicon 32, apple-touch-icon 180,
 # Logo im Kopf, Logo in der Begrüßung, ab 0.139 der Schmetterling der Meilensteine in zwei Größen aus
 # icons/quelle/schmetterling-freigestellt.png, dort als data:-Adresse, weil die Content-Security-Policy des Tools Bilder
@@ -47,6 +48,12 @@ SCHWELLE_DECKKRAFT = 16
 #   192 Startbildschirm Android · 512 README, später Web-App
 # Das Motiv steht mittig und passt mit dem Rand in das Quadrat (bei einem breiten Motiv bestimmt die Breite die Größe).
 RAND = {32: 4, 180: 10, 192: 6, 512: 6}
+
+# Ab 0.203 (Florians Auftrag 0.203): icon-trading-bilanz.ico für Verknüpfungen unter Windows (Windows nimmt dafür nur .ico), mehrere Größen in
+# einer Datei, aus demselben zugeschnittenen Motiv wie die PNG-Icons, Ecken durchsichtig. Größe: Rand in Prozent je Seite (16 bis 48 px wie das
+# Favicon, 256 px wie das 512er; der Rand ist Claudes Wahl). Die Anleitung bietet die Datei zum Herunterladen an („Als Symbol auf deinem Gerät“).
+ICO = 'icon-trading-bilanz.ico'
+ICO_RAND = {16: 4, 32: 4, 48: 4, 256: 6}
 
 # Logos im echten Format: Höhe der Bilddaten fest (doppelt so viele Pixel wie angezeigt), die Breite folgt dem Motiv.
 #   (Datei, Höhe der Bilddaten, angezeigte Höhe am PC)
@@ -221,6 +228,21 @@ def icon(motiv, groesse, rand, fuellung):
         grund = Image.new('RGBA', bild.size, fuellung + (255,))
         bild = Image.alpha_composite(grund, bild).convert('RGB')
     return bild
+
+
+def ico_schreiben(motiv):
+    """icon-trading-bilanz.ico: jede Größe aus ICO_RAND eigens aus dem Motiv gerechnet (nicht aus der größten verkleinert)."""
+    bilder = [icon(motiv, g, rand, None) for g, rand in sorted(ICO_RAND.items())]
+    pfad = os.path.join(ORDNER, ICO)
+    bilder[-1].save(pfad, 'ICO', sizes=[b.size for b in bilder], append_images=bilder[:-1])
+    with Image.open(pfad) as im:
+        drin = sorted(im.info.get('sizes', set()))
+        for b in bilder:
+            if im.ico.getimage(b.size).convert('RGBA').tobytes() != b.tobytes():
+                sys.exit('%s: Größe %d px ist nicht das eigens gerechnete Bild' % (ICO, b.width))
+    if drin != sorted(b.size for b in bilder):
+        sys.exit('%s: enthält %s statt %s' % (ICO, drin, sorted(b.size for b in bilder)))
+    print('%-38s %s  %7d Bytes' % (ICO, ', '.join('%d' % g for g, _ in drin), os.path.getsize(pfad)))
 
 
 def vorschau(motiv, breite, hoehe):
@@ -484,6 +506,7 @@ def main():
         speichern(vorschau(motiv, b, h), os.path.join(ORDNER, name), name not in VOLLFARBE, profil)
         erzeugt.append(name)
     erzeugt += schmetterlinge()
+    ico_schreiben(motiv)
     for name in erzeugt:
         with Image.open(os.path.join(ORDNER, name)) as im:
             print('%-38s %4d x %-4d %7d Bytes' % (name, im.width, im.height, os.path.getsize(os.path.join(ORDNER, name))))
