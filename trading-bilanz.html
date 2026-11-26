@@ -2128,7 +2128,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
        Sichtbar mit unbekannten Buchungen oder eigenen Zuordnungen mit Buchungen (renderMap). Vorgabe zugeklappt, gemerkt in S.ui.fold -->
   <div class="card fold closed" data-fold="map-card" id="map-card" style="display:none">
     <h2 class="hx">Buchungsarten <button type="button" class="ib" data-gl="k-buchungsarten" aria-expanded="false" aria-controls="glpop" aria-label="Über diese Karte: Buchungsarten">i</button></h2>
-    <p class="hint" id="map-txt">Das Tool kennt diese Buchungen noch nicht. Sage einmal, was sie bedeuten. Das Tool merkt es sich. Erst danach zeigt das Tool Auswertung und Steuer. Unsicher, was eine Buchung bedeutet? Schaue beim Beispiel-Datum im MT5-Report nach, frage den Support deines Brokers oder wähle „Noch unklar“.</p>
+    <p class="hint" id="map-txt">Das Tool kennt diese Buchungen nicht. Sage einmal, was sie bedeuten. Das Tool merkt es sich. Erst danach zeigt das Tool Auswertung und Steuer. Unsicher, was eine Buchung bedeutet? Schaue beim Beispiel-Datum im MT5-Report nach, frage den Support deines Brokers oder wähle „Noch unklar“.</p>
     <table id="map-table"></table>
   </div>
   <div id="next-reports" class="noprint"></div>
@@ -2580,7 +2580,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
   <!-- Ab 0.78: Überschrift im Kästchen, Knöpfe gleich breit (am Handy untereinander), Haftung als roter Streifen (.dstr) -->
   <div class="ibox" id="intro-tax">
     <h3 id="intro-tax-t">Wo zahlst du Steuern?</h3>
-    <p>Das Tool kann dir auch zeigen, was du für die Steuer brauchst. Dafür muss es wissen, wo du steuerpflichtig bist. Bisher kennt es Österreich und Deutschland, für CFD und für Ein- und Auszahlungen mit USDC und USDT.</p>
+    <p>Das Tool kann dir auch zeigen, was du für die Steuer brauchst. Dafür muss es wissen, wo du steuerpflichtig bist. Es kennt Österreich und Deutschland, für CFD und für Ein- und Auszahlungen mit USDC und USDT.</p>
     <p>Wenn du woanders steuerpflichtig bist oder nur deine Ergebnisse sehen willst, wähle „Ohne Steuer“.</p>
     <div id="intro-land" role="group" aria-labelledby="intro-tax-t"><button type="button" class="btn" data-icountry="AT" aria-pressed="false">Österreich</button><button type="button" class="btn" data-icountry="DE" aria-pressed="false">Deutschland</button><button type="button" class="btn" data-icountry="none" aria-pressed="false">Ohne Steuer</button></div>
     <!-- Ab 0.97: zuerst der Satz zum Ändern, darunter die Haftung ohne ⚠️ -->
@@ -2712,7 +2712,7 @@ tr.wk.open .wl{display:block;height:0;overflow:hidden;visibility:hidden}
     <li>Linea: lineascan.build</li>
   </ul>
   <!-- Ab 0.200 (Florians Auftrag 0.200, A8): aus dem (i) „Wallet-Datei einlesen“ hierher, „Tron“ ohne „(kommt später)“ -->
-  <p>Noch nicht möglich: Tron, Solana, Bitcoin, Avalanche.</p>
+  <p>Nicht möglich: Tron, Solana, Bitcoin, Avalanche.</p>
   <p class="small">Tippe die Adresse selbst in die Adresszeile deines Browsers. Folge keinem Link aus einer Nachricht.</p>
   <!-- Ab 0.42 -->
   <p><b>Krypto-Karte mit eigenem Konto</b></p>
@@ -7734,7 +7734,7 @@ const BV_NEED=['timezone','date','time','type','currency','amount','received / p
 const BX_FMT=[{n:'Bitvavo',ex:'Transaktionsverlauf',typ:'CSV',is:bvIs,parse:parseBitvavo,w:S=>bvWallet(S)},{n:'DFX.swiss',ex:'CoinTracking-Export',typ:'CSV',is:t=>dxIs(t),parse:t=>parseDfx(t),w:(S,P)=>dxWallet(S,P),dx:1}];
 const bxNames=()=>{const L=BX_FMT.map(f=>f.n);return L.length<2?L.join(''):L.slice(0,-1).join(', ')+' und '+L[L.length-1]};
 const bxFmt=t=>BX_FMT.find(f=>f.is(t))||null;
-const BV_BAD=`Das Tool kennt dieses Format noch nicht. Bisher ${BX_FMT.length<2?'geht':'gehen'} ${bxNames()}.`;
+const BV_BAD=`Das Tool kennt dieses Format nicht. Es liest Dateien von ${bxNames()}.`;
 // Erkennen an der Kopfzeile
 function bvIs(text){const l=String(text||'').replace(/^﻿/,'').split(/\r?\n/)[0]||'',H=csvCells(l,',').map(x=>x.trim().toLowerCase());return BV_NEED.every(k=>H.includes(k))}
 const bvN=s=>{const v=parseFloat(String(s==null?'':s).replace(/,/g,''));return isFinite(v)?v:NaN};
@@ -9071,7 +9071,7 @@ let BX_Q=[];
 // Ab 0.200 (A5): im Fenster „So bekommst du die Datei deiner Börse“ der Satz mit Doppelpunkt und darunter je Börse eine Zeile „Name: Export (Typ)“, beides
 // aus BX_FMT. Bis 0.195 im Bereich „Börsen“: „Bisher kann das Tool Dateien von Bitvavo und DFX.swiss lesen (Bitvavo: Transaktionsverlauf, DFX.swiss:
 // CoinTracking-Export, beide als CSV).“
-function bxFmtInit(){$('bx-fmts').textContent=`Bisher kann das Tool Dateien von ${bxNames()} lesen:`;
+function bxFmtInit(){$('bx-fmts').textContent=`Das Tool kann Dateien von ${bxNames()} lesen:`;
   $('bx-fmtl').innerHTML=BX_FMT.map(f=>`<li><b>${esc(f.n)}</b>: ${esc(f.ex)} (${esc(f.typ)})</li>`).join('')}
 bxFmtInit();
 // Ab 0.61: pre = Meldung davor, wenn die Datei aus der Warteschlange kommt (Ergebnis von „Übernehmen“, nach „Abbrechen“ ''). Eine Datei mit Fehler
@@ -9151,7 +9151,7 @@ function bxPrevH(){const box=$('bxprev');if(!BXP){box.innerHTML='';return}if(BXP
     if(XF.some(([x])=>x.dup&&x.dup.rest))h+=`<p class="small">Der verteilte Rest bei den Überträgen wird durch die Gebühren aus der Datei ersetzt.</p>`}
   else h+='<p class="small">Wähle zuerst die Wallet der Börse oder gib einer neuen Wallet einen Namen.</p>';
   const ne=P.eur.deposit+P.eur.withdrawal,oth=Object.entries(P.other);
-  h+=`${ne?`<p class="small">${pl(ne,'Ein- oder Auszahlung in Euro','Ein- und Auszahlungen in Euro')} nicht übernommen (kein Krypto).</p>`:''}${oth.map(([c,n])=>`<p class="small">${pl(n,'Zeile','Zeilen')} ${esc(c)} nicht übernommen. ${/^ETH/.test(c)?'Das Tool rechnet ETH noch nicht.':'Das Tool rechnet nur USDC und USDT.'}</p>`).join('')}${P.open?`<p class="small">${pl(P.open,'nicht abgeschlossene Zeile','nicht abgeschlossene Zeilen')} weggelassen.</p>`:''}`;
+  h+=`${ne?`<p class="small">${pl(ne,'Ein- oder Auszahlung in Euro','Ein- und Auszahlungen in Euro')} nicht übernommen (kein Krypto).</p>`:''}${oth.map(([c,n])=>`<p class="small">${pl(n,'Zeile','Zeilen')} ${esc(c)} nicht übernommen. Das Tool rechnet nur USDC und USDT.</p>`).join('')}${P.open?`<p class="small">${pl(P.open,'nicht abgeschlossene Zeile','nicht abgeschlossene Zeilen')} weggelassen.</p>`:''}`;
   // Ab 0.51 (2): „Übernehmen“ nie gesperrt, der Klick markiert den fehlenden Namen
   box.innerHTML=h+`<div class="row" data-act style="margin-top:10px"><button type="button" class="btn primary" id="btn-bxsave">Übernehmen</button><button type="button" class="btn" id="btn-bxcancel">Abbrechen</button></div></div>`;needRe(box)}
 // Ab 0.117: Vorschau und Übernehmen für DFX.swiss. Oben eine Frage nach der Wallet (füllt alle Zeilen), je Zeile änderbar (BXP.rw), gemerkt in S.ui.dxW.
@@ -9209,7 +9209,7 @@ function renderDxPrev(){const box=$('bxprev'),D=BXP,P=D.P,top=dxTop(),pl=(n,a,b)
   // Ab 0.119 (5b, Florians Ergänzung 1): Folgen von „Ignorieren aufheben“ (neuer Dienst DFX.swiss, was wegfällt), auf einer Kopie durchgespielt
   {const A=dxUnPlan(plan,D);if(A.txt)h+=`<div class="msg ${A.bad?'warn':'info'}"><p>Beim Übernehmen:</p><p>${esc(A.txt).replace(/\n/g,'<br>')}</p></div>`}
   const ne=P.eur.deposit+P.eur.withdrawal;
-  h+=`${ne?`<p class="small">${pl(ne,'Ein- oder Auszahlung in Euro','Ein- und Auszahlungen in Euro')} nicht übernommen (Bank, kein Krypto).</p>`:''}${Object.entries(P.other).map(([c,n])=>`<p class="small">${pl(n,'Zeile','Zeilen')} ${esc(c)} nicht übernommen. ${/^ETH/.test(c)?'Das Tool rechnet ETH noch nicht.':'Das Tool rechnet nur USDC und USDT.'}</p>`).join('')}${Object.entries(P.unk).map(([c,n])=>`<p class="small">${pl(n,'Zeile','Zeilen')} „${esc(c)}“ nicht übernommen. Diese Art kennt das Tool noch nicht.</p>`).join('')}`;
+  h+=`${ne?`<p class="small">${pl(ne,'Ein- oder Auszahlung in Euro','Ein- und Auszahlungen in Euro')} nicht übernommen (Bank, kein Krypto).</p>`:''}${Object.entries(P.other).map(([c,n])=>`<p class="small">${pl(n,'Zeile','Zeilen')} ${esc(c)} nicht übernommen. Das Tool rechnet nur USDC und USDT.</p>`).join('')}${Object.entries(P.unk).map(([c,n])=>`<p class="small">${pl(n,'Zeile','Zeilen')} „${esc(c)}“ nicht übernommen. Diese Art kennt das Tool nicht.</p>`).join('')}`;
   box.innerHTML=rbH(h)+`<div class="row" data-act style="margin-top:10px"><button type="button" class="btn primary" id="btn-bxsave">Übernehmen</button><button type="button" class="btn" id="btn-bxcancel">Abbrechen</button></div></div>`;needRe(box)}
 // Ab 0.119: Folgen von „Ignorieren aufheben“ beim Übernehmen (Kopie): Text und ob etwas wegfällt (bad, dann Rückfrage mit „Sicherung speichern“)
 function dxUnPlan(plan,D){if(!plan.items.some((x,i)=>x.ign&&D.un[i]!==false))return {txt:'',bad:false};
@@ -12153,7 +12153,7 @@ function todoItems(C){
   // Ab 0.72 Nachtrag 2 (2): Bitvavo-Kaufgebühr in einer anderen Währung als Euro steht nur in der Notiz und zählt nicht. Gelber Punkt, bis „Menge stimmt“ (c.bvFeeOk). Ab Nachtrag 3 zurücknehmbar (keepItems).
   for(const c of S.cx){const m=!c.bvFeeOk&&bvFeeM(c);if(!m)continue;
     I.push({id:'bf:'+c.id,lv:'y',kind:'bvfee',t:c.date?wSec(c.date,c.time||''):0,eur:0,ref:'c:'+c.id,hdS:tdHdL(c.date,c.time),
-      big:`Bitvavo: Gebühr von ${esc(m[1])} ${esc(m[2])} beim Kauf am ${fD(c.date)}.`,why:'Das Tool rechnet sie noch nicht. Prüfe, ob die Menge in deiner Wallet stimmt.',
+      big:`Bitvavo: Gebühr von ${esc(m[1])} ${esc(m[2])} beim Kauf am ${fD(c.date)}.`,why:'Das Tool rechnet sie nicht mit. Prüfe, ob die Menge in deiner Wallet stimmt.',
       alt:`<button type="button" class="btn sm" data-bvfeeok="${c.id}">Menge stimmt</button>`,li:{d:c.date,w:c.wallet,what:'Gebühr prüfen',q:esc(m[1])+' '+esc(m[2])}})}
   // Ab 0.74 (2.4): Ersatzwert in Österreich: gelber Punkt, bis ein echter Wert eingetragen ist oder „Ersatzwert bestätigen“ (c.eOk, zurücknehmbar in keepItems)
   for(const c of S.cx){if(!cxSwOpen(c)||cxMissing(c).length)continue;
@@ -15102,7 +15102,7 @@ ${ECB_CITE}`},
   // Ab 0.49 (5.2): Gewinn bei Stablecoins und „geschätzt“ (Zusammenfassung) stehen hier und im (i) der Karte in Österreich, nicht mehr im Reiter Wallet
   // Ab 0.72 (1.1 bis 1.3): Titel nur „Krypto“, die Angaben aus dem alten Titel und die Annahmen unter der Tabelle stehen hier; andere Coins in „Was das Tool nicht rechnet“
   'k-atcx':{t:'Krypto',h:'Gewinne und Verluste aus USDC und USDT, ausländische Kryptowährungen ohne KESt-Abzug (Verkäufe mit KESt-Abzug einer österreichischen Börse stehen getrennt). Gerechnet mit dem gleitenden Durchschnittspreis je Wallet und Coin.\n<b>Krypto-Verluste</b> kannst du nur mit anderen Kapitalerträgen mit 27,5 % aus demselben Jahr verrechnen. Sparbuchzinsen zählen nicht dazu. Ein Vortrag ist nicht möglich.\n<b>Annahmen:</b> USDC und USDT sind Kryptowährungen im Sinn von § 27b EStG. Die Einzahlung bei Tag ist ein Verkauf, die Auszahlung in Coins ein Kauf. Gebühren beim Kauf gegen Euro erhöhen den Einkaufswert. Gebühren beim Verkauf gegen Euro oder USD mindern den Erlös. Gebühren bei einem Tausch Krypto gegen Krypto zählen steuerlich nicht (EStR Rz 6178ad). Zahlst du eine Transfergebühr in Coins, ist das ein Verkauf zum Tageswert (EStR Rz 6178v). Andere Kosten kannst du nicht absetzen. Tausch Krypto gegen Krypto ist steuerneutral, der Einkaufswert geht auf den neuen Coin über. Bekommst du etwas, das keine Kryptowährung ist (z. B. ein NFT), ist es ein Verkauf. Geschenk: Einkaufswert der schenkenden Person (§ 27a Abs. 4 Z 1 EStG). Diebstahl, Betrug, Hack oder ein verlorener Schlüssel sind keine Veräußerung, ein Verlust ist nicht absetzbar (EStR Rz 6178w).\n'+CX_1USD+'\n'+CX_KURS+'\n'+STABLE_EX+'\n'+EST_SUM+'\nTrag Gewinne aus Verkäufen ohne österreichischen KESt-Abzug in Kennzahl 174 ein und Verluste in Kennzahl 176. Kennzahl 173 und 175 gelten nur mit KESt-Abzug.'},
-  'k-decx':{t:'Krypto',h:'Gewinne und Verluste aus USDC und USDT, die du höchstens ein Jahr gehalten hast, gerechnet nach FIFO („First in, first out“: Die zuerst gekauften Coins gelten als zuerst verkauft) je Wallet und Coin. Sie gehören in die Anlage SO, Abschnitt Kryptowerte.\n<b>Annahmen:</b> USDC und USDT sind andere Wirtschaftsgüter (BMF-Schreiben vom 06.03.2025, Rn. 53). Das Tool rechnet je Wallet und Coin nach FIFO (Rn. 61 und 62). Die Auszahlung bei Tag in Coins ist ein Kauf, die Einzahlung ein Verkauf. Wert zum EZB-Kurs vom Buchungstag, 1 Coin = 1 USD. Gebühren beim Kauf erhöhen den Einkaufswert, Gebühren beim Verkauf sind Werbungskosten und werden aufgeteilt (Rn. 57). Gebühren in Coins und der Tausch in einen anderen Coin sind Verkäufe zum Tageswert. Ein Tausch USDC gegen USDT ist ein Verkauf mit neuem Kauf. Ein Geschenk übernimmt Kaufdatum und Einkaufswert der schenkenden Person (§ 23 Abs. 1 Satz 3 EStG).\n'+CX_1USD+'\n'+CX_KURS+'\n'+STABLE_EX+'\n'+EST_SUM+'\n<b>Geplant:</b> Für Kryptowerte, die ab 2027 gekauft werden, soll die Haltefrist wegfallen und 25 % Steuer gelten. Das Gesetz ist noch nicht beschlossen, Stand November 2026. Das Tool wird angepasst, sobald es gilt.'},
+  'k-decx':{t:'Krypto',h:'Gewinne und Verluste aus USDC und USDT, die du höchstens ein Jahr gehalten hast, gerechnet nach FIFO („First in, first out“: Die zuerst gekauften Coins gelten als zuerst verkauft) je Wallet und Coin. Sie gehören in die Anlage SO, Abschnitt Kryptowerte.\n<b>Annahmen:</b> USDC und USDT sind andere Wirtschaftsgüter (BMF-Schreiben vom 06.03.2025, Rn. 53). Das Tool rechnet je Wallet und Coin nach FIFO (Rn. 61 und 62). Die Auszahlung bei Tag in Coins ist ein Kauf, die Einzahlung ein Verkauf. Wert zum EZB-Kurs vom Buchungstag, 1 Coin = 1 USD. Gebühren beim Kauf erhöhen den Einkaufswert, Gebühren beim Verkauf sind Werbungskosten und werden aufgeteilt (Rn. 57). Gebühren in Coins und der Tausch in einen anderen Coin sind Verkäufe zum Tageswert. Ein Tausch USDC gegen USDT ist ein Verkauf mit neuem Kauf. Ein Geschenk übernimmt Kaufdatum und Einkaufswert der schenkenden Person (§ 23 Abs. 1 Satz 3 EStG).\n'+CX_1USD+'\n'+CX_KURS+'\n'+STABLE_EX+'\n'+EST_SUM},
   // Ab 0.72: (i) der übrigen Karten im Reiter Steuer (vorher lose Absätze und Aufklapper in den Karten)
   // Ab 0.181 (Florians Auftrag): „(Datum wie im MT5-Report)“ statt „laut Serverzeit des Brokers“, im Absatz „Jahreswechsel“ „nach der Zeit im MT5-Report
   // (im Winter 2 Stunden später als in Österreich)“ statt „nach der Zeit des Brokers (Zypern)“. Ab 0.183 (Florians Entscheidung) „(1 Stunde später
@@ -16570,7 +16570,7 @@ function renderTax(rows){
    <tr class="sum"><td>Zusätzliche Steuer (zurücklegen)</td><td>${eur(t1-t0)}</td>${proj!=null?`<td>${eur(est(other+Math.max(0,proj)+cxAdd,+y)+cxFlat-kestPaid-t0)}</td>`:''}</tr>`;
   $('t-est').innerHTML=eh;
   // Ab 0.73 (2.6): Tarifstufen und Absetzbeträge im (i), die Fußnote zur Hochrechnung bleibt als Fußzeile
-  glSet('k-taxest',`Grobe Schätzung mit den Tarifstufen ${TARIF[y]?y:'2026 (für '+y+' noch nicht hinterlegt)'}: bis 13.539 € 0 %, bis 21.992 € 20 %, bis 36.458 € 30 %, bis 70.365 € 40 %, bis 104.859 € 48 %, bis 1 Mio. € 50 %, darüber 55 %. Absetzbeträge und Sonderausgaben sind nicht berücksichtigt.`);
+  glSet('k-taxest',`Grobe Schätzung mit den Tarifstufen ${TARIF[y]?y:'2026 (für '+y+' nicht hinterlegt)'}: bis 13.539 € 0 %, bis 21.992 € 20 %, bis 36.458 € 30 %, bis 70.365 € 40 %, bis 104.859 € 48 %, bis 1 Mio. € 50 %, darüber 55 %. Absetzbeträge und Sonderausgaben sind nicht berücksichtigt.`);
   $('tarifnote').innerHTML=proj!=null?`<sup>1</sup> Annahme: Bis Jahresende läuft jede Woche wie der Schnitt der letzten ${S.ui._projW} abgeschlossenen Wochen (${fE.format(S.ui._projAvg)} pro Woche). Das ist nur eine Hochrechnung, keine Vorhersage.`:'';
 }
 // Ab 0.72 (2.1): Zählt das Konto in Steuer, Zusammenfassung und Steuer-Excel? (S.accounts[a].taxEx = {why} heißt ausgeschlossen)
@@ -17293,7 +17293,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.205',VDATE='26.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.206',VDATE='26.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar.
