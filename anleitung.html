@@ -27,6 +27,8 @@
   mitnehmen“ (#sichern, darin #handy und #neue-version), „Annas Beispiel“ (#anna) und „Schon ein anderes Krypto-Tool?“ (#anderes-tool). Außerhalb der
   Karten stehen nur die Köpfe der Stufen und die grünen Kästen (div.stop, höchstens zwei Sätze, kein Bild). Am Ende von Abschnitt 5, 7 und 9 bis 14
   die Zeile „Annas Stand im Tool“ (p.stand).
+  Ab 0.203 (Florians Auftrag 0.203): zwei weitere Karten ohne Nummer, „Als Symbol auf deinem Gerät“ (#symbol, nach Abschnitt 1, vier Teile zum Aufklappen
+  je Gerät, bei jeder Gerätewahl sichtbar) und „Deine Steuerzahlen“ (#steuer, nach „Deine Auswertung“, drei Bilder aus Annas Stand nach Stufe 1).
   Die Sprungmarken bleiben, das Tool verlinkt darauf (#mt5-verbinden, #report-speichern, #tag-daten, #reiter-wallet, #boerse-datei,
   #von-hand, ab 0.76 #tausch, ab 0.168 #dfx, ab 0.174 #abarbeiten). #anderes-tool (ab 0.76) verlinkt das Tool ab 0.170 nicht mehr (Florians Auftrag), die Sprungmarke bleibt.
   #noch-offen verlinkt das Tool ab 0.174 nicht mehr: Das (i) „Noch offen“ zeigt auf #abarbeiten, dort stehen die Farben (Florians Auftrag 0.174). Die Sprungmarke bleibt.
@@ -312,6 +314,7 @@ document.addEventListener('DOMContentLoaded',function(){
     <p>Inhalt</p>
     <ul class="tocg">
       <li><a href="#start">1. Bevor du anfängst</a></li>
+      <li><a href="#symbol">Als Symbol auf deinem Gerät</a></li>
       <li><a class="grp" href="#stufe-1">Stufe 1: Auswertung</a>
         <ul>
           <li><a href="#mt5-verbinden">2. MetaTrader 5 verbinden</a></li>
@@ -320,6 +323,7 @@ document.addEventListener('DOMContentLoaded',function(){
           <li><a href="#trading-benefit">5. Deine Konten</a></li>
           <li><a href="#kurse">6. Wechselkurse</a></li>
           <li><a href="#auswertung">Deine Auswertung</a></li>
+          <li><a href="#steuer">Deine Steuerzahlen</a></li>
           <li><a href="#sichern">Sichern und mitnehmen</a></li>
         </ul></li>
       <li><a class="grp" href="#stufe-2">Stufe 2: Dein echtes Geld</a>
@@ -363,9 +367,9 @@ document.addEventListener('DOMContentLoaded',function(){
   <div class="hilfe">
     <p><b>Leg dir ein Lesezeichen an</b></p>
     <p>Dann findest du das Tool immer schnell.</p>
-    <p class="os-win">Drücke <kbd>Strg</kbd>+<kbd>D</kbd>. Für einen Link auf dem Desktop ziehst du das Symbol links neben der Adresse auf den Desktop.</p>
+    <p class="os-win">Drücke <kbd>Strg</kbd>+<kbd>D</kbd>.</p>
     <p class="os-mac">Drücke <kbd>⌘ Cmd</kbd>+<kbd>D</kbd>.</p>
-    <p class="os-mob">Öffne das Menü deines Browsers und wähle <b>„Zum Startbildschirm hinzufügen“</b>. Am iPhone in Safari tippst du auf <b>„Teilen“</b>, dann auf <b>„Zum Home-Bildschirm“</b>.</p>
+    <p class="os-mob">Am Handy legst du das Tool als Symbol auf den Startbildschirm (siehe <a href="#symbol">Als Symbol auf deinem Gerät</a>).</p>
   </div>
   <div class="hilfe">
     <p><b>So hilft dir das Tool</b></p>
@@ -383,10 +387,42 @@ document.addEventListener('DOMContentLoaded',function(){
   <p><b>Gut zu wissen:</b> Deine Daten liegen nur in dem Browser, in dem du das Tool nutzt. Mit einer Sicherung sicherst du sie und nimmst sie mit (<a href="#sichern">Sichern und mitnehmen</a>).</p>
 </section>
 
+<section id="symbol">
+  <!-- Ab 0.203 (Florians Auftrag 0.203, sein Wortlaut): das Tool als Symbol auf Handy, Tablet oder Computer. Vier Teile zum Aufklappen, bei jeder Gerätewahl
+       sichtbar (wer am Computer liest, richtet vielleicht das Handy ein). Die Adresse https://trading-bilanz.github.io/ ist der Stand nach 1.0 (bis dahin
+       ohne index.html). Die zwei Dateien liegen in icons/ (icons-erzeugen.py), die Links tragen download. -->
+  <h3 class="st"><span>Als Symbol auf deinem Gerät</span></h3>
+  <p>So öffnest du die Trading-Bilanz mit einem Tipp, wie eine App.</p>
+  <details class="how">
+    <summary>iPhone und iPad (Safari)</summary>
+    <p>Öffne trading-bilanz.github.io, tipp auf das Teilen-Symbol (Quadrat mit Pfeil nach oben) und dann auf <b>„Zum Home-Bildschirm“</b>. Das Buch-Symbol kommt von selbst mit.</p>
+    <p class="small"><b>Gut zu wissen:</b> Das Symbol am Home-Bildschirm kann einen eigenen Speicher haben. Fehlen dort deine Daten, lade deine Sicherung.</p>
+  </details>
+  <details class="how">
+    <summary>Android (Chrome, Vivaldi)</summary>
+    <p>Öffne trading-bilanz.github.io, tipp auf das Menü und dann auf <b>„Zum Startbildschirm hinzufügen“</b>.</p>
+  </details>
+  <details class="how">
+    <summary>Windows</summary>
+    <ol class="steps">
+      <li>Lade das Symbol herunter: <a href="https://trading-bilanz.github.io/icons/icon-trading-bilanz.ico" download>Symbol für Windows (.ico)&nbsp;↗</a></li>
+      <li>Leg es an einen Ort, an dem es bleibt und an dem du immer leicht Zugang dazu hast. Wird die Datei später verschoben, verliert die Verknüpfung ihr Symbol.</li>
+      <li>Rechtsklick auf den Desktop, <b>„Neu“</b>, <b>„Verknüpfung“</b>. Als Speicherort trägst du ein: <code>https://trading-bilanz.github.io/</code>. Als Namen: Trading-Bilanz.</li>
+      <li>Rechtsklick auf die neue Verknüpfung, <b>„Eigenschaften“</b>, <b>„Anderes Symbol …“</b>, <b>„Durchsuchen“</b> und die heruntergeladene Datei wählen.</li>
+    </ol>
+    <p>Nutzt du die Offline-Fassung, machst du die Verknüpfung zu deiner HTML-Datei: Rechtsklick auf die Datei, <b>„Senden an“</b> (unter Windows 11 zuerst <b>„Weitere Optionen anzeigen“</b>), <b>„Desktop (Verknüpfung erstellen)“</b>, dann weiter wie in Schritt 4.</p>
+  </details>
+  <details class="how">
+    <summary>Mac</summary>
+    <p>Das Symbol als Bild: <a href="https://trading-bilanz.github.io/icons/icon-trading-bilanz-512.png" download>Symbol als Bild (PNG, 512 px)&nbsp;↗</a></p>
+    <p>In Safari (ab macOS 14): <b>„Ablage“</b>, <b>„Zum Dock hinzufügen“</b>. Oder zieh die Adresse aus der Adresszeile auf den Schreibtisch, öffne mit Rechtsklick <b>„Informationen“</b>, kopier das Bild und füg es oben links auf das kleine Symbol ein.</p>
+  </details>
+</section>
+
 <div class="stufe" id="stufe-1">
   <h2>Stufe 1: Auswertung</h2>
-  <p class="reiter">Reiter <span class="rt" id="reiter-reports">Reports</span> <span class="rt" id="reiter-kurse">Kurse</span> <span class="rt">Auswertung</span></p>
-  <p class="rsub">Du lädst die Reports aus MetaTrader 5 ins Tool und wählst den Trading Benefit, danach steht deine Auswertung.</p>
+  <p class="reiter">Reiter <span class="rt" id="reiter-reports">Reports</span> <span class="rt" id="reiter-kurse">Kurse</span> <span class="rt">Auswertung</span> <span class="rt">Steuer</span></p>
+  <p class="rsub">Du lädst die Reports aus MetaTrader 5 ins Tool und wählst den Trading Benefit, danach stehen deine Auswertung und deine Steuerzahlen.</p>
 </div>
 
 <section id="mt5-verbinden">
@@ -482,8 +518,32 @@ document.addEventListener('DOMContentLoaded',function(){
   <h4>Meilensteine</h4>
   <p>Die Karte „Meilensteine“ sammelt deine Rekorde, Serien und Erreichtes. Zeitraum und Konten wählst du rechts in der Karte, von der Filterzeile oben übernimmt sie nur die Währung, und sie rechnet immer mit „PF verteilt“. Ab und zu erscheint an einem Wert, neben „Überblick“ oder am Reiter „Auswertung“ ein besonderes Symbol. Du wirst es erkennen. Ein Klick darauf zeigt dir, was du erreicht hast.</p>
   <h4>Bilder zum Teilen</h4>
-  <p>Deine Ergebnisse kannst du als Bild speichern oder teilen: den Überblick, die Grafiken und jeden Meilenstein. Die Bilder sind eigens dafür gestaltet, immer hell und klar, auch wenn du das Tool dunkel nutzt. Beim Überblick und bei den Meilensteinen wählst du, ob Beträge zu sehen sind. Ohne sie zeigt das Bild nur Prozente und Zahlen wie Wochen oder Trades, dein Kontostand bleibt bei dir.</p>
+  <p>Deine Ergebnisse kannst du als Bild speichern oder teilen: den Überblick, die Grafiken und jeden Meilenstein. Die Bilder sind eigens dafür gestaltet, immer hell und klar, auch wenn du das Tool dunkel nutzt. Kontonamen stehen nie darin.</p>
+  <p>Das Bild zeigt, was du oben eingestellt hast: Zeitraum, Konten und PF. Beim Überblick findest du <b>„Betrag zeigen“</b>, wenn du den Knopf <b>„Bild“</b> <span class="os-win os-mac">anklickst</span><span class="os-mob">antippst (auf schmalen Handys ein Bild-Symbol)</span>, bei einem Meilenstein unten im Fenster. Ohne Beträge zeigt das Bild nur Prozente und Zahlen wie Wochen oder Trades, dein Kontostand bleibt bei dir. Das Bild zeigt die Grafik so, wie du sie eingestellt hast. Willst du keine Beträge zeigen, stell die Einheit vorher auf %. Die Grafik „Investition“ zeigt immer Beträge.</p>
   <p><span class="os-win os-mac">Klicke</span><span class="os-mob">Tippe</span> im Überblick oder bei den Grafiken auf <b>„Bild“</b>. Bei einem Meilenstein steht der Knopf unten im Fenster, das sich <span class="os-win os-mac">mit einem Klick auf ihn öffnet</span><span class="os-mob">öffnet, wenn du auf ihn tippst</span>. Kann dein Browser teilen, schickst du das Bild direkt weiter, z. B. in Telegram, sonst speicherst du es als Datei. Das Bild entsteht auf deinem Gerät, und nur du entscheidest, wohin es geht.</p>
+</section>
+
+<section id="steuer">
+  <!-- Ab 0.203 (Florians Auftrag 0.203, Teil 2b): Annas Geschichte geht im Reiter Steuer weiter. Drei Bilder aus ihrem Stand nach Stufe 1 (nur Reports),
+       bei 1040 px wie die Karte „Krypto“ in Abschnitt 13. Die Beträge kommen aus dem Durchlauf (Protokoll, Schritte „Reiter Steuer nach Stufe 1“ und
+       „Probe in einer Kopie: Auswertung in Euro“). -->
+  <h3 class="st"><span>Deine Steuerzahlen</span></h3>
+  <p>Der Reiter <b>„Steuer“</b> rechnet aus denselben Reports wie die Auswertung deine Zahlen für die Steuererklärung, in Euro. Das Tool ist keine Steuerberatung: Lass die Zahlen prüfen, bevor du sie verwendest.</p>
+  <figure class="k"><a href="anleitung/tool-steuer-oben.webp"><img src="anleitung/tool-steuer-oben.webp" width="1008" height="188" alt="Reiter Steuer oben mit grünen Kreisen: 1 die Auswahl Land mit Österreich, darunter der Hinweis Regeln für Österreich, ohne Gewähr, 2 das Steuerjahr 2026, 3 der Knopf Zusammenfassung für die Steuerberatung, 4 der Knopf Excel für dieses Jahr, daneben Diese Seite drucken" loading="lazy"></a></figure>
+  <ol class="kreise">
+    <li><b>„Land“:</b> Österreich, Deutschland oder „Ohne Steuer“. Anna lebt in Österreich.</li>
+    <li><b>„Steuerjahr“:</b> das Jahr, für das du die Zahlen brauchst.</li>
+    <li><b>„Zusammenfassung für die Steuerberatung“:</b> Seite 1 mit den Zahlen, danach die Annahmen. Gibt es etwas, das deine Steuerberatung entscheiden muss, steht es dort unter „Offene Fragen“.</li>
+    <li><b>„Excel für dieses Jahr“:</b> jede Buchung einzeln, mit Kurs und Euro-Betrag. Gib beide zusammen weiter.</li>
+  </ol>
+  <h4>Konten für die Steuer</h4>
+  <figure class="k"><a href="anleitung/tool-steuer-konten.webp"><img src="anleitung/tool-steuer-konten.webp" width="1008" height="283" alt="Karte Konten für die Steuer: das Feld Name in Zusammenfassung und Excel mit ANNA ANDERS, darunter Annas drei Konten mit dem Datenstand 01.09.2026 und je einem gesetzten Häkchen in der Spalte Zählt" loading="lazy"></a></figure>
+  <p>Oben steht der Name für Zusammenfassung und Excel, bei Anna „ANNA ANDERS“ aus ihren Reports. Du kannst ihn ändern. Darunter stehen deine Konten mit ihrem Datenstand. Nimmst du bei einem Konto das Häkchen <b>„Zählt“</b> weg, fehlt es in der Steuer. In der Auswertung bleibt es.</p>
+  <h4>CFD 2026</h4>
+  <figure class="k"><a href="anleitung/tool-steuer-cfd.webp"><img src="anleitung/tool-steuer-cfd.webp" width="1008" height="393" alt="Karte CFD 2026 mit Annas Zahlen: Gewinne aus Trades 917,65 Euro, Verluste aus Trades -315,44 Euro, Kommission, Swap, Gebühren -116,33 Euro, Performance Fee -140,36 Euro, Saldo CFD 345,51 Euro mit der Kennzahl 857, darunter der Satz Die Daten reichen nur bis 01.09.2026" loading="lazy"></a>
+    <figcaption>Reiter „Steuer“, Karte „CFD 2026“ mit Annas Zahlen.</figcaption></figure>
+  <p>Die Karte „CFD 2026“ zeigt Annas Trading in Euro: Gewinne, Verluste, Kosten und Performance Fee, darunter den Saldo von 345,51 € mit der Kennzahl für die Steuererklärung. Ihre Auswertung zeigt in Euro 340,53 € Netto-Gewinn. Die 4,98 € Unterschied sind die Performance Fee der laufenden Woche: Die Auswertung schätzt sie schon, die Steuer zieht sie erst ab, wenn Tag sie abbucht.</p>
+  <p>Zahlst du mit USDC oder USDT ein oder aus, kommt die Karte „Krypto“ dazu (<a href="#stufe-3">Stufe 3</a>).</p>
 </section>
 
 <section id="sichern">
@@ -500,7 +560,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </section>
 
 <div class="stop" id="ende-stufe-1">
-  <p>Deine Auswertung ist fertig, und im Reiter „Steuer“ stehen schon die Zahlen für dein Trading (CFD). <a href="#sichern">Speichere eine Sicherung</a>, dann kannst du hier aufhören.</p>
+  <p>Deine Auswertung und deine Steuerzahlen für das Trading (CFD) sind fertig. <a href="#sichern">Speichere eine Sicherung</a>, dann kannst du hier aufhören.</p>
 </div>
 
 <div class="stufe" id="stufe-2">
@@ -536,7 +596,8 @@ document.addEventListener('DOMContentLoaded',function(){
   <p>Die Tag-Daten sind deine Ein- und Auszahlungen bei Tag. Sie sind keine Datei: Du kopierst sie aus dem Tag-Portal und fügst sie ins Tool ein.</p>
   <p>Öffne den Reiter <b>„Wallet“</b>. Oben steht eine Leiste mit <b>„＋ Daten“</b>, <b>„Adressen“</b> und <b>„Noch offen“</b>, darunter stehen Karten wie „Bestand jetzt“ und „Alle Vorgänge“. Beim ersten Mal kommt das Fenster „Was du hier machst“. Klicke dort auf <b>„Mit den Tag-Daten anfangen“</b>.</p>
   <p>Dann öffnet sich das Fenster „＋ Daten“ mit dem Feld „Hier einfügen“. Später findest du es über <b>„＋ Daten“</b> bei <b>„Tag-Daten“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-tag-einfuegen.webp"><img src="anleitung/tool-tag-einfuegen.webp" width="788" height="381" alt="Fenster ＋ Daten mit der Kachel Tag-Daten, dem Knopf So kopierst du die Daten aus Tag und dem grün eingerahmten Feld Hier einfügen" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-tag-einfuegen.webp"><img src="anleitung/tool-tag-einfuegen.webp" width="788" height="470" alt="Fenster ＋ Daten mit der Kachel Tag-Daten, dem Knopf So kopierst du die Daten aus Tag und dem grün eingerahmten Feld Hier einfügen, darunter die Frage Mit welchem Coin hast du ein- und ausgezahlt? mit der Auswahl USDC" loading="lazy"></a></figure>
+  <p>Unter dem Feld fragt das Tool: „Mit welchem Coin hast du ein- und ausgezahlt?“ Wähle <b>„USDC“</b>, <b>„USDT“</b> oder <b>„Anderer Coin“</b>. Das gilt für alle Zeilen mit Krypto, du kannst es danach bei jeder Zeile ändern. Mit „Anderer Coin“ (z. B. BTC) zählt die Zeile für „Dein echtes Geld“, die Steuer dafür rechnet das Tool nicht.</p>
   <p>Öffne das Tag-Portal in einem zweiten Browser-Tab und gehe so vor:</p>
   <!--Q:os:tagGuide('win')|tagGuide('mac')|tagGuide('mobile')--><ol class="steps">
     <li><span class="os-win os-mac">Klicke im Tag-Portal links auf <b>„Tag Wallet“</b>.</span><span class="os-mob">Tippe im Tag-Portal rechts oben auf die drei Striche und dann auf <b>„Tag Wallet“</b>.</span></li>
@@ -549,14 +610,14 @@ document.addEventListener('DOMContentLoaded',function(){
       <!--Z--><p>Das Tool zeigt dann eine Vorschau:</p><!--/Z-->
       <figure><a href="anleitung/tool-tag-vorschau.webp"><img src="anleitung/tool-tag-vorschau.webp" width="788" height="486" alt="Vorschau nach dem Einfügen: drei Einzahlungen am 01.07.26, Tag zeigt 1.250,00 USD Einzahlungen mit Haken, Hinweis auf die fehlende Seite Withdrawals, darunter die Tabelle Woher und wohin mit weiß ich noch nicht, unten grün eingerahmt der Knopf Speichern" loading="lazy"></a>
         <figcaption>Annas Vorschau. Die Auszahlungen fehlen noch, darum steht dort „Füge noch die Seite ‚Withdrawals‘ ein.“</figcaption></figure>
-      <!--Z--><p>„Woher und wohin?“ ist freiwillig: Du kannst bei jeder Einzahlung die Wallet wählen, aus der die Coins kamen, und bei jeder Auszahlung die Wallet, in die sie gingen. Anna lässt überall <b>„weiß ich noch nicht“</b> stehen, das Tool fragt später danach. Klicke dann unten im Fenster auf <b>„Speichern“</b>.</p><!--/Z--></li>
+      <!--Z--><p>„Woher und wohin?“ ist freiwillig: Du kannst bei jeder Einzahlung die Wallet wählen, aus der die Coins kamen, und bei jeder Auszahlung die Wallet, in die sie gingen. Anna lässt überall <b>„weiß ich noch nicht“</b> stehen, das Tool fragt später danach. Klicke dann unten im Fenster auf <b>„Speichern“</b>.</p><p class="os-win os-mac">Hat eine Zeile eine Uhrzeit, steht sie umgerechnet da: Tag zeigt die Zypern-Zeit, das ganze Jahr 1 Stunde später als in Österreich und Deutschland. Ein Klick auf die Uhrzeit zeigt, was bei Tag steht.</p><!--/Z--></li>
     <li><b>Auszahlungen:</b> <span class="os-win os-mac">Öffne links in der „Banking Zone“ <b>„Withdrawals“</b> und klicke auf</span><span class="os-mob">Tippe in der „Banking Zone“ auf <b>„Withdrawals“</b> und dann auf</span> <b>„Display Processed Withdrawals“</b> (danach steht dort „Hide Processed Withdrawals“). Wähle bei <b>„Show“</b> die größte Zahl, kopiere die ganze Seite und füge sie ins Feld <b>„Hier einfügen“</b> ein. <span class="os-win os-mac">Klicke</span><span class="os-mob">Tippe</span> dann auf <b>„Übernehmen“</b>.
       <figure><a href="anleitung/tag-auszahlungen.webp"><img src="anleitung/tag-auszahlungen.webp" width="1590" height="606" alt="Tag-Portal, Withdrawals: grün eingerahmt mit Kreisen 1 Withdrawals, 2 Display Processed Withdrawals (nach dem Klick Hide Processed Withdrawals), 3 Show" loading="lazy"></a>
         <figcaption>Die Kreise zeigen die Reihenfolge. Grau verdeckt: Guthaben, Summen, Nummern, Datum und Beträge.</figcaption></figure></li>
     <li>Du kannst jederzeit wieder alles einfügen. Das Tool erkennt, was schon da ist.</li>
   </ol><!--/Q-->
   <p class="small"><b>PSP</b> ist ein Filter bei Tag: Er zeigt nur Einzahlungen von außen, nicht die Überträge zwischen der Tag Wallet und deinen Trading-Konten.</p>
-  <p><b>Per Bank ein- oder ausgezahlt?</b> Steht bei einer Einzahlung eine andere Methode als Krypto, fragt die Vorschau, zum Beispiel: „Methode ‚Bank‘ erkannt. Das Tool behandelt sie als Ein- oder Auszahlung per Bank. Stimmt das?“ Darunter wählst du <b>„Ja, per Bank“</b> oder <b>„Nein, mit Krypto“</b>. Per Bank heißt: keine Krypto-Steuer, keine Wallet, die Zahlung zählt für „Dein echtes Geld“. Bei einer Auszahlung per Bank wählst du unter „Woher und wohin?“ <b>„Bank“</b>.</p>
+  <p><b>Per Bank ein- oder ausgezahlt?</b> Steht bei einer Einzahlung eine andere Methode als Krypto, fragt die Vorschau, zum Beispiel: „Methode ‚Bank‘ erkannt. Das Tool behandelt sie als Ein- oder Auszahlung per Bank. Stimmt das?“ Darunter wählst du <b>„Ja, per Bank“</b> oder <b>„Nein, mit Krypto“</b>. Per Bank heißt: keine Krypto-Steuer, keine Wallet, die Zahlung zählt für „Dein echtes Geld“. Bei einer Auszahlung per Bank wählst du unter „Woher und wohin?“ <b>„Bank“</b>. Das Tool merkt sich deine Antwort. Ändern kannst du sie später in <b>„＋ Daten“</b> bei <b>„Tag-Daten“</b> in der Liste „Per Bank oder mit Krypto?“.</p>
   <p class="small"><b>Gut zu wissen:</b> Zahlst du bei Tag USDC ein, tauscht Tag sie sofort in USD. Steuerlich ist das ein Verkauf. Bei einer Auszahlung in USDC ist es umgekehrt ein Kauf. Das Tool rechnet mit USDC und USDT.</p>
   <p>Danach zeigt der Reiter „Auswertung“ die Karte „Dein echtes Geld“.</p>
   <figure class="k"><a href="anleitung/tool-echtes-geld.webp"><img src="anleitung/tool-echtes-geld.webp" width="788" height="300" alt="Karte Dein echtes Geld mit Annas Zahlen: Eingezahlt 1.250,00 USD, Ausgezahlt 150,00 USD, Netto-Einsatz 1.100,00 USD, Netto-Gewinn seit Start 396,98 USD und Rendite seit Start 31,8 %" loading="lazy"></a>
@@ -602,6 +663,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <section id="boerse-datei">
   <h3 class="st"><span>9. Börsen-Datei laden</span></h3>
   <p>Hast du deine Coins bei einer Börse gekauft, übernimmt das Tool Käufe, Verkäufe und Auszahlungen aus einer Datei der Börse. <b>Das Tool liest Dateien von Bitvavo und DFX.swiss.</b> Hast du bei einer anderen Börse gekauft, zum Beispiel bei Kraken, trage den Kauf <a href="#von-hand">von Hand ein</a>.</p>
+  <p>Im Tool findest du das unter <b>„＋ Daten“</b> bei <b>„Börsen“</b>: Der Knopf <b>„So bekommst du die Datei deiner Börse“</b> nennt die Dateien, die das Tool liest, und unter „Ohne Datei:“ stehen die Knöpfe für einen Eintrag von Hand.</p>
   <details class="how">
     <summary>So bekommst du die Datei bei Bitvavo</summary>
     <p class="small">Die Bilder zeigen Bitvavo auf Englisch, die englischen Namen stehen in Klammern. Ob Bitvavo bei dir deutsch oder englisch eingestellt ist, spielt keine Rolle: Die Datei ist in beiden Sprachen gleich.</p>
@@ -662,9 +724,10 @@ document.addEventListener('DOMContentLoaded',function(){
 <section id="von-hand">
   <h3 class="st"><span>10. Von Hand eintragen</span></h3>
   <p>Was keine Datei hat, trägst du von Hand ein, zum Beispiel einen Kauf bei einer anderen Börse oder einen Übertrag in deine Wallet. Öffne im Reiter „Wallet“ oben <b>„＋ Daten“</b> und wähle <b>„Von Hand“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-von-hand.webp"><img src="anleitung/tool-von-hand.webp" width="778" height="419" alt="Liste Von Hand eintragen mit sechs nummerierten Zeilen, je mit ihren Knöpfen: Einzahlung zu Tag und Auszahlung von Tag, Kauf und Verkauf, Übertrag, Aufladung und (Karten-)Zahlung, Neuer Eintrag, Zum Bestand" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-von-hand.webp"><img src="anleitung/tool-von-hand.webp" width="778" height="419" alt="Liste Von Hand eintragen mit sechs nummerierten Zeilen, rechts ihre Knöpfe: 1 Tag mit Einzahlung, Auszahlung und Statt abtippen: aus Tag kopieren, 2 Börse mit Kauf und Verkauf, 3 Überträge mit Übertrag, 4 Karte mit Aufladung und (Karten-)Zahlung, 5 Anderes mit Neuer Eintrag, 6 Kontostand (freiwillig) mit Zum Bestand, oben rechts der Knopf So trägst du von Hand ein" loading="lazy"></a>
     <figcaption>Die Liste „Von Hand eintragen“. Jeder Knopf öffnet das passende Formular.</figcaption></figure>
-  <p>Gehe die Liste von oben nach unten durch und lass die Punkte in „Noch offen“ so lange liegen. Die Krypto-Karte steht in <a href="#karte">Abschnitt 11</a>, ein Tausch in <a href="#tausch">Abschnitt 12</a>, der Kontostand als freiwillige Kontrolle in <a href="#kontostand">Abschnitt 14</a>.</p>
+  <p>Die Liste hat sechs Schritte: Tag, Börse, Überträge, Karte, Anderes und zuletzt, freiwillig, der Kontostand. Gehe sie von oben nach unten durch und lass die Punkte in „Noch offen“ liegen, bis du durch bist. Bei Schritt 1 musst du meist nichts tippen: <b>„Statt abtippen: aus Tag kopieren&nbsp;›“</b> führt zum Einfügen der Tag-Daten (<a href="#tag-daten">Abschnitt 7</a>). <b>„So trägst du von Hand ein“</b> rechts oben fasst das Vorgehen zusammen.</p>
+  <p>Die Krypto-Karte steht in <a href="#karte">Abschnitt 11</a>, ein Tausch in <a href="#tausch">Abschnitt 12</a>, der Kontostand als freiwillige Kontrolle in <a href="#kontostand">Abschnitt 14</a>.</p>
   <h4>Kauf bei einer Börse ohne Datei</h4>
   <p>Anna hat am 30.06. bei Kraken 252 USDC für 222,00 € gekauft. Klicke auf <b>„Kauf“</b>.</p>
   <figure class="k"><a href="anleitung/tool-kauf.webp"><img src="anleitung/tool-kauf.webp" width="640" height="644" alt="Formular Neuer Eintrag: Kauf (mit Euro) am 30.06.2026 um 10:05:00, Wallet Kraken, Coin USDC, Menge 252, Wert 222,00 Euro" loading="lazy"></a></figure>
@@ -715,7 +778,7 @@ document.addEventListener('DOMContentLoaded',function(){
   </ol>
   <p>Hast du einen Kassenbon in Euro, kannst du stattdessen bei „Wert“ den Betrag von dort eintragen.</p>
   <p>Klicke auf <b>„Speichern“</b>. Trage so jede Zahlung mit der Krypto-Karte ein. Den Kontostand aus der Karten-App kannst du in <a href="#kontostand">Abschnitt 14</a> eintragen. Dann prüft das Tool, ob eine Zahlung fehlt.</p>
-  <p class="small">Mit Wallet-Dateien liest das Tool Aufladungen und Kartenzahlungen auch selbst ein. Eine Anleitung mit Bildern dazu folgt später.</p>
+  <p class="small">Mit Wallet-Dateien liest das Tool Aufladungen und Kartenzahlungen auch selbst ein. Wie du so eine Datei bekommst, zeigt im Reiter „Wallet“ unter <b>„＋ Daten“</b> bei <b>„Wallet-Dateien“</b> der Knopf <b>„So lädst du die Datei aus dem Block-Explorer“</b>.</p>
   <p class="stand" data-stand="11"><b>Annas Stand im Tool:</b> Bitvavo 6,23 USDC · Meine Karte 66,90 USDC · Meine Wallet 1.150,00 USDC · „Noch offen“ 4 (1 rot, 3 gelb)</p>
 </section>
 
@@ -841,7 +904,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <h4>So lassen</h4>
   <figure class="k"><a href="anleitung/tool-oz-so-lassen.webp"><img src="anleitung/tool-oz-so-lassen.webp" width="588" height="134" alt="Gelber Punkt Rest bei Kraken: 1,05 USDC. Gebühren?, darunter die Knöpfe Auf den Übertrag verteilen, Als eine Gebühr buchen und grün eingerahmt So lassen" loading="lazy"></a></figure>
   <p>Manche Punkte kannst oder willst du nicht klären. Bei Anna liegen nach dem Tausch vom 27.08. noch 1,05 USDC bei Kraken, und das Tool fragt, ob das Gebühren waren. Die Coins liegen wirklich dort: Anna klickt auf <b>„So lassen“</b>, dann fragt das Tool nicht wieder. Waren es Gebühren, nimm einen der anderen beiden Knöpfe.</p>
-  <p><b>„So lassen“</b> gibt es auch, wenn der Einkauf fehlt. Dann rechnet das Tool diesen Teil ohne Gewinn oder Verlust, und im Reiter „Steuer“ steht dazu ein Satz.</p>
+  <p>Fehlt dem Tool ein Einkauf, steht am Punkt unter „So löst du das“, was du tun kannst: <b>„Eintragen, woher sie kamen“</b>, <b>„Hatte ich schon“</b> oder <b>„So lassen“</b>. Mit „So lassen“ rechnet das Tool diesen Teil ohne Gewinn oder Verlust, und im Reiter „Steuer“ steht dazu ein Satz. Hängen andere Punkte an diesem Einkauf, nennt der Punkt sie als Folgen. Behebst du ihn, verschwinden sie von selbst.</p>
   <p>Unter <b>„Alle Punkte“</b> findest du solche Punkte bei „Mit „So lassen“ erledigt“ und kannst sie dort wieder anzeigen.</p>
   <h4>Wann du fertig bist</h4>
   <figure class="k"><a href="anleitung/tool-oz-fertig.webp"><img src="anleitung/tool-oz-fertig.webp" width="588" height="61" alt="Fenster Noch offen: Im Moment ist nichts offen mit Haken, darunter Mit So lassen erledigt (1)" loading="lazy"></a></figure>
@@ -876,12 +939,11 @@ document.addEventListener('DOMContentLoaded',function(){
     <li>Füge die neuen Tag-Daten ein und sieh in <b>„Noch offen“</b> nach.</li>
     <li>Speichere eine Sicherung.</li>
   </ol><!--/Q-->
-  <p class="more">Später kommen in diese Anleitung: Wallet-Dateien, Steuer und mehr zur Auswertung.</p>
 </section>
 </main>
 
 <footer>
-  <p>Trading-Bilanz · Anleitung, Stand 25.11.2026 · <span class="nw">Keine Steuer- oder Finanzberatung.</span></p>
+  <p>Trading-Bilanz · Anleitung, Stand 26.11.2026 · <span class="nw">Keine Steuer- oder Finanzberatung.</span></p>
   <p><b>Datenschutz:</b> Diese Seite speichert nichts und lädt nur ihre eigenen Bilder. GitHub speichert beim Aufruf deine IP-Adresse (<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub&nbsp;↗</a>).</p>
   <p><a href="https://weltenwandel.at/impressum.html" target="_blank" rel="noopener">Impressum&nbsp;↗</a> · <a href="mailto:florian@weltenwandel.at">florian@weltenwandel.at</a> · <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">Zur Trading-Bilanz</a></p>
 </footer>

@@ -3773,11 +3773,14 @@ function hyNimm(H,fn){const nm=`<b>${esc(fn)}</b>: `;
   // Ab 0.188 (Florians Freigabe 0.188): Kommt keine Handy-Zeile herein, je Fall ein eigener Satz ohne Kopf (statt „Nichts als Nachtrag“):
   // Einzahlungen, die wegen Prüfung A nicht zählen (R-74); eine Einzahlung, die beim Einlesen wieder wegfällt, weil der PC-Report im Teil ihres
   // Schritts vor der Grenze schon eine hat (R-75); sonst nur Auszahlungen, gemerkt für Prüfung A (R-73, bei nicht bestandener Prüfung mit kabT)
-  if(!(n+m)){const t=!okA&&Pl.depA>0?`Die Einzahlungen darin zählen erst mit dem Report der Kontohistorie: ${kabT}`:
+  // Ab 0.203 (Florians Auftrag 0.203, Teil 1b, Antworten 2 und 3 zur Freigabe): R-74 und der Zusatz von R-63 je nach Anzahl, „Die Einzahlung darin zählt
+  // erst …“ bei genau einer. Gezählt wie die Teile von R-63: eine Einzahlung je Zeitabschnitt des Berichts mit Einzahlung nach der Grenze (Pl.E).
+  const einE=Pl.E.length===1;
+  if(!(n+m)){const t=!okA&&Pl.depA>0?`${einE?'Die Einzahlung darin zählt':'Die Einzahlungen darin zählen'} erst mit dem Report der Kontohistorie: ${kabT}`:
       m0>m?'Die Einzahlung darin liegt in einem Abschnitt, den der Report der Kontohistorie schon zum Teil enthält. Sie kommt mit dem nächsten Report.':
       'Darin sind nach dem letzten Report der Kontohistorie nur Auszahlungen. Sie zählen nur für die Prüfung der Investition.'+(okA?'':' '+kabT);
     return {ok:1,n:0,t:nm+t}}
-  const zusA=okA?'':` ${Pl.depA>0?'Die Einzahlungen zählen erst mit dem Report der Kontohistorie: ':''}${kabT}`;
+  const zusA=okA?'':` ${Pl.depA>0?(einE?'Die Einzahlung zählt':'Die Einzahlungen zählen')+' erst mit dem Report der Kontohistorie: ':''}${kabT}`;
   return {ok:1,n:n+m,t:nm+`${kopf}: ${hyTeileT(n,m)} als Nachtrag${ersT}. Der nächste Report der Kontohistorie ersetzt ${n===1&&!m?'ihn':'sie'}.`+zusA}}
 // Datei aus der MT5-App: mit Schalter einlesen, ohne nur erklären
 function hyDatei(fn,txt){if(!hyOn())return {bad:1,n:0,app:1,t:`<b>${esc(fn)}</b>: ${HY_APP}`};return hyNimm(hyLies(txt),fn)}
@@ -3816,6 +3819,14 @@ function unklarDeals(o){o=o||{};return Object.values(S.deals).filter(x=>x.type!=
 // Ab 0.193: Euro-Betrag einer Buchung „noch unklar“ zum EZB-Kurs ihres Tages (rateInfo, wie enrich), NaN ohne Kurs. Die eine Stelle für die Summe
 // oben in der Auswertung (unklarH) und die Beträge im Reiter Steuer (unklarSteuerH). Bis 0.192 stand die Rechnung in unklarH.
 function unklarEur(x){const ri=rateInfo(dOf(x.t),x.t);return ri&&ri.v?x.prof/ri.v:NaN}
+// Ab 0.203 (Florians Entscheidung vom 26.11.2026, Auftrag 0.203, „Eine Wurzel“): die Liste der Buchungen „noch unklar“ als Text, eine Stelle für den
+// Hinweis der Karte „CFD {Jahr}“ (unklarSteuerH) und die offene Frage q-unklar in Zusammenfassung und Steuer-Excel (taxCtx, taxBlocks).
+// unklarAm: eine Buchung als „+11,02 € am 12.03.2025“ (E, U = Format für Euro und USD der Stelle; fehlt der Kurs, steht diese eine Buchung in USD).
+// unklarListe: X = [{a: Konto, t: Text der Buchung}], max = so viele einzeln, danach „und N weitere“ (0 = alle einzeln). Liegen alle Buchungen
+// (auch die weiteren) auf einem Konto, steht es nicht in der Liste (ein, konto), sonst bei jeder Buchung in Klammern.
+function unklarAm(x,E,U){const e=unklarEur(x),u=isNaN(e),v=u?x.prof:e;return `${zeigtPlus(v,2)?'+':''}${u?U(v):E(v)} am ${fD(dOf(x.t))}`}
+function unklarListe(X,max){const n=X.length,A=[...new Set(X.map(x=>x.a))],ein=A.length===1,Z=max&&n>max?X.slice(0,max):X,I=Z.map(x=>ein?x.t:`${x.t} (Konto ${x.a})`);
+  return {n,ein,konto:ein?A[0]:'',liste:n>Z.length?`${I.join(', ')} und ${fI.format(n-Z.length)} weitere`:I.length>1?`${I.slice(0,-1).join(', ')} und ${I[I.length-1]}`:I[0]||''}}
 
 /* ---------------- Kurse ----------------
    Drei Ebenen, beim Nachschlagen zusammengeführt (RM): eigene Kurse (S.rown) < eingebaut (RBM) < geladen oder aus Datei (S.rates, beides EZB).
@@ -13838,6 +13849,12 @@ function taxBlocks(c){const DE=c.L==='DE',f=c.f,y=c.y,ann=[],est=[],q=[],not=[],
     if(!DE&&c.kest!=null)Q('q-kest',`Verkäufe mit KESt-Abzug einer österreichischen Börse stehen in Kennzahl 173 und 175, die abgezogene KESt von ${f.E(c.kest)} in Kennzahl 899. Wird die KESt so angerechnet, oder ist eine Korrektur über die Veranlagung nötig?`);
     if(DE&&c.lost.length)Q('q-lost','Verloren oder gestohlen, ohne Verlust gerechnet: '+und(c.lost.map(x=>`${f.N(x.q)} ${x.coin} am ${f.D(x.d)} (Anschaffungskosten ${f.E(x.ak)})`))+'. Ist der Verlust absetzbar?');
   }
+  // Ab 0.203 (Florians Entscheidung vom 26.11.2026, Auftrag 0.203, Teil 1a, Antwort 1 zur Freigabe): Buchungen „noch unklar“ des Steuerjahres von Konten
+  // mit „Zählt“ als offene Frage, alle einzeln mit Betrag, Datum und Konto (c.unklar aus unklarListe: dieselbe Liste wie der Hinweis der Karte „CFD {Jahr}“,
+  // dort nur die ersten drei). Sie sind weiterhin nirgends eingerechnet. Unabhängig von Krypto.
+  if(c.unklar&&c.unklar.n){const u=c.unklar,k=u.ein?` auf Konto ${u.konto}`:'';
+    Q('q-unklar',u.n===1?`1\u00a0Buchung${k} ist noch unklar: ${u.liste}. Sie ist in dieser Abrechnung nicht enthalten. Bitte prüfen, was sie ist.`
+      :`${u.n}\u00a0Buchungen${k} sind noch unklar: ${u.liste}. Sie sind in dieser Abrechnung nicht enthalten. Bitte prüfen, was sie sind.`)}
   // Ab 0.200 (Florians Auftrag 0.200, Teil C, Antwort F13 mit Florians Schluss „Steuerlich können sie … sein. Bitte prüfen.“): Ein- und Auszahlungen beim
   // Broker mit anderen Coins, die diese Aufstellung nicht rechnet (Broker statt „Tag“, GESTALTUNG Abschnitt 13)
   if(c.oc&&c.oc.length){const ein=c.oc.filter(t=>t.kind==='ein'),aus=c.oc.filter(t=>t.kind==='aus'),sum=L=>L.reduce((a,t)=>a+t.usd,0),
@@ -13887,6 +13904,9 @@ function taxCtx(y){const L=S.ui.country==='DE'?'DE':'AT',DE=L==='DE',rows=(windo
     oc:S.ui.cxIncl!==false?tagOcJahr(y):[],
     usd:{on:Object.values(S.tag).some(t=>t.status==='ok'&&yr(tagD(t))===y),bank:Object.values(S.tag).some(t=>t.fiat&&t.kind==='ein'&&yr(tagD(t))<=y)},
     ny:nyData(rows,y),cxSaldo:cy.gain+cy.loss,not:taxNotItems(L),f:{E:v=>fE.format(v).replace(' €',' €'),D:fD,N:v=>fN.format(v),U:v=>usd(v).replace(' USD',' USD')}};
+  // Ab 0.203: Buchungen „noch unklar“ des Steuerjahres von Konten mit „Zählt“ für die offene Frage q-unklar, aus derselben Wurzel wie der Hinweis der
+  // Karte „CFD {Jahr}“ (unklarDeals, unklarEur), mit den Zahlenformaten der Bausteine
+  c.unklar=unklarListe(unklarDeals({jahr:y,zaehlt:true}).map(x=>({a:x.a,t:unklarAm(x,c.f.E,c.f.U)})),0);
   return {c,B:taxBlocks(c),rows,R,T,C,cy,DE,ds:taxDs(y),name:taxNameUse()}}
 // Ab 0.73 (2.1): Zeilen der Tabelle „Jahresabrechnung“ für Zusammenfassung (Seite 1) und Reiter, eine Quelle: t = 'g' Gruppe, 'r' Posten, 'sal' Saldo.
 // X = {c:{y,cfd,cx,opt}, T, R, cy, DE}. tab = auch die Zeilen, die nur der Reiter zeigt.
@@ -14400,7 +14420,7 @@ function guard(id){
 const AW_OBEN={fl:'',st:''};
 function awOben(){const h=AW_OBEN.fl+AW_OBEN.st;$('stats-guard').innerHTML=h?`<div class="card">${h}</div>`:'';$('stale2').innerHTML=''}
 // Ab 0.80 (3): Hinweis oben in Auswertung und Steuer, solange es Buchungen „noch unklar“ gibt: Anzahl, Betrag, Datum, Konto, Link zur Karte.
-// Nicht in Zusammenfassung und Steuer-Excel. Mit „Ohne Steuer“ ohne das Wort Steuer.
+// Nicht in Zusammenfassung und Steuer-Excel (ab 0.203 dort als offene Frage q-unklar, taxBlocks). Mit „Ohne Steuer“ ohne das Wort Steuer.
 // Ab 0.115: Betrag in der Auswertung in der Währung des Schalters (CUR_EFF), wie die übrigen Beträge: in Euro jede Buchung zum EZB-Kurs ihres
 // Tages (unklarEur, ab 0.193). Fehlt für eine der Buchungen der Kurs, steht die Summe wie bisher in USD.
 // Ab 0.193 (Florians Auftrag 0.193): nur noch oben in der Auswertung, alle Jahre und alle Konten, Wortlaut unverändert. Bis 0.192 auch oben im
@@ -14423,13 +14443,12 @@ function unklarH(){const L=unklarDeals();if(!L.length)return '';
 // und Konto, ab 4 die ersten 3 und „und N weitere“ (ohne Summe). Eine Buchung: Florians Wortlaut. Mehrere: Liegen alle Buchungen des Hinweises
 // auf einem Konto, steht es einmal vorne („5 Buchungen auf Konto … sind noch unklar: …“), sonst bei jeder Buchung in Klammern. „Buchungsarten“
 // ist der Link zur Karte (data-mapgo, wie bis 0.192 „Zu den Buchungsarten“).
+// Ab 0.203: Betrag, Datum und Liste aus unklarAm und unklarListe (dieselben Bausteine wie die offene Frage q-unklar); der Wortlaut ist unverändert.
 function unklarSteuerH(y){const L=unklarDeals({jahr:y,zaehlt:true}),n=L.length;if(!n)return '';
-  const bet=x=>{const e=unklarEur(x),u=isNaN(e),v=u?x.prof:e;return (zeigtPlus(v,2)?'+':'')+(u?usd(v):fE.format(v))};
-  const am=x=>`${bet(x)} am ${fD(dOf(x.t))}`,A=[...new Set(L.map(x=>x.a))],link='<button type="button" class="zlink" data-mapgo>Buchungsarten</button>';
+  const X=L.map(x=>({a:esc(x.a),t:unklarAm(x,v=>fE.format(v),usd)})),U=unklarListe(X,3),link='<button type="button" class="zlink" data-mapgo>Buchungsarten</button>';
   let t;
-  if(n===1)t=`1 Buchung ist noch unklar: ${am(L[0])}, Konto ${esc(L[0].a)}. Sie ist nicht eingerechnet. Ordne sie unter ${link} zu. Wenn du nicht weißt, was sie ist, sag es deiner Steuerberatung.`;
-  else{const I=L.slice(0,3).map(x=>A.length===1?am(x):`${am(x)} (Konto ${esc(x.a)})`),liste=n>3?`${I.join(', ')} und ${fI.format(n-3)} weitere`:`${I.slice(0,-1).join(', ')} und ${I[I.length-1]}`;
-    t=`${fI.format(n)} Buchungen ${A.length===1?`auf Konto ${esc(A[0])} `:''}sind noch unklar: ${liste}. Sie sind nicht eingerechnet. Ordne sie unter ${link} zu. Wenn du nicht weißt, was sie sind, sag es deiner Steuerberatung.`}
+  if(n===1)t=`1 Buchung ist noch unklar: ${X[0].t}, Konto ${X[0].a}. Sie ist nicht eingerechnet. Ordne sie unter ${link} zu. Wenn du nicht weißt, was sie ist, sag es deiner Steuerberatung.`;
+  else t=`${fI.format(n)} Buchungen ${U.ein?`auf Konto ${U.konto} `:''}sind noch unklar: ${U.liste}. Sie sind nicht eingerechnet. Ordne sie unter ${link} zu. Wenn du nicht weißt, was sie sind, sag es deiner Steuerberatung.`;
   // Ab 0.195 (Florians Auftrag 0.195, Teil B): gelbe Fläche (bis 0.194 gelber Strich wie der Satz zum Datenstand)
   return `<div class="msg warn">${t}</div>`}
 // Ab 0.183 (Florians Antwort 6 zur Freigabe 0.183, Wortlaut aus dem Plan): Zeile mit grauem Rand oben in der Auswertung, solange sie Handy-Zeilen zählt
@@ -14925,11 +14944,11 @@ const GL={
   // tagart, k-cx, wbal, zuordnen, k-cxflow, abrechnung (fehlender Teil im (i) „Kartenzahlungen“, ADDR_O). Der alte Wortlaut steht im Bericht 0.128. fifo blieb in 0.128 ohne Anzeige, ab 0.129 steht es in der Jahresabrechnung für Deutschland (taxTabH).
   // Ab 0.117: DFX.swiss
   dxpend:{t:'Ausstehend',h:'Bei DFX.swiss angekommen, noch nicht in deiner DFX-Datei.\nLies die DFX-Datei neu ein, sobald DFX.swiss fertig ist.\nDie Coins zählen nicht mehr zum Bestand der Wallet, damit er zur Blockchain passt. Steuerlich ist das noch kein Vorgang. Sobald eine DFX-Datei den Verkauf mit diesem Hash zeigt, verknüpft das Tool ihn. In „Alle Vorgänge“ wählst du bei der Bewegung, wie es ausgegangen ist.'},
-  'k-ov':{t:'Überblick',h:'Die wichtigsten Zahlen für den gewählten Zeitraum und die gewählten Konten. Mit „Rendite ▾“ oder „Betrag ▾“ wechselst du, ob die Kacheln Prozent oder Beträge zeigen.'},
+  'k-ov':{t:'Überblick',h:'Die wichtigsten Zahlen für den gewählten Zeitraum und die gewählten Konten. Mit „Rendite ▾“ oder „Betrag ▾“ wechselst du, ob die Kacheln Prozent oder Beträge zeigen.\nDas Bild zeigt, was du oben eingestellt hast: Zeitraum, Konten und PF. Kontonamen stehen nie darin. „Betrag zeigen“ findest du unter „Bild“ rechts oben in der Karte (bei wenig Platz ein Bild-Symbol).'},
   'k-ms':{t:'Meilensteine',get h(){const I=MS_TXT.info;return esc(I.zaehlt)+'\n<ul class="glul">'+I.punkte.map(t=>`<li>${esc(t)}</li>`).join('')+'</ul>'}},
   'k-hl':{t:'Hochs und Tiefs',h:'Die besten und schwächsten Trades, Tage und Wochen, dazu Serien am Stück. Ein Datum führt dich zur Stelle in „Pro Woche“.'},
   'k-avg':{t:'Durchschnitt',h:'Was ein Handelstag, eine Woche, ein Monat und ein Trade im Schnitt gebracht haben, als Durchschnitt und als Median.'},
-  'k-graf':{t:'Grafiken',h:'Deine Ergebnisse als Grafik. Oben wählst du, was gezeigt wird, unter der Grafik steht, was sie bedeutet.\n„Vollbild“ zeigt die Grafik über den ganzen Bildschirm. Mit „Bild“ speicherst oder teilst du sie als Bild (PNG), immer quer und hell, ohne Kontonamen.'},
+  'k-graf':{t:'Grafiken',h:'Deine Ergebnisse als Grafik. Oben wählst du, was gezeigt wird, unter der Grafik steht, was sie bedeutet.\n„Vollbild“ zeigt die Grafik über den ganzen Bildschirm. Mit „Bild“ speicherst oder teilst du sie als Bild (PNG), immer quer und hell, ohne Kontonamen.\nDas Bild zeigt die Grafik so, wie du sie eingestellt hast. Willst du keine Beträge zeigen, stell die Einheit vorher auf %. Die Grafik „Investition“ zeigt immer Beträge.'},
   'k-acc':{t:'Pro Konto',h:'Jedes Konto einzeln und alle gewählten Konten zusammen.'},
   // Ab 0.184 (Florians Wortlaut): „in dem gehandelt wurde“ (ab 0.182 fehlen Monate ohne Trade)
   'k-month':{t:'Pro Monat',h:'Jeder Monat im gewählten Zeitraum, in dem gehandelt wurde.'},
@@ -17252,7 +17271,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.202',VDATE='25.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.203',VDATE='26.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar. */
