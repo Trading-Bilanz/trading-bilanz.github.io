@@ -29,6 +29,7 @@
   die Zeile „Annas Stand im Tool“ (p.stand).
   Ab 0.203 (Florians Auftrag 0.203): zwei weitere Karten ohne Nummer, „Als Symbol auf deinem Gerät“ (#symbol, nach Abschnitt 1, vier Teile zum Aufklappen
   je Gerät, bei jeder Gerätewahl sichtbar) und „Deine Steuerzahlen“ (#steuer, nach „Deine Auswertung“, drei Bilder aus Annas Stand nach Stufe 1).
+  Ab 0.206 (Florians Auftrag 0.206): eine weitere Karte ohne Nummer, „Häufige Fragen“ (#fragen), als letzte Karte nach Abschnitt 15.
   Die Sprungmarken bleiben, das Tool verlinkt darauf (#mt5-verbinden, #report-speichern, #tag-daten, #reiter-wallet, #boerse-datei,
   #von-hand, ab 0.76 #tausch, ab 0.168 #dfx, ab 0.174 #abarbeiten). #anderes-tool (ab 0.76) verlinkt das Tool ab 0.170 nicht mehr (Florians Auftrag), die Sprungmarke bleibt.
   #noch-offen verlinkt das Tool ab 0.174 nicht mehr: Das (i) „Noch offen“ zeigt auf #abarbeiten, dort stehen die Farben (Florians Auftrag 0.174). Die Sprungmarke bleibt.
@@ -141,7 +142,7 @@ nav.toc .tocg>li{margin:0 0 6px;break-inside:avoid}
 nav.toc .tocg ul{padding-left:18px;margin:2px 0 0}
 nav.toc .tocg ul li{margin:0 0 2px}
 nav.toc a.grp{font-weight:600}
-/* Ab 0.173: letzte Gruppe (14 und 15) ohne Stufe, nicht eingerückt */
+/* Ab 0.173: letzte Gruppe (14 und 15, ab 0.206 dazu „Häufige Fragen“) ohne Stufe, nicht eingerückt */
 nav.toc .tocg>li.ohne>ul{padding-left:0;margin-top:0}
 @media (min-width:700px){nav.toc .tocg{columns:2;column-gap:32px}nav.toc .tocg>li.colb{break-before:column}}
 section{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:6px 20px 14px;margin:16px 0}
@@ -345,6 +346,7 @@ document.addEventListener('DOMContentLoaded',function(){
         <ul>
           <li><a href="#kontostand">14. Zur Kontrolle: der Kontostand (freiwillig)</a></li>
           <li><a href="#weiter">15. Wie es weitergeht</a></li>
+          <li><a href="#fragen">Häufige Fragen</a></li>
         </ul></li>
     </ul>
   </nav>
@@ -394,7 +396,8 @@ document.addEventListener('DOMContentLoaded',function(){
        Nachtrag 0.203 (Florians Auftrag): Ordner „Bilder“ als Beispiel, Satz zur neuen Version der Offline-Fassung, Android mit dem Weg in Vivaldi
        (von Florian am Handy abgelesen und mit Vivaldi geprüft) und der Empfehlung „Installieren“, „Gut zu wissen“ in neuer Fassung bei iPhone und Mac.
        Zweiter Nachtrag 0.203 (Florians Auftrag): Mac mit dem Alias für die Offline-Fassung (das Symbol einfügen ist nur dort genau beschrieben), Chrome am
-       Android-Handy mit „Installieren und Verknüpfung erstellen“ (von Florian abgelesen), „Neue Version der Datei“ in Anführungszeichen. -->
+       Android-Handy mit „Installieren und Verknüpfung erstellen“ (von Florian abgelesen), „Neue Version der Datei“ in Anführungszeichen.
+       0.206 (Florians Auftrag 0.206): „Gut zu wissen“ beim Mac mit „Die App im Dock“ statt „Das Symbol“; beim iPhone bleibt der Satz. -->
   <h3 class="st"><span>Als Symbol auf deinem Gerät</span></h3>
   <p>So öffnest du die Trading-Bilanz mit einem Tipp, wie eine App.</p>
   <details class="how">
@@ -420,7 +423,7 @@ document.addEventListener('DOMContentLoaded',function(){
     <summary>Mac</summary>
     <p>Das Symbol als Bild: <a href="https://trading-bilanz.github.io/icons/icon-trading-bilanz-512.png" download>Symbol als Bild (PNG, 512 px)&nbsp;↗</a></p>
     <p>In Safari (ab macOS 14): <b>„Ablage“</b>, <b>„Zum Dock hinzufügen“</b>. Oder zieh die Adresse aus der Adresszeile auf den Schreibtisch und gib ihr das Buch als Symbol, wie unten beim Alias beschrieben.</p>
-    <p class="small"><b>Gut zu wissen:</b> Das Symbol hat meist einen eigenen Speicher. Fehlen dort deine Daten, lade deine Sicherung. Nutze danach immer das Symbol.</p>
+    <p class="small"><b>Gut zu wissen:</b> Die App im Dock hat meist einen eigenen Speicher. Fehlen dort deine Daten, lade deine Sicherung. Nutze danach immer die App im Dock.</p>
     <p>Nutzt du die Offline-Fassung, machst du ein Alias deiner HTML-Datei: Rechtsklick auf die Datei, <b>„Alias erzeugen“</b>, und zieh das Alias auf den Schreibtisch. Für das Buch öffnest du das Bild (PNG) in „Vorschau“ und kopierst es. Dann Rechtsklick auf das Alias, <b>„Informationen“</b>, oben links auf das kleine Symbol klicken und einfügen. Bei einer neuen Version ersetzt du die alte Datei (gleicher Ort, gleicher Name), dann bleiben Alias und Daten (siehe <a href="#neue-version">„Neue Version der Datei“</a>).</p>
   </details>
 </section>
@@ -476,7 +479,7 @@ document.addEventListener('DOMContentLoaded',function(){
   <p class="small">Gemeint ist die HTML-Datei aus MetaTrader 5 (sie endet auf <code>.html</code>), nicht ein Report als PDF oder Excel.</p>
   <details class="how">
     <summary>Buchungsarten</summary>
-    <p>Erscheint im Reiter „Reports“ die Karte „Buchungsarten“, enthält dein Report Buchungen, die keine Trades sind und die das Tool noch nicht kennt. Wähle bei jeder, was sie bedeutet. Das Tool merkt es sich. Solange eine Buchung keine Bedeutung hat, zeigt das Tool keine Auswertung und keine Steuer. Weißt du es nicht, schau beim Beispiel-Datum im MT5-Report nach, frag den Support oder wähle <b>„Noch unklar“</b>. Dann rechnet das Tool weiter, lässt diese Buchung aber weg und zeigt einen Hinweis: oben in der Auswertung und im Reiter Steuer in der Karte „CFD“ unter der Tabelle.</p>
+    <p>Erscheint im Reiter „Reports“ die Karte „Buchungsarten“, enthält dein Report Buchungen, die keine Trades sind und die das Tool nicht kennt. Wähle bei jeder, was sie bedeutet. Das Tool merkt es sich. Solange eine Buchung keine Bedeutung hat, zeigt das Tool keine Auswertung und keine Steuer. Weißt du es nicht, schau beim Beispiel-Datum im MT5-Report nach, frag den Support oder wähle <b>„Noch unklar“</b>. Dann rechnet das Tool weiter, lässt diese Buchung aber weg und zeigt einen Hinweis: oben in der Auswertung und im Reiter Steuer in der Karte „CFD“ unter der Tabelle.</p>
   </details>
 </section>
 
@@ -730,7 +733,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <section id="von-hand">
   <h3 class="st"><span>10. Von Hand eintragen</span></h3>
   <p>Was keine Datei hat, trägst du von Hand ein, zum Beispiel einen Kauf bei einer anderen Börse oder einen Übertrag in deine Wallet. Öffne im Reiter „Wallet“ oben <b>„＋ Daten“</b> und wähle <b>„Von Hand“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-von-hand.webp"><img src="anleitung/tool-von-hand.webp" width="778" height="419" alt="Liste Von Hand eintragen mit sechs nummerierten Zeilen, rechts ihre Knöpfe: 1 Tag mit Einzahlung, Auszahlung und Statt abtippen: aus Tag kopieren, 2 Börse mit Kauf und Verkauf, 3 Überträge mit Übertrag, 4 Karte mit Aufladung und (Karten-)Zahlung, 5 Anderes mit Neuer Eintrag, 6 Kontostand (freiwillig) mit Zum Bestand, oben rechts der Knopf So trägst du von Hand ein" loading="lazy"></a>
+  <figure class="k"><a href="anleitung/tool-von-hand.webp"><img src="anleitung/tool-von-hand.webp" width="778" height="419" alt="Liste Von Hand eintragen mit sechs nummerierten Zeilen, rechts ihre Knöpfe: 1 Tag mit Einzahlung, Auszahlung und Statt abtippen: aus Tag kopieren, 2 Börse mit Kauf und Verkauf, 3 Überträge mit Übertrag, 4 Karte mit Aufladung und (Karten-)Zahlung, 5 Anderes mit Neuer Eintrag, 6 Kontostand (freiwillig) mit Kontostände prüfen, oben rechts der Knopf So trägst du von Hand ein" loading="lazy"></a>
     <figcaption>Die Liste „Von Hand eintragen“. Jeder Knopf öffnet das passende Formular.</figcaption></figure>
   <p>Die Liste hat sechs Schritte: Tag, Börse, Überträge, Karte, Anderes und zuletzt, freiwillig, der Kontostand. Gehe sie von oben nach unten durch und lass die Punkte in „Noch offen“ liegen, bis du durch bist. Bei Schritt 1 musst du meist nichts tippen: <b>„Statt abtippen: aus Tag kopieren&nbsp;›“</b> führt zum Einfügen der Tag-Daten (<a href="#tag-daten">Abschnitt 7</a>). <b>„So trägst du von Hand ein“</b> rechts oben fasst das Vorgehen zusammen.</p>
   <p>Die Krypto-Karte steht in <a href="#karte">Abschnitt 11</a>, ein Tausch in <a href="#tausch">Abschnitt 12</a>, der Kontostand als freiwillige Kontrolle in <a href="#kontostand">Abschnitt 14</a>.</p>
@@ -908,7 +911,7 @@ document.addEventListener('DOMContentLoaded',function(){
   </ol>
   <p>Klicke auf <b>„Speichern“</b>. Findest du den Einkaufswert nicht, klicke am Punkt auf <b>„Ersatzwert bestätigen“</b>. Dann behältst du den Ersatzwert, kläre das mit deiner Steuerberatung. Das kannst du später zurücknehmen.</p>
   <h4>So lassen</h4>
-  <figure class="k"><a href="anleitung/tool-oz-so-lassen.webp"><img src="anleitung/tool-oz-so-lassen.webp" width="588" height="134" alt="Gelber Punkt Rest bei Kraken: 1,05 USDC. Gebühren?, darunter die Knöpfe Auf den Übertrag verteilen, Als eine Gebühr buchen und grün eingerahmt So lassen" loading="lazy"></a></figure>
+  <figure class="k"><a href="anleitung/tool-oz-so-lassen.webp"><img src="anleitung/tool-oz-so-lassen.webp" width="588" height="134" alt="Gelber Punkt Rest bei Kraken: 1,05 USDC. Gebühren?, darunter die Knöpfe Auf den Übertrag verteilen, Als Gebühr buchen und grün eingerahmt So lassen" loading="lazy"></a></figure>
   <p>Manche Punkte kannst oder willst du nicht klären. Bei Anna liegen nach dem Tausch vom 27.08. noch 1,05 USDC bei Kraken, und das Tool fragt, ob das Gebühren waren. Die Coins liegen wirklich dort: Anna klickt auf <b>„So lassen“</b>, dann fragt das Tool nicht wieder. Waren es Gebühren, nimm einen der anderen beiden Knöpfe.</p>
   <p>Fehlt dem Tool ein Einkauf, steht am Punkt unter „So löst du das“, was du tun kannst: <b>„Eintragen, woher sie kamen“</b>, <b>„Hatte ich schon“</b> oder <b>„So lassen“</b>. Mit „So lassen“ rechnet das Tool diesen Teil ohne Gewinn oder Verlust, und im Reiter „Steuer“ steht dazu ein Satz. Hängen andere Punkte an diesem Einkauf, nennt der Punkt sie als Folgen. Behebst du ihn, verschwinden sie von selbst.</p>
   <p>Unter <b>„Alle Punkte“</b> findest du solche Punkte bei „Mit „So lassen“ erledigt“ und kannst sie dort wieder anzeigen.</p>
@@ -928,12 +931,12 @@ document.addEventListener('DOMContentLoaded',function(){
 <section id="kontostand">
   <h3 class="st"><span>14. Zur Kontrolle: der Kontostand (freiwillig)</span></h3>
   <p>Hier vergleichst du, was deine Apps zeigen, mit dem, was das Tool aus deinen Einträgen rechnet. So merkst du, ob etwas fehlt.</p>
-  <p>Klicke im Reiter „Wallet“ in der Karte „Bestand jetzt“ auf <b>„Kontostände prüfen“</b>. Den gleichen Weg gibt es in <b>„＋ Daten“</b> bei <b>„Von Hand“</b> mit <b>„Zum Bestand“</b>.</p>
-  <figure class="k"><a href="anleitung/tool-kontostand.webp"><img src="anleitung/tool-kontostand.webp" width="640" height="542" alt="Fenster Kontostände prüfen: Bitvavo 6,23 USDC, Kraken 1,05 USDC, Meine Karte 66,90 USDC und Meine Wallet 50,00 USDC laut deinen Einträgen, grün eingerahmt die vier Felder Stand in deiner App, bei Unterschied je ein Haken" loading="lazy"></a></figure>
-  <p>Trage bei jeder Wallet ein, was deine App zeigt. Anna trägt alle vier Stände ein: 6,23 USDC bei Bitvavo, 1,05 USDC bei Kraken, 66,90 USDC auf der Krypto-Karte und 50 USDC in „Meine Wallet“. Passt ein Stand zu deinen Einträgen, steht bei „Unterschied“ ein ✓. Ab 0,01 Unterschied kommt ein Punkt in „Noch offen“.</p>
-  <figure><a href="anleitung/tool-wallet-fertig.webp"><img src="anleitung/tool-wallet-fertig.webp" width="820" height="524" alt="Reiter Wallet oben: Noch offen ohne Zahl, darunter die Karte Bestand jetzt mit Bitvavo 6,23 USDC, Kraken 1,05 USDC, Meine Karte 66,90 USDC und Meine Wallet 50,00 USDC, bei Abgleich überall ein Haken" loading="lazy"></a>
-    <figcaption>Bei Anna passen alle vier Stände: In der Karte „Bestand jetzt“ steht bei „Abgleich“ überall ein ✓.</figcaption></figure>
-  <p class="stand" data-stand="14"><b>Annas Stand im Tool:</b> Bitvavo 6,23 USDC ✓ · Kraken 1,05 USDC ✓ · Meine Karte 66,90 USDC ✓ · Meine Wallet 50,00 USDC ✓ · „Noch offen“ ohne Zahl</p>
+  <p>Klicke im Reiter „Wallet“ in der Karte „Bestand jetzt“ auf <b>„Kontostände prüfen“</b>. Den gleichen Weg gibt es in <b>„＋ Daten“</b> bei <b>„Von Hand“</b>, ebenfalls mit <b>„Kontostände prüfen“</b>.</p>
+  <figure class="k"><a href="anleitung/tool-kontostand.webp"><img src="anleitung/tool-kontostand.webp" width="640" height="452" alt="Fenster Kontostände prüfen: Bitvavo 6,23 USDC, Kraken 1,05 USDC, Meine Karte 66,90 USDC und Meine Wallet 50,00 USDC bei Im Tool, grün eingerahmt die vier Felder In der App abgelesen, bei Ergebnis je ein Haken mit Datum" loading="lazy"></a></figure>
+  <p>Lies in jeder App ab, wie viel dort steht, und trage es bei „In der App abgelesen“ ein. Anna trägt alle vier Werte ein: 6,23 USDC bei Bitvavo, 1,05 USDC bei Kraken, 66,90 USDC auf der Krypto-Karte und 50 USDC in „Meine Wallet“. Passt ein Wert zum Bestand im Tool, steht bei „Ergebnis“ ein ✓ mit dem Tag. Ab 0,01 Unterschied steht dort, wie viel im Tool fehlt oder zu viel ist, und es kommt ein Punkt in „Noch offen“. Dort siehst du, was du tun kannst.</p>
+  <figure><a href="anleitung/tool-wallet-fertig.webp"><img src="anleitung/tool-wallet-fertig.webp" width="820" height="524" alt="Reiter Wallet oben: Noch offen ohne Zahl, darunter die Karte Bestand jetzt mit Bitvavo 6,23 USDC, Kraken 1,05 USDC, Meine Karte 66,90 USDC und Meine Wallet 50,00 USDC" loading="lazy"></a>
+    <figcaption>Annas Reiter „Wallet“ am Ende: „Noch offen“ ohne Zahl, in „Bestand jetzt“ ihre vier Wallets.</figcaption></figure>
+  <p class="stand" data-stand="14"><b>Annas Stand im Tool:</b> Bitvavo 6,23 USDC · Kraken 1,05 USDC · Meine Karte 66,90 USDC · Meine Wallet 50,00 USDC · „Kontostände prüfen“ viermal ✓ · „Noch offen“ ohne Zahl</p>
 </section>
 
 <section id="weiter">
@@ -946,10 +949,20 @@ document.addEventListener('DOMContentLoaded',function(){
     <li>Speichere eine Sicherung.</li>
   </ol><!--/Q-->
 </section>
+
+<section id="fragen">
+  <!-- Ab 0.206 (Florians Auftrag 0.206, sein Wortlaut): Karte ohne Nummer nach Abschnitt 15, die letzte Karte der Seite. Je Frage ein fetter Absatz,
+       die Antwort als Absatz darunter. -->
+  <h3 class="st"><span>Häufige Fragen</span></h3>
+  <p><b>Die Zahlen im Tool stimmen nicht mit meinen Zahlen überein.</b></p>
+  <p>Hast du vielleicht auf € gestellt statt auf USD? Die Währung stellst du in der Filterzeile der Auswertung um.</p>
+  <p><b>Das Tool zeigt Coins in einer Wallet, die meine App nicht zeigt.</b></p>
+  <p>Vielleicht liegen sie auf einem anderen Netzwerk, z. B. Base. Gib deine Adresse im Block-Explorer ein und sieh dort nach.</p>
+</section>
 </main>
 
 <footer>
-  <p>Trading-Bilanz · Anleitung, Stand 26.11.2026 · <span class="nw">Keine Steuer- oder Finanzberatung.</span></p>
+  <p>Trading-Bilanz · Anleitung, Stand 27.11.2026 · <span class="nw">Keine Steuer- oder Finanzberatung.</span></p>
   <p><b>Datenschutz:</b> Diese Seite speichert nichts und lädt nur ihre eigenen Bilder. GitHub speichert beim Aufruf deine IP-Adresse (<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">Datenschutzerklärung von GitHub&nbsp;↗</a>).</p>
   <p><a href="https://weltenwandel.at/impressum.html" target="_blank" rel="noopener">Impressum&nbsp;↗</a> · <a href="mailto:florian@weltenwandel.at" target="_blank" rel="noopener">florian@weltenwandel.at</a> · <a class="nw" href="https://trading-bilanz.github.io" target="_blank" rel="noopener">Zur Trading-Bilanz</a></p>
 </footer>
