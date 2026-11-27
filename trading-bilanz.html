@@ -825,6 +825,8 @@ input.pct{width:7ch;text-align:right}
 .feep{display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
 .tdrund{margin:8px 0}.tdrund ul{list-style:none;margin:2px 0;padding:0}
 button.tdar{all:unset;cursor:pointer;display:block;padding:3px 6px;border-radius:6px;font-size:var(--fs-s)}
+/* Ab 0.207 Nachtrag (Florians Antwort N3): bei offenem Formular ist die Zeile in „Letzte Bewegungen“ kein Knopf, nur ihr Datum (data-tdday); gleicher Platz wie button.tdar */
+.tdrund li>span.tdar{display:block;padding:3px 6px;border-radius:6px;font-size:var(--fs-s)}
 button.tdar:hover,button.tdar:focus-visible{background:var(--sub-bg);outline:2px solid var(--accent);outline-offset:-2px}
 .tdrund li.tdcur button.tdar{border-left:3px solid var(--ink2);padding-left:6px}
 /* Ab 0.46 (4.3): die aktuelle Zeile in „Rundherum“ (kein Knopf), Abstand je Zeile, markierte Kartenzahlung (✎), Satz unter dem Kopf, Knöpfe neben dem Formular */
@@ -10165,6 +10167,11 @@ $('wtodo').addEventListener('click',e=>{
   // Ab 0.206: Auswege am Punkt „Bestand passt nicht“. „Neue Wallet-Datei einlesen“ öffnet „＋ Daten“ über „Noch offen“ (Rückweg wie bei „Wallet-Datei
   // einlesen“ der Börsen-Zeile). Ab 0.207 (Florians Auftrag 0.207, Phase 3, Punkt 1): „Eintrag nachtragen“ öffnet das Formular „Was war das?“ unter dem Punkt
   // (TD_BALADD, wie bei „Einkauf fehlt“), „＋ Daten“ öffnet sich nicht; ein zweiter Klick klappt es wieder zu. Bis 0.206 „＋ Daten“, „Von Hand“ mit DH_W.
+  // Ab 0.207 Nachtrag (Florians Antworten N1 und N2): Datum aus „Letzte Bewegungen“ ins Feld „Datum“ des offenen Formulars, nur der Tag. Die Eingabe zählt wie
+  // getippt (input-Ereignis: TD_DIRTY, Rückfrage „Nicht gespeichert“ beim Verlassen); das Feld leuchtet kurz auf (Ring wie hlring), ohne Toast.
+  {const dd=e.target.closest('[data-tdday]');if(dd){const f=$('cx-date');if(!CX_EMB||!f||!f.closest('#td-slot'))return;f.value=dd.dataset.tdday;
+    for(const t of ['input','change'])f.dispatchEvent(new Event(t,{bubbles:true}));
+    const ac=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();if(f.animate&&ac)f.animate([{boxShadow:`0 0 0 3px ${ac}`},{boxShadow:`0 0 0 3px ${ac}`,offset:.35},{boxShadow:'0 0 0 3px transparent'}],{duration:2200,easing:'ease-out'});return}}
   {const ba=e.target.closest('[data-baladd]');if(ba){const id='w:bal:'+ba.dataset.baladd;if(CX_EMB){cxEmbBack();endEdit();CX_EMB=null}TD_DIRTY='';TD_BALADD=TD_BALADD===id?'':id;TD_KIND='';render();return}}
   if(e.target.closest('[data-balfile]')){tdOver();dtOpen('wf');return}
   {const bf=e.target.closest('[data-balfee]');if(bf){const k=bf.dataset.balfee,snap=JSON.stringify(S),w=k.slice(0,k.lastIndexOf('|')),x=balFee(k);if(x){save();render();toastUndo(`${fmtNum(x.qty)} ${x.coin} bei ${w} als Gebühr gebucht.`,snap)}return}}
@@ -12427,7 +12434,7 @@ function todoItems(C){
      const x0=L[0][3][0],dirs=new Set(L.flatMap(([k,c,B,off])=>off.map(x=>x.diff>0?'in':'out'))),fo=TD_BALADD===id;
      I.push({id,lv:'y',kind:'bal',t:0,eur:0,ref:'',big:`${esc(w)}: Bestand passt nicht`,
        why:L.map(([k,c,B,off])=>[...off.map(x=>x.satz+ign(c,x)),...(B.pass?[B.pass]:[])].join('<br>')).join('<br>'),
-       ar:L.map(([k,c,B,off])=>({last:{w,c,d:off.map(x=>x.d||todayLocal()).sort().pop(),n:5,coin:L.length>1}})),
+       ar:L.map(([k,c,B,off])=>({last:{w,c,d:off.map(x=>x.d||todayLocal()).sort().pop(),n:5,coin:L.length>1,pick:fo}})),
        body:`<div class="row"><button type="button" class="btn primary${fo?' on':''}" data-baladd="${esc(w)}" aria-expanded="${fo}">Eintrag nachtragen</button>${nf?'':`<button type="button" class="btn" data-balfile="${esc(w)}">Neue Wallet-Datei einlesen</button>`}${fee.map(([k,c])=>`<button type="button" class="btn" data-balfee="${esc(k)}">Als Gebühr buchen${fee.length>1?' ('+esc(c)+')':''}</button>`).join('')}${app?`<button type="button" class="btn" data-tdbal="${esc(app[0])}">Wert ändern</button>`:''}<button type="button" class="btn" data-balkeep="${esc(w)}">So lassen</button></div>`,
        form:fo?{pre:Object.assign({kind:'',date:'',wallet:w,coin:L[0][1],qty:+Math.abs(x0.diff).toFixed(8)},dirs.size===1?{dir:[...dirs][0]}:{})}:null,
        li:{d:'',w,what:'Bestand passt nicht',q:L.map(x=>x[1]).join(', ')}})}}
@@ -12539,7 +12546,11 @@ function tdAround(o){const V=vgBuild(S),WS=new Set(S.wallets),mine=v=>WS.has(v.f
   const row=x=>{if(x.cur){const t=`<span class="small">${me?dm(me.d)+(me.tm?' '+me.tm.slice(0,5):''):''}</span> ${esc(o.label||(me?vgWas(me):''))} <span class="small">(dieser)</span>`;
       return `<li class="tdcur">${o.self?`<button type="button" class="tdar" data-tdshow="${esc(o.self)}">${t}</button>`:`<span class="tdar">${t}</span>`}</li>`}
     const v=x.v,ok=v.mv.some(k=>P.has(k)),ft=[v.from,v.to].filter(Boolean),q=la&&v.k==='uebertrag'&&v.from===la.w?v.qOut:v.k==='uebertrag'||VG_IN.includes(v.k)?v.qIn:v.qOut;
-    return `<li class="${ok?'tdok':''}"><button type="button" class="tdar" data-tdshow="${esc(v.id)}"><span class="small">${la?fD(v.d):dm(v.d)}${v.tm?' '+v.tm.slice(0,5):''}</span> <span class="nw k-${vgKc(v)}">${vgIcoA(v)}${esc(vgWas(v))}</span> <b>${fmtNum(q)} ${esc(v.coin)}</b>${ft.length?' '+esc(ft.join(' → ')):''}${la?'':` <span class="small tdago">· ${v.tm?tdAgo(x.dt):Math.abs(x.dt)<43200?'am selben Tag':tdAgo(x.dt)}</span>`}${ok?' <span class="tdpass">passt</span>':''}</button></li>`};
+    // Ab 0.207 Nachtrag (Florians Antworten N1 bis N3): Mit offenem Formular „Eintrag nachtragen“ (la.pick) ist nur das Datum ein Knopf (data-tdday, übernimmt
+    // den Tag ins Feld „Datum“, nicht die Uhrzeit); der Rest der Zeile springt dann nicht in die Liste, damit nichts Getipptes verloren geht.
+    const pk=la&&la.pick,dt=la?fD(v.d):dm(v.d),dd=pk?`<button type="button" class="zlink" data-tdday="${esc(v.d)}" aria-label="${esc(dt)} ins Feld „Datum“ übernehmen">${dt}</button>`:dt;
+    const inner=`<span class="small">${dd}${v.tm?' '+v.tm.slice(0,5):''}</span> <span class="nw k-${vgKc(v)}">${vgIcoA(v)}${esc(vgWas(v))}</span> <b>${fmtNum(q)} ${esc(v.coin)}</b>${ft.length?' '+esc(ft.join(' → ')):''}${la?'':` <span class="small tdago">· ${v.tm?tdAgo(x.dt):Math.abs(x.dt)<43200?'am selben Tag':tdAgo(x.dt)}</span>`}${ok?' <span class="tdpass">passt</span>':''}`;
+    return `<li class="${ok?'tdok':''}">${pk?`<span class="tdar">${inner}</span>`:`<button type="button" class="tdar" data-tdshow="${esc(v.id)}">${inner}</button>`}</li>`};
   if(la){const hd=`<p class="small"><b>Letzte Bewegungen in ${esc(la.w)}${la.coin?' ('+esc(la.c)+')':''}</b></p>`,all=`<p class="small"><button type="button" class="zlink" data-vgwall="${esc(la.w)}">Alle in der Liste zeigen&nbsp;›</button></p>`;
     return `<div class="tdrund tdlast">${hd}${L.length?`<ul>${L.map(row).join('')}</ul>`:`<p class="small">Bis zum ${fD(la.d)} gab es in ${esc(la.w)} keine Bewegung mit ${esc(la.c)}.</p>`}${all}</div>`}
   const R=[...bef,...near.filter(x=>x.dt<0),{cur:1},...near.filter(x=>x.dt>=0),...aft];
