@@ -144,9 +144,15 @@ p.idat{margin:6px 0 0}
 @media (max-width:560px){#intro-land{grid-template-columns:1fr}}
 #intro-land .btn[aria-pressed=true]{background:var(--btn);border-color:var(--btn);color:#fff;font-weight:700}
 #intro-land .btn[aria-pressed=true]::before{content:'✓ '}
-@keyframes stpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 70%,transparent)}100%{box-shadow:0 0 0 12px transparent}}
-#btn-steps.pulse{animation:stpulse 1.1s ease-out 3}
-@media (prefers-reduced-motion:reduce){#btn-steps.pulse{animation:none;box-shadow:0 0 0 3px var(--accent)}}
+/* Ab 0.208 (Florians Auftrag 0.208, Phase 2d, Variante 3 aus der Vorschau): nach „Ohne Einführung starten“ läuft ein Schimmer (Lichtband) dreimal über
+   „Erste Schritte“ und das „?“ in der Reiterleiste (Klasse glanz); bei „Bewegung reduzieren“ stattdessen 2,5 s ein ruhiger Ring in --accent.
+   Bis 0.207 pulsierte nur „Erste Schritte“ (ein Ring, .pulse, stpulse). Das Band liegt im Knopf (::after, overflow:hidden), nichts rückt. */
+#btn-steps,nav #tabs button.tq{position:relative;overflow:hidden}
+#btn-steps::after,.tq::after{content:"";position:absolute;top:-20%;bottom:-20%;left:-60%;width:45%;opacity:0;pointer-events:none;
+  transform:skewX(-20deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent)}
+@keyframes stschim{0%{opacity:1;transform:skewX(-20deg) translateX(0)}100%{opacity:1;transform:skewX(-20deg) translateX(420%)}}
+#btn-steps.glanz::after,.tq.glanz::after{animation:stschim 1.2s ease-in-out var(--gd,0s) 3}
+@media (prefers-reduced-motion:reduce){#btn-steps.glanz,nav #tabs button.tq.glanz{box-shadow:0 0 0 3px var(--accent)}#btn-steps.glanz::after,.tq.glanz::after{animation:none}}
 #intro-dl p{margin:0}
 /* Ab 0.97 (Florians Auftrag): Hinweis zum Weiterscrollen in der Begrüßung, ab 0.98 in allen Fenstern mit fester Knopfleiste. Steht in der festen Knopfleiste (.mft, sticky) und ragt darüber in den
    scrollbaren Bereich: Verlauf in die Farbe des Fensters (--card, hell und dunkel) und ein kleiner Pfeil. Sichtbar nur, solange unten noch Inhalt kommt
@@ -202,6 +208,16 @@ section{scroll-margin-top:calc(var(--navh,70px) - var(--tabsoff,0px))}
   /* Letzte Stufe (z. B. bei großer Textgröße): Die Reiter brechen um, die Seite scrollt nie seitlich */
   #tabs.l8 .trow{flex-wrap:wrap}
 }
+/* Ab 0.208 (Florians Auftrag 0.208, Phase 2a): Stufen am PC (fitTabs): pe engere Reiter, pz zwei Zeilen 4 + 3 wie am Handy, pw dazu Umbruch */
+#tabs.pe button{padding-left:10px;padding-right:10px}
+#tabs.pz{flex-direction:column;gap:3px}
+#tabs.pz .trow{display:flex;gap:4px;flex-wrap:nowrap;align-items:center}
+#tabs.pw .trow{flex-wrap:wrap}
+/* Ab 0.208 (Phase 2c, Form A): „?“ für „Erste Schritte“, blauer Kreis (--btn) mit weißem „?“ (Kontrast wie die blauen Knöpfe), rechtsbündig (margin-left:auto)
+   in der Reihe, nimmt nur seinen eigenen Platz. Spezifischer als #tabs button und die Stufen (#tabs.lN button), damit es überall gleich aussieht. */
+nav #tabs button.tq{margin-left:auto;flex:none;align-self:center;width:30px;height:30px;min-height:0;padding:0;gap:0;justify-content:center;border-radius:50%;
+  border:1px solid var(--btn);background:var(--btn);color:#fff;font:700 17px/1 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+nav #tabs button.tq:hover,nav #tabs button.tq:focus-visible{background:var(--btn-dk);border-color:var(--btn-dk)}
 main{max-width:1180px;margin:0 auto;padding:16px 16px 60px}
 /* Alle Reiter höchstens 1180 px. Die Auswertung bis 1320 px aus 0.111 ist ab 0.112 zurückgenommen (Florians Auftrag: Tabellen mit wenigen
    Spalten zogen sich zu weit auseinander; ein wenig seitliches Scrollen in „Pro Konto“ ist in Ordnung). body.tstats entfällt damit. */
@@ -3878,7 +3894,8 @@ function unknownKinds(){const m={};for(const [k,e] of Object.entries(mapKinds())
 function unklarDeals(o){o=o||{};return Object.values(S.deals).filter(x=>x.type!=='buy'&&x.type!=='sell'&&catOf(x)==='unklar'&&(!o.jahr||dOf(x.t).slice(0,4)===o.jahr)&&(!o.zaehlt||taxIn(x.a))).sort((p,q)=>p.t<q.t?-1:p.t>q.t?1:0)}
 // Ab 0.193: Euro-Betrag einer Buchung „noch unklar“ zum EZB-Kurs ihres Tages (rateInfo, wie enrich), NaN ohne Kurs. Die eine Stelle für die Summe
 // oben in der Auswertung (unklarH) und die Beträge im Reiter Steuer (unklarSteuerH). Bis 0.192 stand die Rechnung in unklarH.
-function unklarEur(x){const ri=rateInfo(dOf(x.t),x.t);return ri&&ri.v?x.prof/ri.v:NaN}
+// Ab 0.208 (Rundung A2): auf den Cent über eurCent (bis 0.207 x.prof ÷ Kurs)
+function unklarEur(x){const ri=rateInfo(dOf(x.t),x.t);return ri&&ri.v?eurCent(x.prof,ri.v):NaN}
 // Ab 0.203 (Florians Entscheidung vom 26.11.2026, Auftrag 0.203, „Eine Wurzel“): die Liste der Buchungen „noch unklar“ als Text, eine Stelle für den
 // Hinweis der Karte „CFD {Jahr}“ (unklarSteuerH) und die offene Frage q-unklar in Zusammenfassung und Steuer-Excel (taxCtx, taxBlocks).
 // unklarAm: eine Buchung als „+11,02 € am 12.03.2025“ (E, U = Format für Euro und USD der Stelle; fehlt der Kurs, steht diese eine Buchung in USD).
@@ -3932,6 +3949,16 @@ function easterSun(y){if(EASTER[y])return EASTER[y];const a=y%19,b=Math.floor(y/
   return EASTER[y]=`${y}-${String(mo).padStart(2,'0')}-${String(da).padStart(2,'0')}`}
 function ecbClosed(d){const md=d.slice(5);if(md==='01-01'||md==='05-01'||md==='12-25'||md==='12-26'||ECB_EXTRA.includes(d))return true;const E=easterSun(+d.slice(0,4));return d===addDays(E,-2)||d===addDays(E,1)}
 function rateFor(d,cur,t){if(cur==='EUR')return 1;const o=rateInfo(d,t);return o?o.v:null}
+/* ---------------- Euro-Betrag einer Buchung (ab 0.208): eine Wurzel ----------------
+   Florians Beschluss im Auftrag 0.208, Phase 3 (Rundung A, Antwort 5 zur Freigabe: A2): Jede Buchung wird beim Umrechnen in Euro auf den Cent gerundet,
+   halbe Cent kaufmännisch (vom Nullpunkt weg). Gerechnet wird mit ganzen Zahlen: der Betrag in ganzen Cent, der Kurs (USD je EUR) mal 1.000.000
+   (EZB-Kurse haben 4 Stellen, also genau). So hängt das Ergebnis nicht am Rechenweg (OFFEN „Halbe Cent in Durchschnitten“): 0,42 USD zum Kurs 1,1200 sind
+   genau 0,375 €, also 0,38 €; die Division mit Kommazahlen ergäbe 0,37499999999999994 und damit 0,37 €. A2: eine Buchung, ein Euro-Betrag (enrich);
+   die Karte „CFD“ teilt ihn in den gerundeten Gewinn und den Rest als Kosten (agg). Ohne Kurs NaN. Bis 0.207 wurde ungerundet umgerechnet (Betrag ÷ Kurs),
+   gerundet erst beim Zeigen, und Summen kamen aus den ungerundeten Beträgen (Annas „CFD 2026“: Zeilen 345,52 €, Saldo 345,51 €). */
+function eurCent(usd,kurs){if(!(kurs>0)||!isFinite(usd))return NaN;const c=Math.round(Math.abs(usd)*100),k=Math.round(kurs*1e6),n=c*1e6;
+  if(2*n+k>9e15){const v=Math.abs(usd)/kurs;return (usd<0?-1:1)*Math.floor(v*100+0.5)/100}
+  const q=Math.floor((2*n+k)/(2*k));return (usd<0&&q?-q:q)/100}
 function rateDateFor(d,cur,t){if(cur==='EUR')return '';const o=rateInfo(d,t);return o?o.rd:''}
 // Ab 0.40 in österreichischer Zeit (tagAT): Datum tagD und Zeitpunkt tagT einer Tag-Zeile für Kurse, Steuerjahr und Reihenfolge
 const tagD=t=>tagAT(t).date,tagT=t=>{const a=tagAT(t);return a.time?a.date+' '+a.time:''};
@@ -4141,7 +4168,9 @@ function enrich(o){
     const ri=rateInfo(d,x.t),r=ri?ri.v:null;
     let amt=0;
     if(cat==='close')amt=x.prof+x.cost;else if(cat==='open')amt=x.cost;else amt=x.prof;
-    const row={x,a:x.a,d,y:d.slice(0,4),ym:d.slice(0,7),wk:monday(d),cat,amt,rate:r,rd:ri?ri.rd:'',prov:!!(ri&&ri.prov),eur:r?amt/r:NaN};
+    // Ab 0.208 (Rundung A2): Euro der Buchung auf den Cent (eurCent), bei einer Schließung dazu der Gewinnteil eurG (für „Gewinne“ und „Verluste“ in agg)
+    const row={x,a:x.a,d,y:d.slice(0,4),ym:d.slice(0,7),wk:monday(d),cat,amt,rate:r,rd:ri?ri.rd:'',prov:!!(ri&&ri.prov),eur:r?eurCent(amt,r):NaN};
+    if(cat==='close')row.eurG=r?eurCent(x.prof,r):NaN;
     if(x.hy)row.hy=1;
     rows.push(row);
   }
@@ -4151,7 +4180,8 @@ function enrich(o){
 // Ab 0.95 (AT14): Zeilen des Steuerjahrs y in Österreich. Der Anteil einer Fee aus dem Jänner für Trades des Vorjahrs (pfPrev) zählt zum Vorjahr
 // (§ 19 Abs. 2 EStG): im Jahr der Abbuchung ohne ihn, im Vorjahr als eigene Zeile (Monat Dezember, Woche der Trades). x.prof passt zum Betrag (Excel-Formel).
 function taxYR(rows,y){const o=[];for(const r of rows){const p=r.cat==='fee'&&r.pfPrev;
-    if(p&&r.y===y){if(Math.abs(r.amt-p.u)>0.004)o.push(Object.assign({},r,{eur:r.eur-p.e,amt:r.amt-p.u,x:Object.assign({},r.x,{prof:r.x.prof-p.u}),janRest:1}));continue}
+    // Ab 0.208 (Rundung A2): der Rest wie eine eigene Buchung auf den Cent (eurCent), passend zur Formel „Summe EUR“ in der Steuer-Excel; bis 0.207 r.eur − p.e
+    if(p&&r.y===y){if(Math.abs(r.amt-p.u)>0.004)o.push(Object.assign({},r,{eur:r.rate?eurCent(r.amt-p.u,r.rate):NaN,amt:r.amt-p.u,x:Object.assign({},r.x,{prof:r.x.prof-p.u}),janRest:1}));continue}
     if(p&&+r.y===+y+1){o.push(Object.assign({},r,{y,eur:p.e,amt:p.u,ym:`${y}-12`,wk:p.wk||r.wk,x:Object.assign({},r.x,{prof:p.u}),janPrev:1}));continue}
     if(r.y===y)o.push(r)}
   return o}
@@ -4164,7 +4194,9 @@ function years(rows){return [...new Set(rows.map(r=>r.y))].sort()}
 function agg(rows){
   const z={res:sumTrades(rows,false).v,fee:0,tax:0,pw:0,ein:0,kab:0,n:0,win:0,best:null,worst:null,gain:0,loss:0,costs:0,resUsd:sumTrades(rows,false,true).v,feeUsd:0,pwUsd:0};
   for(const r of rows){
-    if(r.cat==='close'){z.costs+=r.x.cost/(r.rate||NaN);const g=r.x.prof/(r.rate||NaN);if(g>=0)z.gain+=g;else z.loss+=g}
+    // Ab 0.208 (Rundung A2): Gewinn oder Verlust = gerundeter Gewinnteil der Buchung (eurG), Kosten = Euro der Buchung minus Gewinnteil; so ergeben die drei
+    // Zeilen der Karte „CFD“ genau die Summe der Buchungen. Bis 0.207 je Teil ungerundet (x.prof ÷ Kurs, x.cost ÷ Kurs).
+    if(r.cat==='close'){const g=r.eurG;z.costs+=r.eur-g;if(g>=0)z.gain+=g;else z.loss+=g}
     else if(r.cat==='open'){z.costs+=r.eur}
     else if(r.cat==='fee'){z.fee+=r.eur;z.feeUsd+=r.amt}
     else if(r.cat==='gewinnauszahlung'){z.pw+=-r.eur;z.pwUsd+=-r.amt}
@@ -4287,7 +4319,8 @@ function addAnalysis(rows){
       // nutzt ihn (taxYR, § 19 Abs. 2 EStG), Auswertung und Deutschland bleiben beim Tag der Abbuchung.
       fee.pfPrev=null;
       if(fee.d.slice(5)<='01-15'){let pu=0,wk='';per.forEach((r,i)=>{if(r.y<fee.y){pu+=r.amt-U.out[i];wk=r.wk}});
-        if(pu>0.004&&isFinite(pu))fee.pfPrev={u:-pu,e:fee.rate?-pu/fee.rate:NaN,wk}}
+        // Ab 0.208 (Rundung A2): der Anteil fürs Vorjahr in USD auf den Cent, in Euro über eurCent; der Rest der Buchung rechnet taxYR ebenso (je Teil eine Buchung)
+        if(pu>0.004&&isFinite(pu)){const u=-Math.round(pu*100)/100;fee.pfPrev={u,e:fee.rate?eurCent(u,fee.rate):NaN,wk}}}
       if(U.warn||E.warn)console.warn(`Performance Fee ${fee.x.t} (Konto ${a}): Netto der Periode ≤ 0, PF nur auf die Gewinn-Trades verteilt.`);
       const nu=per.reduce((s,r)=>s+r.amt,0);
       if(nu>0)share[a]={u:pf.u/nu,t:fee.x.t,a};
@@ -4314,7 +4347,8 @@ function addAnalysis(rows){
     if(!share[a])PF_SRC[a]=latest?latest.a:'';
     const sh=share[a]||latest||PF_FIX;
     const nu=per.reduce((s,r)=>s+r.amt,0),pfU=nu>0?sh.u*nu:0,rate=per[per.length-1].rate;
-    put(per,distPF(per.map(r=>r.amt),pfU).out,distPF(per.map(r=>r.eur),pfU&&rate?pfU/rate:0).out,true);
+    // Ab 0.208 (Rundung A2): die geschätzte PF in Euro wie eine Buchung über eurCent (bis 0.207 pfU ÷ Kurs)
+    put(per,distPF(per.map(r=>r.amt),pfU).out,distPF(per.map(r=>r.eur),pfU&&rate?eurCent(pfU,rate):0).out,true);
   }
   // Investition je Konto zum Zeitpunkt jedes Trades: (Einzahlungen − Kapitalabzüge bis dahin) ÷ Trading Benefit.
   // Fehlt der Anfang der Buchungen (CHAIN), ist die Investition unbekannt, auch mit „Absichtlich so“. Ausnahme Notlösung (invNow =
@@ -10172,12 +10206,21 @@ $('wtodo').addEventListener('click',e=>{
   {const dd=e.target.closest('[data-tdday]');if(dd){const f=$('cx-date');if(!CX_EMB||!f||!f.closest('#td-slot'))return;f.value=dd.dataset.tdday;
     for(const t of ['input','change'])f.dispatchEvent(new Event(t,{bubbles:true}));
     const ac=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();if(f.animate&&ac)f.animate([{boxShadow:`0 0 0 3px ${ac}`},{boxShadow:`0 0 0 3px ${ac}`,offset:.35},{boxShadow:'0 0 0 3px transparent'}],{duration:2200,easing:'ease-out'});return}}
-  {const ba=e.target.closest('[data-baladd]');if(ba){const id='w:bal:'+ba.dataset.baladd;if(CX_EMB){cxEmbBack();endEdit();CX_EMB=null}TD_DIRTY='';TD_BALADD=TD_BALADD===id?'':id;TD_KIND='';render();return}}
+  // Ab 0.208 (Florians Auftrag 0.208, Phase 1, OFFEN „Aus 0.207“): Ist im offenen Formular etwas getippt, fragt auch der zweite Klick auf
+  // „Eintrag nachtragen“ (klappt zu) wie „Alle in der Liste zeigen ›“, × und „Schließen“ „Nicht gespeichert“ (tdLeave). „Speichern“ trägt den Eintrag
+  // ein und klappt dann zu, „Verwerfen“ klappt ohne Eintrag zu, Esc und Klick daneben bleiben im Formular. Zu oder auf steht vor der Rückfrage fest (zu).
+  {const ba=e.target.closest('[data-baladd]');if(ba){const id='w:bal:'+ba.dataset.baladd,zu=TD_BALADD===id;
+    const go=()=>{if(CX_EMB){cxEmbBack();endEdit();CX_EMB=null}TD_DIRTY='';TD_BALADD=zu?'':id;TD_KIND='';render()};
+    if(TD_BALADD&&tdDirty())tdLeave(go);else go();return}}
   if(e.target.closest('[data-balfile]')){tdOver();dtOpen('wf');return}
   {const bf=e.target.closest('[data-balfee]');if(bf){const k=bf.dataset.balfee,snap=JSON.stringify(S),w=k.slice(0,k.lastIndexOf('|')),x=balFee(k);if(x){save();render();toastUndo(`${fmtNum(x.qty)} ${x.coin} bei ${w} als Gebühr gebucht.`,snap)}return}}
-  {const bk=e.target.closest('[data-balkeep]');if(bk){const w=bk.dataset.balkeep,X=balCtx(cryptoCalc()),N=[];
+  // Ab 0.208 (Florians Auftrag 0.208, Phase 1, und seine Antwort 1 zur Freigabe): Mit Getipptem im Formular „Eintrag nachtragen“ fragt „So lassen“ zuerst
+  // „Nicht gespeichert“ (tdLeave). „Speichern“ trägt den Eintrag ein, danach gilt „So lassen“ für das, was dann noch abweicht (der Vergleich wird erst
+  // jetzt gerechnet); weicht nichts mehr ab, entfällt „So lassen“. „Verwerfen“ verwirft das Getippte und lässt den Punkt so.
+  // Das Formular „Eintrag nachtragen“ ist danach zu (bis 0.207 blieb es als offen gemerkt und stand nach „Wieder anzeigen“ wieder offen da).
+  {const bk=e.target.closest('[data-balkeep]');if(bk){const w=bk.dataset.balkeep;tdLeave(()=>{if(CX_EMB){cxEmbBack();endEdit();CX_EMB=null}TD_DIRTY='';TD_BALADD='';TD_KIND='';const X=balCtx(cryptoCalc()),N=[];
     for(const k of new Set([...Object.keys(S.wbal||{}),...Object.keys(X.WB)])){if(k.slice(0,k.lastIndexOf('|'))!==w)continue;for(const x of balCmp(k,X).L)if(x.bad)N.push([k+'|'+x.s+'|',balKeepK(k,x)])}
-    balKeepSet([...(S.balKeep||[]).filter(y=>!N.some(n=>y.startsWith(n[0]))),...N.map(n=>n[1])]);save();render();return}}
+    if(N.length)balKeepSet([...(S.balKeep||[]).filter(y=>!N.some(n=>y.startsWith(n[0]))),...N.map(n=>n[1])]);save();render()});return}}
   // Ab 0.48 (1.3): „Verstanden“ beim grauen Punkt zu den Kursen, der Punkt kommt erst mit einem neuen Stand wieder
   {const ro=e.target.closest('[data-rateok]');if(ro){S.rateOk=ro.dataset.rateok;save();render();return}}
   // Ab 0.200 (Teil C): gelber Punkt „… mit einem anderen Coin“: „Verstanden“ merkt es an der Zeile (t.ocOk), „Coin ändern“ öffnet die Tag-Zeile über
@@ -13655,7 +13698,7 @@ function xlBuchungen(R,o){const tr=r=>r.cat==='close'||r.cat==='open';
   return xSheet('Buchungen MT5',[{h:'Konto',w:10,c:r=>r.a},{h:U[0],w:U[1],c:r=>o.zeitDT?xDT(r.x.t):r.x.t},{h:'Datum',w:11,c:r=>X.D(r.d)},
     {h:'Art',w:20,c:r=>CATN[r.cat]||'unbekannt'},{h:'Symbol',w:10,c:r=>r.x.sym},{h:'Trade-Nr.',w:11,c:r=>r.x.id},{h:'Gewinn/Betrag',w:12,k:'g',c:r=>X.N(r.cat==='open'?0:r.x.prof)},
     {h:'Kosten (Komm., Swap, Gebühr)',w:14,k:'k',c:r=>X.N(tr(r)?r.x.cost:0)},{h:'Summe (Kontowährung)',w:14,k:'s',c:(r,n,L)=>X.F(`${L.g}${n}+${L.k}${n}`,r.amt,5)},
-    {h:'Kurs vom',w:11,c:r=>r.rd?X.D(r.rd):''},{h:'Kurs USD je EUR',w:10,k:'r',c:r=>r.rate?X.R(r.rate):''},{h:'Summe EUR',w:12,c:(r,n,L)=>r.rate?X.F(`${L.s}${n}/${L.r}${n}`,r.eur,2):''},
+    {h:'Kurs vom',w:11,c:r=>r.rd?X.D(r.rd):''},{h:'Kurs USD je EUR',w:10,k:'r',c:r=>r.rate?X.R(r.rate):''},{h:'Summe EUR',w:12,c:(r,n,L)=>r.rate?X.F(`ROUND(${L.s}${n}/${L.r}${n},2)`,r.eur,2):''},
     ...(o.steuer?[{h:'Steuerlich relevant',w:10,c:r=>tr(r)||r.cat==='fee'?'ja':'nein'}]:[]),{h:'Kommentar',w:18,c:r=>r.x.cmt||''}],R)}
 // Ab 0.165 (Florians Entscheidung in der Freigabe 0.165 zu OFFEN „Aus 0.137“): Gebühr eines eigenen Eintrags in der Spalte ihrer Einheit, in beiden
 // Excel gleich (Blatt „Eigene Krypto-Einträge“): [Gebühr EUR, Gebühr USD]. Die Gebühr steht in der Währung des Eintrags, bei einer Kartenzahlung immer
@@ -14398,20 +14441,36 @@ function status(){
 }
 const TAX_MQ=window.matchMedia('(max-width:699px)');
 // Ab 0.46 (3.4): mit „Ohne Steuer“: „Steuer (aus)“, am Handy „Steuer aus“
-function taxLabel(){const c=S.ui.country;return TAX_MQ.matches?(c==='DE'?'Steuer DE':c==='none'?'Steuer aus':'Steuer AT'):(c==='DE'?'Steuer Deutschland':c==='none'?'Steuer (aus)':'Steuer Österreich')}
+// Ab 0.208 (Florians Auftrag 0.208, Phase 2a): die kurze Bezeichnung („Steuer AT“) wählt fitTabs (TAB_KURZ): am Handy immer, am PC, sobald die lange nicht
+// in eine Zeile passt. Bis 0.207 nur nach der Breite (TAX_MQ, bis 699 px); bei genau 700 px stand am Handy „Steuer Österreich“.
+let TAB_KURZ=false;
+// Ab 0.208: Beginn und Dauer des Schimmers nach „Ohne Einführung starten“ (introDone); tqGlanz setzt ihn am „?“, auch nach einem neuen Zeichnen der Reiter
+let GLANZ=0,GLANZ_D=0;
+function tqGlanz(){const q=$('tabs')&&$('tabs').querySelector('.tq'),t=Date.now()-GLANZ;if(!q||!GLANZ||t>=GLANZ_D)return;q.style.setProperty('--gd',(-t/1000).toFixed(3)+'s');q.classList.add('glanz')}
+function taxLabel(){const c=S.ui.country;return TAB_KURZ?(c==='DE'?'Steuer DE':c==='none'?'Steuer aus':'Steuer AT'):(c==='DE'?'Steuer Deutschland':c==='none'?'Steuer (aus)':'Steuer Österreich')}
 function updateTaxLabel(){const s=document.querySelector('#tabs [data-t="tax"] .lbl');if(s)s.textContent=taxLabel()}
 // Handy: Tabs fest in 4 + 3. Passt eine Zeile nicht, werden die Stufen l1 bis l7 nacheinander zugeschaltet (erst Abstände, Kreis, zuletzt die Schrift),
 // l8 lässt die Reiter umbrechen (nur bei sehr großer Schrift).
 const TAB_MQ=window.matchMedia('(max-width:700px)');
+// Ab 0.208 (Florians Auftrag 0.208, Phase 2a, und seine Antwort 2 zur Freigabe; Florians Regel in GESTALTUNG Abschnitt 0: „Die Reiterleiste scrollt nie
+// seitlich. Passt sie nicht in eine Zeile, bricht sie um.“): Auch am PC (über 700 px) passt sich die Leiste an, je die erste Stufe, die in eine Zeile passt:
+// 0 wie bisher mit „Steuer Österreich“, 1 mit „Steuer AT“ (TAB_KURZ), 2 dazu engere Reiter (innen 10 statt 14 px, Klasse pe), 3 zwei Zeilen 4 + 3 wie am Handy
+// (Klasse pz, normale Abstände, „Steuer AT“ bleibt), 4 dazu Umbruch in den Zeilen (pw, nur bei sehr großer Schrift). Bis 0.207 scrollte sie am PC seitlich
+// (gemessen mit Selawik und sichtbarer Scrollleiste: Österreich 701 bis 875 px, Deutschland bis 890 px). Stufe in data-pc, die Handy-Stufe in data-fit.
 function fitTabs(){
   const box=$('tabs');if(!box)return;
   // ab 0.145 mit dem festen Feld links (Symbol oder Schmetterling), 0.144 mit dem frei gehaltenen Feld rechts, 0.143 ohne das Abzeichen über der Ecke
   const over=()=>[...box.querySelectorAll('.trow')].some(r=>r.scrollWidth>r.clientWidth+0.5);
-  let lv=0;
+  // Ab 0.208: am PC eine Zeile (die Reihen sind display:contents, die Knöpfe stehen direkt in #tabs)
+  const over1=()=>box.scrollWidth>box.clientWidth+0.5;
+  const kurz=v=>{if(TAB_KURZ!==v){TAB_KURZ=v;updateTaxLabel()}};
+  let lv=0,pv=0;
   const set=n=>{for(let i=1;i<=8;i++)box.classList.toggle('l'+i,i<=n)};
-  set(0);
-  if(TAB_MQ.matches){while(lv<8&&over()){lv++;set(lv)}}
-  box.dataset.fit=lv;
+  const setp=n=>{box.classList.toggle('pe',n===2);box.classList.toggle('pz',n>=3);box.classList.toggle('pw',n>=4)};
+  set(0);setp(0);
+  if(TAB_MQ.matches){kurz(true);while(lv<8&&over()){lv++;set(lv)}}
+  else{kurz(false);if(over1()){pv=1;kurz(true);if(over1()){pv=2;setp(2);if(over1()){pv=3;setp(3);if(over()){pv=4;setp(4)}}}}}
+  box.dataset.fit=lv;box.dataset.pc=pv;
 }
 function renderTabs(st){
   const btns=TABS.map(([k,l],i)=>{
@@ -14431,7 +14490,10 @@ function renderTabs(st){
     const nb=k==='stats'&&msGet().neu.length>0;let vh='';
     if(k==='stats'){dot=`<span class="tsym">${nb?`<span class="bft${MS_FLASH.length?' fl':''}" data-bf="">${bflyH(18)}</span>`:TAB_SYM}</span>`;if(nb)vh=`<span class="vh">${esc(MS_TXT.ariaReiter)}</span>`}
     return `<button data-t="${k}" class="${S.ui.tab===k?'on':''}">${dot}<span class="lbl">${lab}</span>${vh}</button>`});
-  $('tabs').innerHTML=`<div class="trow">${btns.slice(0,4).join('')}</div><div class="trow">${btns.slice(4).join('')}</div>`;
+  // Ab 0.208 (Florians Auftrag 0.208, Phase 2c, Form A aus seiner Antwort 4): „?“ für „Erste Schritte“, rechtsbündig in der Reiterleiste (am Ende der
+  // zweiten Reihe: am PC in einer Zeile ganz rechts, in zwei Zeilen und am Handy am Ende der zweiten). Es liegt in #tabs, geht deshalb am Handy mit den
+  // Reitern aus dem Bild und kommt mit ihnen zurück (navApply, tboff wie jeder Reiter-Knopf). Öffnet dasselbe Fenster wie der Knopf „Erste Schritte“.
+  $('tabs').innerHTML=`<div class="trow">${btns.slice(0,4).join('')}</div><div class="trow">${btns.slice(4).join('')}<button type="button" class="tq noprint" title="Erste Schritte" aria-label="Erste Schritte">?</button></div>`;
   fitTabs();
   // Ab 0.118: neue Knöpfe sofort messen und sperren bzw. freigeben (Antippen je Knopf, navApply), nicht erst mit updateNavH
   navMeasure();
@@ -14441,7 +14503,10 @@ function renderTabs(st){
    if(TAB_ST&&Object.keys(now).some(k=>(now[k]==='todo'||now[k]==='wait')&&TAB_ST[k]!==now[k]))navShow(true);TAB_ST=now}
   // Ab 0.120 (Florians Auftrag): Klick auf einen Reiter, auch den offenen, springt sofort ganz nach oben (Titel, Untertitel, „Erste Schritte“ und
   // alle Reiter sichtbar), die Reiter sind danach ganz da (tabTop). Bis 0.119 nur bis unter die Kopfzeile, wenn der Abschnitt oben weggescrollt war.
-  $('tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.ui.tab=b.dataset.t;save();render();tabTop()});
+  // Ab 0.208 (Florians Auftrag 0.208, Phase 2b, ersetzt den Auftrag 0.120 für den Wechsel): Ein anderer Reiter springt nur bis zu seinem Anfang direkt unter
+  // den stehenden Leisten (tabStart); der offene Reiter springt wie bisher ganz nach oben (tabTop).
+  $('tabs').querySelectorAll('button[data-t]').forEach(b=>b.onclick=()=>{const gleich=S.ui.tab===b.dataset.t;S.ui.tab=b.dataset.t;save();render();if(gleich)tabTop();else tabStart()});
+  {const q=$('tabs').querySelector('.tq');if(q)q.onclick=()=>{openModal('steps-modal');MODAL_FROM=q};tqGlanz()}
   for(const [k] of TABS){$('s-'+k).classList.toggle('on',S.ui.tab===k);$('s-'+k).classList.toggle('print',S.ui.tab===k)}
 }
 // Ab 0.50 Nachtrag 5 (R1): Rückfrage zu × am Konto nennt die Buchungen mit Zeitraum und deine Angaben, die mit dem Konto wegfallen. Name, Trading
@@ -15453,7 +15518,7 @@ ${ECB_CITE}`},
   pfplus:{t:'Positive Performance Fee',h:'In einer Gewinnwoche senkt ein Verlust die Performance Fee, er kostet dich deshalb nur 70 %. In einer Verlustwoche gibt es keine PF, dann kostet er 100 %. Annahme: Tag nimmt Verluste nicht in die nächste Woche mit.'},
   rendite:{t:'Rendite',h:'Jeder Trade wird mit deiner Investition zu Beginn des Trades verglichen, die Renditen aller Trades werden zusammengezählt. Gemeint ist dein eingesetztes Geld, nicht der vervielfachte Kontostand im MT5. Bei Trading Benefit (×12, ×24) ist die Rendite deshalb viel höher als im MT5 oder bei Myfxbook.\nOhne Trading Benefit kennt das Tool deine Investition nicht. Die Rendite steht dann als „–“.\nDeshalb ist die Rendite nicht einfach Netto-Gewinn geteilt durch Investition, sobald sich deine Investition im Zeitraum ändert. Bei „PF laut MT5“ passen die beiden auch innerhalb einer Woche nicht zusammen: Die Rendite ist dann vor PF, der Netto-Gewinn nach der abgebuchten Fee.'},
   // Ab 0.58 (1): kleine Zusätze „vor PF“ / „nach PF“ und „laut MT5“ / „verteilt“ in den Spaltenköpfen (SMH, SMF) und in „Hochs und Tiefs“
-  pfst:{t:'PF-Schalter',h:'<b>verteilt / nach PF:</b> Tag bucht die Performance Fee einmal pro Woche ab, am Samstag, als eine Summe. Das Tool teilt sie auf die Trades der Woche auf, im Verhältnis zu ihrem Ergebnis. So steht die Fee an den Tagen, an denen du den Gewinn gemacht hast. Ein Verlust-Trade bekommt dabei einen Teil zurück. In der laufenden Woche ist die Fee noch nicht abgebucht: Bis Samstag rechnet das Tool sie aus, mit dem Anteil der letzten Abrechnung.\n<b>laut MT5 / vor PF:</b> wie im MT5-Report. Die Fee steht als eine Buchung am Samstag, in der laufenden Woche fehlt sie noch.\nUmschalten kannst du oben in der Leiste.'},
+  pfst:{t:'PF-Schalter',h:'<b>verteilt / nach PF:</b> Tag bucht die Performance Fee einmal pro Woche ab, am Samstag, als eine Summe. Das Tool teilt sie auf die Trades der Woche auf, im Verhältnis zu ihrem Ergebnis. So steht die Fee an den Tagen, an denen du den Gewinn gemacht hast. Ein Verlust-Trade bekommt dabei einen Teil zurück. In der laufenden Woche ist die Fee noch nicht abgebucht: Bis Samstag rechnet das Tool sie aus, mit dem Anteil der letzten Abrechnung. Was Tag dich an einem Tag abschöpfen lässt, kann um einen Cent von „PF verteilt“ abweichen. Tag rundet dabei nach einer eigenen Regel.\n<b>laut MT5 / vor PF:</b> wie im MT5-Report. Die Fee steht als eine Buchung am Samstag, in der laufenden Woche fehlt sie noch.\nUmschalten kannst du oben in der Leiste.'},
   inv:{t:'Investition',h:'Das Geld, das du selbst eingesetzt hast. In Euro ist jede Ein- und Auszahlung zum EZB-Kurs ihres Tages umgerechnet. Es enthält auch Gewinne, die du wieder eingezahlt hast.'},
   anfang:{t:'am Anfang',h:'Die Investition beim ersten Trade der Periode. Bei einzelnen Trade-Zeilen: die Investition zum Zeitpunkt des Trades.'},
   ende:{t:'am Ende',h:'Die Investition am Ende des gewählten Zeitraums.'},
@@ -17133,6 +17198,12 @@ function navProg(){NAV_USER=false}
 for(const [o,k] of [[window,'scrollBy'],[window,'scrollTo'],[Element.prototype,'scrollIntoView']]){const f=o[k];if(typeof f==='function')o[k]=function(){navProg();return f.apply(this,arguments)}}
 // Ab 0.120: ganz nach oben, ohne Gleiten, die Reiter sofort ganz sichtbar (Reiterwechsel, vor dem Sprung nach dem Einlesen)
 function tabTop(){navStop();NAV_PIN=false;window.scrollTo(0,0);NAV_Y=navY();if(NAVOFF){NAVOFF=0;navApply()}}
+// Ab 0.208 (Florians Auftrag 0.208, Phase 2b): Wechsel in einen anderen Reiter. Die Reiter sind sofort ganz da, dann steht der Anfang des Reiters direkt unter
+// den stehenden Leisten (Reiter, in der Auswertung die Filterzeile, im Wallet die Leiste: die ganze nav). Liegt er schon dort oder tiefer, also solange der
+// Kopf mit dem Titel zu sehen ist, bleibt die Seite stehen. Sprünge mit Ziel nehmen weiter tabTop.
+function tabStart(){navStop();NAV_PIN=false;if(NAVOFF){NAVOFF=0;navApply()}
+  const sec=$('s-'+S.ui.tab);if(sec){const ziel=Math.max(0,Math.round(sec.getBoundingClientRect().top+window.scrollY-navBottom()));if(window.scrollY>ziel)window.scrollTo(0,ziel)}
+  NAV_Y=navY()}
 // Reiter herein (Fokus, schlechterer Status). pin: bleiben, bis die Nutzerin wieder selbst scrollt
 function navShow(pin){if(!navOn())return;if(pin&&NAVOFF>0)NAV_PIN=true;navGlide(0)}
 window.addEventListener('scroll',()=>{if(!NAV_Q)NAV_Q=requestAnimationFrame(navFrame);navIdle()},{passive:true});
@@ -17295,7 +17366,8 @@ $('fdd-msk').addEventListener('change',accPickChange);
 document.addEventListener('click',e=>{const t=e.target;if(!t.closest)return;
   const bf=t.closest('[data-bf]');if(bf){e.preventDefault();e.stopPropagation();
     // ab 0.141: der Schmetterling am Reiter öffnet den Reiter „Auswertung“ und darüber das Feier-Fenster
-    if(bf.closest('#tabs')&&S.ui.tab!=='stats'){S.ui.tab='stats';save();render();tabTop()}
+    // Ab 0.208 (Florians Antwort 3 zur Freigabe 0.208): der Schmetterling am Reiter wechselt wie ein Klick auf den Reiter (tabStart); ist die Auswertung offen, springt nichts
+    if(bf.closest('#tabs')&&S.ui.tab!=='stats'){S.ui.tab='stats';save();render();tabStart()}
     msOpenNew(bf.dataset.bf)}},true);
 // Karte „Meilensteine“: Klick auf einen Eintrag öffnet das Feier-Fenster für diesen einen; „Alle anzeigen“ und „Weniger anzeigen“
 $('ms-list').addEventListener('click',e=>{const t=e.target;if(!t.closest)return;
@@ -17424,8 +17496,13 @@ async function introDone(steps){const g=$('intro-land');
   // nach dem nächsten Bild, die Begrüßung verschwindet sofort
   S.ui.ack=true;S.ui.country=INTRO_LAND;save();modalOn($('intro-modal'),false);nachBild(()=>{render();msAutoLater()});
   const bs=$('btn-steps');if(steps){openModal('steps-modal');MODAL_FROM=bs;return}
-  bs.focus({preventScroll:true});bs.classList.remove('pulse');void bs.offsetWidth;bs.classList.add('pulse');
-  clearTimeout(introDone.t);introDone.t=setTimeout(()=>bs.classList.remove('pulse'),matchMedia('(prefers-reduced-motion: reduce)').matches?2500:3600)}
+  // Ab 0.208 (Florians Auftrag 0.208, Phase 2d, und seine Antwort 4 zur Freigabe): „Erste Schritte“ und das „?“ leuchten gemeinsam auf, ein Schimmer läuft
+  // dreimal darüber (Klasse glanz, 3 × 1,2 s); bei „Bewegung reduzieren“ steht 2,5 s ein ruhiger Ring. Ersetzt das Pulsieren von „Erste Schritte“ (.pulse).
+  // Das „?“ zeichnet renderTabs bei jedem Zeichnen neu (gleich danach mit render); es übernimmt den Schimmer über GLANZ (Beginn) mit der verstrichenen Zeit
+  // als negativer Verzögerung (--gd), damit beide gleich laufen.
+  bs.focus({preventScroll:true});const ruhig=matchMedia('(prefers-reduced-motion: reduce)').matches,gl=()=>[bs,...$('tabs').querySelectorAll('.tq')];
+  for(const b of gl())b.classList.remove('glanz');void bs.offsetWidth;GLANZ=Date.now();GLANZ_D=ruhig?2500:3600;bs.classList.add('glanz');tqGlanz();
+  clearTimeout(introDone.t);introDone.t=setTimeout(()=>{GLANZ=0;for(const b of gl())b.classList.remove('glanz')},GLANZ_D)}
 $('btn-intro-steps').onclick=()=>introDone(true);
 $('btn-intro-skip').onclick=()=>introDone(false);
 // Ab 0.134: Knöpfe des Fensters nach einem Anlass (fenShow weiter unten). „Jetzt nicht“, × und Esc: bei einem Spenden-Fenster 3 Monate Ruhe.
@@ -17583,7 +17660,7 @@ $('btn-boot-wipe').onclick=()=>$('btn-wipe').onclick();
 // Ein Klick daneben schließt die Rückfrage wieder wie „Abbrechen“, auch aus dem Hinweis beim Start.
 $('btn-wipe').onclick=async()=>{if(!(await askBox({title:'Alles löschen',text:'Wirklich alle Daten aus diesem Browser löschen?',ok:'Alles löschen',danger:true,more:ASK_BK})))return;BOOT_BAD=false;S=blank();S.ui.tab='reports';save(true);try{sessionStorage.setItem(KEY+'-wiped','1')}catch(e){}location.reload()};
 // Version und Datum: bei der Weitergabe auf 1.0 und den Tag der Weitergabe setzen
-const VERSION='0.207',VDATE='27.11.2026',DL_URL='https://trading-bilanz.github.io';
+const VERSION='0.208',VDATE='28.11.2026',DL_URL='https://trading-bilanz.github.io';
 /* ================= TEXTE ZUM TAUSCHEN (ab 0.134) =================
    KOMMT: Punkte der Karte „Was vielleicht noch kommt“ im Reiter „Resonanz“, je Punkt ein Text in Anführungszeichen, getrennt mit Komma,
    z. B. const KOMMT=['Erster Punkt','Zweiter Punkt']. Solange die Liste leer ist, ist die ganze Karte unsichtbar.
